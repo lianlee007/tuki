@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { Restaurante } from '../../tipos';
 import { ExternalLink, Loader2, MapPin } from 'lucide-react';
 import { ImagenInteligente } from '../ui';
+import { generarSlugUnico } from '../../lib/utils';
 
 export const SeccionPortafolio = () => {
   const [ejemplos, setEjemplos] = useState<Restaurante[]>([]);
@@ -47,7 +48,7 @@ export const SeccionPortafolio = () => {
               {ejemplos.map((rest) => (
                  <Link 
                     key={rest.id} 
-                    to={`/restaurante/${rest.id}`}
+                    to={`/restaurante/${generarSlugUnico(rest.nombre, rest.id)}`}
                     className="group neumorphic overflow-hidden rounded-3xl border border-white/5 hover:-translate-y-2 transition-all duration-500 block"
                  >
                     <div className="h-48 overflow-hidden relative">

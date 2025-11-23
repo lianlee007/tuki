@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ThemeToggle, Logo } from '../ui';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { Restaurante } from '../../tipos';
+import { generarSlugUnico } from '../../lib/utils';
 
 interface BarraLateralProps {
   tabActiva: 'info' | 'tema' | 'menu' | 'difusion';
@@ -110,7 +111,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
              <Eye size={18} /> Preview
            </button>
            {restaurante && (
-             <a href={`/restaurante/${restaurante.id}`} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 px-4 py-3 text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl transition-all text-sm">
+             <a href={`/restaurante/${generarSlugUnico(restaurante.nombre, restaurante.id)}`} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 px-4 py-3 text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl transition-all text-sm">
                <ExternalLink size={18} /> Ir al Sitio
              </a>
            )}
