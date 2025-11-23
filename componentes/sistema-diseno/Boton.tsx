@@ -33,18 +33,25 @@ export const Boton: React.FC<BotonProps> = ({
   
   const colores = {
     primario: `
-      text-primary
-      hover:text-[#C2410C]
+      text-white
+      dark:text-primary
+      hover:text-white
+      dark:hover:text-[#C2410C]
       border-transparent
     `,
     secundario: `
-      text-[#047857]
-      hover:text-[#064E3B]
+      text-white
+      dark:text-[#047857]
+      hover:text-white
+      dark:hover:text-[#064E3B]
       border-transparent
     `,
     peligro: `
-      text-red-600 
-      hover:text-red-800
+      text-white
+      dark:text-red-600
+      hover:text-white
+      dark:hover:text-red-800
+      border-transparent
     `
   };
 

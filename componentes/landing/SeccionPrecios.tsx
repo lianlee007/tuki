@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Check, X, CreditCard, Zap, Star, Clock, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Check, X, CreditCard, Zap, Star, Clock, ArrowLeft, X as XIcon } from 'lucide-react';
 import { Boton } from '../ui';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
@@ -28,12 +28,22 @@ const PlanCard = ({ titulo, precio, descripcion, features, noFeatures, destacado
   const titleColor = destacado ? "text-primary" : "text-text-main";
   const buttonVariante = destacado ? "primario" : "secundario";
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className={`p-8 rounded-[2rem] flex flex-col h-full transition-all duration-300 overflow-hidden relative ${containerClass}`}>
       
-      {/* Overlay "Próximamente" (Inline) */}
-      {mostrarMensaje ? (
+      {/* Overlay "Próximamente" (Inline) - Solo en desktop */}
+      {mostrarMensaje && !isMobile ? (
         <div className="absolute inset-0 bg-bg z-50 flex flex-col items-center justify-center p-6 animate-flipIn text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary animate-pulse">
                 <Clock size={32} />
@@ -111,7 +121,17 @@ const PlanCard = ({ titulo, precio, descripcion, features, noFeatures, destacado
 
 export const SeccionPrecios = () => {
   const [planConMensaje, setPlanConMensaje] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handlePlanSelection = (titulo: string) => {
       if (titulo === 'Profesional' || titulo === 'Empresa') {
@@ -202,6 +222,62 @@ export const SeccionPrecios = () => {
           />
         </div>
       </div>
+
+      {/* Popup de Alerta para Móvil */}
+      {isMobile && planConMensaje && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:hidden">
+          {/* Overlay oscuro */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
+            onClick={closeMessage}
+          />
+          
+          {/* Modal de alerta */}
+          <div className="relative w-full max-w-sm bg-bg neumorphic rounded-3xl p-6 animate-zoomIn border border-white/10 shadow-2xl">
+            {/* Botón cerrar */}
+            <button
+              onClick={closeMessage}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-surface border border-white/10 text-text-muted hover:text-text-main hover:bg-white/5 transition-colors"
+            >
+              <XIcon size={18} />
+            </button>
+
+            {/* Contenido */}
+            <div className="text-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary animate-pulse">
+                <Clock size={40} />
+              </div>
+              
+              <h3 className="text-2xl font-bold font-serif mb-3 text-text-main">
+                ¡Muy Pronto!
+              </h3>
+              
+              <p className="text-text-muted mb-6 text-sm leading-relaxed">
+                El plan <span className="font-bold text-primary">{planConMensaje}</span> estará disponible en breve. Estamos afinando detalles para ofrecerte la mejor experiencia.
+              </p>
+              
+              <div className="space-y-3">
+                <button 
+                  onClick={closeMessage}
+                  className="w-full py-3.5 rounded-xl bg-surface border border-white/10 text-white dark:text-text-main font-bold text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2 neumorphic-btn"
+                >
+                  <ArrowLeft size={18} /> Volver a planes
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    closeMessage();
+                    navigate('/auth?mode=register&plan=basico');
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-bold text-sm hover:bg-primary/20 transition-colors"
+                >
+                  Empezar con Plan Gratuito
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

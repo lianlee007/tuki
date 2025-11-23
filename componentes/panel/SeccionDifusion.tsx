@@ -542,10 +542,10 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
                     </div>
                     <button 
                        onClick={copiarEnlace}
-                       className="neumorphic-btn p-3 rounded-xl hover:text-primary transition-colors active:scale-95"
+                       className="neumorphic-btn p-3 rounded-xl text-white dark:text-text-main hover:text-white dark:hover:text-primary transition-colors active:scale-95"
                        title="Copiar enlace"
                     >
-                       {copiado ? <Check size={20} className="text-green-500"/> : <Copy size={20}/>}
+                       {copiado ? <Check size={20} className="text-green-500"/> : <Copy size={20} className="text-white dark:text-text-main"/>}
                     </button>
                  </div>
               </div>

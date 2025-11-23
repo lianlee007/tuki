@@ -327,7 +327,7 @@ Responde SOLO con el nombre exacto de UNA categoría de la lista proporcionada. 
                                 </div>
                             )}
                             {loadingImage && <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-10"><Loader2 size={48} className="text-white animate-spin" /></div>}
-                            <label className="cursor-pointer neumorphic-btn px-6 py-2 text-sm rounded-lg flex items-center gap-2 w-full justify-center">
+                            <label className="cursor-pointer neumorphic-btn px-6 py-2 text-sm rounded-lg flex items-center gap-2 w-full justify-center text-white dark:text-text-main">
                                 <Upload size={16} /> {loadingImage ? 'Subiendo...' : 'Subir Imagen'}
                                 <input type="file" accept="image/*" className="hidden" onChange={onImageWrapperChange} disabled={loadingImage} />
                             </label>

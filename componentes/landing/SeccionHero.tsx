@@ -37,14 +37,14 @@ export const SeccionHero: React.FC<Props> = ({ titular, isMobile, scrollToSectio
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-16">
           <button 
             onClick={() => navigate('/auth?mode=register')}
-            className="w-full sm:w-auto px-10 py-4 rounded-xl font-bold text-primary neumorphic-btn hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer group border border-primary/20 hover:border-primary/40"
+            className="w-full sm:w-auto px-10 py-4 rounded-xl font-bold text-white dark:text-primary neumorphic-btn hover:bg-white/5 transition-all flex items-center justify-center gap-2 cursor-pointer group border border-primary/20 hover:border-primary/40"
           >
             Crear Restaurante <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
           </button>
           
           <button 
              onClick={(e) => scrollToSection(e, 'ejemplos')} 
-             className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-text-muted hover:text-text-main neumorphic-btn hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+             className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-white dark:text-text-muted hover:text-white dark:hover:text-text-main neumorphic-btn hover:bg-white/5 transition-all flex items-center justify-center gap-2"
           >
             <Smartphone size={20} /> Ver Sitios Creados
           </button>

@@ -83,10 +83,10 @@ export default function PaginaQR() {
                                 </code>
                                 <button
                                     onClick={copyToClipboard}
-                                    className="neumorphic-btn p-2 rounded-lg shrink-0 hover:scale-105 transition-transform"
+                                    className="neumorphic-btn p-2 rounded-lg shrink-0 hover:scale-105 transition-transform text-white dark:text-primary"
                                     title="Copiar URL"
                                 >
-                                    <ExternalLink size={18} className="text-primary" />
+                                    <ExternalLink size={18} className="text-white dark:text-primary" />
                                 </button>
                             </div>
                         </div>
