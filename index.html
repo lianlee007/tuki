@@ -300,6 +300,18 @@
       caret-color: var(--text-main) !important;
       transition: background-color 5000s ease-in-out 0s;
     }
+
+    /* Estilos para el icono del selector de hora en modo oscuro */
+    .dark input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .dark input[type="date"]::-webkit-calendar-picker-indicator,
+    .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
   </style>
   <script type="importmap">
 {

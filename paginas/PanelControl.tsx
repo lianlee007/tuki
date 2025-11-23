@@ -6,7 +6,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexto/ContextoAutenticacion';
 import { subirImagen, generarContenidoIA } from '../lib/servicios';
 import { Restaurante, Tema, Platillo } from '../tipos';
-import { Menu, Wand2, ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
+import { Menu, Wand2, ArrowLeft, Trash2, AlertTriangle, LogOut } from 'lucide-react';
+// @ts-ignore
+import { useNavigate } from 'react-router-dom';
 import { PlantillaRestaurante } from '../componentes/restaurante/PlantillaRestaurante';
 import { BarraLateral } from '../componentes/panel/BarraLateral';
 import { SeccionDifusion } from '../componentes/panel/SeccionDifusion';
@@ -31,7 +33,8 @@ export const formatError = (e: any): string => {
 };
 
 export default function PanelControl() {
-  const { user } = useAuth();
+  const { user, cerrarSesion } = useAuth();
+  const navigate = useNavigate();
   // Hook personalizado para traer toda la data del restaurante
   const { cargando, restaurante, setRestaurante, tema, setTema, platillos, setPlatillos, mensaje, mostrarMensaje, cargarDatos } = useDatosPanel(user);
 
@@ -44,6 +47,16 @@ export default function PanelControl() {
 
   // Estado para modal de confirmación
   const [idEliminar, setIdEliminar] = useState<string | null>(null);
+
+  // Función para cerrar sesión (solo para PC)
+  const handleLogout = async () => {
+    // Navegar primero para evitar redirección por protección de rutas
+    navigate('/');
+    // Pequeño delay para permitir que la navegación ocurra antes de limpiar el estado
+    setTimeout(async () => {
+      await cerrarSesion();
+    }, 100);
+  };
 
   // Guardado parcial silencioso (sin blocking UI)
   const guardarRestauranteSilencioso = async (datosActualizados?: Partial<Restaurante>) => {
@@ -152,6 +165,14 @@ export default function PanelControl() {
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20"><Wand2 size={12} fill="currentColor" /> IA</div>
+            {/* Botón Salir: solo visible en PC */}
+            <button 
+              onClick={handleLogout} 
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg border border-red-500/20 transition-all"
+              title="Cerrar sesión"
+            >
+              <LogOut size={16} /> Salir
+            </button>
             <button onClick={() => setVistaPreviaAbierta(true)} className="md:hidden px-3 py-1.5 text-xs font-bold bg-surface border border-white/10 rounded-lg shadow-sm text-text-muted">Vista Previa</button>
           </div>
         </header>

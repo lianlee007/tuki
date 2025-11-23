@@ -20,10 +20,17 @@ export const ThemeToggle: React.FC = () => {
           boxShadow: isDark
             ? 'inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light)'
             : 'inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)',
-          borderBottom: '1px solid var(--border-highlight)',
-          borderRight: '1px solid var(--border-highlight)',
-          borderTop: '1px solid var(--border-shadow)',
-          borderLeft: '1px solid var(--border-shadow)'
+          ...(isDark 
+            ? {
+                borderBottom: '1px solid var(--border-highlight)',
+                borderRight: '1px solid var(--border-highlight)',
+                borderTop: '1px solid var(--border-shadow)',
+                borderLeft: '1px solid var(--border-shadow)'
+              }
+            : {
+                border: '1px solid #D4C4B0'
+              }
+          )
         }}
       ></div>
 

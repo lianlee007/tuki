@@ -44,7 +44,11 @@ export const ModalDetallePlatillo: React.FC<Props> = ({
                 style={{
                     backgroundColor: estilos.bg,
                     color: estilos.text,
-                    boxShadow: isDark ? '0 25px 50px -12px rgba(0,0,0,0.9)' : '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                    boxShadow: isDark
+                        ? '0 25px 50px -12px rgba(0,0,0,0.9)'
+                        : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    border: isDark ? 'none' : `1px solid ${estilos.border}`,
+                    backgroundImage: isDark ? 'none' : estilos.backgroundImage
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -62,6 +66,8 @@ export const ModalDetallePlatillo: React.FC<Props> = ({
                         alt={platillo.nombre}
                         className="w-full h-full object-cover"
                     />
+                    {/* Borde decorativo en modo claro */}
+                    {!isDark && <div className="absolute inset-0 border-b-4 border-black/5 pointer-events-none"></div>}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent md:hidden"></div>
                     {platillo.destacado && (
                         <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-yellow-400 text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-lg flex items-center gap-1">

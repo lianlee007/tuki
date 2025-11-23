@@ -39,7 +39,7 @@ export interface Restaurante {
   idioma: string;
 }
 
-export type EstiloPlantilla = 'moderno' | 'carta';
+export type EstiloPlantilla = 'moderno' | 'carta' | 'minimalista' | 'grid' | 'inmersivo';
 
 export interface Tema {
   id: string;

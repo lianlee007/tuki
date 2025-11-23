@@ -3,7 +3,7 @@
  * Descripción: Componente principal que orquesta la visualización del restaurante según el tema seleccionado.
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { Restaurante, Tema, Platillo } from '../../tipos';
+import { Restaurante, Tema, Platillo, Categoria } from '../../tipos';
 import { ShoppingCart, X, Facebook, Instagram, Phone, Clock, MapPin, Sun, Moon, Mail, Sparkles, Lock } from 'lucide-react';
 import { ImagenInteligente, LogoWhatsApp, ThemeToggle } from '../ui';
 import { useTema } from '../../contexto/ContextoTema';
@@ -15,6 +15,9 @@ import { apiSaludo, apiHorarios } from '../../servicios/misApis';
 // Importación de las sub-plantillas (Modularidad)
 import { EstiloModerno } from './plantillas/EstiloModerno';
 import { EstiloCarta } from './plantillas/EstiloCarta';
+import { EstiloMinimalista } from './plantillas/EstiloMinimalista';
+import { EstiloGrid } from './plantillas/EstiloGrid';
+import { EstiloInmersivo } from './plantillas/EstiloInmersivo';
 
 // Helper para convertir HEX a RGB
 const hexToRgb = (hex: string) => {
@@ -143,6 +146,19 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
     if (!acc[cat]) acc[cat] = []; acc[cat].push(p); return acc;
   }, {} as Record<string, Platillo[]>);
   const categorias = Object.keys(menuPorCategoria);
+  
+  // Convertir categorias a formato Categoria[] para EstiloGrid y EstiloMinimalista
+  const categoriasComoObjetos: Categoria[] = categorias.map((cat, idx) => ({ 
+    id: cat, 
+    nombre: cat, 
+    restaurante_id: restaurante.id,
+    icono: '',
+    orden: idx
+  }));
+  const platillosPorCategoria = categorias.reduce((acc, cat) => {
+    acc[cat] = menuPorCategoria[cat];
+    return acc;
+  }, {} as { [key: string]: Platillo[] });
 
   const scrollToCategory = (cat: string) => {
     setCategoriaActiva(cat);
@@ -310,6 +326,32 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
       <main className="relative z-10 min-h-[50vh]">
         {tema.estilo_plantilla === 'carta' ? (
           <EstiloCarta
+            categorias={categorias}
+            menuPorCategoria={menuPorCategoria}
+            onVerPlatillo={handleVerPlatillo}
+            onAgregarAlCarrito={handleAgregarAlCarrito}
+            estilos={estilos}
+            refs={categoryRefs}
+            localAbierto={estadoLocal.abierto}
+          />
+        ) : tema.estilo_plantilla === 'minimalista' ? (
+          <EstiloMinimalista
+            categorias={categoriasComoObjetos}
+            platillosPorCategoria={platillosPorCategoria}
+            onVerPlatillo={handleVerPlatillo}
+            onAgregarCarrito={(p) => handleAgregarAlCarrito(p)}
+            estilos={estilos}
+          />
+        ) : tema.estilo_plantilla === 'grid' ? (
+          <EstiloGrid
+            categorias={categoriasComoObjetos}
+            platillosPorCategoria={platillosPorCategoria}
+            onVerPlatillo={handleVerPlatillo}
+            onAgregarCarrito={(p) => handleAgregarAlCarrito(p)}
+            estilos={estilos}
+          />
+        ) : tema.estilo_plantilla === 'inmersivo' ? (
+          <EstiloInmersivo
             categorias={categorias}
             menuPorCategoria={menuPorCategoria}
             onVerPlatillo={handleVerPlatillo}
