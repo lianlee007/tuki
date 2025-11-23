@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tema, EstiloPlantilla } from '../../tipos';
-import { Clock3, Layout, Grid, List, Check } from 'lucide-react';
+import { Clock3, Layout, Grid, List, Check, Grid3x3, Minus, Image } from 'lucide-react';
 
 interface SeccionDisenoProps {
     tema: Tema;
@@ -11,6 +11,9 @@ interface SeccionDisenoProps {
 const ARQUETIPOS: { id: EstiloPlantilla; nombre: string; icono: React.ReactNode; desc: string }[] = [
     { id: 'moderno', nombre: 'Moderno (App)', icono: <Grid size={24} />, desc: 'Tarjetas neumórficas con imágenes grandes. Ideal para todo tipo.' },
     { id: 'carta', nombre: 'Carta Bistró', icono: <List size={24} />, desc: 'Estilo clásico elegante. Imágenes circulares y tipografía Serif.' },
+    { id: 'minimalista', nombre: 'Minimalista Elegante', icono: <Minus size={24} />, desc: 'Diseño ultra minimalista con mucho espacio en blanco. Perfecto para destacar cada plato.' },
+    { id: 'grid', nombre: 'Grid Editorial', icono: <Grid3x3 size={24} />, desc: 'Diseño tipo revista con grid asimétrico. Ideal para menús visuales impactantes.' },
+    { id: 'inmersivo', nombre: 'Inmersivo', icono: <Image size={24} />, desc: 'Grid continuo tipo editorial con imágenes grandes. Experiencia visual inmersiva.' },
 ];
 
 const PALETAS_PREDEFINIDAS = [
@@ -39,7 +42,7 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                     <p className="text-text-muted text-lg">¿Cómo quieres que se vea tu menú?</p>
                 </div>
                 <div className="flex justify-center">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl w-full">
                         {ARQUETIPOS.map((arq) => {
                             const isSelected = tema.estilo_plantilla === arq.id || (!tema.estilo_plantilla && arq.id === 'moderno');
                             return (

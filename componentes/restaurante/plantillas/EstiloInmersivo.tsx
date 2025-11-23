@@ -8,11 +8,13 @@ interface Props {
   categorias: string[];
   menuPorCategoria: Record<string, Platillo[]>;
   onVerPlatillo: (p: Platillo) => void;
+  onAgregarAlCarrito?: (p: Platillo, e?: React.MouseEvent) => void;
   estilos: EstilosComunes;
   refs: any;
+  localAbierto?: boolean;
 }
 
-export const EstiloInmersivo: React.FC<Props> = ({ categorias, menuPorCategoria, onVerPlatillo, estilos, refs }) => {
+export const EstiloInmersivo: React.FC<Props> = ({ categorias, menuPorCategoria, onVerPlatillo, onAgregarAlCarrito, estilos, refs, localAbierto = true }) => {
   // Aplanar todos los platillos para el grid continuo
   const todosLosPlatillos = categorias.flatMap(cat => menuPorCategoria[cat].map(p => ({...p, categoriaNombre: cat})));
 
@@ -60,9 +62,17 @@ export const EstiloInmersivo: React.FC<Props> = ({ categorias, menuPorCategoria,
                             <span className="text-lg font-bold text-white">
                                 ${platillo.precio.toLocaleString()}
                             </span>
-                            <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-colors">
-                                <Plus size={16} />
-                            </div>
+                            {onAgregarAlCarrito && localAbierto && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onAgregarAlCarrito(platillo, e);
+                                    }}
+                                    className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-colors"
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
