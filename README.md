@@ -1,5 +1,6 @@
 <div align="center">
   <h1>🍽️ SmartFood</h1>
+  <!-- v0.0.1 -->
   <p><strong>Constructor de sitios web para restaurantes con IA</strong></p>
   <p>Diseña, gestiona y escala. La solución definitiva para restauradores que buscan elegancia visual y eficiencia operativa.</p>
   
