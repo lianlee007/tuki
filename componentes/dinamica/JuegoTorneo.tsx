@@ -23,29 +23,65 @@ function mezclarArray<T>(array: T[]): T[] {
 // --- Sub-components (Private) ---
 // Tarjeta visual de cada partido en el bracket
 const MatchCard: React.FC<{ match: Match; isActive: boolean; label?: string }> = ({ match, isActive, label }) => (
-  <div className={`relative flex flex-col justify-center w-36 p-2 rounded-xl border transition-all duration-300 ${isActive ? 'scale-110 ring-2 ring-primary shadow-[0_0_15px_rgba(255,140,66,0.5)] bg-surface z-10' : 'border-white/10 bg-surface/50 opacity-80'}`}>
+  <div className={`relative flex flex-col justify-center w-44 p-3 rounded-2xl border-2 transition-all duration-300 ${
+    isActive 
+      ? 'scale-105 ring-4 ring-primary shadow-[0_0_25px_rgba(255,140,66,0.6)] bg-gradient-to-br from-primary/10 to-primary/5 border-primary z-20' 
+      : match.winner 
+        ? 'border-green-500/30 bg-green-500/5 shadow-lg' 
+        : 'border-white/20 bg-surface/80 hover:bg-surface hover:border-white/30'
+  }`}>
       {isActive && (
-         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce shadow-lg z-20 flex items-center gap-1 whitespace-nowrap">
-            <Zap size={8} fill="currentColor"/> JUGAR
+         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-600 text-white text-xs font-black px-3 py-1 rounded-full animate-pulse shadow-xl z-30 flex items-center gap-1.5 whitespace-nowrap">
+            <Zap size={10} fill="currentColor"/> JUGAR AHORA
          </div>
       )}
       {label && (
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] font-bold text-text-muted uppercase tracking-wider whitespace-nowrap">
+          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-black text-primary uppercase tracking-widest whitespace-nowrap drop-shadow-lg">
               {label}
           </div>
       )}
-      <div className={`flex items-center gap-2 mb-1 p-1 rounded ${match.winner?.id === match.p1?.id ? 'font-bold text-green-400' : (match.winner && match.p1 && match.winner.id !== match.p1.id) ? 'opacity-40 line-through decoration-red-500/50' : ''}`}>
-          <div className="w-5 h-5 rounded-full bg-gray-700 overflow-hidden flex-shrink-0 border border-white/10">
-            {match.p1?.imagen_logo_url ? <img src={match.p1.imagen_logo_url} alt="" className="w-full h-full object-cover"/> : <div className="w-full h-full bg-white/5"></div>}
+      <div className={`flex items-center gap-2.5 mb-1.5 p-2 rounded-lg transition-all ${
+        match.winner?.id === match.p1?.id 
+          ? 'bg-green-500/20 border border-green-500/50 font-bold text-green-400' 
+          : (match.winner && match.p1 && match.winner.id !== match.p1.id) 
+            ? 'opacity-30 line-through decoration-red-500/70 bg-red-500/10' 
+            : isActive && !match.winner
+              ? 'bg-primary/10 border border-primary/30'
+              : 'bg-white/5 border border-white/10'
+      }`}>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-surface to-bg overflow-hidden flex-shrink-0 border-2 border-white/20 shadow-inner">
+            {match.p1?.imagen_logo_url ? (
+              <img src={match.p1.imagen_logo_url} alt="" className="w-full h-full object-cover"/>
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <ChefHat size={14} className="text-text-muted"/>
+              </div>
+            )}
           </div>
-          <span className="text-[10px] truncate font-medium">{match.p1?.nombre || '...'}</span>
+          <span className="text-xs truncate font-semibold flex-1">{match.p1?.nombre || '...'}</span>
+          {match.winner?.id === match.p1?.id && <CheckCircle2 size={14} className="text-green-400 flex-shrink-0"/>}
       </div>
-      <div className="h-[1px] w-full bg-white/5 my-1"></div>
-      <div className={`flex items-center gap-2 p-1 rounded ${match.winner?.id === match.p2?.id ? 'font-bold text-green-400' : (match.winner && match.p2 && match.winner.id !== match.p2.id) ? 'opacity-40 line-through decoration-red-500/50' : ''}`}>
-          <div className="w-5 h-5 rounded-full bg-gray-700 overflow-hidden flex-shrink-0 border border-white/10">
-            {match.p2?.imagen_logo_url ? <img src={match.p2.imagen_logo_url} alt="" className="w-full h-full object-cover"/> : <div className="w-full h-full bg-white/5"></div>}
+      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-1.5"></div>
+      <div className={`flex items-center gap-2.5 p-2 rounded-lg transition-all ${
+        match.winner?.id === match.p2?.id 
+          ? 'bg-green-500/20 border border-green-500/50 font-bold text-green-400' 
+          : (match.winner && match.p2 && match.winner.id !== match.p2.id) 
+            ? 'opacity-30 line-through decoration-red-500/70 bg-red-500/10' 
+            : isActive && !match.winner
+              ? 'bg-primary/10 border border-primary/30'
+              : 'bg-white/5 border border-white/10'
+      }`}>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-surface to-bg overflow-hidden flex-shrink-0 border-2 border-white/20 shadow-inner">
+            {match.p2?.imagen_logo_url ? (
+              <img src={match.p2.imagen_logo_url} alt="" className="w-full h-full object-cover"/>
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <ChefHat size={14} className="text-text-muted"/>
+              </div>
+            )}
           </div>
-          <span className="text-[10px] truncate font-medium">{match.p2?.nombre || '...'}</span>
+          <span className="text-xs truncate font-semibold flex-1">{match.p2?.nombre || '...'}</span>
+          {match.winner?.id === match.p2?.id && <CheckCircle2 size={14} className="text-green-400 flex-shrink-0"/>}
       </div>
   </div>
 );
@@ -371,11 +407,27 @@ export const JuegoTorneo: React.FC<Props> = ({ restaurantes, onGanador }) => {
 
   // PRELIMINAR VIEW
   if (fase === 'preliminar') {
+    const aspirantesActivos = restaurantes.filter(r => !excluidosManuales.includes(r.id)).length;
+    const aspirantesSeleccionados = restaurantes.length - excluidosManuales.length;
+    
     return (
       <div className="flex flex-col h-full animate-fadeIn text-center max-w-6xl mx-auto w-full">
          <div className="mb-8">
              <h2 className="text-3xl font-bold font-serif mb-2 flex items-center justify-center gap-3"><Users size={32} className="text-secondary" /> Fase Clasificatoria</h2>
-             <p className="text-text-muted">Selecciona 16 candidatos. Toca para excluir manualmente.</p>
+             <p className="text-text-muted mb-3">Selecciona 16 candidatos (máximo 16). Toca para excluir manualmente.</p>
+             <div className="flex items-center justify-center gap-4 text-sm">
+                <div className="neumorphic px-4 py-2 rounded-xl border border-white/5">
+                   <span className="text-text-muted">Aspirantes actuales: </span>
+                   <span className="font-bold text-primary text-lg">{aspirantesActivos}</span>
+                </div>
+                {preliminarResult && (
+                  <div className="neumorphic px-4 py-2 rounded-xl border border-green-500/30 bg-green-500/10">
+                     <span className="text-text-muted">Clasificados: </span>
+                     <span className="font-bold text-green-500 text-lg">{preliminarResult.qualified.length}</span>
+                     <span className="text-text-muted"> / 16</span>
+                  </div>
+                )}
+             </div>
          </div>
          <div className="flex-1 overflow-y-auto neumorphic-inset p-6 rounded-3xl mb-8 relative">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -443,50 +495,172 @@ export const JuegoTorneo: React.FC<Props> = ({ restaurantes, onGanador }) => {
   }
 
   // BRACKET VIEW
+  const r1Matches = matches.filter(m => m.round === 1);
+  const r2Matches = matches.filter(m => m.round === 2);
+  const r3Matches = matches.filter(m => m.round === 3);
+  const finalMatch = matches.find(m => m.round === 4);
+  const thirdPlaceMatch = matches.find(m => m.round === 0);
+
   return (
     <div className="w-full animate-fadeIn flex flex-col h-full">
        <div className="mb-8 flex justify-between items-end">
           <div><h2 className="text-3xl font-bold font-serif flex items-center gap-3"><Trophy className="text-secondary" /> Copa SmartFood</h2></div>
-          <div className="text-right hidden md:block"><span className="text-xs font-bold uppercase text-text-muted">Progreso</span><div className="w-32 h-2 bg-surface rounded-full mt-1 border border-white/5"><div className="h-full bg-secondary rounded-full" style={{ width: `${(matches.filter(m => m.winner).length / matches.length) * 100}%` }}></div></div></div>
+          <div className="text-right hidden md:block"><span className="text-xs font-bold uppercase text-text-muted">Progreso</span><div className="w-32 h-2 bg-surface rounded-full mt-1 border border-white/5"><div className="h-full bg-secondary rounded-full transition-all duration-500" style={{ width: `${(matches.filter(m => m.winner).length / matches.length) * 100}%` }}></div></div></div>
        </div>
        <div className="flex flex-col lg:flex-row gap-8 h-full overflow-hidden">
-          <div className="flex-1 neumorphic-inset p-4 md:p-6 rounded-3xl overflow-auto relative">
-             <div className="min-w-[1200px] min-h-[800px] h-full flex items-center justify-center p-8">
+          <div className="flex-1 neumorphic-inset p-6 md:p-8 rounded-3xl overflow-x-auto overflow-y-auto relative bg-gradient-to-br from-bg via-surface/50 to-bg" style={{ maxHeight: '100%' }}>
+             <div className="min-w-[1400px] min-h-[900px] w-full flex items-center justify-center p-8" style={{ width: 'max-content' }}>
                 
-                {/* Visual Bracket */}
-                <div className="flex items-stretch justify-center gap-10 h-full py-8">
-                    {/* Left: Octavos -> Cuartos */}
-                    {['Octavos', 'Cuartos'].map((title, idx) => (
-                        <div key={'L'+idx} className="flex flex-col h-full w-36 justify-around">
-                             {matches.filter(m => m.round === idx+1).slice(0, idx===0?4:2).map(m => <MatchCard key={m.id} match={m} isActive={m.id===currentMatchId}/>)}
+                {/* Visual Bracket con líneas de conexión */}
+                <div className="relative flex items-stretch justify-center gap-12 h-full py-12" style={{ width: '100%', minWidth: '1400px' }}>
+                    
+                    {/* RONDA 1: OCTAVOS (Izquierda) */}
+                    <div className="flex flex-col justify-around h-full relative z-10">
+                        <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-text-muted uppercase tracking-widest opacity-60" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                            OCTAVOS
                         </div>
-                    ))}
-                    
-                    {/* Semis L */}
-                    <div className="flex flex-col h-full w-36 justify-center"><MatchCard match={matches.filter(m => m.round===3)[0]} isActive={matches.filter(m => m.round===3)[0].id===currentMatchId}/></div>
-                    
-                    {/* CENTER: FINAL & 3rd PLACE */}
-                    <div className="flex flex-col justify-center items-center h-full px-4 gap-12">
+                        {r1Matches.slice(0, 4).map((m, idx) => (
+                            <div key={m.id} className="relative">
+                                <MatchCard match={m} isActive={m.id === currentMatchId} />
+                                {/* Línea horizontal hacia la derecha */}
+                                {m.winner && (
+                                    <div className="absolute top-1/2 right-0 w-12 h-0.5 bg-gradient-to-r from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Líneas de conexión Octavos -> Cuartos */}
+                    <div className="absolute left-[200px] top-0 bottom-0 w-12 flex flex-col justify-around z-0">
+                        {r1Matches.slice(0, 4).map((m, idx) => {
+                            if (!m.winner) return null;
+                            const nextMatch = r2Matches[Math.floor(idx / 2)];
+                            if (!nextMatch) return null;
+                            const isTop = idx % 2 === 0;
+                            return (
+                                <div key={`conn-${m.id}`} className="relative h-24 flex items-center">
+                                    {/* Línea horizontal */}
+                                    <div className="w-6 h-0.5 bg-gradient-to-r from-primary/40 to-transparent"></div>
+                                    {/* Línea vertical */}
+                                    <div className={`absolute left-6 w-0.5 ${isTop ? 'top-1/2 bottom-0' : 'top-0 bottom-1/2'} bg-gradient-to-b from-primary/40 via-primary/60 to-primary/40`}></div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* RONDA 2: CUARTOS (Izquierda) */}
+                    <div className="flex flex-col justify-around h-full relative z-10">
+                        <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-text-muted uppercase tracking-widest opacity-60" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                            CUARTOS
+                        </div>
+                        {r2Matches.slice(0, 2).map((m, idx) => (
+                            <div key={m.id} className="relative">
+                                <MatchCard match={m} isActive={m.id === currentMatchId} />
+                                {m.winner && (
+                                    <div className="absolute top-1/2 right-0 w-12 h-0.5 bg-gradient-to-r from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Líneas de conexión Cuartos -> Semis */}
+                    <div className="absolute left-[420px] top-0 bottom-0 w-12 flex flex-col justify-center z-0">
+                        {r2Matches.slice(0, 2).map((m, idx) => {
+                            if (!m.winner) return null;
+                            const isTop = idx === 0;
+                            return (
+                                <div key={`conn2-${m.id}`} className="relative h-32 flex items-center">
+                                    <div className="w-6 h-0.5 bg-gradient-to-r from-primary/40 to-transparent"></div>
+                                    <div className={`absolute left-6 w-0.5 ${isTop ? 'top-1/2 bottom-0' : 'top-0 bottom-1/2'} bg-gradient-to-b from-primary/40 via-primary/60 to-primary/40`}></div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* RONDA 3: SEMIFINALES (Izquierda) */}
+                    <div className="flex flex-col justify-center h-full relative z-10">
+                        <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-text-muted uppercase tracking-widest opacity-60" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                            SEMIS
+                        </div>
+                        {r3Matches[0] && (
+                            <div className="relative">
+                                <MatchCard match={r3Matches[0]} isActive={r3Matches[0].id === currentMatchId} />
+                                {r3Matches[0].winner && (
+                                    <div className="absolute top-1/2 right-0 w-12 h-0.5 bg-gradient-to-r from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CENTRO: FINAL Y 3ER PUESTO */}
+                    <div className="flex flex-col justify-center items-center h-full px-8 gap-16 relative z-20">
                         {/* Final */}
-                        <div className="scale-125 relative">
-                            <MatchCard match={matches.find(m => m.round===4)!} isActive={matches.find(m => m.round===4)!.id===currentMatchId} label="FINAL" />
+                        <div className="relative scale-125">
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-black text-yellow-500 uppercase tracking-widest drop-shadow-lg">
+                                🏆 FINAL 🏆
+                            </div>
+                            {finalMatch && <MatchCard match={finalMatch} isActive={finalMatch.id === currentMatchId} />}
                         </div>
                         
                         {/* 3rd Place */}
-                        <div className="scale-100 opacity-90">
-                             <MatchCard match={matches.find(m => m.round===0)!} isActive={matches.find(m => m.round===0)!.id===currentMatchId} label="3er Puesto" />
+                        <div className="relative scale-110">
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-black text-orange-600 uppercase tracking-widest">
+                                3er PUESTO
+                            </div>
+                            {thirdPlaceMatch && <MatchCard match={thirdPlaceMatch} isActive={thirdPlaceMatch.id === currentMatchId} />}
                         </div>
                     </div>
-                    
-                    {/* Semis R */}
-                    <div className="flex flex-col h-full w-36 justify-center"><MatchCard match={matches.filter(m => m.round===3)[1]} isActive={matches.filter(m => m.round===3)[1].id===currentMatchId}/></div>
-                    
-                    {/* Right: Cuartos -> Octavos */}
-                    {['Cuartos', 'Octavos'].map((title, idx) => (
-                         <div key={'R'+idx} className="flex flex-col h-full w-36 justify-around">
-                             {matches.filter(m => m.round === (idx===0?2:1)).slice(idx===0?2:4, idx===0?4:8).map(m => <MatchCard key={m.id} match={m} isActive={m.id===currentMatchId}/>)}
-                        </div>
-                    ))}
+
+                    {/* Líneas de conexión Semis -> Final */}
+                    <div className="absolute right-[420px] top-0 bottom-0 w-12 flex flex-col justify-center z-0">
+                        {r3Matches.map((m, idx) => {
+                            if (!m.winner) return null;
+                            const isTop = idx === 0;
+                            return (
+                                <div key={`conn3-${m.id}`} className="relative h-32 flex items-center">
+                                    <div className="w-6 h-0.5 bg-gradient-to-l from-primary/40 to-transparent ml-auto"></div>
+                                    <div className={`absolute right-6 w-0.5 ${isTop ? 'top-1/2 bottom-0' : 'top-0 bottom-1/2'} bg-gradient-to-b from-primary/40 via-primary/60 to-primary/40`}></div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* RONDA 3: SEMIFINALES (Derecha) */}
+                    <div className="flex flex-col justify-center h-full relative z-10">
+                        {r3Matches[1] && (
+                            <div className="relative">
+                                <MatchCard match={r3Matches[1]} isActive={r3Matches[1].id === currentMatchId} />
+                                {r3Matches[1].winner && (
+                                    <div className="absolute top-1/2 left-0 w-12 h-0.5 bg-gradient-to-l from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* RONDA 2: CUARTOS (Derecha) */}
+                    <div className="flex flex-col justify-around h-full relative z-10">
+                        {r2Matches.slice(2, 4).map((m, idx) => (
+                            <div key={m.id} className="relative">
+                                <MatchCard match={m} isActive={m.id === currentMatchId} />
+                                {m.winner && (
+                                    <div className="absolute top-1/2 left-0 w-12 h-0.5 bg-gradient-to-l from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* RONDA 1: OCTAVOS (Derecha) */}
+                    <div className="flex flex-col justify-around h-full relative z-10">
+                        {r1Matches.slice(4, 8).map((m, idx) => (
+                            <div key={m.id} className="relative">
+                                <MatchCard match={m} isActive={m.id === currentMatchId} />
+                                {m.winner && (
+                                    <div className="absolute top-1/2 left-0 w-12 h-0.5 bg-gradient-to-l from-green-500/60 to-transparent z-0"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
 
              </div>
