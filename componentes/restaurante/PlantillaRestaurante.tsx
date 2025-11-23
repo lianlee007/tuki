@@ -42,6 +42,11 @@ export type EstilosComunes = {
   borderHighlight: string;
   borderShadow: string;
   backgroundImage?: string;
+  // Nuevas propiedades para nivel Dios
+  cardBg: string;
+  cardBorder: string;
+  cardShadow: string;
+  cardHoverShadow: string;
 }
 
 interface PlantillaProps {
@@ -109,36 +114,46 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
 
   // Lógica de sombras y bordes diferenciada por modo
   const shadowLightColor = isDark
-    ? `rgba(${rgbPrimario}, 0.08)`
-    : `transparent`; // Sin sombra en light mode
+    ? `rgba(255, 255, 255, 0.08)`
+    : `transparent`;
 
   const shadowDarkColor = isDark
-    ? `rgba(0, 0, 0, 0.9)` // Sombra más profunda
+    ? `rgba(0, 0, 0, 0.95)`
     : `transparent`;
 
   // Bordes: Sólidos en light mode, sutiles pero definidos en dark mode
   const borderHighlight = isDark ? `rgba(255, 255, 255, 0.12)` : '#D4C4B0';
-  const borderShadow = isDark ? 'rgba(0, 0, 0, 0.8)' : '#D4C4B0';
+  const borderShadow = isDark ? 'rgba(0, 0, 0, 0.9)' : '#D4C4B0';
 
   // Borde general para elementos
   const mainBorder = isDark ? `rgba(${rgbPrimario}, 0.2)` : '#D4C4B0';
 
   const estilos: EstilosComunes = {
     bg: bgBase,
-    text: isDark ? '#F3F4F6' : '#0F172A',
-    title: isDark ? '#FFFFFF' : '#0F172A',
+    text: isDark ? '#F3F4F6' : '#2C2416', // Marrón oscuro en light mode
+    title: isDark ? '#FFFFFF' : '#2C2416',
     primary: tema.color_primario,
     secondary: tema.color_secundario,
     border: mainBorder,
     isDark,
     // Sombra multicapa para efecto Deep 3D
     shadow: isDark
-      ? `12px 12px 24px ${shadowDarkColor}, -12px -12px 24px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow}`
-      : 'none',
+      ? `16px 16px 32px ${shadowDarkColor}, -16px -16px 32px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow}`
+      : '0 2px 8px rgba(44, 36, 22, 0.08)', // Sombra papel
     borderHighlight,
     borderShadow,
     // Textura de papel para modo claro
-    backgroundImage: isDark ? 'none' : `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E")`
+    backgroundImage: isDark ? 'none' : `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`,
+
+    // Propiedades específicas para tarjetas
+    cardBg: isDark ? bgBase : '#FFFFFF',
+    cardBorder: isDark ? 'none' : '2px solid #D4C4B0',
+    cardShadow: isDark
+      ? `12px 12px 24px ${shadowDarkColor}, -12px -12px 24px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow}`
+      : '0 2px 8px rgba(44, 36, 22, 0.08)',
+    cardHoverShadow: isDark
+      ? `16px 16px 32px ${shadowDarkColor}, -16px -16px 32px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow}`
+      : '0 4px 12px rgba(44, 36, 22, 0.12)'
   };
 
   const menuPorCategoria = platillos.reduce((acc, p) => {
@@ -146,11 +161,11 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
     if (!acc[cat]) acc[cat] = []; acc[cat].push(p); return acc;
   }, {} as Record<string, Platillo[]>);
   const categorias = Object.keys(menuPorCategoria);
-  
+
   // Convertir categorias a formato Categoria[] para EstiloGrid y EstiloMinimalista
-  const categoriasComoObjetos: Categoria[] = categorias.map((cat, idx) => ({ 
-    id: cat, 
-    nombre: cat, 
+  const categoriasComoObjetos: Categoria[] = categorias.map((cat, idx) => ({
+    id: cat,
+    nombre: cat,
     restaurante_id: restaurante.id,
     icono: '',
     orden: idx
@@ -206,30 +221,33 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
         @import url('https://fonts.googleapis.com/css2?family=${tema.fuente_titulos.replace(' ', '+')}:wght@400;700&family=${tema.fuente_cuerpo.replace(' ', '+')}:wght@300;400;600&display=swap');
         .font-title { font-family: '${tema.fuente_titulos}', serif; }
         
-        /* Variables CSS para ThemeToggle compatible con tema del restaurante */
+        /* INYECCIÓN DE VARIABLES DINÁMICAS DEL USUARIO */
         :root {
+          --user-primary: ${tema.color_primario};
+          --user-secondary: ${tema.color_secundario};
           --bg-color: ${estilos.bg};
           --border-highlight: ${borderHighlight};
           --border-shadow: ${borderShadow};
           --shadow-dark: ${shadowDarkColor};
           --shadow-light: ${shadowLightColor};
-          --text-muted: ${estilos.text}80;
+          --text-muted: ${estilos.text}90;
           --primary: ${estilos.primary};
         }
         
         /* Estilos base reutilizables */
         .neumorphic-navbar { 
-            background: ${isDark ? `rgba(${rgbFondo}, 0.85)` : `rgba(${rgbFondo}, 0.95)`}; 
-            border-bottom: ${isDark ? `1px solid ${borderShadow}` : `2px solid ${mainBorder}`}; 
+            background: ${isDark ? `rgba(${rgbFondo}, 0.85)` : `rgba(255, 255, 255, 0.95)`}; 
+            border-bottom: ${isDark ? `1px solid ${borderShadow}` : `2px solid #D4C4B0`}; 
             backdrop-filter: blur(16px); 
+            box-shadow: ${isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)'};
         }
         
         .neumorphic-btn-public { 
-          background: ${isDark ? `rgba(${rgbFondo}, 0.8)` : `rgba(${rgbFondo}, 1)`};
-          box-shadow: ${isDark ? `5px 5px 10px ${shadowDarkColor}, -5px -5px 10px ${shadowLightColor}` : 'none'}; 
+          background: ${isDark ? `rgba(${rgbFondo}, 0.8)` : `#FFFFFF`};
+          box-shadow: ${isDark ? `5px 5px 10px ${shadowDarkColor}, -5px -5px 10px ${shadowLightColor}` : '0 2px 4px rgba(44, 36, 22, 0.08)'}; 
           border-radius: 0.75rem; 
-          border: ${isDark ? `1px solid ${borderHighlight}` : `2px solid ${mainBorder}`};
-          transition: all 0.2s ease;
+          border: ${isDark ? `1px solid ${borderHighlight}` : `2px solid #D4C4B0`};
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
           color: ${estilos.text}; /* Color explícito del tema */
           font-weight: 600;
         }
@@ -237,16 +255,16 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
         .neumorphic-btn-public:hover {
           transform: translateY(-2px);
           ${isDark
-          ? `box-shadow: 16px 16px 32px ${shadowDarkColor}, -16px -16px 32px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow};`
-          : `border-color: #C4B4A0; box-shadow: 0 4px 8px rgba(139, 115, 85, 0.15);`
+          ? `box-shadow: 8px 8px 16px ${shadowDarkColor}, -8px -8px 16px ${shadowLightColor}, inset 1px 1px 0px ${borderHighlight}, inset -1px -1px 0px ${borderShadow}; color: #FFFFFF;`
+          : `border-color: #C4B4A0; box-shadow: 0 6px 12px rgba(44, 36, 22, 0.12); background: #FAF8F3;`
         }
         }
 
         .neumorphic-active { 
-          background: ${estilos.bg};
+          background: ${isDark ? estilos.bg : '#FFFFFF'};
           ${isDark
           ? `box-shadow: inset 6px 6px 12px ${shadowDarkColor}, inset -6px -6px 12px ${shadowLightColor}; border: 1px solid transparent;`
-          : `box-shadow: inset 0 2px 4px rgba(139, 115, 85, 0.1); border: 2px solid #B4A490;`
+          : `box-shadow: inset 0 2px 4px rgba(139, 115, 85, 0.1); border: 2px solid ${estilos.primary};`
         }
           color: ${estilos.primary}; 
           border-radius: 0.75rem; 
@@ -278,7 +296,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
           </div>
         </div>
         {/* Submenu Categorias */}
-        <div className="w-full overflow-x-auto scrollbar-hide py-3 sm:py-4 border-t" style={{ borderColor: borderShadow }}>
+        <div className="w-full overflow-x-auto scrollbar-hide py-3 sm:py-4 border-t" style={{ borderColor: isDark ? borderShadow : '#E8DCC8' }}>
           <div className="flex whitespace-nowrap px-3 sm:px-4 md:justify-center min-w-max gap-2 sm:gap-3 md:gap-4">
             {categorias.map(cat => (
               <button key={cat} onClick={() => scrollToCategory(cat)} className={`px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold transition-all ${categoriaActiva === cat ? 'neumorphic-active' : 'neumorphic-btn-public'}`}>{cat}</button>
@@ -375,9 +393,14 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
       </main>
 
       {/* FOOTER REDISEÑADO */}
-      <footer className="py-8 sm:py-12 md:py-16 mt-12 sm:mt-16 md:mt-20 border-t relative z-10" style={{ borderColor: estilos.border }}>
+      <footer className="py-8 sm:py-12 md:py-16 mt-12 sm:mt-16 md:mt-20 border-t relative z-10" style={{ borderColor: isDark ? borderShadow : '#D4C4B0' }}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] border border-white/5 shadow-lg backdrop-blur-sm" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}>
+          <div className="p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] border shadow-lg backdrop-blur-sm"
+            style={{
+              background: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+              borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#D4C4B0',
+              boxShadow: isDark ? 'none' : '0 4px 12px rgba(44, 36, 22, 0.08)'
+            }}>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-16 relative z-10 items-start">
 
@@ -401,7 +424,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
 
               {/* COLUMNA 2: UBICACIÓN Y CONTACTO */}
               <div className="space-y-4 sm:space-y-6">
-                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-white/5 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${estilos.primary}20`, color: estilos.primary }}>
                     <MapPin size={16} className="sm:w-5 sm:h-5" />
                   </div>
@@ -412,7 +435,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-white/5 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${estilos.secondary}20`, color: estilos.secondary }}>
                     <Phone size={16} className="sm:w-5 sm:h-5" />
                   </div>
@@ -425,7 +448,11 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({ restaurante, te
               </div>
 
               {/* COLUMNA 3: HORARIOS */}
-              <div className="flex flex-col rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-center border border-white/5 shadow-inner bg-black/5 dark:bg-white/5 sm:col-span-2 md:col-span-1">
+              <div className="flex flex-col rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-center border shadow-inner sm:col-span-2 md:col-span-1"
+                style={{
+                  background: isDark ? 'rgba(0,0,0,0.2)' : '#FAF8F3',
+                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E8DCC8'
+                }}>
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center text-white shadow-lg animate-pulse" style={{ backgroundColor: estilos.primary }}>
                   <Clock size={20} className="sm:w-6 sm:h-6" />
                 </div>

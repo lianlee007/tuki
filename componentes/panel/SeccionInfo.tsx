@@ -372,7 +372,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 ) : <div className="w-32 h-32 rounded-full bg-surface border-2 border-dashed border-gray-500/20 flex items-center justify-center text-xs text-center p-2">Sin Logo</div>}
                                 {imgLoading.logo && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 size={32} className="text-white animate-spin" /></div>}
                             </div>
-                            <label className="cursor-pointer neumorphic-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2">
+                            <label className="cursor-pointer neumorphic-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 text-white dark:text-text-main">
                                 <Upload size={14}/> Subir Logo
                                 <input type="file" className="hidden" accept="image/*" onChange={e => wrapImagenUpload(e, 'logo')} />
                             </label>
@@ -387,7 +387,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 ) : <div className="w-full h-32 rounded-xl bg-surface border-2 border-dashed border-gray-500/20 flex items-center justify-center text-xs">Sin Banner</div>}
                                 {imgLoading.banner && <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center"><Loader2 size={32} className="text-white animate-spin" /></div>}
                             </div>
-                            <label className="cursor-pointer neumorphic-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2">
+                            <label className="cursor-pointer neumorphic-btn px-4 py-2 text-xs rounded-lg flex items-center gap-2 text-white dark:text-text-main">
                                 <Upload size={14}/> Subir Banner
                                 <input type="file" className="hidden" accept="image/*" onChange={e => wrapImagenUpload(e, 'banner')} />
                             </label>
