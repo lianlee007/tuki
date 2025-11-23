@@ -95,7 +95,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({ cambiarModo })
                 id="recuerdame" 
                 checked={recuerdame}
                 onChange={e => setRecuerdame(e.target.checked)}
-                className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-white/20 bg-surface checked:border-primary checked:bg-primary transition-all"
+                className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-400 dark:border-white/20 bg-surface checked:border-primary checked:bg-primary transition-all"
                 />
                 <Check size={12} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" />
             </div>
