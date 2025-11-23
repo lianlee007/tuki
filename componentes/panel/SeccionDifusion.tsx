@@ -66,14 +66,16 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
       const padding = 20; // Padding alrededor del QR
       const logoSize = 80; // Tamaño del logo en el centro
       const logoPadding = 8; // Padding interno del logo
+      const textHeight = 30; // Altura para el texto "SmartFood"
       const totalSize = qrSize + (padding * 2);
+      const canvasHeight = totalSize + textHeight; // Altura total incluyendo texto
 
       canvas.width = totalSize;
-      canvas.height = totalSize;
+      canvas.height = canvasHeight;
 
       // Fondo blanco
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, totalSize, totalSize);
+      ctx.fillRect(0, 0, totalSize, canvasHeight);
 
       // Cargar imagen del QR
       const qrImg = new Image();
@@ -158,6 +160,30 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
           console.warn('Error procesando logo, continuando sin él:', logoError);
         }
       }
+
+      // Agregar firma "SmartFood" en la parte inferior
+      ctx.fillStyle = '#FF8C42'; // Color primario naranja
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Dibujar texto con sombra sutil para mejor legibilidad
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 2;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 1;
+      
+      ctx.fillText(
+        'SmartFood',
+        totalSize / 2,
+        totalSize + textHeight / 2
+      );
+      
+      // Resetear sombra
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
 
       // Convertir canvas a blob y descargar
       canvas.toBlob((blob) => {
@@ -300,7 +326,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
                     </a>
                     
                     <a 
-                       href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicUrl)}`}
+                       href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicUrl)}&quote=${encodeURIComponent(`¡Descubre el menú de ${restaurante.nombre}! ${publicUrl}`)}`}
                        target="_blank"
                        rel="noreferrer"
                        className="neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group bg-[#1877F2] border-none"
@@ -313,10 +339,9 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
                        href={`https://x.com/intent/tweet?text=${encodeURIComponent(`Descubre el menú de ${restaurante.nombre} aquí: ${publicUrl}`)}`}
                        target="_blank"
                        rel="noreferrer"
-                       className="neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group bg-black border-white/20"
+                       className="neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity group bg-black border-white/20"
                     >
                        <LogoX />
-                       <span className="font-bold text-white">X</span>
                     </a>
 
                     {/* Botón Instagram con color oficial #E1306C */}

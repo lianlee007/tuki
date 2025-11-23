@@ -115,7 +115,8 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
                <ExternalLink size={18} /> Ir al Sitio
              </a>
            )}
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm">
+            {/* Botón Salir: solo visible en móvil, en PC está en el header */}
+            <button onClick={handleLogout} className="md:hidden w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm">
              <LogOut size={18} /> Salir
            </button>
          </div>
