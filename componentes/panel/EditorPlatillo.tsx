@@ -153,7 +153,10 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
     ));
 
     const iaDesc = () => runIA('descripcion', () => sugerirIA(
-        `Descripción corta para "${watch('nombre')}" con ingredientes: "${ingredientesTemp}". Max ${LIMITES.PLATILLO_DESC} chars. Solo letras y números.`,
+        `Crea una descripción corta, llamativa y comercial para el platillo "${watch('nombre')}". 
+Debe ser atractiva para clientes, destacar el sabor, la experiencia gastronómica y generar deseo de probarlo. 
+Usa un lenguaje persuasivo y apetitoso. Máximo ${LIMITES.PLATILLO_DESC} caracteres. 
+Solo letras, números, puntos y comas. No menciones ingredientes específicos, enfócate en la experiencia y el sabor.`,
         (val) => {
             const clean = val.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,]/g, '');
             setValue('descripcion', clean);
@@ -260,7 +263,7 @@ Responde SOLO con el nombre exacto de UNA categoría de la lista proporcionada. 
                                 value={watch('descripcion')}
                                 onChange={handleDescripcionChange}
                                 maxLength={LIMITES.PLATILLO_DESC} 
-                                placeholder="Descripción irresistible..."
+                                placeholder="Ej: Deliciosa combinación de sabores que despierta tus sentidos. Una experiencia gastronómica única que no puedes dejar de probar."
                                 className={errors.descripcion ? "!border-red-500" : ""}
                             />
                             {errors.descripcion && <p className="text-red-500 text-xs mt-1">{errors.descripcion.message}</p>}
