@@ -18,9 +18,8 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, titulo, subtit
       {/* Botón Regresar Absoluto */}
       <div className="absolute top-6 left-6 z-50">
         <Link to="/">
-          <button className="neumorphic p-3 rounded-full text-text-muted hover:text-primary transition-colors flex items-center gap-2">
+          <button className="neumorphic p-3 rounded-full text-text-muted hover:text-primary transition-colors flex items-center justify-center">
              <ArrowLeft size={20} />
-             <span className="hidden md:inline font-medium">Regresar al Inicio</span>
           </button>
         </Link>
       </div>

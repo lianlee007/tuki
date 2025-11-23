@@ -86,23 +86,26 @@ export const apiWhatsApp = {
     
     const fecha = new Date().toLocaleDateString('es-CO', { hour: '2-digit', minute: '2-digit' });
     
-    const itemsStr = pedido.items.map(item => 
-      `▪️ ${item.cantidad}x *${item.nombre}* ($${(item.precio * item.cantidad).toLocaleString()})`
-    ).join('%0A');
+    const itemsStr = pedido.items.map((item, index) => 
+      `${index + 1}. *${item.nombre}*%0A   └ Cantidad: ${item.cantidad} unidad${item.cantidad > 1 ? 'es' : ''}%0A   └ Precio unitario: $${item.precio.toLocaleString()}%0A   └ Subtotal: $${(item.precio * item.cantidad).toLocaleString()}`
+    ).join('%0A%0A');
 
     const mensaje = 
-      `*¡Hola ${restaurante.nombre}!* 🍽️%0A` +
+      `*¡Hola ${restaurante.nombre}!* 🍽️%0A%0A` +
       `Me gustaría realizar el siguiente pedido:%0A%0A` +
-      `━━━━━━━━━━━━━━━━━━━%0A` +
-      itemsStr + `%0A` +
-      `━━━━━━━━━━━━━━━━━━━%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0A` +
+      `*📋 DETALLE DEL PEDIDO*%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0A%0A` +
+      itemsStr + `%0A%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0A` +
       `💰 *TOTAL A PAGAR: $${pedido.total.toLocaleString()}*%0A` +
-      `━━━━━━━━━━━━━━━━━━━%0A%0A` +
-      `📦 *Datos de Entrega:*%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0A%0A` +
+      `📦 *DATOS DE ENTREGA*%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0A` +
       `👤 *Cliente:* ${cliente.nombre}%0A` +
-      `📍 *Dirección:* ${cliente.direccion}%0A` +
-      `📱 *Teléfono:* ${cliente.telefono}%0A%0A` +
-      `🕒 *Pedido realizado:* ${fecha}%0A` +
+      `📱 *Teléfono:* ${cliente.telefono}%0A` +
+      `📍 *Dirección:* ${cliente.direccion}%0A%0A` +
+      `🕒 *Pedido realizado:* ${fecha}%0A%0A` +
       `¡Quedo atento a la confirmación! ✅`;
 
     const numeroLimpio = restaurante.telefono.replace(/\D/g, '');

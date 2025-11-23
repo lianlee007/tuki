@@ -37,7 +37,7 @@ export default function PaginaTerminos() {
         </header>
 
         <div className="space-y-12 text-text-main/90 leading-relaxed text-justify">
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
               <FileText size={24} /> 1. Introducción y Aceptación
             </h2>
@@ -49,21 +49,21 @@ export default function PaginaTerminos() {
             </p>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
-               <Book size={24} /> 2. Marco Legal Aplicable
+              <Book size={24} /> 2. Marco Legal Aplicable
             </h2>
             <p className="mb-4">
-               Estos términos se rigen por la legislación de la República de Colombia, específicamente:
+              Estos términos se rigen por la legislación de la República de Colombia, específicamente:
             </p>
             <ul className="list-disc pl-6 space-y-3 text-text-muted marker:text-primary">
-               <li><strong>Ley 1480 de 2011 (Estatuto del Consumidor):</strong> Regula la calidad, idoneidad y seguridad de los servicios prestados, así como la responsabilidad por la información suministrada.</li>
-               <li><strong>Ley 527 de 1999:</strong> Sobre comercio electrónico y mensajes de datos.</li>
-               <li><strong>Código de Comercio y Código Civil Colombiano:</strong> Para la regulación de contratos comerciales y obligaciones.</li>
+              <li><strong>Ley 1480 de 2011 (Estatuto del Consumidor):</strong> Regula la calidad, idoneidad y seguridad de los servicios prestados, así como la responsabilidad por la información suministrada.</li>
+              <li><strong>Ley 527 de 1999:</strong> Sobre comercio electrónico y mensajes de datos.</li>
+              <li><strong>Código de Comercio y Código Civil Colombiano:</strong> Para la regulación de contratos comerciales y obligaciones.</li>
             </ul>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
               <ShieldCheck size={24} /> 3. Descripción del Servicio y Responsabilidades
             </h2>
@@ -77,7 +77,7 @@ export default function PaginaTerminos() {
             </ul>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
               <AlertCircle size={24} /> 4. Derecho de Retracto y Cancelación
             </h2>
@@ -92,18 +92,18 @@ export default function PaginaTerminos() {
             </p>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
-               <CreditCard size={24} /> 5. Tarifas y Facturación
+              <CreditCard size={24} /> 5. Tarifas y Facturación
             </h2>
             <p className="mb-4">
               Las tarifas son expresadas en Pesos Colombianos (COP). SmartFood se reserva el derecho de modificar las tarifas con un aviso previo de 30 días calendario. El impago de la suscripción resultará en la suspensión temporal del servicio y la invisibilidad del sitio web del restaurante.
             </p>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-primary flex items-center gap-2">
-               <Globe size={24} /> 6. Propiedad Intelectual
+              <Globe size={24} /> 6. Propiedad Intelectual
             </h2>
             <p>
               <strong>De la Plataforma:</strong> El código fuente, diseño neumórfico, logotipos (Smart Cloche) y algoritmos son propiedad exclusiva de SmartFood Inc.
@@ -115,8 +115,8 @@ export default function PaginaTerminos() {
 
           <section className="text-center pt-8 border-t border-white/10">
             <p className="text-text-muted mb-4">Para notificaciones legales o PQRS:</p>
-            <a href="mailto:legal@smartfood.app" className="text-primary hover:text-secondary font-bold transition-colors">
-              legal@smartfood.app
+            <a href="mailto:smartfood@gmail.com" className="text-primary hover:text-secondary font-bold transition-colors">
+              smartfood@gmail.com
             </a>
           </section>
         </div>

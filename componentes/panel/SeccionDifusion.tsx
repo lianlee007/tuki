@@ -54,18 +54,143 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
 
   const descargarQR = async () => {
     try {
-      const response = await fetch(qrImage);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `QR-${restaurante.nombre.replace(/\s+/g, '-')}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Crear canvas para combinar QR con logo
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('No se pudo obtener contexto del canvas');
+      }
+
+      // Tamaño del QR (400x400 según la API)
+      const qrSize = 400;
+      const padding = 20; // Padding alrededor del QR
+      const logoSize = 80; // Tamaño del logo en el centro
+      const logoPadding = 8; // Padding interno del logo
+      const totalSize = qrSize + (padding * 2);
+
+      canvas.width = totalSize;
+      canvas.height = totalSize;
+
+      // Fondo blanco
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, totalSize, totalSize);
+
+      // Cargar imagen del QR
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve, reject) => {
+        qrImg.onload = () => resolve(qrImg);
+        qrImg.onerror = (err) => {
+          console.error('Error cargando QR:', err);
+          reject(new Error('No se pudo cargar la imagen del QR'));
+        };
+        qrImg.src = qrImage;
+      });
+
+      // Dibujar QR en el canvas
+      ctx.drawImage(qrImg, padding, padding, qrSize, qrSize);
+
+      // Cargar y dibujar logo
+      const logoImg = new Image();
+      let logoCargado = false;
+      
+      if (restaurante.imagen_logo_url) {
+        logoImg.crossOrigin = 'anonymous';
+        
+        try {
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Timeout cargando logo'));
+            }, 5000);
+            
+            logoImg.onload = () => {
+              clearTimeout(timeout);
+              logoCargado = true;
+              resolve(logoImg);
+            };
+            logoImg.onerror = (err) => {
+              clearTimeout(timeout);
+              console.warn('No se pudo cargar el logo, continuando sin él:', err);
+              resolve(null);
+            };
+            logoImg.src = restaurante.imagen_logo_url;
+          });
+
+          if (logoCargado && logoImg.complete && logoImg.naturalWidth > 0) {
+          // Calcular posición del logo (centro del QR)
+          const logoX = padding + (qrSize / 2) - (logoSize / 2);
+          const logoY = padding + (qrSize / 2) - (logoSize / 2);
+
+          // Dibujar fondo blanco circular para el logo
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(
+            padding + qrSize / 2,
+            padding + qrSize / 2,
+            logoSize / 2 + logoPadding,
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+
+          // Dibujar borde del logo
+          ctx.strokeStyle = '#FF8C42';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // Dibujar logo en el centro
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(
+            padding + qrSize / 2,
+            padding + qrSize / 2,
+            logoSize / 2,
+            0,
+            2 * Math.PI
+          );
+          ctx.clip();
+          
+          ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+          ctx.restore();
+          }
+        } catch (logoError) {
+          console.warn('Error procesando logo, continuando sin él:', logoError);
+        }
+      }
+
+      // Convertir canvas a blob y descargar
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('Error generando imagen');
+        }
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `QR-${restaurante.nombre.replace(/\s+/g, '-')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 'image/png');
     } catch (error) {
-      console.error('Error descargando QR', error);
-      window.open(qrImage, '_blank');
+      console.error('Error descargando QR con logo', error);
+      // Fallback: descargar solo el QR
+      try {
+        const response = await fetch(qrImage);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `QR-${restaurante.nombre.replace(/\s+/g, '-')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (fallbackError) {
+        console.error('Error en fallback', fallbackError);
+        window.open(qrImage, '_blank');
+      }
     }
   };
 

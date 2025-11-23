@@ -111,7 +111,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({ cambiarModo })
         
         <div className="pt-2">
             <Boton 
-                className={`w-full text-lg shadow-lg transition-all duration-300 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : 'shadow-primary/20 hover:shadow-primary/40'}`} 
+                className={`w-full text-lg transition-all duration-300 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} 
                 type="submit" 
                 cargando={loading}
                 disabled={!formValid}

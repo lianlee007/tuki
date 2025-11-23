@@ -10,9 +10,9 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, prefix, estadoGuardado, className = '', ...props }, ref) => {
   let paddingLeftClass = 'px-4';
-  if (icon && prefix) paddingLeftClass = 'pl-24'; 
-  else if (prefix) paddingLeftClass = 'pl-14';    
-  else if (icon) paddingLeftClass = 'pl-12';      
+  if (icon && prefix) paddingLeftClass = 'pl-24';
+  else if (prefix) paddingLeftClass = 'pl-14';
+  else if (icon) paddingLeftClass = 'pl-12';
 
   return (
     <div className="w-full relative group">
@@ -24,29 +24,29 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, pr
           </div>
         )}
         {prefix && (
-          <div 
+          <div
             className={`absolute top-1/2 -translate-y-1/2 text-text-main font-bold pointer-events-none z-10 pr-2 border-r border-gray-500/20 flex items-center h-[24px] ${icon ? 'left-12' : 'left-4'}`}
           >
             {prefix}
           </div>
         )}
-        <input 
+        <input
           ref={ref}
-          className={`w-full neumorphic-inset py-3 outline-none text-text-main placeholder-gray-500 bg-transparent transition-all font-medium
+          className={`w-full neumorphic-inset py-3 outline-none text-text-main placeholder-gray-500 transition-all font-medium
             ${paddingLeftClass} 
             pr-10
-            ${className}`} 
-          {...props} 
+            ${className}`}
+          {...props}
         />
-        
+
         {estadoGuardado && (
           <div className="absolute right-3 top-0 bottom-0 my-auto h-4 w-4 flex items-center justify-center z-20 pointer-events-none">
             {estadoGuardado === 'cargando' ? (
-               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
             ) : (
-               <div className="text-green-600 flex items-center justify-center animate-in zoom-in duration-300">
-                 <Save size={16} />
-               </div>
+              <div className="text-green-600 flex items-center justify-center animate-in zoom-in duration-300">
+                <Save size={16} />
+              </div>
             )}
           </div>
         )}
@@ -66,22 +66,22 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label,
   <div className="w-full relative group">
     {label && <label className="block text-sm font-bold text-text-muted mb-2 ml-1 tracking-wide">{label}</label>}
     <div className="relative">
-      <textarea 
+      <textarea
         ref={ref}
-        className={`w-full neumorphic-inset px-4 py-3 outline-none text-text-main placeholder-gray-500 bg-transparent transition-all min-h-[100px] font-medium pr-10 ${className}`} 
-        {...props} 
+        className={`w-full neumorphic-inset px-4 py-3 outline-none text-text-main placeholder-gray-500 transition-all min-h-[100px] font-medium pr-10 ${className}`}
+        {...props}
       />
-       {estadoGuardado && (
-          <div className="absolute right-3 bottom-3 animate-fadeIn z-20 pointer-events-none">
-            {estadoGuardado === 'cargando' ? (
-               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-               <div className="text-green-600 animate-in zoom-in duration-300">
-                 <Save size={16} />
-               </div>
-            )}
-          </div>
-        )}
+      {estadoGuardado && (
+        <div className="absolute right-3 bottom-3 animate-fadeIn z-20 pointer-events-none">
+          {estadoGuardado === 'cargando' ? (
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <div className="text-green-600 animate-in zoom-in duration-300">
+              <Save size={16} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   </div>
 ));

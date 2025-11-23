@@ -11,7 +11,7 @@ interface InteractionHintProps {
 const InteractionHint: React.FC<InteractionHintProps> = ({ onClick }) => (
   <button 
     onClick={(e) => { e.stopPropagation(); onClick(); }}
-    className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full cursor-pointer transition-all duration-500 bg-black/5 hover:bg-black/10 backdrop-blur-[1px]"
+    className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full cursor-pointer transition-all duration-500 bg-black/20 backdrop-blur-md"
     aria-label="Activar demostración"
   >
       <div className="px-5 py-2.5 bg-black/80 backdrop-blur-md border border-white/20 text-white rounded-full text-xs font-bold flex items-center gap-3 shadow-2xl animate-pulse pointer-events-none">
@@ -49,10 +49,10 @@ export const DemoInteractiva = () => {
 
   // Datos Actualizados
   const dataActual = {
-    nombreDefault: "El sabor de mi tierra",
-    eslogan: "Sazón de la abuela",
-    banner: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1000&auto=format&fit=crop", 
-    logo: "https://cdn-icons-png.flaticon.com/512/4042/4042324.png", 
+    nombreDefault: "Como en casa",
+    eslogan: "Comida tradicional",
+    banner: "https://i.pinimg.com/1200x/87/75/b0/8775b049c1d0b0bc5ff27447dde28983.jpg", 
+    logo: "https://i.pinimg.com/1200x/1e/ba/a6/1ebaa604a2b8642b89254733f85bea58.jpg", 
     platillos: [
       { 
         nombre: "Goulash con Frijoles", 

@@ -69,6 +69,15 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
         });
         if (error) throw error;
         alert("Registro exitoso. Por favor revisa tu correo o inicia sesión.");
+        // Limpiar todos los campos antes de cambiar de modo
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setNombre('');
+        setApellido('');
+        setAceptaTerminos(false);
+        setError(null);
+        setEmailTouched(false);
         cambiarModo();
     } catch (error: any) {
       if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
@@ -87,7 +96,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full">
+    <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full" autoComplete="off">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
             <Input 
                 placeholder="Nombre" 
@@ -96,6 +105,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
                 required 
                 className={nombre.length > 1 ? "border-green-500/30" : ""}
                 maxLength={50}
+                autoComplete="off"
+                autoFocus={false}
             />
             <Input 
                 placeholder="Apellido" 
@@ -104,6 +115,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
                 required 
                 className={apellido.length > 1 ? "border-green-500/30" : ""}
                 maxLength={50}
+                autoComplete="off"
+                autoFocus={false}
             />
         </div>
 
@@ -118,6 +131,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
             icon={<Mail size={18} />}
             className={email.length > 0 ? (isEmailValid ? "border-green-500/50" : (emailTouched ? "border-red-500/50" : "")) : ""}
             maxLength={100}
+            autoComplete="off"
+            autoFocus={false}
             />
             {email.length > 0 && !isEmailValid && emailTouched && (
             <p className="text-[10px] text-red-400 mt-1 ml-1 absolute -bottom-4">Formato inválido</p>
@@ -134,6 +149,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
                 icon={<ShieldCheck size={18} />}
                 className={password.length > 0 ? (isStrongPassword ? "border-green-500/50" : "border-orange-500/50") : ""}
                 maxLength={64}
+                autoComplete="new-password"
+                autoFocus={false}
             />
 
             <Input 
@@ -145,6 +162,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
                 icon={<ShieldCheck size={18} />}
                 className={confirmPassword.length > 0 ? (passwordsMatch ? "border-green-500/50" : "border-red-500/50") : ""}
                 maxLength={64}
+                autoComplete="new-password"
+                autoFocus={false}
             />
         </div>
 
@@ -196,7 +215,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
         
         <div className="pt-2">
             <Boton 
-                className={`w-full text-lg shadow-lg transition-all duration-300 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : 'shadow-primary/20 hover:shadow-primary/40'}`} 
+                className={`w-full text-lg transition-all duration-300 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} 
                 type="submit" 
                 cargando={loading}
                 disabled={!formValid}

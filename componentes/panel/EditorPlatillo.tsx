@@ -168,6 +168,30 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
         }
     ));
 
+    const iaCategoria = () => runIA('categoria', () => sugerirIA(
+        `Analiza este platillo y sugiere la categoría más adecuada de esta lista: ${CATEGORIAS_ESTANDAR.join(', ')}.
+
+Nombre del platillo: "${watch('nombre')}"
+Descripción: "${watch('descripcion')}"
+Ingredientes: "${ingredientesTemp}"
+
+Responde SOLO con el nombre exacto de UNA categoría de la lista proporcionada. No agregues explicaciones ni texto adicional, solo el nombre de la categoría.`,
+        (val) => {
+            // Limpiar la respuesta y buscar coincidencia exacta en las categorías
+            const clean = val.trim().replace(/^["']|["']$/g, '').trim();
+            // Buscar coincidencia exacta o parcial (case-insensitive)
+            const categoriaEncontrada = CATEGORIAS_ESTANDAR.find(
+                cat => cat.toLowerCase() === clean.toLowerCase() || 
+                       clean.toLowerCase().includes(cat.toLowerCase()) ||
+                       cat.toLowerCase().includes(clean.toLowerCase())
+            );
+            if (categoriaEncontrada) {
+                setValue('categoria', categoriaEncontrada);
+                trigger('categoria');
+            }
+        }
+    ));
+
     return (
         <div className="animate-fadeIn grid lg:grid-cols-2 gap-8 mb-12">
             <div className="space-y-8">
@@ -179,7 +203,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
                         {/* NOMBRE */}
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-2 ml-1 flex justify-between items-center">
-                                <span>Nombre del Plato <span className="text-red-500">*</span> <span className="text-[10px] text-text-muted ml-2">(Solo letras)</span></span>
+                                <span>Nombre del Plato <span className="text-red-500">*</span></span>
                                 {watch('nombre')?.length > 2 && (
                                     <button type="button" onClick={iaOrtografia} disabled={guardando} className="text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-lg border border-blue-500/20 flex gap-1">
                                         {loadingAction === 'ortografia' ? <Loader2 size={12} className="animate-spin"/> : <SpellCheck size={12}/>} Ortografía
@@ -209,7 +233,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
                         {/* INGREDIENTES */}
                         <div>
                              <label className="block text-sm font-medium text-text-muted mb-2 ml-1 flex justify-between items-center">
-                                <span>Ingredientes <span className="text-red-500">*</span> <span className="text-[10px] text-text-muted ml-2">(Letras y números)</span></span>
+                                <span>Ingredientes <span className="text-red-500">*</span></span>
                                 <button type="button" onClick={iaIng} disabled={guardando} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg flex gap-1 border border-primary/20">
                                     {loadingAction === 'ingredientes' ? <Loader2 size={12} className="animate-spin"/> : <Wand2 size={12}/>} IA
                                 </button>
@@ -227,7 +251,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
                         {/* DESCRIPCIÓN */}
                         <div>
                              <label className="block text-sm font-medium text-text-muted mb-2 ml-1 flex justify-between items-center">
-                                <span>Descripción <span className="text-red-500">*</span> <span className="text-[10px] text-text-muted ml-2">(Letras y números)</span></span>
+                                <span>Descripción <span className="text-red-500">*</span></span>
                                 <button type="button" onClick={iaDesc} disabled={guardando} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg flex gap-1 border border-primary/20">
                                     {loadingAction === 'descripcion' ? <Loader2 size={12} className="animate-spin"/> : <Wand2 size={12}/>} IA
                                 </button>
@@ -246,6 +270,11 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-2 ml-1 flex justify-between items-center">
                                 <span>Categoría <span className="text-red-500">*</span></span>
+                                {(watch('nombre')?.length > 2 || watch('descripcion')?.length > 5 || ingredientesTemp.length > 0) && (
+                                    <button type="button" onClick={iaCategoria} disabled={guardando} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg flex gap-1 border border-primary/20">
+                                        {loadingAction === 'categoria' ? <Loader2 size={12} className="animate-spin"/> : <Wand2 size={12}/>} IA
+                                    </button>
+                                )}
                             </label>
                             <div className="relative">
                                 <select
