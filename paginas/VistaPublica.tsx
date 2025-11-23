@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { Restaurante, Tema, Platillo } from '../tipos';
 import { PlantillaRestaurante } from '../componentes/restaurante/PlantillaRestaurante';
 import { SEO } from '../componentes/sistema-diseno/SEO';
+import { generarSlug } from '../lib/utils';
 
 const VistaPublica = () => {
   const { slug } = useParams();
@@ -17,6 +18,7 @@ const VistaPublica = () => {
     const fetchData = async () => {
       if (!slug) return;
       try {
+        // El slug tiene formato: "nombre-restaurante-abc12345"
         // Extraer el ID del slug (últimos 8 caracteres después del último guión)
         const partes = slug.split('-');
         const idCorto = partes[partes.length - 1];
@@ -30,7 +32,7 @@ const VistaPublica = () => {
         
         let rest = restById;
         
-        // Si no se encontró, buscar por el ID corto al final del slug
+        // Si no se encontró por ID completo, buscar por ID corto al final del slug
         if (!rest && idCorto && idCorto.length === 8) {
           const { data: restaurantes, error: restError } = await supabase
             .from('restaurantes')
@@ -39,6 +41,17 @@ const VistaPublica = () => {
           if (!restError && restaurantes) {
             // Encontrar el restaurante cuyo ID empiece con el idCorto del slug
             rest = restaurantes.find(r => r.id.toLowerCase().startsWith(idCorto.toLowerCase()));
+          }
+        }
+        
+        // Si aún no se encontró, intentar buscar por nombre normalizado (compatibilidad con URLs antiguas sin ID)
+        if (!rest) {
+          const { data: restaurantes, error: restError } = await supabase
+            .from('restaurantes')
+            .select('*');
+          
+          if (!restError && restaurantes) {
+            rest = restaurantes.find(r => generarSlug(r.nombre) === slug);
           }
         }
         

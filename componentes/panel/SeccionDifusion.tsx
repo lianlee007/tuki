@@ -52,6 +52,244 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
     setTimeout(() => setCopiado(false), 2000);
   };
 
+  const imprimirQR = async () => {
+    try {
+      // Crear canvas para combinar QR con logo (misma lógica que descargarQR)
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('No se pudo obtener contexto del canvas');
+      }
+
+      // Tamaño del QR (400x400 según la API)
+      const qrSize = 400;
+      const padding = 20;
+      const logoSize = 80;
+      const logoPadding = 8;
+      const textHeight = 30;
+      const totalSize = qrSize + (padding * 2);
+      const canvasHeight = totalSize + textHeight;
+
+      canvas.width = totalSize;
+      canvas.height = canvasHeight;
+
+      // Fondo blanco
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, totalSize, canvasHeight);
+
+      // Cargar imagen del QR
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve, reject) => {
+        qrImg.onload = () => resolve(qrImg);
+        qrImg.onerror = (err) => {
+          console.error('Error cargando QR:', err);
+          reject(new Error('No se pudo cargar la imagen del QR'));
+        };
+        qrImg.src = qrImage;
+      });
+
+      // Dibujar QR
+      ctx.drawImage(qrImg, padding, padding, qrSize, qrSize);
+
+      // Cargar y dibujar logo
+      const logoImg = new Image();
+      let logoCargado = false;
+      
+      if (restaurante.imagen_logo_url) {
+        logoImg.crossOrigin = 'anonymous';
+        
+        try {
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Timeout cargando logo'));
+            }, 5000);
+            
+            logoImg.onload = () => {
+              clearTimeout(timeout);
+              logoCargado = true;
+              resolve(logoImg);
+            };
+            logoImg.onerror = (err) => {
+              clearTimeout(timeout);
+              resolve(null);
+            };
+            logoImg.src = restaurante.imagen_logo_url;
+          });
+
+          if (logoCargado && logoImg.complete && logoImg.naturalWidth > 0) {
+            const logoX = padding + (qrSize / 2) - (logoSize / 2);
+            const logoY = padding + (qrSize / 2) - (logoSize / 2);
+
+            // Fondo blanco circular
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(
+              padding + qrSize / 2,
+              padding + qrSize / 2,
+              logoSize / 2 + logoPadding,
+              0,
+              2 * Math.PI
+            );
+            ctx.fill();
+
+            // Borde
+            ctx.strokeStyle = '#FF8C42';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Logo
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(
+              padding + qrSize / 2,
+              padding + qrSize / 2,
+              logoSize / 2,
+              0,
+              2 * Math.PI
+            );
+            ctx.clip();
+            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+            ctx.restore();
+          }
+        } catch (logoError) {
+          console.warn('Error procesando logo, continuando sin él:', logoError);
+        }
+      }
+
+      // Firma SmartFood
+      ctx.fillStyle = '#FF8C42';
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 2;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 1;
+      ctx.fillText('SmartFood', totalSize / 2, totalSize + textHeight / 2);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Convertir canvas a data URL
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // Crear ventana nueva solo para imprimir
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Por favor, permite ventanas emergentes para imprimir');
+        return;
+      }
+
+      // Escribir HTML con solo el QR
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>QR - ${restaurante.nombre}</title>
+            <style>
+              @page {
+                margin: 0;
+                size: auto;
+              }
+              @media print {
+                * {
+                  margin: 0;
+                  padding: 0;
+                }
+                body { 
+                  margin: 0; 
+                  padding: 0; 
+                  display: flex; 
+                  justify-content: center; 
+                  align-items: center; 
+                  min-height: 100vh;
+                  page-break-inside: avoid;
+                  page-break-after: avoid;
+                }
+                .qr-container { 
+                  display: flex; 
+                  justify-content: center; 
+                  align-items: center; 
+                  width: 100%;
+                  height: 100vh;
+                  page-break-inside: avoid;
+                }
+                img { 
+                  max-width: 100%; 
+                  height: auto; 
+                  display: block;
+                  page-break-inside: avoid;
+                }
+              }
+              body { 
+                margin: 0; 
+                padding: 0; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                min-height: 100vh;
+                background: white;
+              }
+              .qr-container {
+                text-align: center;
+                width: 100%;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="qr-container">
+              <img id="qrImage" src="${dataUrl}" alt="Código QR" onload="handleImageLoad()" onerror="handleImageError()" />
+            </div>
+            <script>
+              function handleImageLoad() {
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              }
+              
+              function handleImageError() {
+                alert('Error al cargar la imagen del QR');
+                window.close();
+              }
+              
+              window.onload = function() {
+                var img = document.getElementById('qrImage');
+                if (img.complete && img.naturalHeight !== 0) {
+                  handleImageLoad();
+                }
+              };
+              
+              window.onafterprint = function() {
+                setTimeout(function() {
+                  window.close();
+                }, 100);
+              };
+              
+              // Fallback: cerrar después de un tiempo si no se imprime
+              setTimeout(function() {
+                if (document.visibilityState === 'visible') {
+                  // Si la ventana sigue visible después de 5 segundos, cerrarla
+                  window.close();
+                }
+              }, 5000);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (error) {
+      console.error('Error imprimiendo QR', error);
+      alert('Error al preparar el QR para imprimir');
+    }
+  };
+
   const descargarQR = async () => {
     try {
       // Crear canvas para combinar QR con logo
@@ -273,7 +511,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
                  <Boton variante="secundario" onClick={descargarQR} className="text-xs" icono={<Download size={16}/>}>
                     Descargar PNG
                  </Boton>
-                 <Boton variante="secundario" onClick={() => window.print()} className="text-xs" icono={<Printer size={16}/>}>
+                 <Boton variante="secundario" onClick={imprimirQR} className="text-xs" icono={<Printer size={16}/>}>
                     Imprimir
                  </Boton>
               </div>
@@ -355,7 +593,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante })
                     >
                        <div className="relative flex items-center gap-3">
                            <LogoInstagram />
-                           <span className="font-bold text-white">{copiado ? 'Enlace Copiado' : 'Instagram'}</span>
+                           <span className="font-bold text-white">Instagram</span>
                        </div>
                     </button>
                  </div>

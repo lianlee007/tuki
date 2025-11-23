@@ -19,14 +19,16 @@ export const generarSlug = (texto: string): string => {
 };
 
 /**
- * Genera un slug único agregando el ID si es necesario
- * Esto asegura que cada restaurante tenga un slug único
+ * Genera un slug único agregando el ID para garantizar permanencia
+ * El ID asegura que el QR y las URLs sigan funcionando aunque cambie el nombre
+ * Formato: "nombre-restaurante-abc12345" (primeros 8 caracteres del ID)
  */
 export const generarSlugUnico = (nombre: string, id: string): string => {
   const slugBase = generarSlug(nombre);
-  // Si el slug está vacío, usar el ID
+  // Si el slug está vacío, usar el ID completo
   if (!slugBase) return id;
-  // Combinar slug con ID para garantizar unicidad: "la-pizzeria-mia-abc123"
+  // Combinar nombre con ID para garantizar permanencia: "el-dragon-5a9aa71d"
+  // El ID nunca cambia, así que el QR será permanente
   return `${slugBase}-${id.slice(0, 8)}`;
 };
 

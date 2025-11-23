@@ -208,6 +208,7 @@ export default function PaginaInicio() {
             <a href="#caracteristicas" onClick={(e) => scrollToSection(e, 'caracteristicas')} className="hover:text-primary transition-colors cursor-pointer">Soluciones</a>
             <a href="#precios" onClick={(e) => scrollToSection(e, 'precios')} className="hover:text-primary transition-colors cursor-pointer">Precios</a>
             <Link to="/dinamica" className="hover:text-primary transition-colors text-primary">Dinámica</Link>
+            <Link to="/qr" className="hover:text-secondary transition-colors text-secondary font-black">QR 📱</Link>
             <Link to="/terminos" className="hover:text-primary transition-colors">Términos</Link>
             <Link to="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link>
           </nav>

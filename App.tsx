@@ -20,6 +20,7 @@ const VistaPublica = lazy(() => import('./paginas/VistaPublica'));
 const PaginaTerminos = lazy(() => import('./paginas/PaginaTerminos'));
 const PaginaPrivacidad = lazy(() => import('./paginas/PaginaPrivacidad'));
 const PaginaDinamica = lazy(() => import('./paginas/PaginaDinamica'));
+const PaginaQR = lazy(() => import('./paginas/PaginaQR'));
 const Pagina404 = lazy(() => import('./paginas/Pagina404'));
 
 // Componente de carga
@@ -51,6 +52,7 @@ const ContenidoAnimado = () => {
         <Route path="/terminos" element={<TransicionPagina><PaginaTerminos /></TransicionPagina>} />
         <Route path="/privacidad" element={<TransicionPagina><PaginaPrivacidad /></TransicionPagina>} />
         <Route path="/dinamica" element={<TransicionPagina><PaginaDinamica /></TransicionPagina>} />
+        <Route path="/qr" element={<TransicionPagina><PaginaQR /></TransicionPagina>} />
         <Route path="*" element={<Pagina404 />} />
       </Routes>
     </AnimatePresence>
