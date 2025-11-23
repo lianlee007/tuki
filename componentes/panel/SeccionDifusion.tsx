@@ -4,6 +4,7 @@ import { Restaurante } from '../../tipos';
 import { Boton, Tarjeta, Input, Logo, LogoWhatsApp } from '../ui';
 import { QrCode, Share2, Copy, Download, Printer, Check, ExternalLink } from 'lucide-react';
 import { apiQR } from '../../servicios/misApis';
+import { generarSlugUnico } from '../../lib/utils';
 
 // --- LOGOS OFICIALES DE MARCA (SVG) ---
 
@@ -35,9 +36,10 @@ interface SeccionDifusionProps {
 export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante }) => {
   const [copiado, setCopiado] = useState(false);
 
-  // Construimos la URL pública (sin hash, usando BrowserRouter)
+  // Construimos la URL pública usando slug del nombre del restaurante
   const baseUrl = window.location.origin;
-  const publicUrl = `${baseUrl}/restaurante/${restaurante.id}`;
+  const slug = generarSlugUnico(restaurante.nombre, restaurante.id);
+  const publicUrl = `${baseUrl}/restaurante/${slug}`;
   
   // --- CONSUMO API PROPIA 2 (QR) ---
   const colorPrimarioQR = "FF8C42"; // Naranja marca

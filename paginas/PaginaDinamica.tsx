@@ -8,6 +8,7 @@ import { Boton, ThemeToggle, Logo } from '../componentes/ui';
 import { ArrowLeft, Trophy, Dices, Crown, Frown } from 'lucide-react';
 import { JuegoRuleta } from '../componentes/dinamica/JuegoRuleta';
 import { JuegoTorneo } from '../componentes/dinamica/JuegoTorneo';
+import { generarSlugUnico } from '../lib/utils';
 
 export default function PaginaDinamica() {
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
@@ -99,7 +100,7 @@ export default function PaginaDinamica() {
                   <img src={ganador.imagen_banner_url || ""} className="w-full h-40 object-cover rounded-xl" alt="Ganador" />
                 </div>
                 <div className="flex flex-col gap-4">
-                   <Link to={`/restaurante/${ganador.id}`}><Boton className="w-full py-4 text-lg shadow-lg shadow-primary/20 !bg-primary !text-white">Ver Menú y Ordenar</Boton></Link>
+                   <Link to={`/restaurante/${generarSlugUnico(ganador.nombre, ganador.id)}`}><Boton className="w-full py-4 text-lg shadow-lg shadow-primary/20 !bg-primary !text-white">Ver Menú y Ordenar</Boton></Link>
                    <button onClick={reiniciar} className="text-text-muted hover:text-text-main font-medium py-2">Jugar de nuevo</button>
                 </div>
              </div>
