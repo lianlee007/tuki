@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Minus, Plus, ShoppingCart, Clock, Info, Lock } from 'lucide-react';
+import { X, Minus, Plus, ShoppingCart, Clock, Info, Lock, Star } from 'lucide-react';
 import { Platillo } from '../../tipos';
 import { ImagenInteligente } from '../ui';
 
@@ -37,88 +37,82 @@ export const ModalDetallePlatillo: React.FC<Props> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fadeIn" onClick={onClose} />
 
             <div
-                className="relative w-full max-w-4xl bg-bg rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col md:flex-row max-h-[95vh] sm:max-h-[90vh] md:h-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300"
+                className="relative w-full max-w-5xl bg-bg rounded-t-[2rem] sm:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row max-h-[95vh] sm:max-h-[90vh] md:h-auto animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-500 shadow-2xl"
                 style={{
                     backgroundColor: estilos.bg,
                     color: estilos.text,
                     boxShadow: isDark
-                        ? '0 25px 50px -12px rgba(0,0,0,0.9)'
-                        : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    border: isDark ? 'none' : `1px solid ${estilos.border}`,
+                        ? '0 0 0 1px rgba(255,255,255,0.1), 0 40px 80px -20px rgba(0,0,0,0.8)'
+                        : '0 0 0 1px rgba(0,0,0,0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                     backgroundImage: isDark ? 'none' : estilos.backgroundImage
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2 sm:p-2.5 rounded-full bg-black/30 sm:bg-black/20 text-white hover:bg-black/50 backdrop-blur-md transition-colors"
+                    className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-black/20 text-white hover:bg-black/40 backdrop-blur-md transition-all hover:rotate-90 duration-300"
                 >
-                    <X size={20} className="sm:w-6 sm:h-6" />
+                    <X size={24} />
                 </button>
 
                 {/* COLUMNA IMAGEN */}
-                <div className="w-full md:w-1/2 h-56 sm:h-64 md:h-auto relative shrink-0">
+                <div className="w-full md:w-1/2 h-64 sm:h-80 md:h-auto relative shrink-0 group">
                     <ImagenInteligente
                         src={platillo.imagen_url || ''}
                         alt={platillo.nombre}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                     />
-                    {/* Borde decorativo en modo claro */}
-                    {!isDark && <div className="absolute inset-0 border-b-4 border-black/5 pointer-events-none"></div>}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent md:hidden"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 md:opacity-40"></div>
+
                     {platillo.destacado && (
-                        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-yellow-400 text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-lg flex items-center gap-1">
-                            ★ Recomendado
+                        <div className="absolute top-4 left-4 bg-yellow-400 text-black px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 border-2 border-black transform -rotate-2 group-hover:rotate-0 transition-transform">
+                            <Star size={12} fill="black" /> Recomendado
                         </div>
                     )}
                 </div>
 
                 {/* COLUMNA INFO */}
-                <div className="flex-1 p-4 sm:p-6 md:p-10 flex flex-col overflow-y-auto max-h-[calc(95vh-14rem)] sm:max-h-[calc(90vh-16rem)] md:max-h-none">
-                    <div className="mb-auto space-y-4 sm:space-y-6">
-                        {/* Categoría y Nombre - Mejor organizados en móvil */}
+                <div className="flex-1 p-6 sm:p-8 md:p-10 flex flex-col overflow-y-auto max-h-[calc(95vh-16rem)] sm:max-h-[calc(90vh-20rem)] md:max-h-none relative">
+                    {/* Decoración de fondo */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl -z-10 pointer-events-none" style={{ backgroundColor: `${estilos.primary}10` }}></div>
+
+                    <div className="mb-auto space-y-6">
                         <div>
-                            <div className="flex items-center gap-2 mb-1.5 sm:mb-2 opacity-60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                                <span>{platillo.categoria}</span>
+                            <div className="flex items-center gap-2 mb-2 opacity-60 text-xs font-bold uppercase tracking-[0.2em]">
+                                <span style={{ color: estilos.primary }}>{platillo.categoria}</span>
                             </div>
-                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-title leading-tight" style={{ color: estilos.title }}>
+                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-title leading-none tracking-tight mb-2" style={{ color: estilos.title }}>
                                 {platillo.nombre}
                             </h2>
+                            <div className="w-20 h-1.5 rounded-full" style={{ backgroundColor: estilos.primary }}></div>
                         </div>
 
-                        {/* Precio y Tiempo - Mejor layout en móvil */}
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pb-3 sm:pb-0 border-b sm:border-none" style={{ borderColor: estilos.border }}>
-                            <span className="text-xl sm:text-2xl font-bold font-serif" style={{ color: estilos.primary }}>
+                        <div className="flex items-center gap-6">
+                            <span className="text-3xl sm:text-4xl font-bold font-serif italic" style={{ color: estilos.text }}>
                                 ${platillo.precio.toLocaleString()}
                             </span>
                             {platillo.tiempo_preparacion && (
-                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs opacity-60">
-                                    <Clock size={13} className="sm:w-3.5 sm:h-3.5" /> {platillo.tiempo_preparacion} min
+                                <span className="flex items-center gap-2 text-sm font-medium opacity-60 bg-black/5 dark:bg-white/5 px-3 py-1 rounded-full">
+                                    <Clock size={14} /> {platillo.tiempo_preparacion} min
                                 </span>
                             )}
                         </div>
 
-                        {/* Descripción */}
-                        <p className="text-sm sm:text-base md:text-lg opacity-80 leading-relaxed font-light">
+                        <p className="text-base sm:text-lg opacity-80 leading-relaxed font-light">
                             {platillo.descripcion}
                         </p>
 
-                        {/* Ingredientes - Mejor responsive */}
                         {platillo.ingredientes && platillo.ingredientes.length > 0 && (
-                            <div className="p-3 sm:p-4 rounded-xl border border-white/5"
-                                style={{
-                                    backgroundColor: isDark ? estilos.bg : 'rgba(0,0,0,0.05)',
-                                    boxShadow: isDark ? 'inset 2px 2px 5px rgba(0,0,0,0.5), inset -2px -2px 5px rgba(255,255,255,0.05)' : 'none'
-                                }}>
-                                <h4 className="text-[10px] sm:text-xs font-bold uppercase opacity-50 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                                    <Info size={12} className="sm:w-3.5 sm:h-3.5" /> Ingredientes
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-bold uppercase opacity-50 flex items-center gap-2 tracking-wider">
+                                    <Info size={14} /> Ingredientes principales
                                 </h4>
-                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {platillo.ingredientes.map((ing, i) => (
-                                        <span key={i} className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-sm bg-bg border border-white/10 shadow-sm">
+                                        <span key={i} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
                                             {ing}
                                         </span>
                                     ))}
@@ -127,49 +121,52 @@ export const ModalDetallePlatillo: React.FC<Props> = ({
                         )}
                     </div>
 
-                    {/* CONTROLES FOOTER - Mejor organizados para móvil */}
-                    <div className="pt-4 sm:pt-6 border-t border-dashed mt-4 sm:mt-6" style={{ borderColor: estilos.border }}>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                            {/* Selector Cantidad - Mejor tamaño en móvil */}
-                            <div className={`flex items-center justify-center sm:justify-start gap-3 sm:gap-4 rounded-xl p-2 sm:p-1.5 transition-opacity ${!localAbierto ? 'opacity-50 pointer-events-none' : ''}`}
+                    {/* CONTROLES FOOTER */}
+                    <div className="pt-8 mt-8 border-t border-dashed" style={{ borderColor: estilos.border }}>
+                        <div className="flex flex-col sm:flex-row items-stretch gap-4">
+                            {/* Selector Cantidad */}
+                            <div className={`flex items-center justify-between sm:justify-start gap-4 p-2 rounded-2xl border transition-opacity ${!localAbierto ? 'opacity-50 pointer-events-none' : ''}`}
                                 style={{
-                                    backgroundColor: isDark ? estilos.bg : 'rgba(0,0,0,0.05)',
-                                    boxShadow: isDark ? 'inset 3px 3px 6px rgba(0,0,0,0.5), inset -3px -3px 6px rgba(255,255,255,0.05)' : 'none'
+                                    borderColor: estilos.border,
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
                                 }}>
                                 <button
                                     onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 active:scale-95 transition-all"
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 active:scale-95 transition-all"
                                 >
-                                    <Minus size={18} className="sm:w-5 sm:h-5" />
+                                    <Minus size={20} />
                                 </button>
-                                <span className="text-xl sm:text-2xl font-bold w-8 sm:w-10 text-center">{cantidad}</span>
+                                <span className="text-2xl font-bold w-12 text-center font-mono">{cantidad}</span>
                                 <button
                                     onClick={() => setCantidad(cantidad + 1)}
-                                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 active:scale-95 transition-all"
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 active:scale-95 transition-all"
                                 >
-                                    <Plus size={18} className="sm:w-5 sm:h-5" />
+                                    <Plus size={20} />
                                 </button>
                             </div>
 
-                            {/* Botón Agregar - Full width en móvil */}
+                            {/* Botón Agregar */}
                             <button
                                 onClick={handleAdd}
                                 disabled={!localAbierto}
-                                className={`w-full sm:flex-1 py-3.5 sm:py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 overflow-hidden relative text-sm sm:text-base
+                                className={`flex-1 py-4 rounded-2xl font-black text-white shadow-xl flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:translate-y-0 active:scale-95 overflow-hidden relative text-lg uppercase tracking-wide
                             ${!localAbierto ? 'grayscale cursor-not-allowed' : ''}
                             ${animating ? 'bg-green-500' : ''}`}
-                                style={{ backgroundColor: !localAbierto ? '#9ca3af' : (animating ? '#22c55e' : estilos.primary) }}
+                                style={{
+                                    backgroundColor: !localAbierto ? '#9ca3af' : (animating ? '#22c55e' : estilos.primary),
+                                    boxShadow: !localAbierto ? 'none' : `0 10px 20px -5px ${estilos.primary}60`
+                                }}
                             >
                                 {!localAbierto ? (
                                     <>
-                                        <Lock size={18} className="sm:w-5 sm:h-5" />
+                                        <Lock size={20} />
                                         <span>Cerrado</span>
                                     </>
                                 ) : animating ? (
                                     <span className="flex items-center gap-2 animate-in zoom-in">¡Agregado!</span>
                                 ) : (
                                     <>
-                                        <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
+                                        <ShoppingCart size={20} />
                                         <span>Agregar ${(platillo.precio * cantidad).toLocaleString()}</span>
                                     </>
                                 )}

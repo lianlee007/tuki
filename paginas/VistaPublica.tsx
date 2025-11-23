@@ -18,53 +18,38 @@ const VistaPublica = () => {
     const fetchData = async () => {
       if (!slug) return;
       try {
-        // El slug tiene formato: "nombre-restaurante-abc12345"
-        // Extraer el ID del slug (últimos 8 caracteres después del último guión)
-        const partes = slug.split('-');
-        const idCorto = partes[partes.length - 1];
-        
-        // Primero intentar buscar directamente por ID completo si el slug es solo el ID (compatibilidad con URLs antiguas)
-        const { data: restById, error: errorById } = await supabase
+        // El slug tiene formato: "nombre-restaurante" (solo el nombre)
+        // Buscar restaurante por slug del nombre
+        const { data: restaurantes, error: restError } = await supabase
           .from('restaurantes')
-          .select('*')
-          .eq('id', slug)
-          .maybeSingle();
+          .select('*');
         
-        let rest = restById;
+        if (restError) throw new Error('Error al buscar restaurante');
         
-        // Si no se encontró por ID completo, buscar por ID corto al final del slug
-        if (!rest && idCorto && idCorto.length === 8) {
-          const { data: restaurantes, error: restError } = await supabase
+        // Buscar el restaurante cuyo slug del nombre coincida
+        const rest = restaurantes?.find(r => generarSlug(r.nombre) === slug);
+        
+        // Si no se encuentra, intentar buscar por ID (compatibilidad con URLs antiguas)
+        let restaurante = rest;
+        if (!restaurante) {
+          const { data: restById } = await supabase
             .from('restaurantes')
-            .select('*');
-          
-          if (!restError && restaurantes) {
-            // Encontrar el restaurante cuyo ID empiece con el idCorto del slug
-            rest = restaurantes.find(r => r.id.toLowerCase().startsWith(idCorto.toLowerCase()));
-          }
+            .select('*')
+            .eq('id', slug)
+            .maybeSingle();
+          restaurante = restById || null;
         }
         
-        // Si aún no se encontró, intentar buscar por nombre normalizado (compatibilidad con URLs antiguas sin ID)
-        if (!rest) {
-          const { data: restaurantes, error: restError } = await supabase
-            .from('restaurantes')
-            .select('*');
-          
-          if (!restError && restaurantes) {
-            rest = restaurantes.find(r => generarSlug(r.nombre) === slug);
-          }
-        }
-        
-        if (!rest) throw new Error('Restaurante no encontrado');
+        if (!restaurante) throw new Error('Restaurante no encontrado');
 
-        const { data: themeData } = await supabase.from('temas').select('*').eq('restaurante_id', rest.id).maybeSingle();
+        const { data: themeData } = await supabase.from('temas').select('*').eq('restaurante_id', restaurante.id).maybeSingle();
         const theme: Tema = themeData || {
-             id: 'default', restaurante_id: rest.id, color_primario: '#000000', color_secundario: '#333333', color_fondo: '#FFFFFF', color_texto: '#000000', color_texto_titulos: '#000000', fuente_titulos: 'Playfair Display', fuente_cuerpo: 'Inter'
+             id: 'default', restaurante_id: restaurante.id, color_primario: '#000000', color_secundario: '#333333', color_fondo: '#FFFFFF', color_texto: '#000000', color_texto_titulos: '#000000', fuente_titulos: 'Playfair Display', fuente_cuerpo: 'Inter'
         };
 
-        const { data: dishes } = await supabase.from('platillos').select('*').eq('restaurante_id', rest.id).eq('activo', true).order('orden');
+        const { data: dishes } = await supabase.from('platillos').select('*').eq('restaurante_id', restaurante.id).eq('activo', true).order('orden');
 
-        setData({ restaurante: rest, tema: theme, platillos: dishes || [] });
+        setData({ restaurante: restaurante, tema: theme, platillos: dishes || [] });
       } catch (err: any) {
         setError(err.message || 'Error al cargar el restaurante');
       } finally {

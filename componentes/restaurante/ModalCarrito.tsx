@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ShoppingCart, X, Trash2, Plus, Minus, User, MapPin, Phone, ChevronLeft, Edit2, Home, Briefcase, Save, Lock } from 'lucide-react';
+import { ShoppingCart, X, Trash2, Plus, Minus, User, MapPin, Phone, ChevronLeft, Edit2, Home, Briefcase, Save, Lock, ArrowRight } from 'lucide-react';
 import { Platillo } from '../../tipos/modelos';
 import { LogoWhatsApp } from '../ui';
 import { apiWhatsApp } from '../../servicios/misApis';
@@ -289,9 +289,9 @@ export const ModalCarrito: React.FC<Props> = ({
 
   const modalContent = (
     <div className="fixed inset-0 z-[200] flex justify-end isolate">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fadeIn" onClick={onClose} />
 
-      <div className="relative w-full max-w-md h-full flex flex-col animate-slideIn overflow-hidden"
+      <div className="relative w-full max-w-md h-full flex flex-col animate-slideIn overflow-hidden shadow-2xl"
         style={{
           backgroundColor: estilos.bg,
           color: estilos.text,
@@ -299,165 +299,173 @@ export const ModalCarrito: React.FC<Props> = ({
         }}>
 
         {/* HEADER */}
-        <div className="p-4 sm:p-5 border-b flex justify-between items-center shrink-0" style={{ borderColor: estilos.border }}>
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="p-5 sm:p-6 border-b flex justify-between items-center shrink-0" style={{ borderColor: estilos.border }}>
+          <div className="flex items-center gap-3 min-w-0">
             {paso === 'datos' && (
-              <button onClick={() => setPaso('resumen')} className="p-1.5 sm:p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0">
-                <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+              <button onClick={() => setPaso('resumen')} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0">
+                <ChevronLeft size={24} />
               </button>
             )}
             <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold font-title truncate" style={{ color: estilos.title }}>
+              <h2 className="text-xl sm:text-2xl font-black font-title truncate" style={{ color: estilos.title }}>
                 {paso === 'resumen' ? 'Tu Carrito' : 'Datos de Envío'}
               </h2>
-              <p className="text-[10px] sm:text-xs opacity-60 font-medium truncate">{restaurante.nombre}</p>
+              <p className="text-xs opacity-60 font-bold uppercase tracking-wider truncate">{restaurante.nombre}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 sm:p-2 rounded-full hover:bg-red-500/10 hover:text-red-500 transition-colors shrink-0">
-            <X size={20} className="sm:w-6 sm:h-6" />
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-red-500/10 hover:text-red-500 transition-colors shrink-0">
+            <X size={24} />
           </button>
         </div>
 
         {/* BODY */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 relative scrollbar-hide">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 relative scrollbar-hide">
           {paso === 'resumen' ? (
             carrito.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-4">
-                <div className="p-6 rounded-full bg-black/5 dark:bg-white/5"><ShoppingCart size={48} /></div>
-                <p className="font-medium">Tu carrito está vacío.</p>
-                <button onClick={onClose} className="text-sm font-bold text-primary hover:underline">Volver al menú</button>
+              <div className="h-full flex flex-col items-center justify-center opacity-50 space-y-6 animate-fadeIn">
+                <div className="p-8 rounded-full bg-black/5 dark:bg-white/5"><ShoppingCart size={64} strokeWidth={1.5} /></div>
+                <p className="font-medium text-lg">Tu carrito está vacío.</p>
+                <button onClick={onClose} className="text-sm font-bold text-primary hover:underline flex items-center gap-2">
+                  Volver al menú <ArrowRight size={16} />
+                </button>
               </div>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-4">
                 {carrito.map((item) => (
-                  <div key={item.platillo.id} className="flex gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl items-center relative group transition-all"
+                  <div key={item.platillo.id} className="flex gap-4 p-3 rounded-2xl items-center relative group transition-all"
                     style={{
                       backgroundColor: isDark ? estilos.bg : 'rgba(0,0,0,0.05)',
                       boxShadow: isDark ? 'inset 2px 2px 5px rgba(0,0,0,0.5), inset -2px -2px 5px rgba(255,255,255,0.05)' : 'none',
                       border: isDark ? '1px solid rgba(255,255,255,0.05)' : 'none'
                     }}>
-                    <img src={item.platillo.imagen_url || 'https://via.placeholder.com/100'} alt={item.platillo.nombre} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl object-cover shadow-sm shrink-0" />
+                    <img src={item.platillo.imagen_url || 'https://via.placeholder.com/100'} alt={item.platillo.nombre} className="w-20 h-20 rounded-xl object-cover shadow-sm shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-xs sm:text-sm leading-tight mb-1 truncate" style={{ color: estilos.title }}>{item.platillo.nombre}</h4>
-                      <div className="font-bold text-primary text-xs sm:text-sm">${(item.platillo.precio * item.cantidad).toLocaleString()}</div>
+                      <h4 className="font-bold text-sm leading-tight mb-1 truncate" style={{ color: estilos.title }}>{item.platillo.nombre}</h4>
+                      <div className="font-black text-primary text-base">${(item.platillo.precio * item.cantidad).toLocaleString()}</div>
                     </div>
-                    <div className="flex flex-col items-end justify-between h-full gap-1.5 sm:gap-2 shrink-0">
-                      <button onClick={() => onRemove(item.platillo.id)} className="p-1 sm:p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 size={14} className="sm:w-4 sm:h-4" /></button>
-                      <div className="flex items-center gap-1.5 sm:gap-2 bg-bg px-1 py-0.5 sm:py-1 rounded-lg shadow-sm border border-white/5">
-                        <button onClick={() => onUpdate(item.platillo.id, -1)} className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:text-primary"><Minus size={12} className="sm:w-3.5 sm:h-3.5" /></button>
-                        <span className="text-[10px] sm:text-xs font-bold w-3 sm:w-4 text-center">{item.cantidad}</span>
-                        <button onClick={() => onUpdate(item.platillo.id, 1)} className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:text-primary"><Plus size={12} className="sm:w-3.5 sm:h-3.5" /></button>
+                    <div className="flex flex-col items-end justify-between h-full gap-2 shrink-0">
+                      <button onClick={() => onRemove(item.platillo.id)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                      <div className="flex items-center gap-2 bg-bg px-2 py-1 rounded-lg shadow-sm border border-white/5">
+                        <button onClick={() => onUpdate(item.platillo.id, -1)} className="w-6 h-6 flex items-center justify-center hover:text-primary active:scale-90 transition-transform"><Minus size={14} /></button>
+                        <span className="text-sm font-bold w-4 text-center">{item.cantidad}</span>
+                        <button onClick={() => onUpdate(item.platillo.id, 1)} className="w-6 h-6 flex items-center justify-center hover:text-primary active:scale-90 transition-transform"><Plus size={14} /></button>
                       </div>
                     </div>
                   </div>
                 ))}
-                <div className="flex justify-center mt-6">
-                  <button onClick={vaciarCarrito} className="text-xs text-red-400 hover:text-red-500 flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity"><Trash2 size={12} /> Vaciar Carrito</button>
+                <div className="flex justify-center mt-8">
+                  <button onClick={vaciarCarrito} className="text-xs text-red-400 hover:text-red-500 flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity font-bold uppercase tracking-wider">
+                    <Trash2 size={14} /> Vaciar Carrito
+                  </button>
                 </div>
               </div>
             )
           ) : (
-            <div className="space-y-5 sm:space-y-6 animate-slideIn">
+            <div className="space-y-6 animate-slideIn">
 
               {/* DATOS PERSONALES */}
-              <div className="space-y-3 sm:space-y-4">
-                <h3 className="text-xs sm:text-sm font-bold opacity-70 uppercase tracking-wider">Tus Datos</h3>
-                <div className="space-y-2.5 sm:space-y-3">
-                  <div className="flex items-center p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus-within:border-primary/30 transition-colors">
-                    <User size={16} className="sm:w-[18px] sm:h-[18px] mr-2 sm:mr-3 opacity-50 shrink-0" />
-                    <input value={nombre} onChange={handleNombreChange} placeholder="Tu Nombre Completo" maxLength={LIMITES.REST_NOMBRE} className="bg-transparent outline-none w-full text-xs sm:text-sm font-medium placeholder:opacity-50" />
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold opacity-50 uppercase tracking-widest flex items-center gap-2">
+                  <User size={14} /> Tus Datos
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus-within:border-primary/50 transition-all">
+                    <User size={18} className="mr-3 opacity-50 shrink-0" />
+                    <input value={nombre} onChange={handleNombreChange} placeholder="Tu Nombre Completo" maxLength={LIMITES.REST_NOMBRE} className="bg-transparent outline-none w-full text-sm font-medium placeholder:opacity-50" />
                   </div>
-                  <div className="flex items-center p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus-within:border-primary/30 transition-colors">
-                    <Phone size={16} className="sm:w-[18px] sm:h-[18px] mr-2 sm:mr-3 opacity-50 shrink-0" />
-                    <input type="tel" value={telefono} onChange={handleTelefonoChange} placeholder="Número Celular (10 dígitos)" maxLength={10} className="bg-transparent outline-none w-full text-xs sm:text-sm font-medium placeholder:opacity-50" />
+                  <div className="flex items-center p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent focus-within:border-primary/50 transition-all">
+                    <Phone size={18} className="mr-3 opacity-50 shrink-0" />
+                    <input type="tel" value={telefono} onChange={handleTelefonoChange} placeholder="Número Celular (10 dígitos)" maxLength={10} className="bg-transparent outline-none w-full text-sm font-medium placeholder:opacity-50" />
                   </div>
                 </div>
               </div>
 
               {/* SECCIÓN DIRECCIONES */}
-              <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-dashed border-gray-500/20">
+              <div className="space-y-4 pt-6 border-t border-dashed border-gray-500/20">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs sm:text-sm font-bold opacity-70 uppercase tracking-wider">Dirección de Entrega</h3>
+                  <h3 className="text-xs font-bold opacity-50 uppercase tracking-widest flex items-center gap-2">
+                    <MapPin size={14} /> Dirección de Entrega
+                  </h3>
                   {modoDireccion === 'lista' && direccionesGuardadas.length > 0 && (
-                    <button onClick={iniciarNuevaDireccion} className="text-[10px] sm:text-xs text-primary font-bold flex items-center gap-1 hover:underline shrink-0"><Plus size={12} className="sm:w-3.5 sm:h-3.5" /> Nueva</button>
+                    <button onClick={iniciarNuevaDireccion} className="text-xs text-primary font-bold flex items-center gap-1 hover:underline shrink-0"><Plus size={14} /> Nueva</button>
                   )}
                 </div>
 
                 {/* Mensaje de error solo cuando intenta enviar */}
                 {errorEnvio && (
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-red-500/10 border border-red-500/30 animate-fadeIn">
-                    <p className="text-[10px] sm:text-xs font-bold text-red-400 mb-1">Faltan datos por completar:</p>
-                    <p className="text-[10px] sm:text-xs text-red-300">{errorEnvio}</p>
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 animate-fadeIn">
+                    <p className="text-xs font-bold text-red-400 mb-1">Atención:</p>
+                    <p className="text-xs text-red-300">{errorEnvio}</p>
                   </div>
                 )}
 
                 {modoDireccion === 'lista' ? (
-                  <div className="space-y-2.5 sm:space-y-3">
+                  <div className="space-y-3">
                     {direccionesGuardadas.map(dir => (
                       <div
                         key={dir.id}
                         onClick={() => setDireccionSeleccionadaId(dir.id)}
-                        className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl border-2 cursor-pointer transition-all flex items-center gap-2 sm:gap-3 relative group
+                        className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-3 relative group
                                 ${direccionSeleccionadaId === dir.id ? 'border-primary bg-primary/5' : 'border-transparent bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10'}`}
                       >
-                        <div className={`p-1.5 sm:p-2 rounded-full shrink-0 ${direccionSeleccionadaId === dir.id ? 'bg-primary text-white' : 'bg-gray-500/20 text-gray-500'}`}>
-                          {dir.alias === 'Casa' ? <Home size={14} className="sm:w-4 sm:h-4" /> : dir.alias === 'Trabajo' ? <Briefcase size={14} className="sm:w-4 sm:h-4" /> : <MapPin size={14} className="sm:w-4 sm:h-4" />}
+                        <div className={`p-2 rounded-full shrink-0 ${direccionSeleccionadaId === dir.id ? 'bg-primary text-white' : 'bg-gray-500/20 text-gray-500'}`}>
+                          {dir.alias === 'Casa' ? <Home size={16} /> : dir.alias === 'Trabajo' ? <Briefcase size={16} /> : <MapPin size={16} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] sm:text-xs font-bold uppercase opacity-70">{dir.alias}</p>
-                          <p className="text-xs sm:text-sm font-medium truncate">{formatDireccion(dir)}</p>
+                          <p className="text-xs font-bold uppercase opacity-70 mb-0.5">{dir.alias}</p>
+                          <p className="text-sm font-medium truncate">{formatDireccion(dir)}</p>
                         </div>
-                        <div className="flex gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button onClick={(e) => { e.stopPropagation(); editarDireccion(dir); }} className="p-1 sm:p-1.5 hover:bg-gray-500/20 rounded-md text-blue-400"><Edit2 size={12} className="sm:w-3.5 sm:h-3.5" /></button>
-                          <button onClick={(e) => { e.stopPropagation(); eliminarDireccion(dir.id); }} className="p-1 sm:p-1.5 hover:bg-red-500/20 rounded-md text-red-400"><Trash2 size={12} className="sm:w-3.5 sm:h-3.5" /></button>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <button onClick={(e) => { e.stopPropagation(); editarDireccion(dir); }} className="p-1.5 hover:bg-gray-500/20 rounded-lg text-blue-400 transition-colors"><Edit2 size={14} /></button>
+                          <button onClick={(e) => { e.stopPropagation(); eliminarDireccion(dir.id); }} className="p-1.5 hover:bg-red-500/20 rounded-lg text-red-400 transition-colors"><Trash2 size={14} /></button>
                         </div>
                       </div>
                     ))}
                     {direccionesGuardadas.length === 0 && (
-                      <div className="text-center py-3 sm:py-4 text-xs sm:text-sm opacity-60">No tienes direcciones guardadas.</div>
+                      <div className="text-center py-6 text-sm opacity-60 bg-black/5 dark:bg-white/5 rounded-xl border border-dashed border-gray-500/30">No tienes direcciones guardadas.</div>
                     )}
                   </div>
                 ) : (
-                  <div className="bg-black/5 dark:bg-white/5 p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-3 sm:space-y-4 animate-fadeIn">
-                    <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 no-scrollbar">
+                  <div className="bg-black/5 dark:bg-white/5 p-4 rounded-2xl space-y-4 animate-fadeIn border border-white/5">
+                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                       {['Casa', 'Trabajo', 'Pareja', 'Otro'].map(alias => (
                         <button
                           key={alias}
                           onClick={() => setFormDir(prev => ({ ...prev, alias }))}
-                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold border transition-colors shrink-0 ${formDir.alias === alias ? 'bg-primary text-white border-primary' : 'border-gray-500/30 opacity-60 hover:opacity-100'}`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all shrink-0 ${formDir.alias === alias ? 'bg-primary text-white border-primary shadow-md' : 'border-gray-500/30 opacity-60 hover:opacity-100'}`}
                         >
                           {alias}
                         </button>
                       ))}
                     </div>
 
-                    <div className="flex gap-1.5 sm:gap-2 items-center flex-wrap">
+                    <div className="flex gap-2 items-center flex-wrap">
                       <select
                         value={formDir.via}
                         onChange={e => handleFormDirChange('via', e.target.value)}
-                        className="bg-bg p-1.5 sm:p-2 rounded-lg text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30 min-w-[100px]"
+                        className="bg-bg p-2 rounded-lg text-sm outline-none border border-transparent focus:border-primary/50 min-w-[100px]"
                       >
                         {VIAS.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                       <input
-                        placeholder="Num"
+                        placeholder="#"
                         value={formDir.n1}
                         onChange={e => handleFormDirChange('n1', e.target.value)}
-                        className="flex-1 min-w-[50px] max-w-[60px] bg-bg p-1.5 sm:p-2 rounded-lg text-center text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30"
+                        className="flex-1 min-w-[60px] max-w-[70px] bg-bg p-2 rounded-lg text-center text-sm outline-none border border-transparent focus:border-primary/50"
                       />
-                      <span className="font-bold text-base sm:text-lg opacity-50 shrink-0">#</span>
+                      <span className="font-bold text-lg opacity-30 shrink-0">#</span>
                       <input
-                        placeholder="Num"
+                        placeholder="#"
                         value={formDir.n2}
                         onChange={e => handleFormDirChange('n2', e.target.value)}
-                        className="flex-1 min-w-[50px] max-w-[60px] bg-bg p-1.5 sm:p-2 rounded-lg text-center text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30"
+                        className="flex-1 min-w-[60px] max-w-[70px] bg-bg p-2 rounded-lg text-center text-sm outline-none border border-transparent focus:border-primary/50"
                       />
-                      <span className="font-bold text-base sm:text-lg opacity-50 shrink-0">-</span>
+                      <span className="font-bold text-lg opacity-30 shrink-0">-</span>
                       <input
-                        placeholder="Num"
+                        placeholder="#"
                         value={formDir.n3}
                         onChange={e => handleFormDirChange('n3', e.target.value)}
-                        className="flex-1 min-w-[50px] max-w-[60px] bg-bg p-1.5 sm:p-2 rounded-lg text-center text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30"
+                        className="flex-1 min-w-[60px] max-w-[70px] bg-bg p-2 rounded-lg text-center text-sm outline-none border border-transparent focus:border-primary/50"
                       />
                     </div>
                     <div className="relative">
@@ -467,7 +475,7 @@ export const ModalCarrito: React.FC<Props> = ({
                         onChange={e => handleFormDirChange('barrio', e.target.value)}
                         onBlur={handleBarrioBlur}
                         disabled={corrigiendoBarrio}
-                        className="w-full bg-bg p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30 disabled:opacity-50"
+                        className="w-full bg-bg p-3 rounded-lg text-sm outline-none border border-transparent focus:border-primary/50 disabled:opacity-50"
                       />
                       {corrigiendoBarrio && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -480,17 +488,17 @@ export const ModalCarrito: React.FC<Props> = ({
                       value={formDir.complemento}
                       onChange={e => handleFormDirChange('complemento', e.target.value)}
                       maxLength={LIMITES.ADDR_TEXT}
-                      className="w-full bg-bg p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm outline-none border border-transparent focus:border-primary/30"
+                      className="w-full bg-bg p-3 rounded-lg text-sm outline-none border border-transparent focus:border-primary/50"
                     />
 
-                    <div className="flex gap-2 sm:gap-3 pt-1 sm:pt-2">
-                      <button onClick={() => setModoDireccion('lista')} className="flex-1 py-2 text-[10px] sm:text-xs font-bold opacity-60 hover:opacity-100">Cancelar</button>
+                    <div className="flex gap-3 pt-2">
+                      <button onClick={() => setModoDireccion('lista')} className="flex-1 py-2.5 text-xs font-bold opacity-60 hover:opacity-100 transition-opacity">Cancelar</button>
                       <button
                         onClick={guardarDireccion}
                         disabled={!formDir.n1 || !formDir.n2 || !formDir.n3 || !formDir.barrio}
-                        className="flex-1 py-2 bg-primary text-white rounded-lg text-[10px] sm:text-xs font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2"
+                        className="flex-1 py-2.5 bg-primary text-white rounded-lg text-xs font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 transition-all"
                       >
-                        <Save size={12} className="sm:w-3.5 sm:h-3.5" /> Guardar Dirección
+                        <Save size={14} /> Guardar Dirección
                       </button>
                     </div>
                   </div>
@@ -502,10 +510,10 @@ export const ModalCarrito: React.FC<Props> = ({
 
         {/* FOOTER */}
         {carrito.length > 0 && (
-          <div className="p-4 sm:p-5 md:p-6 border-t bg-surface/50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]" style={{ borderColor: estilos.border }}>
-            <div className="flex justify-between items-end mb-4 sm:mb-5 md:mb-6">
-              <span className="text-xs sm:text-sm font-bold opacity-60">Total a Pagar</span>
-              <span className="text-xl sm:text-2xl font-black font-title" style={{ color: estilos.primary }}>${total.toLocaleString()}</span>
+          <div className="p-6 border-t bg-surface/50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-md" style={{ borderColor: estilos.border }}>
+            <div className="flex justify-between items-end mb-6">
+              <span className="text-sm font-bold opacity-60 uppercase tracking-wider">Total a Pagar</span>
+              <span className="text-3xl font-black font-title" style={{ color: estilos.primary }}>${total.toLocaleString()}</span>
             </div>
 
             {paso === 'resumen' ? (
@@ -515,24 +523,26 @@ export const ModalCarrito: React.FC<Props> = ({
                   setErrorEnvio(null); // Limpiar error al cambiar de paso
                 }}
                 disabled={!localAbierto}
-                className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base text-white shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-2 
-                    ${!localAbierto ? 'grayscale cursor-not-allowed opacity-70' : ''}`}
+                className={`w-full py-4 rounded-xl font-black text-base text-white shadow-xl transform active:scale-95 transition-all flex items-center justify-center gap-2 
+                    ${!localAbierto ? 'grayscale cursor-not-allowed opacity-70' : 'hover:translate-y-[-2px]'}`}
                 style={{ backgroundColor: !localAbierto ? '#9ca3af' : estilos.primary }}
               >
-                {localAbierto ? 'Continuar Compra' : 'Restaurante Cerrado'}
+                {localAbierto ? (
+                  <>Continuar Compra <ArrowRight size={20} /></>
+                ) : 'Restaurante Cerrado'}
               </button>
             ) : (
               <button
                 onClick={handleEnviarWhatsApp}
                 disabled={!isFormValid() || !localAbierto}
-                className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base text-white shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-2 
-                    ${(isFormValid() && localAbierto) ? 'hover:brightness-110' : 'opacity-50 cursor-not-allowed grayscale'}`}
+                className={`w-full py-4 rounded-xl font-black text-base text-white shadow-xl transform active:scale-95 transition-all flex items-center justify-center gap-2 
+                    ${(isFormValid() && localAbierto) ? 'hover:brightness-110 hover:translate-y-[-2px]' : 'opacity-50 cursor-not-allowed grayscale'}`}
                 style={{ backgroundColor: !localAbierto ? '#9ca3af' : '#25D366' }}
               >
                 {localAbierto ? (
-                  <><LogoWhatsApp className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" /> Enviar Pedido</>
+                  <><LogoWhatsApp className="w-5 h-5" fill="currentColor" /> Enviar Pedido por WhatsApp</>
                 ) : (
-                  <><Lock size={16} className="sm:w-[18px] sm:h-[18px]" /> Cerrado - No se envían pedidos</>
+                  <><Lock size={18} /> Cerrado - No se envían pedidos</>
                 )}
               </button>
             )}
