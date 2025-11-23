@@ -23,7 +23,7 @@ export const RestauranteSchema = z.object({
     .optional().or(z.literal('')),
     
   email: z.string()
-    .email("Correo electrónico inválido")
+    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Correo electrónico inválido")
     .max(LIMITES.REST_EMAIL, "Email demasiado largo")
     .optional().or(z.literal('')),
     

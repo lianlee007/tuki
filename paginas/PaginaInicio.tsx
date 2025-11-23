@@ -44,7 +44,7 @@ const TITULARES = [
 ];
 
 const FeatureCard = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-  <div className="neumorphic p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group h-full flex flex-col border border-white/5">
+  <div className="neumorphic p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group h-full flex flex-col dark:border dark:border-white/5">
     <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:text-secondary transition-colors neumorphic-inset shadow-inner">{icon}</div>
     <h3 className="text-xl font-bold mb-3 text-text-main font-serif">{title}</h3>
     <p className="text-text-muted leading-relaxed text-sm flex-1 font-medium">{desc}</p>
@@ -76,7 +76,7 @@ export default function PaginaInicio() {
 
   return (
     <div className="min-h-screen bg-bg font-sans text-text-main selection:bg-primary/30 transition-colors duration-300 overflow-x-hidden">
-      <SEO 
+      <SEO
         titulo="SmartFood - Constructor de Menús Digitales con IA"
         descripcion="Crea un sitio web profesional para tu restaurante en minutos. Diseño neumórfico, integración con WhatsApp y descripciones generadas por IA."
       />
@@ -84,31 +84,31 @@ export default function PaginaInicio() {
       {/* NAVBAR SÓLIDO (Metal) */}
       <nav className="fixed top-0 w-full z-50 bg-bg border-b border-white/5 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-          <div className="flex items-center gap-3 font-serif text-2xl font-bold cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+          <div className="flex items-center gap-3 font-serif text-2xl font-bold cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="neumorphic p-2 rounded-lg text-primary group-hover:text-secondary transition-colors">
               <Logo size={24} />
             </div>
             <span className="text-text-main group-hover:text-primary transition-colors">SmartFood</span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-6 text-sm font-bold text-text-muted">
             <div className="flex gap-6 mr-4">
               <a href="#caracteristicas" onClick={(e) => scrollToSection(e, 'caracteristicas')} className="hover:text-primary transition-colors py-2 cursor-pointer">Soluciones</a>
               <a href="#precios" onClick={(e) => scrollToSection(e, 'precios')} className="hover:text-primary transition-colors py-2 cursor-pointer">Precios</a>
               <a href="#ejemplos" onClick={(e) => scrollToSection(e, 'ejemplos')} className="hover:text-primary transition-colors py-2 cursor-pointer">Portafolio</a>
             </div>
-            
+
             <div className="flex items-center gap-4">
-                {/* Botón Acceder (Verde - Secundario) */}
-                <Boton onClick={() => navigate('/auth')} variante="secundario" className="w-32 text-sm">
-                  Acceder
-                </Boton>
-                {/* Botón Empezar (Naranja - Primario) */}
-                <Boton onClick={() => navigate('/auth?mode=register')} variante="primario" className="w-40 text-sm">
-                  Empezar Gratis
-                </Boton>
+              {/* Botón Acceder (Verde - Secundario) */}
+              <Boton onClick={() => navigate('/auth')} variante="secundario" className="w-32 text-sm">
+                Acceder
+              </Boton>
+              {/* Botón Empezar (Naranja - Primario) */}
+              <Boton onClick={() => navigate('/auth?mode=register')} variante="primario" className="w-40 text-sm">
+                Empezar Gratis
+              </Boton>
             </div>
-            
+
             {/* DIVISOR NARANJA */}
             <div className="pl-4 border-l-2 border-primary h-8 flex items-center">
               <ThemeToggle />
@@ -116,17 +116,17 @@ export default function PaginaInicio() {
           </div>
 
           <div className="md:hidden flex items-center gap-4">
-             <ThemeToggle />
-             <button className="p-2 text-text-muted hover:text-primary transition-colors" onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}>{menuMovilAbierto ? <X size={24} /> : <Menu size={24} />}</button>
+            <ThemeToggle />
+            <button className="p-2 text-text-muted hover:text-primary transition-colors" onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}>{menuMovilAbierto ? <X size={24} /> : <Menu size={24} />}</button>
           </div>
         </div>
         {menuMovilAbierto && (
           <div className="md:hidden absolute top-20 left-0 w-full bg-bg border-b border-white/5 shadow-2xl flex flex-col p-6 gap-4 animate-fadeIn z-40">
-             <a href="#caracteristicas" onClick={(e) => scrollToSection(e, 'caracteristicas')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Soluciones</a>
-             <a href="#precios" onClick={(e) => scrollToSection(e, 'precios')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Precios</a>
-             <a href="#ejemplos" onClick={(e) => scrollToSection(e, 'ejemplos')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Portafolio</a>
-             <Boton onClick={() => navigate('/auth')} variante="secundario" className="w-full justify-center gap-2"><LogIn size={18} /> Iniciar Sesión</Boton>
-             <Boton onClick={() => navigate('/auth?mode=register')} variante="primario" className="w-full justify-center">Comenzar Gratis</Boton>
+            <a href="#caracteristicas" onClick={(e) => scrollToSection(e, 'caracteristicas')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Soluciones</a>
+            <a href="#precios" onClick={(e) => scrollToSection(e, 'precios')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Precios</a>
+            <a href="#ejemplos" onClick={(e) => scrollToSection(e, 'ejemplos')} className="p-3 font-bold text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl">Portafolio</a>
+            <Boton onClick={() => navigate('/auth')} variante="secundario" className="w-full justify-center gap-2"><LogIn size={18} /> Iniciar Sesión</Boton>
+            <Boton onClick={() => navigate('/auth?mode=register')} variante="primario" className="w-full justify-center">Comenzar Gratis</Boton>
           </div>
         )}
       </nav>
@@ -136,63 +136,63 @@ export default function PaginaInicio() {
       <section id="caracteristicas" className="py-20 md:py-28 relative border-t border-white/5 bg-surface/30 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full neumorphic-inset text-xs font-bold text-primary mb-6 border border-primary/10">
-                <MousePointerClick size={14} />
-                <span>¿Por qué SmartFood?</span>
-             </div>
-             <h2 className="text-3xl md:text-5xl font-bold font-serif mb-6 text-text-main leading-tight">Innovación que se Siente.<br/>Tecnología que Vende.</h2>
-             <p className="text-text-muted text-lg font-medium">
-                Dejamos atrás los menús aburridos. Creamos una plataforma integral diseñada para aumentar tus ventas y fidelizar clientes.
-             </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full neumorphic-inset text-xs font-bold text-primary mb-6 border border-primary/10">
+              <MousePointerClick size={14} />
+              <span>¿Por qué SmartFood?</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold font-serif mb-6 text-text-main leading-tight">Innovación que se Siente.<br />Tecnología que Vende.</h2>
+            <p className="text-text-muted text-lg font-medium">
+              Dejamos atrás los menús aburridos. Creamos una plataforma integral diseñada para aumentar tus ventas y fidelizar clientes.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Palette size={28} />} 
-              title="Estética Neumórfica" 
-              desc="Diferénciate de la competencia plana. Un diseño visual moderno, con profundidad y tacto que invita a tus clientes a interactuar y pedir más." 
+            <FeatureCard
+              icon={<Palette size={28} />}
+              title="Estética Neumórfica"
+              desc="Diferénciate de la competencia plana. Un diseño visual moderno, con profundidad y tacto que invita a tus clientes a interactuar y pedir más."
             />
-            <FeatureCard 
-              icon={<Sparkles size={28} />} 
-              title="Chef Digital con IA" 
-              desc="¿Bloqueo creativo? Nuestra IA redacta descripciones irresistibles y persuasivas para tus platos en segundos. Vende con palabras." 
+            <FeatureCard
+              icon={<Sparkles size={28} />}
+              title="Chef Digital con IA"
+              desc="¿Bloqueo creativo? Nuestra IA redacta descripciones irresistibles y persuasivas para tus platos en segundos. Vende con palabras."
             />
-            <FeatureCard 
-              icon={<MessageCircle size={28} />} 
-              title="Pedidos vía WhatsApp" 
-              desc="Sin comisiones ocultas. Tus clientes arman el carrito y te envían el pedido directo a tu WhatsApp listo para preparar. Simple y directo." 
+            <FeatureCard
+              icon={<MessageCircle size={28} />}
+              title="Pedidos vía WhatsApp"
+              desc="Sin comisiones ocultas. Tus clientes arman el carrito y te envían el pedido directo a tu WhatsApp listo para preparar. Simple y directo."
             />
-            <FeatureCard 
-              icon={<QrCode size={28} />} 
-              title="QR Inteligente" 
-              desc="Genera códigos QR estilizados que funcionan incluso si pones tu logo en el centro. Acceso instantáneo sin descargar aplicaciones." 
+            <FeatureCard
+              icon={<QrCode size={28} />}
+              title="QR Inteligente"
+              desc="Genera códigos QR estilizados que funcionan incluso si pones tu logo en el centro. Acceso instantáneo sin descargar aplicaciones."
             />
-            <FeatureCard 
-              icon={<RefreshCw size={28} />} 
-              title="Control en Tiempo Real" 
-              desc="¿Se acabó el especial? Oculta platos, cambia precios o actualiza horarios desde tu celular al instante. Tu menú siempre al día." 
+            <FeatureCard
+              icon={<RefreshCw size={28} />}
+              title="Control en Tiempo Real"
+              desc="¿Se acabó el especial? Oculta platos, cambia precios o actualiza horarios desde tu celular al instante. Tu menú siempre al día."
             />
-            <FeatureCard 
-              icon={<Zap size={28} />} 
-              title="Velocidad Extrema" 
-              desc="Optimizado para cargar en milisegundos, incluso con datos móviles. No pierdas clientes esperando a que descargue un PDF pesado." 
+            <FeatureCard
+              icon={<Zap size={28} />}
+              title="Velocidad Extrema"
+              desc="Optimizado para cargar en milisegundos, incluso con datos móviles. No pierdas clientes esperando a que descargue un PDF pesado."
             />
           </div>
         </div>
       </section>
 
       <section className="py-32 bg-bg relative overflow-hidden border-b border-white/5">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-red-500/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-4xl md:text-6xl font-bold text-text-main mb-8 leading-tight font-serif">
-               Tus clientes <span className="text-red-500 decoration-4 underline decoration-wavy decoration-red-500/30">odian</span> descargar PDFs.
-            </h2>
-            <p className="text-xl md:text-2xl text-text-muted leading-relaxed max-w-3xl mx-auto font-medium">
-               Hacer zoom, perder la señal, descargar archivos pesados... es la forma más rápida de perder una venta.
-               <br/><br/>
-               <strong className="text-text-main font-bold">SmartFood</strong> transforma ese archivo estático en una experiencia web fluida, rápida y diseñada para vender.
-            </p>
-         </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-red-500/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-6xl font-bold text-text-main mb-8 leading-tight font-serif">
+            Tus clientes <span className="text-red-500 decoration-4 underline decoration-wavy decoration-red-500/30">odian</span> descargar PDFs.
+          </h2>
+          <p className="text-xl md:text-2xl text-text-muted leading-relaxed max-w-3xl mx-auto font-medium">
+            Hacer zoom, perder la señal, descargar archivos pesados... es la forma más rápida de perder una venta.
+            <br /><br />
+            <strong className="text-text-main font-bold">SmartFood</strong> transforma ese archivo estático en una experiencia web fluida, rápida y diseñada para vender.
+          </p>
+        </div>
       </section>
 
       <SeccionPrecios />

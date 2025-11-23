@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { RefreshCw, Ghost, XCircle } from 'lucide-react';
 import { Restaurante } from '../../tipos';
 import { Boton } from '../ui';
@@ -28,12 +28,13 @@ export const JuegoRuleta: React.FC<Props> = ({ restaurantes, onGanador }) => {
   const [eliminadoActual, setEliminadoActual] = useState<Restaurante | null>(null);
   const [mensajeDespedida, setMensajeDespedida] = useState("");
 
-  const girar = () => {
+  const girar = useCallback(() => {
     if (candidatos.length === 1) {
        onGanador(candidatos[0]);
        return;
     }
     if (girando) return;
+    
     setGirando(true);
     
     const indicePerdedor = Math.floor(Math.random() * candidatos.length);
@@ -42,38 +43,75 @@ export const JuegoRuleta: React.FC<Props> = ({ restaurantes, onGanador }) => {
     const itemCenterAngle = (indicePerdedor * sliceAngle) + (sliceAngle / 2);
     const targetRotationBase = 360 - itemCenterAngle;
     const spins = 360 * 5;
-    const currentMod = rotacion % 360;
-    let distanceToTarget = targetRotationBase - currentMod;
-    if (distanceToTarget < 0) distanceToTarget += 360;
-
-    const nuevaRotacion = rotacion + spins + distanceToTarget;
-    setRotacion(nuevaRotacion);
+    setRotacion(prev => {
+      const currentMod = prev % 360;
+      let distanceToTarget = targetRotationBase - currentMod;
+      if (distanceToTarget < 0) distanceToTarget += 360;
+      return prev + spins + distanceToTarget;
+    });
 
     setTimeout(() => {
       setGirando(false);
       setMensajeDespedida(FRASES_ELIMINACION[Math.floor(Math.random() * FRASES_ELIMINACION.length)]);
       setEliminadoActual(perdedor);
     }, 6000);
-  };
+  }, [candidatos, girando, onGanador]);
 
-  const cerrarModalEliminado = () => {
+  const cerrarModalEliminado = useCallback(() => {
       if (eliminadoActual) {
           const nuevosCandidatos = candidatos.filter(c => c.id !== eliminadoActual.id);
           setCandidatos(nuevosCandidatos);
-          setEliminados([...eliminados, eliminadoActual]);
+          setEliminados(prev => [...prev, eliminadoActual]);
           setEliminadoActual(null);
           
           if (nuevosCandidatos.length === 1) {
              setTimeout(() => onGanador(nuevosCandidatos[0]), 500);
           }
       }
-  };
+  }, [eliminadoActual, candidatos, onGanador]);
 
-  const generarConicGradient = () => `conic-gradient(${candidatos.map((_, i) => {
+  const generarConicGradient = useMemo(() => {
+    return `conic-gradient(${candidatos.map((_, i) => {
       const start = (i / candidatos.length) * 100;
       const end = ((i + 1) / candidatos.length) * 100;
       return `${COLORES_RULETA[i % COLORES_RULETA.length]} ${start}% ${end}%`;
     }).join(', ')})`;
+  }, [candidatos.length]);
+
+  const elementosRuleta = useMemo(() => {
+    return candidatos.map((r, i) => {
+      const rotation = (360 / candidatos.length) * i + (360 / candidatos.length) / 2; 
+      const nombreTruncado = r.nombre.length > 20 ? r.nombre.substring(0, 20) + '..' : r.nombre;
+      return (
+        <div 
+          key={r.id} 
+          className="absolute top-0 left-1/2 w-1 h-1/2 origin-bottom flex flex-col justify-start items-center pt-6 md:pt-10" 
+          style={{ 
+            transform: `translateX(-50%) rotate(${rotation}deg)`,
+            willChange: 'transform',
+            backfaceVisibility: 'hidden'
+          }}
+        >
+          <span 
+            className="text-white font-bold uppercase drop-shadow-md whitespace-nowrap text-xs md:text-base tracking-wide px-2 py-1 bg-black/10 rounded-full backdrop-blur-sm" 
+            style={{ 
+              writingMode: 'vertical-rl', 
+              textOrientation: 'mixed', 
+              maxHeight: '180px',
+              willChange: 'auto'
+            }}
+          >
+            {nombreTruncado}
+          </span>
+        </div>
+      );
+    });
+  }, [candidatos]);
+
+  const porcentajeProgreso = useMemo(() => {
+    const total = candidatos.length + eliminados.length;
+    return total > 0 ? (candidatos.length / total) * 100 : 0;
+  }, [candidatos.length, eliminados.length]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-12 items-center justify-center h-full animate-fadeIn w-full relative">
@@ -82,7 +120,10 @@ export const JuegoRuleta: React.FC<Props> = ({ restaurantes, onGanador }) => {
 
       <div className="relative order-1 lg:order-2 py-10">
         {/* Marcador triangular */}
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-40 filter drop-shadow-xl">
+        <div 
+          className="absolute -top-8 left-1/2 -translate-x-1/2 z-40 filter drop-shadow-xl"
+          style={{ willChange: 'auto', transform: 'translateZ(0)' }}
+        >
            <div className="w-12 h-14 bg-text-main clip-path-triangle flex items-start justify-center pt-1 shadow-xl">
                <div className="w-2 h-2 bg-white rounded-full"></div>
            </div>
@@ -93,20 +134,15 @@ export const JuegoRuleta: React.FC<Props> = ({ restaurantes, onGanador }) => {
             className="w-[300px] h-[300px] md:w-[450px] md:h-[450px] rounded-full overflow-hidden relative shadow-2xl border-4 border-white/10"
             style={{ 
               transform: `rotate(${rotacion}deg)`,
-              transition: girando ? 'transform 6s cubic-bezier(0.15, 0.80, 0.15, 1.0)' : 'none',
-              background: generarConicGradient()
+              transition: girando ? 'transform 6s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+              background: generarConicGradient,
+              willChange: girando ? 'transform' : 'auto',
+              backfaceVisibility: 'hidden',
+              perspective: '1000px',
+              transformStyle: 'preserve-3d'
             }}
           >
-             {candidatos.map((r, i) => {
-                const rotation = (360 / candidatos.length) * i + (360 / candidatos.length) / 2; 
-                return (
-                   <div key={r.id} className="absolute top-0 left-1/2 w-1 h-1/2 origin-bottom flex flex-col justify-start items-center pt-6 md:pt-10" style={{ transform: `translateX(-50%) rotate(${rotation}deg)` }}>
-                      <span className="text-white font-bold uppercase drop-shadow-md whitespace-nowrap text-xs md:text-base tracking-wide px-2 py-1 bg-black/10 rounded-full backdrop-blur-sm" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', maxHeight: '180px' }}>
-                         {r.nombre.length > 20 ? r.nombre.substring(0, 20) + '..' : r.nombre}
-                      </span>
-                   </div>
-                )
-             })}
+             {elementosRuleta}
           </div>
         </div>
         
@@ -132,7 +168,14 @@ export const JuegoRuleta: React.FC<Props> = ({ restaurantes, onGanador }) => {
               <span className="text-2xl font-bold text-primary">{candidatos.length}</span>
             </div>
             <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
-               <div className="bg-primary h-full transition-all duration-500" style={{width: `${(candidatos.length / (candidatos.length + eliminados.length)) * 100}%`}}></div>
+               <div 
+                 className="bg-primary h-full transition-all duration-500" 
+                 style={{
+                   width: `${porcentajeProgreso}%`,
+                   willChange: 'width',
+                   transform: 'translateZ(0)'
+                 }}
+               ></div>
             </div>
          </div>
 

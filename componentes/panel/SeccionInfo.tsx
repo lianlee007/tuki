@@ -7,6 +7,7 @@ import { RestauranteSchema, RestauranteFormValues } from '../../tipos/esquemas';
 import { Tarjeta, Input, Textarea, LogoWhatsApp } from '../ui';
 import { Store, Upload, MapPin, Phone, Mail, Globe, Wand2, MessageCircle, Facebook, Instagram, Clock, CalendarDays, AlertTriangle, SpellCheck, Loader2, Save, CheckCircle2, XCircle, AlertOctagon } from 'lucide-react';
 import { LIMITES } from '../../constantes';
+import { generarContenidoGroq } from '../../lib/servicioGroq';
 
 interface SeccionInfoProps {
     restaurante: Restaurante;
@@ -54,6 +55,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const [estadosGuardado, setEstadosGuardado] = useState<Record<string, 'cargando' | 'exito' | null>>({});
     const [loadingAction, setLoadingAction] = useState<string | null>(null);
     const [imgLoading, setImgLoading] = useState<{ logo: boolean, banner: boolean }>({ logo: false, banner: false });
+    const [corrigiendoCiudad, setCorrigiendoCiudad] = useState(false);
 
     // Parsear dirección inicial
     useEffect(() => {
@@ -78,6 +80,30 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         } catch (error) {
             setEstadosGuardado(prev => ({ ...prev, [campo]: null } as Record<string, 'cargando' | 'exito' | null>));
             mostrarMensaje('error', 'Error al guardar campo');
+        }
+    };
+
+    // Validación estricta de email usando regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    const handleEmailBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const valor = e.target.value.trim();
+        
+        // Si está vacío, no hacer nada
+        if (!valor) {
+            return;
+        }
+        
+        // Validar formato de email
+        if (!emailRegex.test(valor)) {
+            mostrarMensaje('error', 'Por favor ingresa un correo electrónico válido');
+            setEstadosGuardado(prev => ({ ...prev, email: null } as Record<string, 'cargando' | 'exito' | null>));
+            return;
+        }
+        
+        // Solo guardar si es un email válido
+        if (valor !== restaurante.email) {
+            await guardarCampo('email', valor);
         }
     };
 
@@ -117,6 +143,38 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const confirmarDireccion = () => {
         const fullDireccion = watch('direccion');
         if (fullDireccion) guardarCampo('direccion', fullDireccion);
+    };
+
+    // Corrección de ortografía para ciudad usando Groq
+    const corregirOrtografiaCiudad = async (valor: string) => {
+        if (!valor || valor.trim().length < 2) return valor;
+        if (corrigiendoCiudad) return valor;
+        
+        setCorrigiendoCiudad(true);
+        try {
+            const respuesta = await generarContenidoGroq(
+                `Corrige la ortografía de esta ciudad colombiana: "${valor}". Responde SOLO con el nombre de la ciudad corregido, sin explicaciones ni texto adicional. Si el nombre ya está correcto, devuélvelo tal cual.`,
+                "Eres un experto en geografía y ortografía de ciudades colombianas. Corrige solo errores ortográficos, mantén el nombre original si está correcto."
+            );
+            const ciudadCorregida = respuesta.trim().replace(/^["']|["']$/g, '').trim();
+            if (ciudadCorregida && ciudadCorregida.length >= 2) {
+                setValue('ciudad', ciudadCorregida);
+                guardarCampo('ciudad', ciudadCorregida);
+            }
+        } catch (error) {
+            console.error('Error corrigiendo ortografía de ciudad:', error);
+        } finally {
+            setCorrigiendoCiudad(false);
+        }
+    };
+
+    const handleCiudadBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const valor = e.target.value.trim();
+        if (valor && valor !== restaurante.ciudad) {
+            await corregirOrtografiaCiudad(valor);
+        } else if (valor) {
+            guardarCampo('ciudad', valor);
+        }
     };
 
     const toggleDia = (key: keyof typeof restaurante.dias_abierto) => {
@@ -359,13 +417,22 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-2 ml-1">Email <span className="text-red-500">*</span></label>
                                 <Input 
-                                    {...register('email', { onBlur: (e) => guardarCampo('email', e.target.value) })}
+                                    {...register('email', { 
+                                        onBlur: handleEmailBlur,
+                                        validate: (value) => {
+                                            if (!value || value.trim() === '') return true; // Permitir vacío
+                                            return emailRegex.test(value) || 'Correo electrónico inválido';
+                                        }
+                                    })}
                                     type="email"
                                     icon={<Mail/>} 
                                     maxLength={LIMITES.REST_EMAIL}
                                     estadoGuardado={estadosGuardado['email']}
                                     className={errors.email ? "border-red-500/50" : ""}
                                 />
+                                {errors.email && (
+                                    <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>
+                                )}
                             </div>
                         </div>
                         
@@ -386,12 +453,18 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-text-muted mb-2 ml-1">Ciudad <span className="text-red-500">*</span></label>
+                            <label className="block text-sm font-medium text-text-muted mb-2 ml-1 flex items-center gap-2">
+                                <span>Ciudad <span className="text-red-500">*</span></span>
+                                {corrigiendoCiudad && (
+                                    <Loader2 size={14} className="animate-spin text-primary" />
+                                )}
+                            </label>
                             <Input 
-                                {...register('ciudad', { onBlur: (e) => guardarCampo('ciudad', e.target.value) })}
+                                {...register('ciudad', { onBlur: handleCiudadBlur })}
                                 placeholder="Ej. Bogotá"
                                 maxLength={LIMITES.REST_CIUDAD}
                                 estadoGuardado={estadosGuardado['ciudad']}
+                                disabled={corrigiendoCiudad}
                             />
                         </div>
 

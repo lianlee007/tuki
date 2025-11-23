@@ -37,16 +37,16 @@ export default function PaginaPrivacidad() {
         </header>
 
         <div className="space-y-12 text-text-main/90 leading-relaxed text-justify">
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
-             <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
-                <Shield size={24} /> 1. Responsable del Tratamiento
-             </h2>
-             <p className="mb-4">
-                <strong>SmartFood Inc.</strong>, bajo la dirección de Leonardo Cerón, actúa como Responsable del Tratamiento de los datos personales recolectados a través de esta plataforma web, en cumplimiento de la Constitución Política de Colombia, la Ley 1581 de 2012 y sus decretos reglamentarios.
-             </p>
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
+            <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
+              <Shield size={24} /> 1. Responsable del Tratamiento
+            </h2>
+            <p className="mb-4">
+              <strong>SmartFood Inc.</strong>, bajo la dirección de Leonardo Cerón, actúa como Responsable del Tratamiento de los datos personales recolectados a través de esta plataforma web, en cumplimiento de la Constitución Política de Colombia, la Ley 1581 de 2012 y sus decretos reglamentarios.
+            </p>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
               <FileCheck size={24} /> 2. Derechos de los Titulares (ARCO)
             </h2>
@@ -62,7 +62,7 @@ export default function PaginaPrivacidad() {
             </ul>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
               <Database size={24} /> 3. Datos Recolectados y Finalidad
             </h2>
@@ -74,7 +74,7 @@ export default function PaginaPrivacidad() {
             </ul>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
               <Globe size={24} /> 4. Transferencia Internacional
             </h2>
@@ -82,28 +82,28 @@ export default function PaginaPrivacidad() {
               Para la prestación del servicio, utilizamos infraestructura de terceros confiables:
             </p>
             <ul className="list-disc pl-6 mt-2 text-text-muted text-sm">
-                <li><strong>Supabase:</strong> Base de datos y Autenticación (Servidores en EE.UU./UE).</li>
-                <li><strong>Cloudinary:</strong> Almacenamiento de imágenes.</li>
-                <li><strong>Groq/Google Gemini:</strong> Procesamiento de Inteligencia Artificial.</li>
+              <li><strong>Supabase:</strong> Base de datos y Autenticación (Servidores en EE.UU./UE).</li>
+              <li><strong>Cloudinary:</strong> Almacenamiento de imágenes.</li>
+              <li><strong>Groq/Google Gemini:</strong> Procesamiento de Inteligencia Artificial.</li>
             </ul>
             <p className="mt-3">
-                Al aceptar esta política, autoriza la transferencia de sus datos a estos países que cuentan con estándares de seguridad adecuados.
+              Al aceptar esta política, autoriza la transferencia de sus datos a estos países que cuentan con estándares de seguridad adecuados.
             </p>
           </section>
 
-          <section className="neumorphic p-8 md:p-10 border border-white/5">
+          <section className="neumorphic p-8 md:p-10 dark:border dark:border-white/5">
             <h2 className="text-2xl font-bold mb-4 text-secondary">5. Canales de Atención</h2>
             <p>
               Para ejercer sus derechos de Habeas Data, puede escribir al Oficial de Protección de Datos en:
             </p>
-            <p className="mt-2 font-bold text-lg text-text-main">privacidad@smartfood.app</p>
+            <p className="mt-2 font-bold text-lg text-text-main">smartfood@gmail.com</p>
             <p className="text-sm text-text-muted mt-1">Asunto: Solicitud Habeas Data</p>
           </section>
 
           <section className="text-center pt-8 border-t border-white/10">
-             <p className="text-xs text-text-muted">
-                Esta política rige a partir del 15 de noviembre de 2025 y las bases de datos se mantendrán vigentes mientras subsista la relación contractual o el servicio.
-             </p>
+            <p className="text-xs text-text-muted">
+              Esta política rige a partir del 15 de noviembre de 2025 y las bases de datos se mantendrán vigentes mientras subsista la relación contractual o el servicio.
+            </p>
           </section>
         </div>
       </main>
