@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartFood - Restaurant Builder</title>
+    <!-- Favicon: Smart Cloche (Orange Primary #EA580C) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EA580C' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='12' cy='5' r='2.5' fill='%23EA580C' stroke='none'/%3E%3Cpath d='M19 18C19 14.134 15.866 11 12 11C8.13401 11 5 14.134 5 18'/%3E%3Cpath d='M3 21H21'/%3E%3C/svg%3E" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            colors: {
+              bg: 'var(--bg-color)',
+              surface: 'var(--surface-color)',
+              primary: '#EA580C',  /* Naranja Intenso */
+              secondary: '#10B981', /* Verde Esmeralda Vibrante */
+              accent: '#FCA311',   
+              text: {
+                main: 'var(--text-main)',
+                muted: 'var(--text-muted)'
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* --- LIGHT MODE: ACERO FRESADO (Milled Steel) --- */
+        --bg-color: #B8BEC5; 
+        --surface-color: #B8BEC5;
+        --text-main: #0F172A; 
+        --text-muted: #334155; 
+        
+        --shadow-dark: #8A92A0; 
+        --shadow-light: #E2E8F0; 
+        
+        --border-highlight: rgba(255, 255, 255, 0.6);
+        --border-shadow: rgba(0, 0, 0, 0.2);
+      }
+
+      .dark {
+        /* --- DARK MODE: CARBON FIBER --- */
+        --bg-color: #1A1D21; 
+        --surface-color: #1A1D21;
+        --text-main: #F3F4F6; 
+        --text-muted: #9CA3AF; 
+        
+        --shadow-dark: #0D0F11; 
+        --shadow-light: #2A2E35; 
+        
+        --border-highlight: rgba(255, 255, 255, 0.08);
+        --border-shadow: rgba(0, 0, 0, 0.6);
+      }
+      
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      /* --- MOTOR NEUMÓRFICO BASE (El motor dinámico inyectado en React sobreescribe esto para sitios web) --- */
+
+      .neumorphic {
+        background: var(--bg-color);
+        box-shadow: 
+          8px 8px 16px var(--shadow-dark), 
+          -8px -8px 16px var(--shadow-light);
+        border-radius: 1.5rem;
+        border-top: 1px solid var(--border-highlight);
+        border-left: 1px solid var(--border-highlight);
+        border-bottom: 1px solid var(--border-shadow);
+        border-right: 1px solid var(--border-shadow);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .neumorphic-inset {
+        background: var(--bg-color);
+        box-shadow: 
+          inset 4px 4px 8px var(--shadow-dark), 
+          inset -4px -4px 8px var(--shadow-light);
+        border-radius: 1rem;
+        border-bottom: 1px solid var(--border-highlight);
+        border-right: 1px solid var(--border-highlight);
+        border-top: 1px solid var(--border-shadow);
+        border-left: 1px solid var(--border-shadow);
+        transition: all 0.3s ease;
+      }
+      
+      .neumorphic-btn {
+        background: var(--bg-color);
+        box-shadow: 
+          5px 5px 10px var(--shadow-dark), 
+          -5px -5px 10px var(--shadow-light);
+        color: var(--text-main);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 1rem;
+        border-top: 1px solid var(--border-highlight);
+        border-left: 1px solid var(--border-highlight);
+        border-bottom: 1px solid var(--border-shadow);
+        border-right: 1px solid var(--border-shadow);
+        font-weight: 700;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .neumorphic-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light), inset 0 0 2px var(--border-highlight);
+      }
+      
+      .neumorphic-btn:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 
+          inset 3px 3px 6px var(--shadow-dark), 
+          inset -3px -3px 6px var(--shadow-light);
+        border-color: transparent;
+      }
+
+      ::-webkit-scrollbar { width: 10px; }
+      ::-webkit-scrollbar-track { background: var(--bg-color); }
+      ::-webkit-scrollbar-thumb { background-color: var(--shadow-dark); border-radius: 10px; border: 3px solid var(--bg-color); }
+      
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fadeIn { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+      @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+      .animate-slideIn { animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+      @keyframes flipIn { from { transform: rotateY(90deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
+      .animate-flipIn { animation: flipIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.83.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.0",
+    "react-hook-form": "https://esm.sh/react-hook-form@7.51.3?external=react,react-dom",
+    "zod": "https://esm.sh/zod@3.22.4",
+    "@hookform/resolvers/zod": "https://esm.sh/@hookform/resolvers@3.3.4/zod?external=react,react-dom",
+    "react-helmet-async": "https://esm.sh/react-helmet-async@2.0.4?external=react,react-dom",
+    "@hookform/resolvers/": "https://aistudiocdn.com/@hookform/resolvers@^5.2.2/",
+    "framer-motion": "https://esm.sh/framer-motion@11?external=react,react-dom"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
