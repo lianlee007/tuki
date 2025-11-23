@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Restaurante } from '../tipos';
 import { Boton, ThemeToggle, Logo } from '../componentes/ui';
-import { ArrowLeft, Trophy, Dices, Crown, Frown } from 'lucide-react';
+import { ArrowLeft, Trophy, Dices, Crown, Frown, Users } from 'lucide-react';
 import { JuegoRuleta } from '../componentes/dinamica/JuegoRuleta';
 import { JuegoTorneo } from '../componentes/dinamica/JuegoTorneo';
 import { generarSlugUnico } from '../lib/utils';
@@ -60,9 +60,18 @@ export default function PaginaDinamica() {
       <main className="pt-32 pb-20 px-6 max-w-[90rem] mx-auto min-h-[80vh] flex flex-col">
         {modoJuego === 'menu' && (
           <div className="flex-1 flex flex-col items-center justify-center animate-fadeIn">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h1 className="text-4xl md:text-6xl font-bold font-serif mb-4 text-text-main">¿Dónde comemos hoy?</h1>
-              <p className="text-text-muted text-xl">Deja que el destino (y SmartFood) decidan por ti.</p>
+              <p className="text-text-muted text-xl mb-6">Deja que el destino (y SmartFood) decidan por ti.</p>
+
+              {/* Contador de aspirantes */}
+              <div className="inline-flex items-center gap-3 px-6 py-3 neumorphic rounded-2xl border border-primary/20 bg-primary/5">
+                <Users className="text-primary" size={24} />
+                <div className="text-left">
+                  <p className="text-xs text-text-muted uppercase tracking-wider">Restaurantes disponibles</p>
+                  <p className="text-2xl font-bold text-primary">{restaurantes.length}</p>
+                </div>
+              </div>
             </div>
 
             {restaurantes.length < 2 ? (
