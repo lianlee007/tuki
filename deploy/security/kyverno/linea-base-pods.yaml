@@ -1,0 +1,58 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: linea-base-pods-riki
+  annotations:
+    policies.kyverno.io/title: Línea base de seguridad de pods
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Refuerza en admisión las mismas reglas que conftest valida en CI:
+      sin privilegios, sin escalada, rootfs de solo lectura y capacidades
+      retiradas. conftest protege el repositorio; esto protege el clúster.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: exigir-contexto-seguro
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - riki
+      validate:
+        message: >-
+          El pod debe ejecutarse sin privilegios, sin escalada, con rootfs de
+          solo lectura y con todas las capacidades retiradas.
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
+                  privileged: false
+                  capabilities:
+                    drop:
+                      - ALL
+
+    - name: prohibir-hostpath-y-hostnetwork
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - riki
+      validate:
+        message: "No se permite hostNetwork, hostPID, hostIPC ni volúmenes hostPath en riki."
+        pattern:
+          spec:
+            =(hostNetwork): false
+            =(hostPID): false
+            =(hostIPC): false
+            =(volumes):
+              - X(hostPath): "null"

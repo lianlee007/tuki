@@ -1,0 +1,41 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verificar-firmas-riki
+  annotations:
+    policies.kyverno.io/title: Verificar firmas de las imágenes de Riki
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      Solo se admiten pods cuyas imágenes hayan sido firmadas con Cosign keyless
+      por el workflow de CI del repositorio. Cierra el ciclo de SLSA/Sigstore:
+      una imagen construida fuera del pipeline autorizado no arranca, aunque
+      alguien tenga permisos para crear el Deployment.
+spec:
+  validationFailureAction: Enforce
+  # true rompería el dry-run de ArgoCD: las imágenes aún no existen en el
+  # registro cuando Argo renderiza el manifiesto.
+  background: false
+  rules:
+    - name: imagenes-firmadas-por-el-ci
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - riki
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/leonardo007x/leefood*"
+            - "ghcr.io/leonardo007x/riki*"
+          required: true
+          mutateDigest: true
+          verifyDigest: true
+          attestors:
+            - entries:
+                - keyless:
+                    subject: "https://github.com/Leonardo007x/LeeFood/.github/workflows/contenedor.yml@refs/heads/main"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
