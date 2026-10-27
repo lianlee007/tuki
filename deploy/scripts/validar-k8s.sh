@@ -14,6 +14,7 @@ mkdir -p "$OUT"
 
 echo "==> Renderizando overlays con Kustomize"
 kubectl kustomize deploy/k8s/overlays/local > "$OUT/local.yaml"
+kubectl kustomize deploy/k8s/overlays/local-plataforma > "$OUT/local-plataforma.yaml"
 kubectl kustomize deploy/k8s/overlays/production > "$OUT/production.yaml"
 kubectl kustomize deploy/observability > "$OUT/observability.yaml"
 
@@ -22,7 +23,7 @@ docker run --rm -v "$PWD:/work" -w /work \
   ghcr.io/yannh/kubeconform:latest \
   -strict -summary \
   -skip ServiceMonitor,PrometheusRule \
-  "$OUT/local.yaml" "$OUT/production.yaml" "$OUT/observability.yaml"
+  "$OUT/local.yaml" "$OUT/local-plataforma.yaml" "$OUT/production.yaml" "$OUT/observability.yaml"
 
 docker run --rm -v "$PWD:/work" -w /work \
   ghcr.io/yannh/kubeconform:latest \

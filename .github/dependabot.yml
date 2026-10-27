@@ -1,0 +1,57 @@
+version: 2
+
+updates:
+  # Dependencias del frontend.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      produccion:
+        dependency-type: production
+      desarrollo:
+        dependency-type: development
+    labels:
+      - dependencias
+      - seguridad
+
+  # Dependencias del AI Gateway. pip-audit falla el pipeline si aparece una
+  # vulnerabilidad conocida, así que estas actualizaciones llegan antes.
+  - package-ecosystem: pip
+    directory: "/services/ai-gateway"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencias
+      - gateway
+
+  # Las acciones están fijadas por SHA: sin este bloque se quedarían congeladas.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencias
+      - ci
+
+  # Imágenes base de los Dockerfiles.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencias
+      - contenedores
+
+  - package-ecosystem: docker
+    directory: "/services/ai-gateway"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencias
+      - contenedores
