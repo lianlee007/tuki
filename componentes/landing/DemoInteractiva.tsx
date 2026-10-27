@@ -196,7 +196,7 @@ export const DemoInteractiva = () => {
                  
                  {/* Cámara en Bezel Superior (Sin Notch) */}
                  <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#0f0f0f] ring-1 ring-white/10 shadow-sm z-30">
-                     <div className="absolute top-[0.5px] left-[0.5px] w-0.5 h-0.5 bg-blue-900/50 rounded-full opacity-60"></div>
+                     <div className="absolute top-[0.5px] left-[0.5px] w-0.5 h-0.5 bg-white/40 rounded-full opacity-60"></div>
                  </div>
 
                  {/* Panel LCD */}
@@ -216,7 +216,7 @@ export const DemoInteractiva = () => {
                         <div className="flex-1 flex justify-center px-4">
                            <div className="bg-white dark:bg-[#1a1a1a] rounded-[6px] px-3 py-1 text-xs text-center flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full max-w-md text-gray-600 dark:text-gray-400 transition-all ring-1 ring-black/5 dark:ring-white/10 group-hover/url:shadow-md">
                               <Lock size={10} className="text-green-600 dark:text-green-500 fill-current"/>
-                              <span className="truncate select-text selection:bg-blue-100 dark:selection:bg-blue-900">smartfood.app/{urlSlug}</span>
+                              <span className="truncate select-text selection:bg-af-accent/25">riki.app/{urlSlug}</span>
                               <RefreshCw size={10} className="ml-auto opacity-50 hover:opacity-100 cursor-pointer"/>
                            </div>
                         </div>

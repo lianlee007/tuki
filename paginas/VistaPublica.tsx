@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 // @ts-ignore
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Restaurante, Tema, Platillo } from '../tipos';
 import { PlantillaRestaurante } from '../componentes/restaurante/PlantillaRestaurante';
@@ -10,6 +10,8 @@ import { generarSlug } from '../lib/utils';
 
 const VistaPublica = () => {
   const { slug } = useParams();
+  const [parametros] = useSearchParams();
+  const platoId = parametros.get('plato');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<{ restaurante: Restaurante | null; tema: Tema | null; platillos: Platillo[]; }>({ restaurante: null, tema: null, platillos: [] });
@@ -70,7 +72,12 @@ const VistaPublica = () => {
         descripcion={data.restaurante.descripcion || `Descubre el menú de ${data.restaurante.nombre}. Pide en línea.`}
         imagen={data.restaurante.imagen_banner_url}
       />
-      <PlantillaRestaurante restaurante={data.restaurante} tema={data.tema} platillos={data.platillos} />
+      <PlantillaRestaurante
+        restaurante={data.restaurante}
+        tema={data.tema}
+        platillos={data.platillos}
+        platilloInicialId={platoId ?? undefined}
+      />
     </>
   );
 };
