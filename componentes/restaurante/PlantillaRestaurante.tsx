@@ -695,7 +695,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           </div>
 
           <div className="border-t border-af/20 py-6 text-center text-xs text-af-ink-secondary">
-            © {new Date().getFullYear()} {restaurante.nombre}. Creado con Riki.
+            © {new Date().getFullYear()} {restaurante.nombre}. Creado con Tuki.
           </div>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 /**
  * Descripción: Proveedor de contexto para manejar la sesión y el estado de autenticación.
  *
- * Riki tiene dos públicos y la cuenta lo dice: `cliente` es el comensal que
+ * Tuki tiene dos públicos y la cuenta lo dice: `cliente` es el comensal que
  * arma un carrito y pide; `restaurante` es el dueño que administra su menú en
  * el panel. La portada se navega sin cuenta, pero las acciones del comensal
  * (carrito, pedidos) piden una. El rol se lee de `public.users`, no del

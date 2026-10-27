@@ -13,7 +13,7 @@ import { SeccionPrecios } from '../componentes/landing/SeccionPrecios';
 /**
  * Landing de venta: ahora vive en `/para-restaurantes`.
  *
- * Desde el giro social, la portada de Riki es Descubrir; esta página es la que
+ * Desde el giro social, la portada de Tuki es Descubrir; esta página es la que
  * le habla a quien tiene un restaurante. El orden sigue siendo el de una
  * conversación, no el de un índice: qué es (héroe), por qué me conviene
  * (beneficios), cómo se ve lo mío (demostración), quién más lo usa (prueba
@@ -51,7 +51,7 @@ export default function PaginaParaRestaurantes() {
   return (
     <div className="af-landing min-h-screen overflow-x-hidden bg-af-ground font-system text-af-ink">
       <SEO
-        titulo="Riki — La web de tu restaurante, lista hoy"
+        titulo="Tuki — La web de tu restaurante, lista hoy"
         descripcion="Menú digital, código QR para las mesas y pedidos que llegan directo a tu WhatsApp. Sin comisiones y sin saber programar."
       />
 
@@ -66,7 +66,7 @@ export default function PaginaParaRestaurantes() {
               <span className="rounded-xl bg-af-accent p-1.5 text-white sm:p-2">
                 <Logo size={22} />
               </span>
-              <span className="text-lg font-bold tracking-tight text-af-ink sm:text-xl">Riki</span>
+              <span className="text-lg font-bold tracking-tight text-af-ink sm:text-xl">Tuki</span>
             </button>
 
             <div className="hidden items-center gap-8 text-sm font-medium text-af-ink-secondary lg:flex">
@@ -176,7 +176,7 @@ export default function PaginaParaRestaurantes() {
                 <Logo size={20} />
               </span>
               <span>
-                <span className="block font-bold tracking-tight text-af-ink">Riki</span>
+                <span className="block font-bold tracking-tight text-af-ink">Tuki</span>
                 <span className="block text-sm text-af-ink-secondary">
                   Webs para restaurantes, hechas en Colombia.
                 </span>
@@ -207,7 +207,7 @@ export default function PaginaParaRestaurantes() {
           </div>
 
           <p className="mt-12 text-xs text-af-ink-secondary/70">
-            © {new Date().getFullYear()} Riki Inc. Todos los derechos reservados.
+            © {new Date().getFullYear()} Tuki Inc. Todos los derechos reservados.
           </p>
         </Contenedor>
       </footer>
