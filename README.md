@@ -414,6 +414,11 @@ La práctica de diagnóstico está en
 **[docs/laboratorio/fallo-inducido.md](docs/laboratorio/fallo-inducido.md)** y las
 evidencias de clúster en
 **[docs/laboratorio/modulo-2-runtime.md](docs/laboratorio/modulo-2-runtime.md)**.
+
+La propuesta para la capa social (reseñas, guardados, perfiles y seguimiento)
+está en **[docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md)**.
+El sistema de marca —logo modular, versiones, tamaños y reglas— está en
+**[docs/marca/marca-tuki.md](docs/marca/marca-tuki.md)**.
 Para reproducir la demostración:
 
 ```bash

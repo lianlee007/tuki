@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { LogOut, Search, ShoppingBag, X } from 'lucide-react';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
-import { Logo, ThemeToggle } from '../ui';
+import { MarcaTuki, ThemeToggle } from '../ui';
 
 interface BarraDescubrirProps {
   consulta: string;
@@ -56,7 +56,7 @@ const Acciones: React.FC<AccionesProps> = ({
         >
           <ShoppingBag size={18} aria-hidden="true" />
           {cantidadCarrito > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-af-accent px-1 text-[10px] font-bold tabular-nums text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-af-accent-solid px-1 text-[10px] font-bold tabular-nums text-white">
               {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
             </span>
           )}
@@ -129,11 +129,8 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
     <header className="nav-af sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl flex-col gap-2.5 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex items-center gap-3">
-          <Link to="/" className="af-pulsar flex shrink-0 items-center gap-2" aria-label="Tuki, descubrir platos">
-            <span className="rounded-xl bg-af-accent p-1.5 text-white">
-              <Logo size={20} />
-            </span>
-            <span className="text-lg font-bold tracking-tight text-af-ink">Tuki</span>
+          <Link to="/" className="af-pulsar flex shrink-0 items-center" aria-label="Tuki, descubrir platos">
+            <MarcaTuki tamano={20} titulo="" />
           </Link>
 
           <div className="ml-auto sm:hidden">{acciones(true)}</div>

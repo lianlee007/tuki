@@ -13,7 +13,7 @@ interface RobotIAProps {
  *
  * Tres trazos y nada más: una cabeza redondeada, una antena y dos ojos. La
  * antena no termina en un punto cualquiera: termina en la misma chispa de
- * cuatro puntas que lleva la «R» de la marca, así que el asistente se lee como
+ * cuatro puntas que lleva la «T» de la marca, así que el asistente se lee como
  * parte de Tuki y no como un icono genérico de «IA».
  *
  * Todo se pinta con `currentColor` y un solo grosor de trazo, para que herede

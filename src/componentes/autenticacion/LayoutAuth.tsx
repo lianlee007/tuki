@@ -41,7 +41,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
         {/* Panel Izquierdo: Branding e Info */}
         <div className="relative flex flex-col justify-center p-8 md:w-5/12 md:p-12">
           <div className="relative z-10 text-center md:text-left">
-            <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-af-accent text-white md:mx-0">
+            <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-af-accent-solid text-white md:mx-0">
               <Logo size={40} />
             </div>
             <h1 className="mb-4 font-title text-3xl font-bold leading-tight text-af-ink md:text-4xl">

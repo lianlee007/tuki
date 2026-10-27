@@ -19,7 +19,7 @@ export default function PaginaQR() {
         <Contenedor maxAncho="grande">
           <div className="flex justify-between items-center h-16 sm:h-20 md:h-24">
             <Link to="/" className="flex items-center gap-3 font-system text-xl font-bold group">
-              <div className="p-2 rounded-xl bg-af-accent text-white">
+              <div className="p-2 rounded-xl bg-af-accent-solid text-white">
                 <Logo size={22} />
               </div>
               <span className="text-af-ink tracking-tight">Tuki</span>
@@ -63,7 +63,7 @@ export default function PaginaQR() {
 
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <div className="bg-white p-4 rounded-2xl border border-af/20 shadow-xl">
-                    <div className="bg-af-accent text-white p-3 rounded-xl">
+                    <div className="bg-af-accent-solid text-white p-3 rounded-xl">
                       <Logo size={32} />
                     </div>
                   </div>
