@@ -1,0 +1,40 @@
+# Control de versiones y metadatos del editor
+.git
+.gitignore
+.github
+.vercel
+.vscode
+.idea
+.DS_Store
+*.swp
+
+# Dependencias y artefactos locales (se regeneran dentro de la imagen)
+node_modules
+dist
+dist-ssr
+*.log
+
+# Entornos y secretos: las variables se pasan como build-args, nunca dentro
+# del contexto de compilación. Así no quedan en ninguna capa de la imagen.
+.env
+.env.*
+!.env.example
+*.local
+
+# Material que no interviene en el build de la aplicación
+README.md
+DESIGN.md
+PRODUCT.md
+docs
+Skills
+.opencode
+deploy
+scripts
+services
+sql-*.sql
+opencode.json
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.venv
