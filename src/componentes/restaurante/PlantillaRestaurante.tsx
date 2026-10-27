@@ -17,6 +17,8 @@
  *   restaurante se inyecta scopeada al contenedor (y a los modales).
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+// @ts-ignore — react-router-dom no publica tipos en este proyecto.
+import { Link } from 'react-router-dom';
 import { Restaurante, Tema, Platillo, EstiloPlantilla } from '../../tipos';
 import {
   ShoppingCart,
@@ -33,9 +35,11 @@ import {
   PenLine,
   Check,
   X,
+  Star,
 } from 'lucide-react';
-import { ImagenInteligente, LogoWhatsApp, ThemeToggle, BotonTexto, Estrellas } from '../ui';
+import { ImagenInteligente, LogoWhatsApp, ThemeToggle, BotonTexto, Estrellas, Avatar } from '../ui';
 import { useTema } from '../../contexto/ContextoTema';
+import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../../store/storeCarrito';
 import { ModalCarrito } from './ModalCarrito';
 import { ModalDetallePlatillo } from './ModalDetallePlatillo';
@@ -164,6 +168,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   onClosePreview,
 }) => {
   const { tema: temaGlobal } = useTema();
+  const { user } = useAuth();
   const { carrito, modalAbierto, setModalAbierto, agregarItem, eliminarItem, actualizarCantidad, vaciarCarrito } = useStoreCarrito();
   const [categoriaActiva, setCategoriaActiva] = useState<string>('');
   const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -306,6 +311,14 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
 
   const scrollAlMenu = () => {
     document.getElementById('menu-inicio')?.scrollIntoView({
+      behavior: prefiereMenosMovimiento() ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
+
+  /** Las reseñas son la segunda parada de la ficha, después de la carta. */
+  const irAResenas = () => {
+    document.getElementById('resenas')?.scrollIntoView({
       behavior: prefiereMenosMovimiento() ? 'auto' : 'smooth',
       block: 'start',
     });
@@ -469,6 +482,24 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
             </button>
 
             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+              {user && !modoPreview && (
+                <Link
+                  to="/mi-cuenta"
+                  title="Mi cuenta"
+                  aria-label="Mi cuenta"
+                  className="hidden h-10 w-10 items-center justify-center rounded-full af-pulsar sm:flex"
+                >
+                  <Avatar
+                    nombre={
+                      [user.user_metadata?.nombre, user.user_metadata?.apellido]
+                        .filter(Boolean)
+                        .join(' ')
+                        .trim() || user.email || 'Cuenta'
+                    }
+                    tamano={32}
+                  />
+                </Link>
+              )}
               <ThemeToggle conFondo />
               <button
                 type="button"
@@ -493,31 +524,52 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           </div>
         </div>
 
-        {categorias.length > 0 && (
-          <div className="border-t border-af/20">
-            <div className={ANCHO_CONTENIDO}>
-              <div className="af-sin-scrollbar flex items-center gap-2 overflow-x-auto py-2.5">
-                {categorias.map((cat) => {
-                  const activa = categoriaActiva === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => scrollToCategory(cat)}
-                      aria-current={activa ? 'true' : undefined}
-                      className="px-3.5 py-2 text-[13px] font-semibold rounded-full whitespace-nowrap af-pulsar"
-                      style={activa
-                        ? { backgroundColor: c.primario, color: estilos.onPrimary }
-                        : { backgroundColor: paleta.surface, color: paleta.muted }}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
+        {/* La barra de la ficha no es solo el índice de la carta: debajo de
+            las categorías vive el acceso a las reseñas, que es la otra parada
+            de la página. Sin categorías se muestra igual, para que una ficha
+            recién creada no esconda sus opiniones. */}
+        <div className="border-t border-af/20">
+          <div className={ANCHO_CONTENIDO}>
+            <div className="af-sin-scrollbar flex items-center gap-2 overflow-x-auto py-2.5">
+              {categorias.map((cat) => {
+                const activa = categoriaActiva === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => scrollToCategory(cat)}
+                    aria-current={activa ? 'true' : undefined}
+                    className="px-3.5 py-2 text-[13px] font-semibold rounded-full whitespace-nowrap af-pulsar"
+                    style={activa
+                      ? { backgroundColor: c.primario, color: estilos.onPrimary }
+                      : { backgroundColor: paleta.surface, color: paleta.muted }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+
+              {categorias.length > 0 && (
+                <span className="h-5 w-px shrink-0 bg-af/25" aria-hidden="true" />
+              )}
+
+              <button
+                type="button"
+                onClick={irAResenas}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap af-pulsar"
+                style={{ backgroundColor: paleta.surface, color: paleta.muted }}
+              >
+                <Star size={14} />
+                Reseñas
+                {resumenResenas.cantidad > 0 && (
+                  <span className="tabular-nums opacity-70">
+                    ({resumenResenas.cantidad})
+                  </span>
+                )}
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </nav>
 
       {/* PORTADA */}
@@ -842,6 +894,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           onRemove={eliminarItem}
           onUpdate={actualizarCantidad}
           restaurante={{ nombre: restaurante.nombre, whatsapp: restaurante.whatsapp }}
+          restauranteId={restaurante.id}
           estilos={estilos}
           isDark={isDark}
           vaciarCarrito={vaciarCarrito}

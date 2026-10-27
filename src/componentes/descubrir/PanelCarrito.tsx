@@ -4,6 +4,7 @@ import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../../store/storeCarrito';
 import { apiDescubrir } from '../../api/apiDescubrir';
 import { apiWhatsApp } from '../../api/misApis';
+import { apiPedidos } from '../../api/apiPedidos';
 import { formatearPrecio } from '../../lib/utils';
 import { Hoja } from './Hoja';
 
@@ -138,6 +139,25 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
         total,
       }
     );
+
+    // Copia para el historial del comensal y la bandeja del restaurante.
+    if (user && restauranteId) {
+      void apiPedidos
+        .crear({
+          restauranteId,
+          nombre: nombre.trim(),
+          telefono: telefono.trim(),
+          direccion: direccion.trim(),
+          items: carrito.map((item) => ({
+            platillo_id: item.platillo.id,
+            nombre: item.platillo.nombre,
+            cantidad: item.cantidad,
+            precio: item.platillo.precio,
+          })),
+          total,
+        })
+        .catch(() => undefined);
+    }
 
     // Se recuerda el contacto para el próximo pedido; la dirección se guarda
     // estructurada desde el menú del restaurante, no aquí.
