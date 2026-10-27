@@ -4,7 +4,7 @@ import pytest
 from conftest import make_client
 from starlette.requests import Request
 
-from app.auth import AuthError, resolve_identity
+from app.adaptadores.supabase import AuthError, resolve_identity
 
 
 def make_request(*, authorization: str | None = None, ip: str = "198.51.100.7") -> Request:
@@ -71,7 +71,7 @@ def test_supabase_token_authenticated(settings_factory, monkeypatch):
     settings = supabase_settings(settings_factory)
 
     monkeypatch.setattr(
-        "app.auth.verify_supabase_jwt",
+        "app.adaptadores.supabase.verify_supabase_jwt",
         lambda token, cfg: {
             "sub": "usuario-123",
             "role": "authenticated",
@@ -87,7 +87,7 @@ def test_supabase_token_authenticated(settings_factory, monkeypatch):
 def test_supabase_rol_no_permitido(settings_factory, monkeypatch):
     settings = supabase_settings(settings_factory)
     monkeypatch.setattr(
-        "app.auth.verify_supabase_jwt",
+        "app.adaptadores.supabase.verify_supabase_jwt",
         lambda token, cfg: {"sub": "x", "role": "service_role"},
     )
     with pytest.raises(AuthError) as exc:
