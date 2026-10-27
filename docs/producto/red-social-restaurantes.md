@@ -178,9 +178,12 @@ Sigue las reglas de `docs/estructura.md`:
 
 **Pendiente para cerrar la fase A en producción**
 
-- Aplicar `db/sql-resenas.sql` en el proyecto de Supabase. Sin ella, la app
-  funciona con las columnas existentes, pero no hay `usuario_id`, foto ni
-  respuesta del dueño, y las políticas de inserción pueden ser más laxas.
+- Aplicar `db/sql-resenas.sql` en el proyecto de Supabase. **Verificado con el
+  MCP el 2026-10-27:** `valoraciones` tiene RLS activo y **0 políticas**, así
+  que el cliente no puede leer ni insertar reseñas todavía; tampoco existen
+  `usuario_id`, `foto_url` ni `respuesta_dueno`, ni hay buckets de Storage. La
+  UI muestra el estado vacío porque la consulta devuelve 0 filas, no porque no
+  haya código de persistencia.
 - Fotos de reseña: requieren bucket de Storage, límite de tamaño y moderación
   de imagen. Es A2b, no bloquea el resto.
 - Respuesta pública del dueño: la columna `respuesta_dueno` ya está en la
