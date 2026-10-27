@@ -26,7 +26,7 @@ export const generarContenidoIA = async (prompt: string, sistema: string = "Eres
  * - Convierte todo a JPEG para estandarizar
  */
 const comprimirImagen = (file: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // Si no es imagen, pasar directo
     if (!file.type.startsWith('image/')) {
       resolve(file);

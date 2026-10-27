@@ -1,4 +1,3 @@
-
 import React from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
@@ -9,53 +8,54 @@ interface LayoutAuthProps {
   children: React.ReactNode;
   titulo: string;
   subtitulo: string;
+  /** A dónde lleva la flecha: la portada para comensales, la landing para restaurantes. */
+  volverA?: string;
 }
 
-export const LayoutAuth: React.FC<LayoutAuthProps> = ({ children, titulo, subtitulo }) => {
+export const LayoutAuth: React.FC<LayoutAuthProps> = ({
+  children,
+  titulo,
+  subtitulo,
+  volverA = '/para-restaurantes',
+}) => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 pt-24 md:p-8 bg-bg transition-colors duration-300 relative">
-      
+    <div className="relative flex min-h-screen items-center justify-center bg-af-ground p-4 pt-20 md:p-8">
       {/* Botón Regresar Absoluto */}
-      <div className="absolute top-6 left-6 z-50">
-        <Link to="/">
-          <button className="neumorphic p-3 rounded-full text-text-muted hover:text-primary transition-colors flex items-center justify-center">
-             <ArrowLeft size={20} />
-          </button>
+      <div className="absolute left-6 top-6 z-50">
+        <Link
+          to={volverA}
+          aria-label="Volver"
+          className="af-pulsar flex rounded-full bg-af-surface p-3 text-af-ink-secondary transition-colors hover:text-af-ink"
+        >
+          <ArrowLeft size={20} />
         </Link>
       </div>
 
       {/* Toggle Tema Absoluto */}
-      <div className="absolute top-6 right-6 z-50">
+      <div className="absolute right-6 top-6 z-50">
         <ThemeToggle />
       </div>
 
       {/* Contenedor Principal tipo Split en Desktop */}
-      <div className="neumorphic w-full max-w-5xl relative overflow-hidden flex flex-col md:flex-row shadow-2xl border border-white/5 animate-fadeIn">
-        
+      <div className="relative flex w-full max-w-5xl animate-fade-in-af flex-col overflow-hidden rounded-[28px] bg-af-surface/30 md:flex-row">
         {/* Panel Izquierdo: Branding e Info */}
-        <div className="md:w-5/12 p-8 md:p-12 flex flex-col justify-center relative bg-surface/50 md:border-r border-white/5">
-           {/* Decoración de fondo */}
-           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-30">
-              <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
-              <div className="absolute top-1/2 right-0 w-48 h-48 bg-secondary/10 rounded-full blur-3xl"></div>
-           </div>
-
-           <div className="relative z-10 text-center md:text-left">
-              <div className="neumorphic w-20 h-20 rounded-2xl flex items-center justify-center mb-8 text-primary border border-primary/10 shadow-lg shadow-primary/5 mx-auto md:mx-0">
-                <Logo size={40} />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-text-main font-serif mb-4 leading-tight">
-                {titulo}
-              </h1>
-              <p className="text-text-muted text-lg leading-relaxed">
-                {subtitulo}
-              </p>
-           </div>
+        <div className="relative flex flex-col justify-center p-8 md:w-5/12 md:p-12">
+          <div className="relative z-10 text-center md:text-left">
+            <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-af-accent text-white md:mx-0">
+              <Logo size={40} />
+            </div>
+            <h1 className="mb-4 font-title text-3xl font-bold leading-tight text-af-ink md:text-4xl">
+              {titulo}
+            </h1>
+            <p className="text-lg leading-relaxed text-af-ink-secondary">
+              {subtitulo}
+            </p>
+          </div>
         </div>
 
         {/* Panel Derecho: Formulario */}
-        <div className="md:w-7/12 p-8 md:p-12 bg-bg flex flex-col justify-center relative">
-           {children}
+        <div className="relative flex flex-col justify-center bg-af-ground p-8 md:w-7/12 md:p-12">
+          {children}
         </div>
       </div>
     </div>

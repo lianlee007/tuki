@@ -6,6 +6,6 @@ interface Props {
   platillos: Platillo[];
 }
 
-export const SeccionReportes: React.FC<Props> = ({ platillos }) => {
+export const SeccionReportes: React.FC<Props> = ({ platillos: _platillos }) => {
   return null;
 };
