@@ -280,7 +280,7 @@ const PaginaDescubrir = () => {
   return (
     <div className="min-h-screen bg-af-ground text-af-ink">
       <SEO
-        titulo="Riki — Descubre platos de restaurantes"
+        titulo="Tuki — Descubre platos de restaurantes"
         descripcion="Busca platos por cocina, precio y preferencias. Encuentra qué comer y pide directo al restaurante."
       />
 
@@ -445,7 +445,7 @@ const PaginaDescubrir = () => {
             to="/para-restaurantes"
             className="af-pulsar inline-flex items-center gap-1.5 text-[15px] font-semibold text-af-ink transition-colors hover:text-af-accent-text"
           >
-            Crea tu menú con Riki
+            Crea tu menú con Tuki
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </footer>

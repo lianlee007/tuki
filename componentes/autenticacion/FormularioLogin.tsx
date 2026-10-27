@@ -24,13 +24,13 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
   const formValid = isEmailValid && password.length > 0;
 
   useEffect(() => {
-    // La clave se llamaba `smartfood_email` antes del renombrado a Riki: se lee
+    // La clave se llamaba `smartfood_email` antes del renombrado a Tuki: se lee
     // la antigua para no perder el correo de quien ya lo tenía guardado.
-    const savedEmail = localStorage.getItem('riki_email') || localStorage.getItem('smartfood_email');
+    const savedEmail = localStorage.getItem('tuki_email') || localStorage.getItem('smartfood_email');
     if (savedEmail) {
       setEmail(savedEmail);
       setRecuerdame(true);
-      localStorage.setItem('riki_email', savedEmail);
+      localStorage.setItem('tuki_email', savedEmail);
       localStorage.removeItem('smartfood_email');
     }
   }, []);
@@ -44,9 +44,9 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
 
     try {
       if (recuerdame) {
-        localStorage.setItem('riki_email', email);
+        localStorage.setItem('tuki_email', email);
       } else {
-        localStorage.removeItem('riki_email');
+        localStorage.removeItem('tuki_email');
       }
 
       const { error } = await supabase.auth.signInWithPassword({ email, password });

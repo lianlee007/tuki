@@ -21,7 +21,7 @@ export default function PaginaEntrar() {
   return (
     <>
       <SEO
-        titulo="Entra a pedir | Riki"
+        titulo="Entra a pedir | Tuki"
         descripcion="Entra a tu cuenta de comensal para guardar tu carrito y pedir a los restaurantes de Popayán."
       />
       <LayoutAuth
@@ -30,7 +30,7 @@ export default function PaginaEntrar() {
         subtitulo={
           isLogin
             ? 'Tu carrito, tus pedidos y tus restaurantes de siempre, en un solo lugar.'
-            : 'Solo necesitas un correo. Explorar y pedir en Riki no tiene costo.'
+            : 'Solo necesitas un correo. Explorar y pedir en Tuki no tiene costo.'
         }
       >
         <div>
@@ -50,7 +50,7 @@ export default function PaginaEntrar() {
               to="/para-restaurantes"
               className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
             >
-              Publica tu menú en Riki
+              Publica tu menú en Tuki
             </Link>
           </p>
         </div>

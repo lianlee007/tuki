@@ -38,7 +38,7 @@ export const SeccionPasos: React.FC = () => (
             Publicar tu menú es lo más fácil del día
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
-            Si sabes usar WhatsApp, sabes usar Riki. No hay nada que instalar ni que
+            Si sabes usar WhatsApp, sabes usar Tuki. No hay nada que instalar ni que
             programar.
           </p>
         </div>

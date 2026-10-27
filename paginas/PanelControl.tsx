@@ -93,10 +93,10 @@ export default function PanelControl() {
    * plegarla cada vez que entra.
    */
   const [barraContraida, setBarraContraida] = useState<boolean>(() => {
-    try { return localStorage.getItem('riki_barra_contraida') === '1'; } catch { return false; }
+    try { return localStorage.getItem('tuki_barra_contraida') === '1'; } catch { return false; }
   });
   useEffect(() => {
-    try { localStorage.setItem('riki_barra_contraida', barraContraida ? '1' : '0'); } catch { /* sin almacenamiento */ }
+    try { localStorage.setItem('tuki_barra_contraida', barraContraida ? '1' : '0'); } catch { /* sin almacenamiento */ }
   }, [barraContraida]);
 
   const handleLogout = async () => {
