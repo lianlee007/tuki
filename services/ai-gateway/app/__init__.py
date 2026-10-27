@@ -1,1 +1,1 @@
-"""AI Gateway de Riki."""
+"""AI Gateway de Tuki."""

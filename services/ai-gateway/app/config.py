@@ -23,7 +23,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    app_name: str = "riki-ai-gateway"
+    app_name: str = "tuki-ai-gateway"
     version: str = "1.0.0"
     environment: str = "development"
     log_level: str = "INFO"
@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     # --- Observabilidad / CORS --------------------------------------------
     cors_origins: str = ""
     otel_enabled: bool = False
-    otel_service_name: str = "riki-ai-gateway"
+    otel_service_name: str = "tuki-ai-gateway"
     otel_endpoint: str = ""
 
     @field_validator("groq_base_url", "supabase_url")
