@@ -97,3 +97,43 @@ comment on column public.pedidos.usuario_id is
   'Cuenta que hizo el pedido. Se rellena con auth.uid() al insertar.';
 comment on column public.pedidos.items is
   'Arreglo JSON con { platillo_id, nombre, cantidad, precio, nota }.';
+
+-- --- 3. Integridad referencial que faltaba ----------------------------------
+-- `valoraciones` y `pedidos` guardaban un `restaurante_id` sin clave foránea.
+-- Eso permitía reseñas de locales inexistentes y, además, PostgREST no podía
+-- resolver las consultas anidadas (`restaurantes ( nombre )`) de «Mi cuenta».
+
+alter table public.valoraciones
+  add constraint valoraciones_restaurante_fk
+  foreign key (restaurante_id) references public.restaurantes (id) on delete cascade;
+
+alter table public.valoraciones
+  add constraint valoraciones_platillo_fk
+  foreign key (platillo_id) references public.platillos (id) on delete set null;
+
+alter table public.pedidos
+  add constraint pedidos_restaurante_fk
+  foreign key (restaurante_id) references public.restaurantes (id) on delete cascade;
+
+-- --- 4. Cuentas de demostración (reparación) --------------------------------
+-- Iniciar sesión con correo y contraseña necesita una fila en
+-- `auth.identities` por cuenta. Si las cuentas de
+-- `db/sql-restaurantes-popayan.sql` existen pero el panel rechaza la clave,
+-- esto repone la identidad que falte sin tocar la contraseña ni el perfil.
+
+insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select u.id::text, u.id,
+       jsonb_build_object('sub', u.id::text, 'email', u.email),
+       'email', now(), now(), now()
+from auth.users u
+where u.id in (
+  'a1000001-0000-4000-8000-000000000001',
+  'a1000002-0000-4000-8000-000000000002',
+  'a1000003-0000-4000-8000-000000000003',
+  'a1000004-0000-4000-8000-000000000004',
+  'a1000005-0000-4000-8000-000000000005'
+)
+  and not exists (
+    select 1 from auth.identities i
+    where i.user_id = u.id and i.provider = 'email'
+  );

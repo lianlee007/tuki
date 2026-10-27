@@ -221,10 +221,20 @@ Sigue las reglas de `docs/estructura.md`:
   usuario, restricción de estados y tres políticas RLS (alta del comensal,
   lectura del comensal o del dueño, edición solo del dueño). La política
   `valoraciones_borrado_propio` deja al autor borrar su propia reseña.
+- Migración `resenas_pedidos_fk` aplicada el 2026-10-27: claves foráneas de
+  `valoraciones` y `pedidos` hacia `restaurantes` (y de `valoraciones` hacia
+  `platillos`). Sin ellas PostgREST no resolvía la consulta anidada que usa
+  «Mi cuenta» para mostrar el nombre del restaurante.
 - Verificado en una transacción con `set local role` y rollback: el comensal
   ve su pedido, otro comensal no, el dueño lo ve y lo actualiza, y el comensal
   no puede editar. También se comprobó que el autor borra su reseña y que otro
   usuario no puede borrarla. La tabla quedó sin filas de prueba.
+- Prueba de extremo a extremo en la SPA: un comensal escribió una reseña con
+  foto desde la ficha (subida real a Cloudinary), el dueño la publicó y la
+  respondió en el panel, la ficha mostró promedio, distribución 5→1, foto y
+  respuesta, y el comensal borró su reseña desde «Mi cuenta». El pedido de
+  prueba se guardó, apareció en «Mis pedidos» y en la bandeja del panel, y el
+  dueño lo pasó a *confirmado*. Las filas de prueba se borraron al terminar.
 - El correo y el teléfono de `pedidos` no se pueden leer con la clave anónima.
 
 **Pendiente**
