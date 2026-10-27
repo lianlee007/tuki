@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: riki-ai-gateway
+  labels:
+    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/part-of: riki
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - riki
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: riki-ai-gateway
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
