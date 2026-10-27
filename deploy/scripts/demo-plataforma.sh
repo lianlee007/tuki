@@ -4,7 +4,7 @@
 #
 # Instala en un clúster de laboratorio lo que el overlay no puede traer:
 # metrics-server (para el HPA), ingress-nginx (para el Ingress) y ArgoCD
-# (para GitOps). Después despliega Riki y verifica cada pieza.
+# (para GitOps). Después despliega Tuki y verifica cada pieza.
 #
 # Uso:
 #   bash deploy/scripts/demo-plataforma.sh plataforma   # prerequisitos
@@ -15,13 +15,13 @@
 #
 # Variables:
 #   KUBE_CONTEXT   contexto de kubectl (por defecto docker-desktop)
-#   RIKI_TAG       tag local de las imágenes (por defecto local-0.3.0)
+#   TUKI_TAG       tag local de las imágenes (por defecto local-0.3.0)
 # =============================================================================
 set -euo pipefail
 
 CONTEXT="${KUBE_CONTEXT:-docker-desktop}"
-TAG="${RIKI_TAG:-local-0.3.0}"
-NS="riki"
+TAG="${TUKI_TAG:-local-0.3.0}"
+NS="tuki"
 ARGO_NS="argocd"
 
 kube() { kubectl --context "${CONTEXT}" "$@"; }
@@ -50,22 +50,22 @@ instalar_plataforma() {
 
 construir_imagenes() {
   echo "== Imágenes locales =="
-  docker build -t "riki:${TAG}" .
-  docker build -t "riki-ai-gateway:${TAG}" services/ai-gateway
+  docker build -t "tuki:${TAG}" .
+  docker build -t "tuki-ai-gateway:${TAG}" services/ai-gateway
 
   if kube config current-context | grep -q '^kind-'; then
     local cluster
     cluster="$(kube config current-context | sed 's/^kind-//')"
-    kind load docker-image "riki:${TAG}" --name "${cluster}"
-    kind load docker-image "riki-ai-gateway:${TAG}" --name "${cluster}"
+    kind load docker-image "tuki:${TAG}" --name "${cluster}"
+    kind load docker-image "tuki-ai-gateway:${TAG}" --name "${cluster}"
   fi
 }
 
 desplegar_app() {
   echo "== Overlay local con plataforma =="
   kube apply -k deploy/k8s/overlays/local-plataforma
-  kube -n "${NS}" rollout status deployment/riki --timeout=180s
-  kube -n "${NS}" rollout status deployment/riki-ai-gateway --timeout=180s
+  kube -n "${NS}" rollout status deployment/tuki --timeout=180s
+  kube -n "${NS}" rollout status deployment/tuki-ai-gateway --timeout=180s
   kube -n "${NS}" get pods,svc,ingress,hpa
 }
 
@@ -76,7 +76,7 @@ verificar() {
   echo "== Ingress =="
   kube -n "${NS}" get ingress
   local ip
-  ip="$(kube -n "${NS}" get ingress riki -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)"
+  ip="$(kube -n "${NS}" get ingress tuki -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)"
   echo "Dirección del Ingress: ${ip:-pendiente de controlador}"
   if [ -n "${ip}" ]; then
     curl -fsS -o /dev/null -w 'GET / -> HTTP %{http_code}\n' "http://${ip}/" || true
@@ -85,7 +85,7 @@ verificar() {
 
   echo "== HPA =="
   kube -n "${NS}" get hpa
-  kube -n "${NS}" describe hpa riki | sed -n '/Metrics/,$p' || true
+  kube -n "${NS}" describe hpa tuki | sed -n '/Metrics/,$p' || true
 
   echo "== ArgoCD =="
   kube -n "${ARGO_NS}" get applications || echo "Sin Applications: aplica deploy/argocd/application-local.yaml"
@@ -93,26 +93,26 @@ verificar() {
 
 drift() {
   echo "== Deriva controlada =="
-  if ! kube -n "${ARGO_NS}" get application riki-local >/dev/null 2>&1; then
-    echo "Falta la Application riki-local. Aplica primero deploy/argocd/application-local.yaml"
+  if ! kube -n "${ARGO_NS}" get application tuki-local >/dev/null 2>&1; then
+    echo "Falta la Application tuki-local. Aplica primero deploy/argocd/application-local.yaml"
     exit 1
   fi
   echo "Se cambian las réplicas a mano (fuera de Git)..."
-  kube -n "${NS}" scale deployment/riki --replicas=3
+  kube -n "${NS}" scale deployment/tuki --replicas=3
   sleep 5
-  kube -n "${ARGO_NS}" get application riki-local -o jsonpath='{.status.sync.status}{"\n"}'
+  kube -n "${ARGO_NS}" get application tuki-local -o jsonpath='{.status.sync.status}{"\n"}'
   echo "Con selfHeal activo, ArgoCD vuelve al estado declarado en Git."
   sleep 30
-  kube -n "${NS}" get deployment riki -o jsonpath='réplicas actuales: {.spec.replicas}{"\n"}'
+  kube -n "${NS}" get deployment tuki -o jsonpath='réplicas actuales: {.spec.replicas}{"\n"}'
 }
 
 rollback() {
   echo "== Rollback de la aplicación =="
-  kube -n "${NS}" rollout history deployment/riki
-  kube -n "${NS}" rollout undo deployment/riki
-  kube -n "${NS}" rollout status deployment/riki --timeout=120s
+  kube -n "${NS}" rollout history deployment/tuki
+  kube -n "${NS}" rollout undo deployment/tuki
+  kube -n "${NS}" rollout status deployment/tuki --timeout=120s
   echo "== Rollback de ArgoCD =="
-  kube -n "${ARGO_NS}" get application riki-local -o jsonpath='{.status.sync.revision}{"\n"}' || true
+  kube -n "${ARGO_NS}" get application tuki-local -o jsonpath='{.status.sync.revision}{"\n"}' || true
 }
 
 case "${1:-}" in

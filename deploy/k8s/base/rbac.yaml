@@ -1,11 +1,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: riki-lectura
+  name: tuki-lectura
   labels:
-    app.kubernetes.io/name: riki
+    app.kubernetes.io/name: tuki
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 rules:
   # Un integrante del equipo necesita diagnosticar, no mutar: el estado deseado
   # vive en Git y lo aplica ArgoCD. Este rol permite `kubectl get/describe/logs`
@@ -29,18 +29,18 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: riki-lectura
+  name: tuki-lectura
   labels:
-    app.kubernetes.io/name: riki
+    app.kubernetes.io/name: tuki
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 subjects:
   # Grupo de laboratorio. En producción se sustituye por el grupo del proveedor
   # de identidad institucional (OIDC) y se gestiona fuera del repositorio.
   - kind: Group
-    name: riki-desarrolladores
+    name: tuki-desarrolladores
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: riki-lectura
+  name: tuki-lectura

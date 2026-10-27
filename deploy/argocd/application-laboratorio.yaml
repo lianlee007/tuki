@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: riki-laboratorio
+  name: tuki-laboratorio
   namespace: argocd
   labels:
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
     environment: laboratorio
 spec:
   project: default
@@ -20,7 +20,7 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: riki
+    namespace: tuki
 
   syncPolicy:
     automated:

@@ -1,9 +1,9 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: verificar-firmas-riki
+  name: verificar-firmas-tuki
   annotations:
-    policies.kyverno.io/title: Verificar firmas de las imágenes de Riki
+    policies.kyverno.io/title: Verificar firmas de las imágenes de Tuki
     policies.kyverno.io/category: Supply Chain Security
     policies.kyverno.io/severity: high
     policies.kyverno.io/description: >-
@@ -24,18 +24,17 @@ spec:
               kinds:
                 - Pod
               namespaces:
-                - riki
+                - tuki
       verifyImages:
         - imageReferences:
-            - "ghcr.io/leonardo007x/leefood*"
-            - "ghcr.io/leonardo007x/riki*"
+            - "ghcr.io/lianlee007/tuki*"
           required: true
           mutateDigest: true
           verifyDigest: true
           attestors:
             - entries:
                 - keyless:
-                    subject: "https://github.com/Leonardo007x/LeeFood/.github/workflows/contenedor.yml@refs/heads/main"
+                    subject: "https://github.com/lianlee007/tuki/.github/workflows/contenedor.yml@refs/heads/main"
                     issuer: "https://token.actions.githubusercontent.com"
                     rekor:
                       url: https://rekor.sigstore.dev
