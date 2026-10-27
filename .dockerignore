@@ -31,6 +31,7 @@ Skills
 deploy
 scripts
 services
+db/
 sql-*.sql
 opencode.json
 **/__pycache__

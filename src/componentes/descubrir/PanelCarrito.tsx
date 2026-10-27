@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../../store/storeCarrito';
-import { apiDescubrir } from '../../servicios/apiDescubrir';
-import { apiWhatsApp } from '../../servicios/misApis';
+import { apiDescubrir } from '../../api/apiDescubrir';
+import { apiWhatsApp } from '../../api/misApis';
 import { formatearPrecio } from '../../lib/utils';
 import { Hoja } from './Hoja';
 

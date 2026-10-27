@@ -35,7 +35,7 @@ import { useTema } from '../../contexto/ContextoTema';
 import { useStoreCarrito } from '../../store/storeCarrito';
 import { ModalCarrito } from './ModalCarrito';
 import { ModalDetallePlatillo } from './ModalDetallePlatillo';
-import { apiSaludo, apiHorarios } from '../../servicios/misApis';
+import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
 
 // Estructuras del menú. Todas comparten `PlantillaMenuProps`, así que el menú

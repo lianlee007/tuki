@@ -230,7 +230,7 @@ gateway no los añade por diseño; la responsabilidad de no incluirlos en el
 | Control | Implementación | Evidencia |
 | --- | --- | --- |
 | Autenticación de usuarios | Supabase Auth + JWT | `services/ai-gateway/app/auth.py` |
-| Autorización multi-tenant | RLS de Supabase | `sql-descubrir.sql` y políticas del proyecto |
+| Autorización multi-tenant | RLS de Supabase | `db/sql-descubrir.sql` y políticas del proyecto |
 | Secreto de IA en servidor | Gateway con `GROQ_API_KEY` en runtime | `services/ai-gateway/app/config.py`, `ai-gateway-secret.example.yaml` |
 | Cuotas | Token bucket por identidad | `services/ai-gateway/app/rate_limit.py` |
 | Validación de entrada | Pydantic + límites | `services/ai-gateway/app/schemas.py`, Nginx |

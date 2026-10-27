@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Restaurante } from '../../tipos';
 import { Boton, Input, LogoWhatsApp } from '../ui';
 import { Copy, Check, Download, Printer, ExternalLink, Link2 } from 'lucide-react';
-import { apiQR } from '../../servicios/misApis';
+import { apiQR } from '../../api/misApis';
 import { generarSlugUnico } from '../../lib/utils';
 
 /* -------------------------------------------------------------------------

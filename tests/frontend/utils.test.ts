@@ -4,7 +4,7 @@ import {
   generarSlug,
   generarSlugUnico,
   normalizarTexto,
-} from '../../lib/utils';
+} from '../../src/lib/utils';
 
 describe('generarSlug', () => {
   it('quita acentos y pasa a minúsculas', () => {

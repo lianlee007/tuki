@@ -243,32 +243,42 @@ IA en local usa `pnpm dev` o el stack de Compose.
 
 ```
 tuki/
-├── componentes/           # Componentes React organizados por funcionalidad
-│   ├── autenticacion/    # Formularios de login y registro
-│   ├── dinamica/         # Juegos y elementos interactivos
-│   ├── landing/          # Componentes de la página de inicio
-│   ├── panel/            # Componentes del panel de control
-│   ├── restaurante/      # Plantillas y componentes de vista pública
-│   ├── rutas/            # Componentes de protección de rutas
-│   └── sistema-diseno/   # Componentes base del sistema de diseño
-├── contexto/             # Contextos de React (Autenticación, Tema)
-├── hooks/                # Custom hooks personalizados
-├── lib/                  # Utilidades y servicios (Supabase, Groq, Cloudinary)
-├── paginas/              # Componentes de páginas principales
-├── servicios/            # Servicios de API y lógica de negocio
-├── store/                # Estado global con Zustand
-├── tipos/                # Definiciones de TypeScript
-├── App.tsx               # Componente raíz y configuración de rutas
-├── constantes.ts         # Constantes y configuración global
-├── index.tsx             # Punto de entrada de la aplicación
-├── vite.config.ts        # Configuración de Vite
-├── Dockerfile            # Imagen de la SPA (Node → Nginx)
-├── docker-compose.yml    # Stack local web + AI Gateway
-├── services/ai-gateway/  # FastAPI: auth, cuotas, Groq y métricas
-├── deploy/               # K8s, ArgoCD, observabilidad, políticas y scripts
-├── docs/                 # ADRs y runbook de operación
-└── package.json          # Dependencias y scripts
+├── src/                      # Todo el código de la SPA (TypeScript/React)
+│   ├── componentes/          # Componentes React por funcionalidad
+│   │   ├── autenticacion/    # Formularios de login y registro
+│   │   ├── dinamica/         # Juegos y elementos interactivos
+│   │   ├── landing/          # Componentes de la página de inicio
+│   │   ├── panel/            # Componentes del panel de control
+│   │   ├── restaurante/      # Plantillas y vista pública
+│   │   ├── rutas/            # Protección de rutas
+│   │   └── sistema-diseno/   # Componentes base del sistema de diseño
+│   ├── paginas/              # Páginas principales (una por ruta)
+│   ├── api/                  # Clientes HTTP del navegador (Supabase, gateway)
+│   ├── contexto/             # Contextos de React (autenticación, tema)
+│   ├── hooks/                # Hooks personalizados
+│   ├── lib/                  # Utilidades puras (color, slug, formato)
+│   ├── store/                # Estado global con Zustand
+│   ├── tipos/                # Tipos de TypeScript
+│   ├── App.tsx               # Componente raíz y rutas
+│   ├── constantes.ts         # Configuración global
+│   └── index.tsx             # Punto de entrada de la SPA
+├── public/                   # Estáticos servidos tal cual
+├── tests/frontend/           # Pruebas de Vitest
+├── db/                       # Scripts SQL aplicados en Supabase
+├── services/ai-gateway/      # FastAPI: auth, cuotas, Groq y métricas
+├── deploy/                   # K8s, ArgoCD, observabilidad y políticas
+├── scripts/                  # Utilidades de desarrollo y verificación
+├── docker/                   # Configuración de Nginx
+├── docs/                     # ADRs, seguridad, arquitectura y runbook
+├── Dockerfile                # Imagen de la SPA (Node → Nginx)
+├── docker-compose.yml        # Stack local web + AI Gateway
+└── package.json              # Dependencias y scripts
 ```
+
+`src/api/` es el **cliente** que corre en el navegador;
+`services/ai-gateway/` es el **servicio** que corre en el servidor. Son cosas
+distintas y por eso ya no comparten nombre. El mapa completo, con las reglas de
+nombres y la justificación de cada carpeta, está en `docs/estructura.md`.
 
 ## 📜 Scripts Disponibles
 
