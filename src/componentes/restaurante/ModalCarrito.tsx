@@ -6,6 +6,7 @@ import {
 import { Platillo } from '../../tipos/modelos';
 import { LogoWhatsApp } from '../ui';
 import { apiWhatsApp } from '../../api/misApis';
+import { apiPedidos } from '../../api/apiPedidos';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { variablesAf } from '../../lib/color';
@@ -18,6 +19,8 @@ interface Props {
   onRemove: (id: string) => void;
   onUpdate: (id: string, delta: number) => void;
   restaurante: { nombre: string; whatsapp: string };
+  /** Necesario para guardar la copia del pedido en Supabase. */
+  restauranteId?: string;
   estilos: EstilosComunes;
   isDark: boolean;
   vaciarCarrito: () => void;
@@ -48,7 +51,7 @@ const claveComensal = (baseKey: string, userId?: string, prefijo = PREFIJO_CLAVE
   userId ? `${prefijo}_${baseKey}_${userId}` : `${prefijo}_${baseKey}`;
 
 export const ModalCarrito: React.FC<Props> = ({
-  carrito, onClose, onRemove, onUpdate, restaurante, estilos, isDark, vaciarCarrito, localAbierto = true,
+  carrito, onClose, onRemove, onUpdate, restaurante, restauranteId, estilos, isDark, vaciarCarrito, localAbierto = true,
   onPedidoEnviado,
 }) => {
   const { user } = useAuth();
@@ -255,6 +258,7 @@ export const ModalCarrito: React.FC<Props> = ({
     }
     const direccionStr = dirSeleccionada ? formatDireccion(dirSeleccionada) : 'Sin dirección';
     const items = carrito.map((item) => ({
+      platillo_id: item.platillo.id,
       nombre: item.platillo.nombre,
       cantidad: item.cantidad,
       precio: item.platillo.precio,
@@ -265,6 +269,23 @@ export const ModalCarrito: React.FC<Props> = ({
       { items, total },
     );
     window.open(resultadoAPI.url, '_blank');
+
+    // Copia del pedido para el historial. WhatsApp ya se abrió: si esto falla
+    // (sin sesión, sin red) el pedido sigue su curso y el comensal no ve un
+    // error por una función secundaria.
+    if (user && restauranteId) {
+      void apiPedidos
+        .crear({
+          restauranteId,
+          nombre,
+          telefono,
+          direccion: direccionStr,
+          items,
+          total,
+        })
+        .catch(() => undefined);
+    }
+
     onPedidoEnviado?.(carrito[0]?.platillo.id);
     onClose();
   };
