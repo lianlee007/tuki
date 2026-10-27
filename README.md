@@ -1,449 +1,460 @@
-<div align="center">
-  <h1>🍽️ Tuki</h1>
-  <!-- v0.0.1 -->
-  <p><strong>Constructor de sitios web para restaurantes con IA</strong></p>
-  <p>Diseña, gestiona y escala. La solución definitiva para restauradores que buscan elegancia visual y eficiencia operativa.</p>
-  
-  [![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)](https://react.dev/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-  [![Vite](https://img.shields.io/badge/Vite-6.3-646CFF?logo=vite)](https://vitejs.dev/)
-  [![Supabase](https://img.shields.io/badge/Supabase-2.83-3ECF8E?logo=supabase)](https://supabase.com/)
-</div>
+# Tuki
+
+Constructor de sitios web para restaurantes con inteligencia artificial.
+
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-2.83-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-AI%20Gateway-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+
+Tuki permite que un restaurante publique su menú digital, reciba pedidos por
+WhatsApp y administre su operación desde un panel, sin conocimientos técnicos.
+Sobre la misma base conviven dos capas: **Descubrir**, el buscador de platos
+para comensales, y el **panel del dueño**, donde se edita la carta, el diseño,
+los pedidos y las reseñas.
+
+El proyecto es además el trabajo integrador del diplomado **CloudForge AI 5.0**,
+acotado a los módulos 1–3: fundamentos cloud native, Kubernetes/GitOps/Platform
+Engineering y DevSecOps.
 
 ---
 
-## 📋 Tabla de Contenidos
+## Contenido
 
-- [Descripción](#-descripción)
-- [Características](#-características)
-- [Tecnologías](#-tecnologías)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación](#-instalación)
-- [Configuración](#-configuración)
-- [AI Gateway](#-ai-gateway)
-- [Uso](#-uso)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Scripts Disponibles](#-scripts-disponibles)
-- [Variables de Entorno](#-variables-de-entorno)
-- [Despliegue](#-despliegue)
-- [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
+- [Estado del proyecto](#estado-del-proyecto)
+- [Funcionalidades](#funcionalidades)
+- [Tecnologías](#tecnologías)
+- [Requisitos](#requisitos)
+- [Puesta en marcha](#puesta-en-marcha)
+- [Configuración](#configuración)
+- [Base de datos](#base-de-datos)
+- [AI Gateway](#ai-gateway)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Scripts](#scripts)
+- [Calidad y pruebas](#calidad-y-pruebas)
+- [Despliegue](#despliegue)
+- [Herramientas para agentes](#herramientas-para-agentes)
+- [Documentación](#documentación)
+- [Contribuir](#contribuir)
+- [Licencia](#licencia)
 
-## 🎯 Descripción
+## Estado del proyecto
 
-**Tuki** es una plataforma SaaS moderna que permite a restaurantes crear, gestionar y publicar sus sitios web de menú digital en minutos. Con integración de Inteligencia Artificial, un diseño limpio y funcionalidades avanzadas, Tuki elimina la necesidad de conocimientos técnicos para tener presencia digital profesional.
+La aplicación está operativa en local y en el clúster de demostración:
 
-### ¿Qué hace Tuki?
+- SPA con buscador de platos, ficha pública, carrito y pedido por WhatsApp.
+- Panel con información del restaurante, menú, pedidos, reseñas, apariencia y
+  difusión (QR y enlaces).
+- Reseñas con estrellas, comentario y foto. Toda reseña entra pendiente; el
+  dueño la publica, la oculta o la responde.
+- Cuenta del comensal con sus reseñas y su historial de pedidos.
+- Pedidos guardados en Supabase además del mensaje de WhatsApp, con bandeja y
+  cambio de estado para el restaurante.
+- AI Gateway propio para que la clave de Groq nunca llegue al navegador.
+- Empaquetado Docker, manifiestos de Kubernetes con Kustomize, GitOps con
+  ArgoCD, observabilidad y cadena de suministro firmada.
 
-- ✅ **Crea sitios web personalizados** para restaurantes sin código
-- ✅ **Gestiona menús digitales** con categorías, precios e imágenes
-- ✅ **Genera contenido con IA** para descripciones y textos atractivos
-- ✅ **Diseño neumórfico** con modo oscuro/claro adaptable
-- ✅ **Múltiples plantillas** de diseño profesional
-- ✅ **Carrito de compras** integrado con envío a WhatsApp
-- ✅ **Códigos QR** para compartir menús fácilmente
-- ✅ **Optimización de imágenes** automática con Cloudinary
+Estado de la entrega de los módulos 1–3, evidencias y pendientes:
+[docs/modulos-1-3.md](docs/modulos-1-3.md).
 
-## ✨ Características
+## Funcionalidades
 
-### 🎨 Diseño y Personalización
-- **Diseño Neumórfico**: Interfaz moderna con efectos de profundidad y sombras
-- **Modo Oscuro/Claro**: Tema adaptable que respeta las preferencias del usuario
-- **Plantillas Múltiples**: Estilos Moderno, Carta e Inmersivo
-- **Personalización Completa**: Colores, fuentes, logos y banners personalizables
-- **Responsive Design**: Optimizado para móviles, tablets y desktop
+### Descubrir
 
-### 🤖 Inteligencia Artificial
-- **Generación de Contenido**: Descripciones de platillos y textos de marketing generados con IA (Groq)
-- **Asistente de Escritura**: Ayuda a crear contenido atractivo sin esfuerzo
-- **Optimización Automática**: Sugerencias inteligentes para mejorar el menú
+- Búsqueda por plato, restaurante o cocina, con filtros por precio y etiquetas
+  (vegetariano, vegano, picante).
+- Carriles de cocinas y restaurantes, con valoración y rango de precios.
+- Carrito por restaurante que termina en un mensaje de WhatsApp listo para
+  enviar.
+- Diseño adaptable a móvil, escritorio y modo oscuro.
 
-### 🛒 Funcionalidades de E-commerce
-- **Carrito de Compras**: Sistema completo de gestión de pedidos
-- **Integración WhatsApp**: Envío directo de pedidos a WhatsApp del restaurante
-- **Códigos QR**: Generación automática de QR para compartir menús
-- **Gestión de Disponibilidad**: Control de horarios y disponibilidad de platillos
+### Ficha del restaurante
 
-### 📊 Panel de Control
-- **Gestión de Información**: Edición completa de datos del restaurante
-- **Editor de Menú**: Crear, editar y organizar platillos por categorías
-- **Vista Previa en Tiempo Real**: Ver cambios antes de publicar
-- **Reportes y Analytics**: Seguimiento de visitas y rendimiento
-- **Difusión**: Compartir en redes sociales y generar enlaces
+- Portada con la identidad del local, horario, ubicación y contacto.
+- Nueve plantillas de menú: moderna, carta, minimalista, grid, inmersiva,
+  vitrina, mosaico, díptico y compacta.
+- Menú por categorías con disponibilidad, etiquetas dietéticas y detalle del
+  plato.
+- Reseñas publicadas con promedio, distribución de 5 a 1, foto ampliable y
+  respuesta del restaurante.
+- Acciones para compartir la ficha y escribir una reseña.
 
-### 🔐 Seguridad y Autenticación
-- **Autenticación Segura**: Sistema de login/registro con Supabase Auth
-- **Rutas Protegidas**: Acceso controlado al panel de administración
-- **Validación de Formularios**: Validación robusta con Zod y React Hook Form
-- **Gestión de Sesiones**: Recordar usuario opcional
+### Cuenta del comensal
 
-## 🛠️ Tecnologías
+- Ruta `/mi-cuenta` con perfil, reseñas propias e historial de pedidos.
+- Estado real de cada reseña: pendiente de moderación o publicada.
+- Borrado de la propia reseña con confirmación.
+- Pedidos en curso e historial, con detalle, total y enlace al menú.
 
-### Frontend
-- **React 19.2.0** - Biblioteca de UI
-- **TypeScript 5.8** - Tipado estático
-- **Vite 6.3** - Build tool y dev server
-- **React Router 7.9** - Enrutamiento
-- **Framer Motion 11** - Animaciones fluidas
-- **Zustand 5.0** - Gestión de estado global
-- **React Hook Form 7.51** - Formularios
-- **Zod 4.1** - Validación de esquemas
-- **Lucide React** - Iconos
+### Panel del restaurante
 
-### Backend y Servicios
-- **Supabase** - Base de datos, autenticación y backend
-- **Cloudinary** - Almacenamiento y optimización de imágenes
-- **Groq API** - Generación de contenido con IA, siempre a través del AI Gateway
-- **FastAPI** - AI Gateway propio: auth JWT, cuotas, reintentos y métricas
+- Edición de datos, horarios, redes y datos de contacto.
+- Gestión del menú: creación, edición, disponibilidad, visibilidad y borrado.
+- Pedidos: filtros por estado, ventas del día, detalle del cliente, enlace a su
+  WhatsApp y avance de estado.
+- Reseñas: pendientes, publicadas y todas; aprobar, ocultar, responder, editar
+  la respuesta o quitarla.
+- Diseño: colores, tipografías y plantilla, con vista previa en tiempo real.
+- Difusión: enlace público, código QR y piezas para compartir.
+- Asistente de IA para redactar descripciones y textos de marketing.
 
-### Estilos
-- **Tailwind CSS** - Framework CSS utility-first
-- **Diseño Neumórfico** - Sistema de diseño personalizado
+### Inteligencia artificial
 
-## 📦 Requisitos Previos
-
-Antes de comenzar, asegúrate de tener instalado:
-
-- **Node.js** 18.0 o superior
-- **pnpm** 8.0 o superior (recomendado) o npm/yarn
-- Cuentas activas en:
-  - Supabase (para base de datos y autenticación)
-  - Cloudinary (para almacenamiento de imágenes)
-  - Groq (para generación de contenido con IA)
-
-## 🚀 Instalación
-
-1. **Clona el repositorio**
-   ```bash
-   git clone <url-del-repositorio>
-   cd tuki
-   ```
-
-2. **Instala las dependencias**
-   ```bash
-   pnpm install
-   # o
-   npm install
-   ```
-
-3. **Configura las variables de entorno**
-   
-   Crea un archivo `.env.local` en la raíz del proyecto:
-   ```bash
-   cp .env.example .env.local  # Si existe un ejemplo
-   # o crea el archivo manualmente
-   ```
-
-4. **Configura las variables de entorno** (ver sección [Configuración](#-configuración))
-
-## ⚙️ Configuración
-
-### Variables de Entorno
-
-Crea un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
-
-```env
-# Supabase - Base de datos y autenticación
-VITE_SUPABASE_URL=tu_url_de_supabase
-VITE_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
-
-# Cloudinary - Almacenamiento de imágenes
-VITE_CLOUDINARY_CLOUD_NAME=tu_cloud_name
-VITE_CLOUDINARY_UPLOAD_PRESET=tu_upload_preset
-
-# AI Gateway (el navegador nunca ve la clave de Groq)
-VITE_AI_GATEWAY_URL=/api
-GROQ_API_KEY=tu_clave_de_groq
-```
-
-### Obtener las Credenciales
-
-#### Supabase
-1. Crea una cuenta en [supabase.com](https://supabase.com)
-2. Crea un nuevo proyecto
-3. Ve a Settings > API
-4. Copia la URL del proyecto y la clave anónima (anon key)
-
-#### Cloudinary
-1. Crea una cuenta en [cloudinary.com](https://cloudinary.com)
-2. Ve al Dashboard
-3. Copia el Cloud Name
-4. Crea un Upload Preset sin firmar (unsigned) llamado `tuki_unsigned` (el nombre real vive en la variable de entorno `VITE_CLOUDINARY_UPLOAD_PRESET`)
-
-#### Groq
-1. Crea una cuenta en [console.groq.com](https://console.groq.com)
-2. Genera una API Key
-3. Copia la clave en `GROQ_API_KEY` (solo la lee el AI Gateway; **no** lleva el
-   prefijo `VITE_` y no se incrusta en el bundle)
-
-## 🤖 AI Gateway
-
-La IA ya no se llama desde el navegador con una clave expuesta. La SPA hace
-`POST /api/v1/ai/chat` al **AI Gateway** (`services/ai-gateway`), que:
-
-- Valida el JWT de Supabase contra su JWKS.
-- Permite tráfico anónimo del carrito con una cuota por IP y da más cuota a los
-  usuarios autenticados.
-- Reintenta con backoff y hace fallback entre modelos de Groq.
+- La SPA llama al AI Gateway (`POST /api/v1/ai/chat`); el navegador nunca ve la
+  clave de Groq.
+- El gateway valida el JWT de Supabase, aplica cuotas por IP y por cuenta,
+  reintenta con backoff y hace fallback entre modelos.
 - Expone logs JSON, métricas Prometheus y trazas OpenTelemetry opcionales.
 
-En desarrollo se ejecuta en `http://localhost:8001` y Vite proxya `/api`:
+### Seguridad
+
+- Autenticación con Supabase Auth y roles leídos desde `public.users`.
+- Row Level Security en todas las tablas de negocio.
+- El correo y el teléfono de una reseña o un pedido no se exponen al público.
+- El autor solo puede borrar su propia reseña; el dueño solo modera las de su
+  restaurante.
+- Secretos solo en `.env.local` o en el runtime del gateway; nunca en el
+  bundle.
+
+## Tecnologías
+
+| Capa | Tecnologías |
+| --- | --- |
+| Interfaz | React 19, TypeScript 5.8, React Router 7, Framer Motion 11, Zustand 5, React Hook Form 7, Zod 4, Lucide |
+| Estilos | Tailwind CSS (CDN) y sistema de tokens propio en `public/styles/apple-tokens.css` |
+| Datos y auth | Supabase (PostgreSQL, Auth, RLS) |
+| Imágenes | Cloudinary, con preset sin firmar y optimización `q_auto,f_auto` |
+| IA | FastAPI, Groq, Prometheus, OpenTelemetry |
+| Pruebas | Vitest, pytest, Ruff, ESLint, TypeScript |
+| Plataforma | Docker, Nginx, Kubernetes, Kustomize, ArgoCD, Kyverno |
+| Cadena de suministro | Hadolint, Trivy, Syft, Cosign, kubeconform, kube-linter, conftest |
+
+## Requisitos
+
+- Node.js 20 o superior.
+- pnpm 9 o superior (recomendado).
+- Python 3.11 o superior para el AI Gateway.
+- Docker y Docker Compose para el stack completo.
+- Cuentas de Supabase, Cloudinary y Groq.
+
+## Puesta en marcha
+
+### 1. Clonar e instalar
+
+```bash
+git clone <url-del-repositorio>
+cd tuki
+pnpm install
+```
+
+### 2. Configurar el entorno
+
+```bash
+cp .env.example .env.local
+```
+
+Completa las variables que se describen en [Configuración](#configuración).
+`.env.local` está en `.gitignore` y no debe confirmarse.
+
+### 3. Preparar la base de datos
+
+Los scripts de `db/` se aplican en Supabase, en orden. En un proyecto nuevo:
+
+1. `db/sql-restaurantes-popayan.sql` crea los restaurantes y platos de
+   demostración.
+2. `db/sql-resenas.sql` añade las columnas y políticas de reseñas.
+3. `db/sql-cuenta-y-pedidos.sql` añade la cuenta del comensal, la tabla de
+   pedidos y las claves foráneas.
+
+En el proyecto de demostración ya están aplicados como migraciones. Revisa
+[Base de datos](#base-de-datos) antes de ejecutarlos en producción.
+
+### 4. Levantar el AI Gateway
 
 ```bash
 cd services/ai-gateway
 python -m venv .venv
 .venv/Scripts/pip install --require-hashes -r requirements-dev.txt   # Windows
-.venv/bin/pip install --require-hashes -r requirements-dev.txt       # Linux/macOS
+.venv/bin/pip install --require-hashes -r requirements-dev.txt       # Linux y macOS
 .venv/Scripts/python -m uvicorn app.main:app --reload --port 8001
 ```
 
-En otra terminal, `pnpm dev`. La guía completa (auth, cuotas, Docker, K8s y
-observabilidad) está en **[deploy/README.md](deploy/README.md)**.
+En Linux y macOS el intérprete es `.venv/bin/python`.
 
-## 💻 Uso
+### 5. Iniciar la aplicación
 
-### Desarrollo
-
-Inicia el servidor de desarrollo (con el gateway arriba, ver arriba):
+En otra terminal, desde la raíz:
 
 ```bash
 pnpm dev
-# o
-npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:3000`
+La SPA queda en `http://localhost:3000` y Vite redirige `/api` al gateway en
+`http://localhost:8001`.
 
-### Producción
+## Configuración
 
-Construye la aplicación para producción:
+Variables de `.env.local`:
 
-```bash
-pnpm build
-# o
-npm run build
+```env
+# Supabase
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+
+# Cloudinary
+VITE_CLOUDINARY_CLOUD_NAME=
+VITE_CLOUDINARY_UPLOAD_PRESET=
+
+# AI Gateway
+VITE_AI_GATEWAY_URL=/api
+GROQ_API_KEY=
 ```
 
-Los archivos optimizados se generarán en la carpeta `dist/`
+| Variable | Ámbito | Obligatoria | Uso |
+| --- | --- | --- | --- |
+| `VITE_SUPABASE_URL` | Navegador | Sí | URL del proyecto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Navegador | Sí | Clave publicable de Supabase |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Navegador | Sí | Cuenta de Cloudinary |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | Navegador | Sí | Preset sin firmar para subir imágenes |
+| `VITE_AI_GATEWAY_URL` | Navegador | No | Prefijo del gateway; por defecto `/api` |
+| `GROQ_API_KEY` | Servidor | Sí para IA | Clave de Groq, solo en el gateway |
+| `AI_AUTH_MODE` | Servidor | No | `disabled` en local, `supabase` en producción |
+| `AI_RATE_LIMIT_*` | Servidor | No | Cuotas anónimas y autenticadas |
+| `AI_GROQ_MODELS` | Servidor | No | Orden de fallback de modelos |
 
-### Preview de Producción
+Las variables con prefijo `VITE_` son públicas por diseño: Vite las incrusta en
+el bundle. `GROQ_API_KEY` no debe llevar ese prefijo ni aparecer en `dist/`.
 
-Para previsualizar la build de producción:
+### Credenciales de los servicios
 
-```bash
-pnpm preview
-# o
-npm run preview
-```
+**Supabase.** Crea el proyecto, entra en *Settings > API* y copia la URL y la
+clave publicable.
 
-`preview` solo sirve `dist/`: no incluye el proxy `/api` de Vite. Para probar la
-IA en local usa `pnpm dev` o el stack de Compose.
+**Cloudinary.** Copia el *Cloud Name* del dashboard y crea un upload preset sin
+firmar. El preset se usa tanto para las imágenes del menú como para las fotos
+de las reseñas.
 
-## 📁 Estructura del Proyecto
+**Groq.** Genera una API Key en la consola y guárdala solo en `GROQ_API_KEY`.
 
-```
+## Base de datos
+
+| Archivo | Contenido |
+| --- | --- |
+| `db/sql-restaurantes-popayan.sql` | Datos de demostración: cinco restaurantes, cuentas, menús y temas |
+| `db/sql-resenas.sql` | Reseñas: `usuario_id`, `foto_url`, `respuesta_dueno`, índices y políticas RLS |
+| `db/sql-cuenta-y-pedidos.sql` | Pedidos con `usuario_id`, estados, políticas RLS y claves foráneas |
+
+Reglas que aplican los scripts:
+
+- RLS activo en todas las tablas de negocio.
+- Una reseña nace con `aprobado = false` y solo el dueño la publica.
+- El autor puede leer y borrar su propia reseña.
+- Un pedido solo lo leen el comensal que lo hizo y el restaurante que lo recibe.
+- Solo el restaurante cambia el estado de un pedido.
+- Ninguna política permite leer correos o teléfonos desde el cliente fuera de su
+  propio registro.
+
+Las políticas se probaron con transacciones y `set local role`, y el detalle de
+la verificación está en
+[docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md).
+
+## AI Gateway
+
+`services/ai-gateway` es un servicio FastAPI con arquitectura hexagonal:
+dominio, puertos y adaptadores. Concentra todo el acceso a Groq para que la SPA
+no maneje secretos.
+
+Responsabilidades:
+
+- Validar el JWT de Supabase contra su JWKS.
+- Aplicar cuotas por IP para visitantes y por cuenta para usuarios autenticados.
+- Reintentar y hacer fallback entre modelos.
+- Exponer logs estructurados, métricas y trazas.
+
+La guía completa —autenticación, cuotas, Docker, Kubernetes y observabilidad—
+está en [deploy/README.md](deploy/README.md). Las decisiones de diseño están en
+[docs/adr/](docs/adr/).
+
+## Estructura del proyecto
+
+```text
 tuki/
-├── src/                      # Todo el código de la SPA (TypeScript/React)
-│   ├── componentes/          # Componentes React por funcionalidad
-│   │   ├── autenticacion/    # Formularios de login y registro
-│   │   ├── dinamica/         # Juegos y elementos interactivos
-│   │   ├── landing/          # Componentes de la página de inicio
-│   │   ├── panel/            # Componentes del panel de control
-│   │   ├── restaurante/      # Plantillas y vista pública
-│   │   ├── rutas/            # Protección de rutas
-│   │   └── sistema-diseno/   # Componentes base del sistema de diseño
-│   ├── paginas/              # Páginas principales (una por ruta)
-│   ├── api/                  # Clientes HTTP del navegador (Supabase, gateway)
-│   ├── contexto/             # Contextos de React (autenticación, tema)
-│   ├── hooks/                # Hooks personalizados
-│   ├── lib/                  # Utilidades puras (color, slug, formato)
-│   ├── store/                # Estado global con Zustand
-│   ├── tipos/                # Tipos de TypeScript
-│   ├── App.tsx               # Componente raíz y rutas
-│   ├── constantes.ts         # Configuración global
-│   └── index.tsx             # Punto de entrada de la SPA
-├── public/                   # Estáticos servidos tal cual
-├── tests/frontend/           # Pruebas de Vitest
-├── db/                       # Scripts SQL aplicados en Supabase
-├── services/ai-gateway/      # FastAPI: auth, cuotas, Groq y métricas
-├── deploy/                   # K8s, ArgoCD, observabilidad y políticas
-├── scripts/                  # Utilidades de desarrollo y verificación
-├── docker/                   # Configuración de Nginx
-├── docs/                     # ADRs, seguridad, arquitectura y runbook
-├── Dockerfile                # Imagen de la SPA (Node → Nginx)
-├── docker-compose.yml        # Stack local web + AI Gateway
-└── package.json              # Dependencias y scripts
+├── src/                        # SPA (TypeScript y React)
+│   ├── api/                    # Cliente de datos del navegador
+│   ├── componentes/
+│   │   ├── autenticacion/      # Acceso y registro
+│   │   ├── cuenta/             # Reseñas y pedidos del comensal
+│   │   ├── descubrir/          # Buscador, filtros y carrito
+│   │   ├── landing/            # Página para restaurantes
+│   │   ├── panel/              # Panel del dueño
+│   │   ├── restaurante/        # Ficha pública y plantillas
+│   │   ├── rutas/              # Protección de rutas
+│   │   └── sistema-diseno/     # Piezas base de la interfaz
+│   ├── contexto/               # Autenticación y tema
+│   ├── hooks/                  # Hooks reutilizables
+│   ├── lib/                    # Reglas puras: reseñas, pedidos, color, formato
+│   ├── paginas/                # Una página por ruta
+│   ├── store/                  # Estado global con Zustand
+│   ├── tipos/                  # Tipos y modelos
+│   ├── App.tsx                 # Rutas y proveedores
+│   ├── constantes.ts           # Variables de entorno y límites
+│   └── index.tsx               # Punto de entrada
+├── public/                     # Estáticos y tokens de estilo
+├── tests/frontend/             # Pruebas de Vitest
+├── db/                         # Scripts SQL
+├── services/ai-gateway/        # FastAPI: auth, cuotas, Groq y métricas
+├── deploy/                     # Docker, Kubernetes, ArgoCD y observabilidad
+├── docs/                       # Producto, arquitectura, seguridad y runbook
+├── scripts/                    # Verificación y utilidades
+├── docker/                     # Configuración de Nginx
+├── Dockerfile                  # Imagen de la SPA (Node y Nginx)
+└── docker-compose.yml          # Stack local: web y AI Gateway
 ```
 
-`src/api/` es el **cliente** que corre en el navegador;
-`services/ai-gateway/` es el **servicio** que corre en el servidor. Son cosas
-distintas y por eso ya no comparten nombre. El mapa completo, con las reglas de
-nombres y la justificación de cada carpeta, está en `docs/estructura.md`.
+El mapa completo, con las reglas de nombres y la justificación de cada carpeta,
+está en [docs/estructura.md](docs/estructura.md).
 
-## 📜 Scripts Disponibles
+## Scripts
 
-| Script | Descripción |
-|--------|-------------|
-| `pnpm dev` | Inicia el servidor de desarrollo en modo watch |
-| `pnpm build` | Construye la aplicación para producción |
-| `pnpm preview` | Previsualiza la build de producción localmente |
+| Comando | Descripción |
+| --- | --- |
+| `pnpm dev` | Servidor de desarrollo con recarga en caliente |
+| `pnpm build` | Build de producción en `dist/` |
+| `pnpm preview` | Sirve `dist/`; no incluye el proxy `/api` |
 | `pnpm typecheck` | Verifica los tipos con `tsc --noEmit` |
-| `pnpm lint` | ESLint sobre todo el frontend |
+| `pnpm lint` | ESLint sobre el frontend |
 | `pnpm test` | Pruebas unitarias con Vitest |
+| `pnpm verificar` | Puerta completa de los módulos 1–3 |
+| `pnpm mcp:verificar` | Comprueba el handshake de CodeGraph y Engram |
+| `pnpm mcp:estado` | Muestra el estado de los servidores MCP |
+| `pnpm mcp:ligero` | Apaga los MCP para ahorrar contexto |
+| `pnpm mcp:completo` | Vuelve a encender los MCP |
+| `pnpm verificar:paletas` | Comprueba contraste y paletas del sistema de diseño |
 
-## ✅ Calidad y seguridad
-El pipeline bloquea el merge si falla cualquiera de estos controles:
+Gateway:
+
+```bash
+cd services/ai-gateway
+pytest -q
+ruff check app tests
+```
+
+## Calidad y pruebas
+
+`pnpm verificar` ejecuta la puerta completa: tipos, lint, pruebas y build del
+frontend; lint y pruebas del gateway; validación de los manifiestos Kustomize,
+del catálogo de Backstage y de las políticas. En la última ejecución aprobaron
+los 11 pasos y las 67 pruebas del frontend.
 
 | Control | Comando |
-|---------|---------|
+| --- | --- |
 | Tipos | `pnpm typecheck` |
-| Lint | `pnpm lint` |
+| Lint del frontend | `pnpm lint` |
 | Pruebas del frontend | `pnpm test` |
-| Pruebas del gateway | `pytest` en `services/ai-gateway` |
+| Pruebas del gateway | `pytest -q` en `services/ai-gateway` |
+| Lint del gateway | `ruff check app tests` |
+| Manifiestos | `bash deploy/scripts/validar-k8s.sh` |
 | Secretos en el historial | gitleaks |
 | Vulnerabilidades | `pnpm audit --prod` y `pip-audit` |
 | Licencias | `node scripts/licencias.mjs licencias.json` |
-| Manifiestos | `bash deploy/scripts/validar-k8s.sh` |
-| Imágenes | `bash deploy/scripts/verificar-supply-chain.sh` |
+| Cadena de suministro | `bash deploy/scripts/verificar-supply-chain.sh` |
 
-## 🧠 Herramientas del agente
+## Despliegue
 
-El repositorio integra dos servidores MCP locales, registrados en
-**`opencode.json`**:
-
-- **CodeGraph** indexa el código en un grafo (símbolos, llamadas, imports,
-  impacto) y lo expone al agente con 42 herramientas.
-- **Engram** conserva decisiones y hallazgos entre sesiones, aislados por
-  proyecto (`tuki`), con 23 herramientas.
-
-```powershell
-# instala los binarios en .tools/ (fuera de Git) y verifica el handshake
-powershell -ExecutionPolicy Bypass -File scripts/instalar-herramientas.ps1
-
-# o solo la verificación, si ya están instalados
-pnpm mcp:verificar
-```
-
-Guía completa, recetas de uso y criterios de privacidad:
-**[docs/herramientas/codegraph-y-engram.md](docs/herramientas/codegraph-y-engram.md)**.
-Las convenciones para agentes están en **[AGENTS.md](AGENTS.md)**.
-
-## 🔐 Variables de Entorno
-
-Las variables `VITE_*` son las únicas que Vite expone al navegador: son públicas
-por diseño. Los secretos de servidor (`GROQ_API_KEY`) no llevan ese prefijo y
-solo los lee el AI Gateway. Todo `.env.local` está en `.gitignore` y nunca debe
-confirmarse en Git.
-
-### Variables Requeridas
-
-- `VITE_SUPABASE_URL` - URL de tu proyecto Supabase
-- `VITE_SUPABASE_ANON_KEY` - Clave anónima de Supabase
-- `VITE_CLOUDINARY_CLOUD_NAME` - Nombre de tu cuenta Cloudinary
-- `VITE_CLOUDINARY_UPLOAD_PRESET` - Preset de carga de Cloudinary
-- `GROQ_API_KEY` - Clave de Groq, **solo para el AI Gateway** (runtime)
-
-### Variables Opcionales
-
-- `VITE_AI_GATEWAY_URL` - Prefijo del gateway; por defecto `/api`
-- `AI_AUTH_MODE` - `disabled` en local, `supabase` en producción
-- `AI_RATE_LIMIT_*` - Cuotas anónimas y autenticadas
-- `AI_GROQ_MODELS` - Orden de fallback de modelos
-
-> Las variables `VITE_*` son públicas por diseño. `GROQ_API_KEY` nunca debe
-> llevar ese prefijo ni aparecer en `dist/`.
-
-## 🚢 Despliegue
-
-### Vercel (solo SPA)
-
-1. Conecta tu repositorio a Vercel
-2. Configura las variables de entorno en el dashboard de Vercel
-3. Vercel detectará automáticamente Vite y configurará el build
-
-> La IA necesita el AI Gateway. Si despliegas solo la SPA, configura un rewrite
-> de `/api/*` hacia el gateway o define `VITE_AI_GATEWAY_URL` con su URL pública
-> y habilita `AI_CORS_ORIGINS` en el gateway. Sin eso, las funciones de IA
-> devolverán error.
-
-### Netlify (solo SPA)
-
-1. Conecta tu repositorio a Netlify
-2. Configura el build command: `pnpm build`
-3. Configura el publish directory: `dist`
-4. Agrega las variables de entorno en Site settings
-5. Agrega un redirect de `/api/*` al AI Gateway (o usa `VITE_AI_GATEWAY_URL`)
-
-### Otros Proveedores
-
-Cualquier proveedor que soporte aplicaciones estáticas puede hostear Tuki:
-- GitHub Pages
-- AWS S3 + CloudFront
-- Firebase Hosting
-- Azure Static Web Apps
-
-### Docker y Kubernetes
-
-El proyecto incluye empaquetado listo para producción sin tocar el código de la
-aplicación:
-
-- **Docker:** dos imágenes multi-etapa, usuario no root, rootfs de solo lectura,
-  health checks y bases fijadas por digest.
-- **Compose:** `docker compose --env-file .env.local up -d --build` publica la
-  SPA en <http://localhost:8080> y el gateway en `127.0.0.1:8001`.
-- **Kubernetes:** Kustomize con overlays local/producción, Deployments con
-  probes y límites, Ingress `/api`, HPA, PDB, NetworkPolicy y Pod Security
-  `restricted`.
-- **Observabilidad:** ServiceMonitors, 7 alertas y dashboard de Grafana.
-- **GitOps:** ArgoCD con sync manual en local y automático en producción.
-- **Supply chain:** Hadolint, Trivy, Syft (SBOM), Cosign keyless,
-  kubeconform, kube-linter y políticas conftest.
-
-La guía completa (variables, despliegue, TLS, escalado, observabilidad,
-seguridad y diagnóstico) está en **[deploy/README.md](deploy/README.md)**. Las
-decisiones están en **[docs/adr/](docs/adr/)** y los incidentes en
-**[docs/runbook.md](docs/runbook.md)**.
-
-La aplicación de los módulos 1–3 de CloudForge AI 5.0 (fundamentos,
-Kubernetes/GitOps/Platform Engineering y DevSecOps) está documentada en
-**[docs/modulos-1-3.md](docs/modulos-1-3.md)**, con el modelo de amenazas en
-**[docs/security/](docs/security/)** y el catálogo de servicios en
-**[catalog-info.yaml](catalog-info.yaml)**.
-
-La práctica de diagnóstico está en
-**[docs/laboratorio/fallo-inducido.md](docs/laboratorio/fallo-inducido.md)** y las
-evidencias de clúster en
-**[docs/laboratorio/modulo-2-runtime.md](docs/laboratorio/modulo-2-runtime.md)**.
-
-La propuesta para la capa social (reseñas, guardados, perfiles y seguimiento)
-está en **[docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md)**.
-El sistema de marca —logo modular, versiones, tamaños y reglas— está en
-**[docs/marca/marca-tuki.md](docs/marca/marca-tuki.md)**.
-Para reproducir la demostración:
+### Docker Compose
 
 ```bash
-bash deploy/scripts/demo-plataforma.sh plataforma
-bash deploy/scripts/demo-plataforma.sh app
+docker compose --env-file .env.local up -d --build
+```
+
+Publica la SPA en `http://localhost:8080` y el gateway en
+`127.0.0.1:8001`. Ambas imágenes usan multi-etapa, usuario no root, sistema de
+archivos de solo lectura, health checks y bases fijadas por digest.
+
+### Kubernetes
+
+Los manifiestos viven en `deploy/` y se organizan con Kustomize en overlays
+local y de producción:
+
+- Deployments con probes, límites y solicitudes de recursos.
+- Ingress con `/api` hacia el gateway.
+- HPA, PodDisruptionBudget, NetworkPolicy y Pod Security `restricted`.
+- ServiceMonitors, alertas y dashboard de Grafana.
+- ArgoCD con sincronización manual en local y automática en producción.
+
+```bash
+kubectl kustomize deploy/k8s/overlays/local > /dev/null
+bash deploy/scripts/validar-k8s.sh
 bash deploy/scripts/demo-plataforma.sh verificar
 ```
 
-## 🤝 Contribuir
+### Hosting estático
 
-Las contribuciones son bienvenidas. Por favor:
+La SPA se puede publicar en Vercel, Netlify, Cloudflare Pages, S3 con
+CloudFront o cualquier hosting de sitios estáticos. La IA requiere el AI
+Gateway: configura un rewrite de `/api/*` hacia el servicio o define
+`VITE_AI_GATEWAY_URL` con su URL pública y habilita `AI_CORS_ORIGINS` en el
+gateway.
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+`pnpm preview` no incluye el proxy de Vite. Para probar la IA en local usa
+`pnpm dev` o el stack de Compose.
 
-## 📝 Licencia
+La guía de despliegue, TLS, escalado, observabilidad y diagnóstico está en
+[deploy/README.md](deploy/README.md). Los incidentes conocidos y su resolución
+están en [docs/runbook.md](docs/runbook.md).
 
-Este proyecto es privado y de uso interno.
+## Herramientas para agentes
 
----
+El repositorio declara dos servidores MCP locales en `opencode.json`:
 
-<div align="center">
-  <p>Hecho con ❤️ para restaurantes que buscan destacar</p>
-  <p>© 2024 Tuki. Todos los derechos reservados.</p>
-</div>
+- **CodeGraph** indexa símbolos, llamadas e imports, y responde preguntas de
+  arquitectura e impacto.
+- **Engram** conserva decisiones y hallazgos entre sesiones, aislados por
+  proyecto.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/instalar-herramientas.ps1
+pnpm mcp:verificar
+```
+
+Guía de uso y criterios de privacidad:
+[docs/herramientas/codegraph-y-engram.md](docs/herramientas/codegraph-y-engram.md).
+Las convenciones para agentes están en [AGENTS.md](AGENTS.md).
+
+## Documentación
+
+| Documento | Contenido |
+| --- | --- |
+| [docs/modulos-1-3.md](docs/modulos-1-3.md) | Alcance, evidencias y cierre de los módulos 1–3 |
+| [docs/auditoria-modulos-1-3.md](docs/auditoria-modulos-1-3.md) | Auditoría técnica de la entrega |
+| [docs/estructura.md](docs/estructura.md) | Organización del código y reglas de nombres |
+| [docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md) | Reseñas, cuenta del comensal y pedidos |
+| [docs/marca/marca-tuki.md](docs/marca/marca-tuki.md) | Sistema de marca, logo y usos |
+| [docs/security/](docs/security/) | Modelo de amenazas, hallazgos y registro de uso de IA |
+| [docs/adr/](docs/adr/) | Decisiones de arquitectura |
+| [deploy/README.md](deploy/README.md) | Despliegue, operación y observabilidad |
+| [docs/runbook.md](docs/runbook.md) | Diagnóstico e incidentes |
+| [docs/laboratorio/fallo-inducido.md](docs/laboratorio/fallo-inducido.md) | Práctica de diagnóstico |
+| [catalog-info.yaml](catalog-info.yaml) | Catálogo de servicios para Backstage |
+
+## Contribuir
+
+1. Crea una rama con prefijo `feat/`, `fix/`, `docs/` o `style/`.
+2. Escribe los commits en español con prefijo convencional
+   (`feat:`, `fix:`, `docs:`).
+3. Mantén el código y la documentación en español.
+4. Ejecuta `pnpm verificar` antes de abrir el pull request.
+5. Revisa la licencia de cualquier dependencia nueva con
+   `node scripts/licencias.mjs`.
+6. Registra el uso de IA en
+   [docs/security/registro-uso-ia.md](docs/security/registro-uso-ia.md).
+
+Las ramas se integran a `main` con `--no-ff`.
+
+## Licencia
+
+Proyecto privado de uso interno. Todos los derechos reservados.
+
+© 2026 Tuki.
