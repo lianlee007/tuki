@@ -36,7 +36,7 @@ import { useStoreCarrito } from '../../store/storeCarrito';
 import { ModalCarrito } from './ModalCarrito';
 import { ModalDetallePlatillo } from './ModalDetallePlatillo';
 import { apiSaludo, apiHorarios } from '../../servicios/misApis';
-import { conLuminosidad, derivarPaleta, variablesAf, mezclar, type PaletaDerivada } from '../../lib/color';
+import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
 
 // Estructuras del menú. Todas comparten `PlantillaMenuProps`, así que el menú
 // se monta desde una tabla: ninguna puede quedarse sin `refs` (seguimiento de
@@ -50,7 +50,11 @@ import { EstiloVitrina } from './plantillas/EstiloVitrina';
 import { EstiloMosaico } from './plantillas/EstiloMosaico';
 import { EstiloDiptico } from './plantillas/EstiloDiptico';
 import { EstiloCompacta } from './plantillas/EstiloCompacta';
-import type { PlantillaMenuProps } from './plantillas/tipos';
+import type { EstilosComunes, PlantillaMenuProps } from './plantillas/tipos';
+
+// Se reexporta para no romper los imports existentes; la definición vive en el
+// contrato de plantillas, que es el punto que ambos lados comparten.
+export type { EstilosComunes } from './plantillas/tipos';
 
 /** Ancho y margen únicos de toda la página pública. */
 export const ANCHO_CONTENIDO = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
@@ -79,14 +83,6 @@ const DIAS_LABEL = [
 ] as const;
 
 const ORDEN_DIAS = DIAS_LABEL.map((d) => d.key as string);
-
-export type EstilosComunes = PaletaDerivada & {
-  /** Borde de tarjeta como valor listo para usar. */
-  cardBorder: string;
-  /** Sombra de hover de tarjeta (el reposo no lleva sombra). */
-  cardHoverShadow: string;
-  isDark: boolean;
-};
 
 interface PlantillaProps {
   restaurante: Restaurante;
