@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Observabilidad opcional. Requiere kube-prometheus-stack (Prometheus Operator,
+# Grafana) instalado en el clúster:
+#
+#   kubectl apply -k deploy/observability
+#
+# Ajusta la etiqueta `release` de ServiceMonitor/PrometheusRule al selector de
+# tu instalación. El dashboard se publica como ConfigMap con la etiqueta
+# `grafana_dashboard: "1"`, que el sidecar de Grafana detecta automáticamente.
+namespace: riki
+
+resources:
+  - servicemonitor-web.yaml
+  - servicemonitor-gateway.yaml
+  - prometheusrule.yaml
+
+configMapGenerator:
+  - name: riki-grafana-dashboard
+    files:
+      - dashboards/riki-overview.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        app.kubernetes.io/part-of: riki
+
+generatorOptions:
+  disableNameSuffixHash: true

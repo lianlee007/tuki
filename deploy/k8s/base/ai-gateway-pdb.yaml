@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: riki-ai-gateway
+  labels:
+    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/component: ai-gateway
+    app.kubernetes.io/part-of: riki
+spec:
+  minAvailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: riki-ai-gateway
