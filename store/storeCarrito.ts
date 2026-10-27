@@ -39,7 +39,7 @@ const vibrar = () => {
   }
 };
 
-const claveCarrito = (usuarioId: string) => `riki_carrito_${usuarioId}`;
+const claveCarrito = (usuarioId: string) => `tuki_carrito_${usuarioId}`;
 
 const esItemValido = (valor: unknown): valor is ItemCarrito => {
   if (!valor || typeof valor !== 'object') return false;

@@ -336,7 +336,7 @@ export function acentoPanel(marca: string, modo: ModoPantalla): Record<string, s
 }
 
 /** Dónde recuerda el navegador el acento del panel entre recargas. */
-const CLAVE_ACENTO = 'riki_acento';
+const CLAVE_ACENTO = 'tuki_acento';
 
 interface AcentoGuardado {
   /** Dueño del acento. El de otra sesión no se aplica nunca. */
