@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🍽️ SmartFood</h1>
+  <h1>🍽️ Riki</h1>
   <!-- v0.0.1 -->
   <p><strong>Constructor de sitios web para restaurantes con IA</strong></p>
   <p>Diseña, gestiona y escala. La solución definitiva para restauradores que buscan elegancia visual y eficiencia operativa.</p>
@@ -20,6 +20,7 @@
 - [Requisitos Previos](#-requisitos-previos)
 - [Instalación](#-instalación)
 - [Configuración](#-configuración)
+- [AI Gateway](#-ai-gateway)
 - [Uso](#-uso)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Scripts Disponibles](#-scripts-disponibles)
@@ -30,9 +31,9 @@
 
 ## 🎯 Descripción
 
-**SmartFood** es una plataforma SaaS moderna que permite a restaurantes crear, gestionar y publicar sus sitios web de menú digital en minutos. Con integración de Inteligencia Artificial, diseño neumórfico elegante y funcionalidades avanzadas, SmartFood elimina la necesidad de conocimientos técnicos para tener presencia digital profesional.
+**Riki** es una plataforma SaaS moderna que permite a restaurantes crear, gestionar y publicar sus sitios web de menú digital en minutos. Con integración de Inteligencia Artificial, un diseño limpio y funcionalidades avanzadas, Riki elimina la necesidad de conocimientos técnicos para tener presencia digital profesional.
 
-### ¿Qué hace SmartFood?
+### ¿Qué hace Riki?
 
 - ✅ **Crea sitios web personalizados** para restaurantes sin código
 - ✅ **Gestiona menús digitales** con categorías, precios e imágenes
@@ -92,8 +93,8 @@
 ### Backend y Servicios
 - **Supabase** - Base de datos, autenticación y backend
 - **Cloudinary** - Almacenamiento y optimización de imágenes
-- **Groq API** - Generación de contenido con IA (Llama 3.3)
-- **Google Gemini** - API de IA adicional (opcional)
+- **Groq API** - Generación de contenido con IA, siempre a través del AI Gateway
+- **FastAPI** - AI Gateway propio: auth JWT, cuotas, reintentos y métricas
 
 ### Estilos
 - **Tailwind CSS** - Framework CSS utility-first
@@ -150,9 +151,9 @@ VITE_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
 VITE_CLOUDINARY_CLOUD_NAME=tu_cloud_name
 VITE_CLOUDINARY_UPLOAD_PRESET=tu_upload_preset
 
-# APIs de Inteligencia Artificial
-VITE_GROQ_API_KEY=tu_clave_de_groq
-GEMINI_API_KEY=tu_clave_de_gemini  # Opcional
+# AI Gateway (el navegador nunca ve la clave de Groq)
+VITE_AI_GATEWAY_URL=/api
+GROQ_API_KEY=tu_clave_de_groq
 ```
 
 ### Obtener las Credenciales
@@ -167,18 +168,43 @@ GEMINI_API_KEY=tu_clave_de_gemini  # Opcional
 1. Crea una cuenta en [cloudinary.com](https://cloudinary.com)
 2. Ve al Dashboard
 3. Copia el Cloud Name
-4. Crea un Upload Preset sin firmar (unsigned) llamado `smartfood_unsigned`
+4. Crea un Upload Preset sin firmar (unsigned) llamado `riki_unsigned` (el nombre real vive en la variable de entorno `VITE_CLOUDINARY_UPLOAD_PRESET`)
 
 #### Groq
 1. Crea una cuenta en [console.groq.com](https://console.groq.com)
 2. Genera una API Key
-3. Copia la clave en `VITE_GROQ_API_KEY`
+3. Copia la clave en `GROQ_API_KEY` (solo la lee el AI Gateway; **no** lleva el
+   prefijo `VITE_` y no se incrusta en el bundle)
+
+## 🤖 AI Gateway
+
+La IA ya no se llama desde el navegador con una clave expuesta. La SPA hace
+`POST /api/v1/ai/chat` al **AI Gateway** (`services/ai-gateway`), que:
+
+- Valida el JWT de Supabase contra su JWKS.
+- Permite tráfico anónimo del carrito con una cuota por IP y da más cuota a los
+  usuarios autenticados.
+- Reintenta con backoff y hace fallback entre modelos de Groq.
+- Expone logs JSON, métricas Prometheus y trazas OpenTelemetry opcionales.
+
+En desarrollo se ejecuta en `http://localhost:8001` y Vite proxya `/api`:
+
+```bash
+cd services/ai-gateway
+python -m venv .venv
+.venv/Scripts/pip install --require-hashes -r requirements-dev.txt   # Windows
+.venv/bin/pip install --require-hashes -r requirements-dev.txt       # Linux/macOS
+.venv/Scripts/python -m uvicorn app.main:app --reload --port 8001
+```
+
+En otra terminal, `pnpm dev`. La guía completa (auth, cuotas, Docker, K8s y
+observabilidad) está en **[deploy/README.md](deploy/README.md)**.
 
 ## 💻 Uso
 
 ### Desarrollo
 
-Inicia el servidor de desarrollo:
+Inicia el servidor de desarrollo (con el gateway arriba, ver arriba):
 
 ```bash
 pnpm dev
@@ -210,6 +236,9 @@ pnpm preview
 npm run preview
 ```
 
+`preview` solo sirve `dist/`: no incluye el proxy `/api` de Vite. Para probar la
+IA en local usa `pnpm dev` o el stack de Compose.
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -233,6 +262,11 @@ LeeFood/
 ├── constantes.ts         # Constantes y configuración global
 ├── index.tsx             # Punto de entrada de la aplicación
 ├── vite.config.ts        # Configuración de Vite
+├── Dockerfile            # Imagen de la SPA (Node → Nginx)
+├── docker-compose.yml    # Stack local web + AI Gateway
+├── services/ai-gateway/  # FastAPI: auth, cuotas, Groq y métricas
+├── deploy/               # K8s, ArgoCD, observabilidad, políticas y scripts
+├── docs/                 # ADRs y runbook de operación
 └── package.json          # Dependencias y scripts
 ```
 
@@ -246,7 +280,10 @@ LeeFood/
 
 ## 🔐 Variables de Entorno
 
-Todas las variables de entorno deben estar prefijadas con `VITE_` para que Vite las exponga al cliente. Las variables sensibles como API keys deben estar en `.env.local` que está en `.gitignore`.
+Las variables `VITE_*` son las únicas que Vite expone al navegador: son públicas
+por diseño. Los secretos de servidor (`GROQ_API_KEY`) no llevan ese prefijo y
+solo los lee el AI Gateway. Todo `.env.local` está en `.gitignore` y nunca debe
+confirmarse en Git.
 
 ### Variables Requeridas
 
@@ -254,34 +291,74 @@ Todas las variables de entorno deben estar prefijadas con `VITE_` para que Vite 
 - `VITE_SUPABASE_ANON_KEY` - Clave anónima de Supabase
 - `VITE_CLOUDINARY_CLOUD_NAME` - Nombre de tu cuenta Cloudinary
 - `VITE_CLOUDINARY_UPLOAD_PRESET` - Preset de carga de Cloudinary
-- `VITE_GROQ_API_KEY` - Clave API de Groq para generación de contenido
+- `GROQ_API_KEY` - Clave de Groq, **solo para el AI Gateway** (runtime)
 
 ### Variables Opcionales
 
-- `GEMINI_API_KEY` - Clave API de Google Gemini (si se usa)
+- `VITE_AI_GATEWAY_URL` - Prefijo del gateway; por defecto `/api`
+- `AI_AUTH_MODE` - `disabled` en local, `supabase` en producción
+- `AI_RATE_LIMIT_*` - Cuotas anónimas y autenticadas
+- `AI_GROQ_MODELS` - Orden de fallback de modelos
+
+> Las variables `VITE_*` son públicas por diseño. `GROQ_API_KEY` nunca debe
+> llevar ese prefijo ni aparecer en `dist/`.
 
 ## 🚢 Despliegue
 
-### Vercel (Recomendado)
+### Vercel (solo SPA)
 
 1. Conecta tu repositorio a Vercel
 2. Configura las variables de entorno en el dashboard de Vercel
 3. Vercel detectará automáticamente Vite y configurará el build
 
-### Netlify
+> La IA necesita el AI Gateway. Si despliegas solo la SPA, configura un rewrite
+> de `/api/*` hacia el gateway o define `VITE_AI_GATEWAY_URL` con su URL pública
+> y habilita `AI_CORS_ORIGINS` en el gateway. Sin eso, las funciones de IA
+> devolverán error.
+
+### Netlify (solo SPA)
 
 1. Conecta tu repositorio a Netlify
 2. Configura el build command: `pnpm build`
 3. Configura el publish directory: `dist`
 4. Agrega las variables de entorno en Site settings
+5. Agrega un redirect de `/api/*` al AI Gateway (o usa `VITE_AI_GATEWAY_URL`)
 
 ### Otros Proveedores
 
-Cualquier proveedor que soporte aplicaciones estáticas puede hostear SmartFood:
+Cualquier proveedor que soporte aplicaciones estáticas puede hostear Riki:
 - GitHub Pages
 - AWS S3 + CloudFront
 - Firebase Hosting
 - Azure Static Web Apps
+
+### Docker y Kubernetes
+
+El proyecto incluye empaquetado listo para producción sin tocar el código de la
+aplicación:
+
+- **Docker:** dos imágenes multi-etapa, usuario no root, rootfs de solo lectura,
+  health checks y bases fijadas por digest.
+- **Compose:** `docker compose --env-file .env.local up -d --build` publica la
+  SPA en <http://localhost:8080> y el gateway en `127.0.0.1:8001`.
+- **Kubernetes:** Kustomize con overlays local/producción, Deployments con
+  probes y límites, Ingress `/api`, HPA, PDB, NetworkPolicy y Pod Security
+  `restricted`.
+- **Observabilidad:** ServiceMonitors, 7 alertas y dashboard de Grafana.
+- **GitOps:** ArgoCD con sync manual en local y automático en producción.
+- **Supply chain:** Hadolint, Trivy, Syft (SBOM), Cosign keyless,
+  kubeconform, kube-linter y políticas conftest.
+
+La guía completa (variables, despliegue, TLS, escalado, observabilidad,
+seguridad y diagnóstico) está en **[deploy/README.md](deploy/README.md)**. Las
+decisiones están en **[docs/adr/](docs/adr/)** y los incidentes en
+**[docs/runbook.md](docs/runbook.md)**.
+
+La aplicación de los módulos 1–3 de CloudForge AI 5.0 (fundamentos,
+Kubernetes/GitOps/Platform Engineering y DevSecOps) está documentada en
+**[docs/modulos-1-3.md](docs/modulos-1-3.md)**, con el modelo de amenazas en
+**[docs/security/](docs/security/)** y el catálogo de servicios en
+**[catalog-info.yaml](catalog-info.yaml)**.
 
 ## 🤝 Contribuir
 
@@ -301,5 +378,5 @@ Este proyecto es privado y de uso interno.
 
 <div align="center">
   <p>Hecho con ❤️ para restaurantes que buscan destacar</p>
-  <p>© 2024 SmartFood. Todos los derechos reservados.</p>
+  <p>© 2024 Riki. Todos los derechos reservados.</p>
 </div>
