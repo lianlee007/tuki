@@ -1,6 +1,8 @@
-
 import React from 'react';
-import { Store, Palette, UtensilsCrossed, Eye, ExternalLink, LogOut, Share2, PieChart } from 'lucide-react';
+import {
+  Store, UtensilsCrossed, Eye, ExternalLink, LogOut, Share2,
+  PanelLeftClose, ChevronRight, X,
+} from 'lucide-react';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggle, Logo } from '../ui';
@@ -8,119 +10,212 @@ import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { Restaurante } from '../../tipos';
 import { generarSlugUnico } from '../../lib/utils';
 
+type TabPanel = 'info' | 'tema' | 'menu' | 'difusion';
+
 interface BarraLateralProps {
-  tabActiva: 'info' | 'tema' | 'menu' | 'difusion';
-  setTabActiva: (tab: 'info' | 'tema' | 'menu' | 'difusion') => void;
+  tabActiva: TabPanel;
+  setTabActiva: (tab: TabPanel) => void;
   restaurante: Restaurante | null;
   setVistaPreviaAbierta: (abierta: boolean) => void;
   movilAbierto?: boolean;
+  /** En escritorio la barra se pliega a un raíl de iconos. */
+  contraido: boolean;
+  onAlternarContraido: () => void;
+  /** Cierra el cajón en móvil. */
+  onCerrarMovil?: () => void;
 }
 
-export const BarraLateral: React.FC<BarraLateralProps> = ({ 
-  tabActiva, 
-  setTabActiva, 
-  restaurante, 
+export const BarraLateral: React.FC<BarraLateralProps> = ({
+  tabActiva,
+  setTabActiva,
+  restaurante,
   setVistaPreviaAbierta,
-  movilAbierto = false
+  movilAbierto = false,
+  contraido,
+  onAlternarContraido,
+  onCerrarMovil,
 }) => {
   const { user, cerrarSesion } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-      // Navegar primero para evitar redirección por protección de rutas
-      navigate('/');
-      // Pequeño delay para permitir que la navegación ocurra antes de limpiar el estado
-      setTimeout(async () => {
-          await cerrarSesion();
-      }, 100);
+    await cerrarSesion();
+    navigate('/');
   };
 
-  // Clases dinámicas para el comportamiento responsive
-  const baseClasses = "neumorphic rounded-none border-r border-white/5 flex flex-col fixed md:relative h-full z-40 transition-transform duration-300 ease-in-out bg-bg";
-  const mobileClasses = movilAbierto ? "translate-x-0 shadow-2xl w-[85vw]" : "-translate-x-full w-[85vw]";
-  const desktopClasses = "md:translate-x-0 md:w-72 md:m-0 md:my-0 md:block";
+  const navItems: { id: TabPanel; icon: React.ReactNode; label: string }[] = [
+    { id: 'info', icon: <Store size={18} />, label: 'Restaurante' },
+    { id: 'menu', icon: <UtensilsCrossed size={18} />, label: 'Menú' },
+    { id: 'tema', icon: <Eye size={18} />, label: 'Apariencia' },
+    { id: 'difusion', icon: <Share2 size={18} />, label: 'Difusión' },
+  ];
+
+  const inicial =
+    user?.user_metadata?.nombre?.charAt(0).toUpperCase() ||
+    user?.email?.charAt(0).toUpperCase() ||
+    '·';
+  const nombreUsuario = (user?.user_metadata?.nombre || user?.user_metadata?.apellido)
+    ? `${user?.user_metadata?.nombre || ''} ${user?.user_metadata?.apellido || ''}`.trim()
+    : user?.email?.split('@')[0] || 'Tu cuenta';
+
+  /* En el raíl plegado todo se centra. Hay dos formas de ocultar una etiqueta:
+     `etiqueta` la quita y libera su hueco (lo que necesitan los iconos), y
+     `etiquetaFija` la deja invisible pero conserva su altura y sus márgenes, para
+     que los bloques guarden el mismo aire que desplegada. En móvil el cajón
+     siempre se ve completo (las clases `md:` sólo actúan en escritorio). */
+  const centrar = contraido ? 'md:justify-center md:px-0' : '';
+  const etiqueta = contraido ? 'md:hidden' : '';
+  const etiquetaFija = contraido ? 'md:opacity-0' : '';
+  const fila = `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm outline-none transition-colors duration-200 ${centrar}`;
 
   return (
-    <aside className={`${baseClasses} ${mobileClasses} ${desktopClasses}`}>
-      <div className="p-6 flex items-center justify-between border-b border-white/5 h-20 shrink-0">
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-              <Logo size={24} />
-            </div>
-            <span className="font-serif text-xl font-bold text-text-main">SmartFood</span>
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex w-[85vw] flex-col border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:shadow-none ${
+        contraido ? 'md:w-[76px]' : 'md:w-72'
+      } ${movilAbierto ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+    >
+      {/* Cabecera: marca + plegar/desplegar */}
+      <div
+        className={`flex h-20 shrink-0 items-center justify-between border-b border-af/30 px-6 ${
+          contraido ? 'md:justify-center md:px-2' : ''
+        }`}
+      >
+        {/* Plegada (escritorio): el logo lleva una flecha pegada que delata que
+            se puede pulsar para desplegar. Sin ella el dibujo parecía decoración. */}
+        {contraido && (
+          <button
+            type="button"
+            onClick={onAlternarContraido}
+            title="Desplegar el menú"
+            aria-label="Desplegar el menú"
+            aria-expanded={false}
+            className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-af-accent text-white outline-none transition-opacity hover:opacity-90 md:flex"
+          >
+            <Logo size={22} />
+            <span className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-af-ground text-af-ink ring-1 ring-af/25">
+              <ChevronRight size={13} strokeWidth={3} />
+            </span>
+          </button>
+        )}
+
+        <div className={`flex min-w-0 items-center gap-3 ${etiqueta}`}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-af-accent text-white">
+            <Logo size={22} />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-af-ink">Riki</span>
         </div>
-        {/* Botón cerrar solo visible en móvil */}
-        {movilAbierto && (
-            <button onClick={() => {}} className="md:hidden text-text-muted">
-                {/* El cierre se maneja desde el padre al hacer click fuera o seleccionar opcion */}
-            </button>
+
+        {/* Desplegada: botón con nombre para plegar (escritorio). En móvil, cerrar. */}
+        {!contraido && (
+          <button
+            type="button"
+            onClick={onAlternarContraido}
+            title="Contraer el menú"
+            aria-label="Contraer el menú"
+            aria-expanded
+            className="hidden h-9 shrink-0 items-center gap-2 rounded-lg bg-af-ink/[0.06] px-3 text-xs font-semibold text-af-ink-secondary outline-none transition-colors hover:bg-af-ink/[0.1] hover:text-af-ink md:flex dark:bg-white/[0.1] dark:hover:bg-white/[0.16]"
+          >
+            <PanelLeftClose size={16} />
+            Contraer
+          </button>
+        )}
+        {onCerrarMovil && (
+          <button
+            type="button"
+            onClick={onCerrarMovil}
+            title="Cerrar el menú"
+            aria-label="Cerrar el menú"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-af-ink-secondary outline-none transition-colors hover:bg-af-ink/[0.06] hover:text-af-ink md:hidden dark:hover:bg-white/[0.08]"
+          >
+            <X size={18} />
+          </button>
         )}
       </div>
 
-      <div className="p-6 pb-0">
-         <div className="neumorphic-inset p-4 rounded-xl flex items-center gap-3 mb-6">
-           <div className="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-              {user?.user_metadata?.nombre?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
-           </div>
-           <div className="overflow-hidden min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-text-muted">Bienvenido</p>
-              <p className="font-bold text-sm truncate">
-                 {(user?.user_metadata?.nombre || user?.user_metadata?.apellido) 
-                   ? `${user?.user_metadata?.nombre || ''} ${user?.user_metadata?.apellido || ''}`.trim() 
-                   : user?.email?.split('@')[0]}
-              </p>
-           </div>
-         </div>
+      {/* Cuenta */}
+      <div className={`px-6 pt-6 ${contraido ? 'md:px-2' : ''}`}>
+        <div className={`flex items-center gap-3 ${contraido ? 'md:justify-center' : ''}`}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-af-accent/10 text-sm font-bold text-af-accent-text">
+            {inicial}
+          </div>
+          <div className={`min-w-0 overflow-hidden ${etiqueta}`}>
+            <p className="truncate text-sm font-semibold text-af-ink">{nombreUsuario}</p>
+            <p className="truncate text-xs text-af-ink-secondary">{user?.email}</p>
+          </div>
+        </div>
 
-         <p className="px-2 text-xs font-bold text-text-muted/50 uppercase tracking-wider mb-3">Secciones</p>
+        <p className={`mb-3 mt-6 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
+          Panel
+        </p>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-        <button 
-          onClick={() => setTabActiva('info')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${tabActiva === 'info' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-white/5 hover:text-text-main'}`}
+      <nav className={`flex-1 space-y-1 overflow-y-auto pb-2 ${contraido ? 'md:px-2' : 'px-4'}`}>
+        {navItems.map((item) => {
+          const isActive = tabActiva === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTabActiva(item.id)}
+              title={item.label}
+              aria-current={isActive ? 'page' : undefined}
+              className={`${fila} font-medium ${
+                isActive
+                  ? 'bg-af-accent text-white'
+                  : 'text-af-ink-secondary hover:bg-af-ink/[0.06] hover:text-af-accent-text dark:hover:bg-white/[0.08]'
+              }`}
+            >
+              <span className="shrink-0">{item.icon}</span>
+              <span className={`truncate font-medium ${etiqueta}`}>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Acciones */}
+      <div className={`border-t border-af/30 px-4 pb-6 pt-5 ${contraido ? 'md:px-2' : ''}`}>
+        <p className={`mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
+          Ajustes
+        </p>
+
+        <div className={`mb-1 flex items-center justify-between px-2 ${contraido ? 'md:justify-center md:px-0' : ''}`}>
+          <span className={`text-sm text-af-ink-secondary ${etiqueta}`}>Tema</span>
+          <ThemeToggle />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setVistaPreviaAbierta(true)}
+          title="Vista previa"
+          className={`${fila} text-af-ink-secondary hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/[0.08]`}
         >
-          <Store size={18} /> Restaurante
-        </button>
-        <button 
-          onClick={() => setTabActiva('menu')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${tabActiva === 'menu' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-white/5 hover:text-text-main'}`}
-        >
-          <UtensilsCrossed size={18} /> Menú
-        </button>
-        <button 
-          onClick={() => setTabActiva('tema')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${tabActiva === 'tema' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-white/5 hover:text-text-main'}`}
-        >
-          <Palette size={18} /> Apariencia
-        </button>
-        <button 
-          onClick={() => setTabActiva('difusion')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${tabActiva === 'difusion' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-white/5 hover:text-text-main'}`}
-        >
-          <Share2 size={18} /> Difusión
+          <Eye size={18} className="shrink-0" />
+          <span className={`truncate ${etiqueta}`}>Vista previa</span>
         </button>
 
-         <div className="pt-6 mt-6 border-t border-white/5 pb-8">
-           <p className="px-2 text-xs font-bold text-text-muted/50 uppercase tracking-wider mb-3">Acciones</p>
-           <div className="px-4 mb-2 flex justify-between items-center">
-              <span className="text-xs text-text-muted">Tema</span>
-              <ThemeToggle />
-           </div>
-           <button onClick={() => setVistaPreviaAbierta(true)} className="w-full flex items-center gap-3 px-4 py-3 text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl transition-all text-sm">
-             <Eye size={18} /> Preview
-           </button>
-           {restaurante && (
-             <a href={`/restaurante/${generarSlugUnico(restaurante.nombre, restaurante.id)}`} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 px-4 py-3 text-text-muted hover:text-text-main hover:bg-white/5 rounded-xl transition-all text-sm">
-               <ExternalLink size={18} /> Ir al Sitio
-             </a>
-           )}
-            {/* Botón Salir: solo visible en móvil, en PC está en el header */}
-            <button onClick={handleLogout} className="md:hidden w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm">
-             <LogOut size={18} /> Salir
-           </button>
-         </div>
-      </nav>
+        {restaurante && (
+          <a
+            href={`/restaurante/${generarSlugUnico(restaurante.nombre, restaurante.id)}`}
+            target="_blank"
+            rel="noreferrer"
+            title="Ir al sitio"
+            className={`${fila} text-af-ink-secondary hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/[0.08]`}
+          >
+            <ExternalLink size={18} className="shrink-0" />
+            <span className={`truncate ${etiqueta}`}>Ir al sitio</span>
+          </a>
+        )}
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          title="Cerrar sesión"
+          className={`${fila} text-af-danger-text hover:bg-af-danger/10`}
+        >
+          <LogOut size={18} className="shrink-0" />
+          <span className={`truncate ${etiqueta}`}>Salir</span>
+        </button>
+      </div>
     </aside>
   );
 };

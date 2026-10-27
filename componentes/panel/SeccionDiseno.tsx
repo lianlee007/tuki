@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tema, EstiloPlantilla } from '../../tipos';
-import { Clock3, Layout, Grid, List, Check, Grid3x3, Minus, Image } from 'lucide-react';
+import {
+    Layout, List, Minus, Grid3x3, Image as ImageIcon, Check,
+    GalleryHorizontal, LayoutGrid, Columns2, Rows3, Sun, Moon, ShieldCheck, Star,
+} from 'lucide-react';
+import { derivarPaleta, textoSobre, conLuminosidad, type PaletaDerivada } from '../../lib/color';
+import {
+    PALETAS, FAMILIAS, aBase,
+    type Paleta, type FamiliaPaleta, type JuegoColores,
+} from './paletas';
 
 interface SeccionDisenoProps {
     tema: Tema;
@@ -8,107 +16,480 @@ interface SeccionDisenoProps {
     guardando: boolean;
 }
 
-const ARQUETIPOS: { id: EstiloPlantilla; nombre: string; icono: React.ReactNode; desc: string }[] = [
-    { id: 'moderno', nombre: 'Moderno (App)', icono: <Grid size={24} />, desc: 'Tarjetas neumórficas con imágenes grandes. Ideal para todo tipo.' },
-    { id: 'carta', nombre: 'Carta Bistró', icono: <List size={24} />, desc: 'Estilo clásico elegante. Imágenes circulares y tipografía Serif.' },
-    { id: 'minimalista', nombre: 'Minimalista Elegante', icono: <Minus size={24} />, desc: 'Diseño ultra minimalista con mucho espacio en blanco. Perfecto para destacar cada plato.' },
-    { id: 'grid', nombre: 'Grid Editorial', icono: <Grid3x3 size={24} />, desc: 'Diseño tipo revista con grid asimétrico. Ideal para menús visuales impactantes.' },
-    { id: 'inmersivo', nombre: 'Inmersivo', icono: <Image size={24} />, desc: 'Grid continuo tipo editorial con imágenes grandes. Experiencia visual inmersiva.' },
-];
+/* ------------------------------------------------------------------ *
+ *  Miniaturas: cada estructura con su propio gesto, y los colores reales
+ *
+ *  No es un dibujo aparte: usa la MISMA derivación que la página
+ *  (derivarPaleta), así que lo que se ve aquí es exactamente lo que verá
+ *  el cliente, incluidos el precio, los tintes y los bordes corregidos.
+ *
+ *  Cada miniatura copia el gesto de su plantilla —la línea de puntos de la
+ *  carta, la foto redonda del minimal, la tarjeta que se corta en la vitrina,
+ *  el muro sin canalillos del mosaico— para que las nueve se reconozcan de un
+ *  vistazo y ninguna prometa algo que su página no cumpla. Sin cajas de 1 px
+ *  ni contornos: la forma la dice el tono, no la línea.
+ * ------------------------------------------------------------------ */
 
-const PALETAS_PREDEFINIDAS = [
-    { nombre: 'Industrial (Recomendado)', colores: { color_primario: '#EA580C', color_secundario: '#10B981', color_fondo: '#B8BEC5', color_texto: '#0F172A' } },
-    { nombre: 'Minimalista', colores: { color_primario: '#000000', color_secundario: '#4B5563', color_fondo: '#E5E7EB', color_texto: '#0F172A' } },
-    { nombre: 'Lujo Gold', colores: { color_primario: '#D4AF37', color_secundario: '#1F2937', color_fondo: '#FFFFFF', color_texto: '#111827' } },
-    { nombre: 'Orgánico', colores: { color_primario: '#4F772D', color_secundario: '#90A955', color_fondo: '#FAFBF6', color_texto: '#132A13' } },
-    { nombre: 'Fuego', colores: { color_primario: '#D90429', color_secundario: '#EF233C', color_fondo: '#FFFFFF', color_texto: '#2B2D42' } },
-    { nombre: 'Océano', colores: { color_primario: '#0077B6', color_secundario: '#48CAE4', color_fondo: '#F0F9FF', color_texto: '#023E8A' } },
-    { nombre: 'Café Latte', colores: { color_primario: '#6F4E37', color_secundario: '#A67B5B', color_fondo: '#FFFCF9', color_texto: '#4A3B32' } },
-    { nombre: 'Vino Tinto', colores: { color_primario: '#7209B7', color_secundario: '#B5179E', color_fondo: '#FFFFFF', color_texto: '#240046' } },
-    { nombre: 'Pastel', colores: { color_primario: '#FF8FAB', color_secundario: '#FFC2D1', color_fondo: '#FFF5F7', color_texto: '#590D22' } },
-    { nombre: 'Mediterráneo', colores: { color_primario: '#2A9D8F', color_secundario: '#E9C46A', color_fondo: '#FFFFFF', color_texto: '#264653' } },
-    { nombre: 'Lima Urbana', colores: { color_primario: '#84CC16', color_secundario: '#3F3F46', color_fondo: '#FFFFFF', color_texto: '#18181B' } },
-    { nombre: 'Sunset', colores: { color_primario: '#FB5607', color_secundario: '#8338EC', color_fondo: '#FFFFFF', color_texto: '#3A0CA3' } },
-];
+/* ------------------------------------------------------------------ *
+ *  Piezas de la miniatura
+ *
+ *  Dos gestos, idénticos en las nueve estructuras, porque son los dos que
+ *  dan oficio a los cuatro colores de la paleta: la píldora del precio
+ *  (Tinte) y la marca del plato de la casa (Apoyo). Cada forma los dice a su
+ *  manera —píldora donde hay tarjeta, estrella donde solo hay aire—, igual
+ *  que su plantilla.
+ * ------------------------------------------------------------------ */
 
-export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema, guardando }) => {
-    return (
-        <div className="animate-fadeIn space-y-12">
+/** El precio, en píldora teñida: la etiqueta suave del menú. */
+const PildoraPrecio: React.FC<{ tinte: string; tinta: string; className?: string; ancho?: string }> = ({
+    tinte, tinta, className = '', ancho = 'w-3',
+}) => (
+    <span className={`flex shrink-0 items-center rounded-full px-1 py-[3px] ${className}`} style={{ backgroundColor: tinte }}>
+        <span className={`h-1 ${ancho} rounded-full`} style={{ backgroundColor: tinta }} />
+    </span>
+);
 
-            {/* SECCIÓN ARQUETIPOS */}
-            <section>
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-serif font-bold text-text-main mb-2 flex items-center justify-center gap-2"><Layout /> Estructura del Sitio</h2>
-                    <p className="text-text-muted text-lg">¿Cómo quieres que se vea tu menú?</p>
-                </div>
-                <div className="flex justify-center">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl w-full">
-                        {ARQUETIPOS.map((arq) => {
-                            const isSelected = tema.estilo_plantilla === arq.id || (!tema.estilo_plantilla && arq.id === 'moderno');
-                            return (
-                                <button
-                                    key={arq.id}
-                                    onClick={() => aplicarTema({ estilo_plantilla: arq.id })}
-                                    disabled={guardando}
-                                    className={`neumorphic p-6 rounded-2xl text-left transition-all duration-300 relative group
-                                        ${isSelected ? 'border-primary ring-2 ring-primary/20' : 'dark:border-transparent hover:border-primary/30'}
-                                    `}
-                                >
-                                    <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${isSelected ? 'bg-primary text-white shadow-lg' : 'bg-surface text-text-muted'}`}>
-                                        {arq.icono}
+/** El plato de la casa en las estructuras de tarjeta: la píldora del Apoyo. */
+const PildoraCasa: React.FC<{ fondo: string; tinta: string; className?: string }> = ({ fondo, tinta, className = '' }) => (
+    <span className={`flex w-7 shrink-0 items-center justify-center rounded-full py-[4px] ${className}`} style={{ backgroundColor: fondo }}>
+        <span className="h-1 w-3.5 rounded-full" style={{ backgroundColor: tinta }} />
+    </span>
+);
+
+/** El mismo plato de la casa en las estructuras austeras: la estrella. */
+const EstrellaCasa: React.FC<{ color: string }> = ({ color }) => (
+    <Star size={7} strokeWidth={3} fill="currentColor" className="shrink-0" style={{ color }} />
+);
+
+const MiniWireframe: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => {
+    const { bg, surface, border, accentSoft, primary, secondary, text, muted, accentText, secondaryText } = paleta;
+    /** Tinta que se lee encima de cada color de marca, para el texto sobre las fotos. */
+    const tintaFoto = textoSobre(primary);
+    const tintaApoyo = textoSobre(secondary);
+
+    /* Carta impresa: título centrado, dos columnas y la línea de puntos que
+       lleva la vista del nombre al precio. */
+    if (tipo === 'carta') {
+        return (
+            <div className="flex h-full w-full flex-col items-center px-3 py-3" style={{ backgroundColor: bg }}>
+                <div className="mb-3 h-2.5 w-[44%] shrink-0 rounded-full" style={{ backgroundColor: text }} />
+                <div className="flex w-full flex-1 gap-4">
+                    {[0, 1].map((columna) => (
+                        <div key={columna} className="flex flex-1 flex-col justify-around">
+                            {[0, 1, 2].map((fila) => (
+                                <div key={fila} className="flex items-center gap-2">
+                                    <div className="h-4 w-4 shrink-0 rounded-[5px]" style={{ backgroundColor: primary }} />
+                                    <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                                        {columna === 0 && fila === 0 && <EstrellaCasa color={secondaryText} />}
+                                        <div className="h-1.5 w-1/2 shrink-0 rounded-full" style={{ backgroundColor: text }} />
+                                        <div className="min-w-[8px] flex-1 border-b border-dotted" style={{ borderColor: border }} />
+                                        <PildoraPrecio tinte={accentSoft} tinta={accentText} />
                                     </div>
-                                    <h3 className={`font-bold text-lg mb-1 ${isSelected ? 'text-primary' : 'text-text-main'}`}>{arq.nombre}</h3>
-                                    <p className="text-sm text-text-muted">{arq.desc}</p>
-                                    {isSelected && <div className="absolute top-4 right-4 text-primary"><Check size={20} /></div>}
-                                </button>
-                            );
-                        })}
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    /* Minimal: pocos platos, tipografía grande, foto redonda y aire. Ningún
+       contenedor compite con el nombre, así que no hay ni una caja. */
+    if (tipo === 'minimalista') {
+        return (
+            <div className="flex h-full w-full flex-col justify-center gap-4 px-5" style={{ backgroundColor: bg }}>
+                <div className="space-y-2">
+                    <div className="h-3 w-[62%] rounded-full" style={{ backgroundColor: text }} />
+                    <div className="h-1.5 w-[20%] rounded-full" style={{ backgroundColor: muted }} />
+                </div>
+                <div className="space-y-3.5">
+                    {[0, 1].map((i) => (
+                        <div key={i} className="flex items-start gap-3">
+                            <div className="h-5 w-5 shrink-0 rounded-full" style={{ backgroundColor: primary }} />
+                            <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-0.5">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                        {i === 0 && <EstrellaCasa color={secondaryText} />}
+                                        <div className="h-2 w-[46%] shrink-0 rounded-full" style={{ backgroundColor: text }} />
+                                    </div>
+                                    <PildoraPrecio tinte={accentSoft} tinta={accentText} ancho="w-3.5" />
+                                </div>
+                                <div className="h-1 w-[64%] rounded-full" style={{ backgroundColor: muted }} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    /* Editorial: sin cabecera, la apertura ancha abre la sección pegada al
+       borde y debajo cae la retícula de retratos. */
+    if (tipo === 'grid') {
+        return (
+            <div className="flex h-full w-full flex-col gap-2.5 p-3" style={{ backgroundColor: bg }}>
+                <div className="relative shrink-0 overflow-hidden rounded-[8px]" style={{ backgroundColor: primary, flex: '0 0 34%' }}>
+                    <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-2 top-2" />
+                    <div className="absolute inset-x-3 bottom-2.5 space-y-1.5">
+                        <div className="h-2 w-[40%] rounded-full" style={{ backgroundColor: tintaFoto }} />
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-[24%] rounded-full" style={{ backgroundColor: tintaFoto, opacity: 0.65 }} />
+                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="ml-auto" />
+                        </div>
                     </div>
                 </div>
-            </section>
-
-            <div className="h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-            {/* SECCIÓN PALETAS */}
-            <section>
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-serif font-bold text-text-main mb-2">Paleta de Colores</h2>
-                    <p className="text-text-muted text-lg">Define la personalidad de tu marca.</p>
+                <div className="grid flex-1 grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="relative rounded-[6px]" style={{ backgroundColor: primary }}>
+                            {i === 2 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1 top-1" />}
+                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="absolute bottom-1 left-1" />
+                        </div>
+                    ))}
                 </div>
+            </div>
+        );
+    }
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {PALETAS_PREDEFINIDAS.map((p, idx) => {
-                        const isActive = tema.color_primario === p.colores.color_primario && tema.color_secundario === p.colores.color_secundario;
+    /* Vitrina: sin cabecera, la estantería arranca arriba y se corta a la
+       derecha, para que se vea que sigue. */
+    if (tipo === 'vitrina') {
+        return (
+            <div className="flex h-full w-full gap-2.5 overflow-hidden p-3" style={{ backgroundColor: bg }}>
+                {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex w-[58%] shrink-0 flex-col overflow-hidden rounded-[9px]" style={{ backgroundColor: surface }}>
+                        <div className="relative h-[50%] shrink-0" style={{ backgroundColor: primary }}>
+                            {i === 1 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1.5 top-1.5" />}
+                        </div>
+                        <div className="flex flex-1 flex-col justify-center gap-2 px-2.5">
+                            <div className="h-1.5 w-[80%] rounded-full" style={{ backgroundColor: text }} />
+                            <div className="flex items-center justify-between gap-1.5">
+                                <PildoraPrecio tinte={accentSoft} tinta={accentText} />
+                                <div className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: primary }} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    /* Mosaico: muro sin canalillos, sin título y con una pieza de doble
+       tamaño. Es el único que llega casi al borde de la tarjeta. */
+    if (tipo === 'mosaico') {
+        return (
+            <div className="grid h-full w-full grid-cols-4 grid-rows-3 gap-[3px] p-1.5" style={{ backgroundColor: bg }}>
+                <div className="relative col-span-2 row-span-2 overflow-hidden rounded-[4px]" style={{ backgroundColor: primary }}>
+                    <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1.5 top-1.5" />
+                    <PildoraPrecio tinte={accentSoft} tinta={accentText} className="absolute bottom-1.5 left-1.5" />
+                </div>
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div key={i} className="rounded-[4px]" style={{ backgroundColor: primary }} />
+                ))}
+            </div>
+        );
+    }
+
+    /* Díptico: sin cabecera, las dos franjas partidas llenan el alto entero y
+       la foto cambia de lado. Ese zigzag no lo tiene ninguna otra. */
+    if (tipo === 'diptico') {
+        return (
+            <div className="flex h-full w-full flex-col gap-2.5 p-3" style={{ backgroundColor: bg }}>
+                {[0, 1].map((i) => (
+                    <div key={i} className="flex flex-1 overflow-hidden rounded-[10px]" style={{ backgroundColor: surface }}>
+                        <div
+                            className="relative w-1/2 shrink-0"
+                            style={{ backgroundColor: primary, order: i === 1 ? 2 : 0 }}
+                        >
+                            {i === 1 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-2 top-2" />}
+                        </div>
+                        <div className="flex flex-1 flex-col justify-center gap-2 px-3.5">
+                            <div className="h-2 w-[78%] rounded-full" style={{ backgroundColor: text }} />
+                            <div className="h-1.5 w-[52%] rounded-full" style={{ backgroundColor: muted }} />
+                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="self-start" ancho="w-3.5" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    /* Compacta: índice fijo a la izquierda y la lista más densa del conjunto:
+       seis filas de una línea, con paso de tono en vez de reglas. */
+    if (tipo === 'compacta') {
+        return (
+            <div className="flex h-full w-full gap-3 px-2.5 py-2.5" style={{ backgroundColor: bg }}>
+                <div className="flex w-[22%] shrink-0 flex-col gap-2 pt-1">
+                    <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: accentText }} />
+                    <div className="h-1 w-4/5 rounded-full" style={{ backgroundColor: muted }} />
+                    <div className="h-1 w-3/5 rounded-full" style={{ backgroundColor: muted }} />
+                    <div className="h-1 w-4/5 rounded-full" style={{ backgroundColor: muted }} />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="mb-2 h-1.5 w-[45%] shrink-0 rounded-full" style={{ backgroundColor: text }} />
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <div
+                            key={i}
+                            className="flex flex-1 items-center gap-2 rounded-[5px] px-1.5"
+                            style={{ backgroundColor: i % 2 === 1 ? surface : 'transparent' }}
+                        >
+                            <div className="h-3 w-3 shrink-0 rounded-[3px]" style={{ backgroundColor: primary }} />
+                            <div
+                                className="h-1 flex-1 rounded-full"
+                                style={{ backgroundColor: i % 2 === 1 ? muted : text }}
+                            />
+                            {i === 1 && <EstrellaCasa color={secondaryText} />}
+                            <PildoraPrecio tinte={accentSoft} tinta={accentText} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    /* Inmersivo: título centrado y dos fotos grandes con el texto encima.
+       Manda la imagen; no hay ni una tarjeta. */
+    if (tipo === 'inmersivo') {
+        return (
+            <div className="flex h-full w-full flex-col items-center px-3 py-3" style={{ backgroundColor: bg }}>
+                <div className="mb-3 h-2.5 w-[46%] shrink-0 rounded-full" style={{ backgroundColor: text }} />
+                <div className="grid w-full flex-1 grid-cols-2 gap-2.5">
+                    {[0, 1].map((i) => (
+                        <div key={i} className="relative overflow-hidden rounded-[10px]" style={{ backgroundColor: primary }}>
+                            {i === 0 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-2 top-2" />}
+                            <div className="absolute inset-x-2.5 bottom-2.5 space-y-1.5">
+                                <div className="h-2 w-[72%] rounded-full" style={{ backgroundColor: tintaFoto }} />
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-1.5 w-[45%] rounded-full" style={{ backgroundColor: tintaFoto, opacity: 0.7 }} />
+                                    <PildoraPrecio tinte={accentSoft} tinta={accentText} className="ml-auto" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    /* Tarjetas: sin cabecera, la rejilla regular llena el marco entero —foto
+       arriba y nombre, descripción y precio dentro de cada tarjeta—. */
+    return (
+        <div className="grid h-full w-full grid-cols-3 gap-2.5 p-3" style={{ backgroundColor: bg }}>
+            {[0, 1, 2].map((i) => (
+                <div key={i} className="flex flex-col overflow-hidden rounded-[9px]" style={{ backgroundColor: surface }}>
+                    <div className="relative h-[48%] shrink-0" style={{ backgroundColor: primary }}>
+                        {i === 1 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1 top-1" />}
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center gap-1.5 p-2">
+                        <div className="h-1.5 w-[85%] rounded-full" style={{ backgroundColor: text }} />
+                        <div className="h-1 w-[60%] rounded-full" style={{ backgroundColor: muted }} />
+                        <PildoraPrecio tinte={accentSoft} tinta={accentText} className="self-start" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+/* ------------------------------------------------------------------ *
+ *  Arquetipos (estructura del sitio)
+ * ------------------------------------------------------------------ */
+
+const ARQUETIPOS: { id: EstiloPlantilla; nombre: string; icono: React.ReactNode; desc: string }[] = [
+    { id: 'moderno', nombre: 'Tarjetas', icono: <Grid3x3 size={20} />, desc: 'Una tarjeta por plato, con foto y descripción. La más versátil.' },
+    { id: 'carta', nombre: 'Carta', icono: <List size={20} />, desc: 'Dos columnas con foto pequeña y precio destacado. Se lee como una carta impresa.' },
+    { id: 'minimalista', nombre: 'Minimal', icono: <Minus size={20} />, desc: 'Pocos platos, tipografía grande y mucho aire. Para cocina de autor.' },
+    { id: 'grid', nombre: 'Editorial', icono: <Layout size={20} />, desc: 'Una apertura ancha por sección y el resto en retícula de retratos.' },
+    { id: 'inmersivo', nombre: 'Inmersivo', icono: <ImageIcon size={20} />, desc: 'Fotos grandes a sangre con el texto encima. Manda la imagen.' },
+    { id: 'vitrina', nombre: 'Vitrina', icono: <GalleryHorizontal size={20} />, desc: 'Estantería que se recorre en horizontal, categoría por categoría.' },
+    { id: 'mosaico', nombre: 'Mosaico', icono: <LayoutGrid size={20} />, desc: 'Muro de fotos sin canalillos, con piezas de doble tamaño.' },
+    { id: 'diptico', nombre: 'Díptico', icono: <Columns2 size={20} />, desc: 'Franjas partidas: foto a un lado, texto al otro, alternando el lado.' },
+    { id: 'compacta', nombre: 'Compacta', icono: <Rows3 size={20} />, desc: 'Filas densas con índice lateral. La más rápida para cartas largas.' },
+];
+
+/* ------------------------------------------------------------------ *
+ *  Selector de paleta
+ * ------------------------------------------------------------------ */
+
+type ModoVista = 'claro' | 'oscuro';
+
+const TarjetaPaleta: React.FC<{
+    paleta: Paleta;
+    activa: boolean;
+    modo: ModoVista;
+    estructura: EstiloPlantilla;
+    deshabilitado: boolean;
+    onElegir: () => void;
+}> = ({ paleta, activa, modo, estructura, deshabilitado, onElegir }) => {
+    const derivada = derivarPaleta(aBase(modo === 'claro' ? paleta.claro : paleta.oscuro));
+    const muestras: [string, string][] = [
+        ['Fondo', derivada.bg],
+        ['Marca', derivada.primary],
+        ['Apoyo', derivada.secondary],
+        ['Tinte', derivada.accentSoft],
+    ];
+
+    return (
+        <button
+            type="button"
+            onClick={onElegir}
+            disabled={deshabilitado}
+            aria-pressed={activa}
+            title={`${paleta.nombre} — ${paleta.etiqueta}`}
+            className={`af-pulsar group relative overflow-hidden rounded-[20px] border text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                activa ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
+            }`}
+        >
+            <div className="relative h-32 w-full">
+                <MiniWireframe tipo={estructura} paleta={derivada} />
+                <span
+                    className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-wider"
+                    style={{ backgroundColor: derivada.accentSoft, color: derivada.accentText }}
+                    title="Contraste WCAG AA comprobado en claro y en oscuro"
+                >
+                    <ShieldCheck size={10} strokeWidth={2.5} />
+                    AA
+                </span>
+            </div>
+
+            <div className="flex h-1.5">
+                {muestras.map(([nombre, color]) => (
+                    <span key={nombre} title={`${nombre} ${color}`} className="flex-1" style={{ backgroundColor: color }} />
+                ))}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 bg-af-surface p-3.5">
+                <div className="min-w-0">
+                    <p className={`truncate text-sm font-bold ${activa ? 'text-af-accent' : 'text-af-ink'}`}>{paleta.nombre}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-af-ink-secondary">{paleta.etiqueta}</p>
+                </div>
+                {activa && (
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-af-accent text-white">
+                        <Check size={14} strokeWidth={3} />
+                    </span>
+                )}
+            </div>
+        </button>
+    );
+};
+
+const OpcionSegmentada: React.FC<{
+    activa: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+    deshabilitado?: boolean;
+    titulo?: string;
+}> = ({ activa, onClick, children, deshabilitado, titulo }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        disabled={deshabilitado}
+        aria-pressed={activa}
+        title={titulo}
+        className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+            activa ? 'bg-af-accent text-white' : 'text-af-ink-secondary hover:text-af-ink'
+        }`}
+    >
+        {children}
+    </button>
+);
+
+/* ------------------------------------------------------------------ *
+ *  Sección
+ * ------------------------------------------------------------------ */
+
+export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema, guardando }) => {
+    const [familia, setFamilia] = useState<FamiliaPaleta | 'Todas'>('Todas');
+    const [modo, setModo] = useState<ModoVista>('claro');
+
+    const arquetipoActivo: EstiloPlantilla = tema.estilo_plantilla || 'moderno';
+
+    const esSeleccionado = (p: Paleta) =>
+        tema.color_primario?.toUpperCase() === p.claro.primario.toUpperCase() &&
+        tema.color_fondo?.toUpperCase() === p.claro.fondo.toUpperCase();
+
+    const paletaActiva = PALETAS.find(esSeleccionado);
+
+    /** Los colores con los que se dibuja la sección de estructura.
+     *  Siguen el mismo conmutador Claro/Oscuro que las paletas: las nueve
+     *  miniaturas se leen en el modo que estés mirando, no siempre en claro. */
+    const claroActivo: JuegoColores = paletaActiva?.claro ?? {
+        primario: tema.color_primario,
+        secundario: tema.color_secundario,
+        fondo: tema.color_fondo,
+        texto: tema.color_texto,
+        titulos: tema.color_texto_titulos || tema.color_texto,
+    };
+    /* El modo oscuro sale de la misma regla que la página pública
+       (PlantillaRestaurante): si el restaurante no guardó colores oscuros, se
+       derivan del claro con `conLuminosidad`. Así la miniatura no inventa un
+       oscuro que el visitante nunca vería. */
+    const oscuroActivo: JuegoColores = paletaActiva?.oscuro ?? {
+        primario: tema.color_primario_oscuro || conLuminosidad(tema.color_primario, 0.68),
+        secundario: tema.color_secundario_oscuro || conLuminosidad(tema.color_secundario, 0.62),
+        fondo: tema.color_fondo_oscuro || conLuminosidad(tema.color_fondo, 0.055),
+        texto: tema.color_texto_oscuro || '#F5F5F4',
+        titulos: tema.color_texto_titulos_oscuro || '#FFFFFF',
+    };
+    const derivadaActiva = derivarPaleta(aBase(modo === 'oscuro' ? oscuroActivo : claroActivo));
+
+    const visibles = familia === 'Todas' ? PALETAS : PALETAS.filter((p) => p.familia === familia);
+    const descripcionFamilia =
+        familia === 'Todas'
+            ? `${FAMILIAS.length} familias`
+            : FAMILIAS.find((f) => f.id === familia)?.descripcion ?? '';
+
+    const aplicarPaleta = (p: Paleta) => aplicarTema({
+        color_primario: p.claro.primario,
+        color_secundario: p.claro.secundario,
+        color_fondo: p.claro.fondo,
+        color_texto: p.claro.texto,
+        color_texto_titulos: p.claro.titulos,
+        color_primario_oscuro: p.oscuro.primario,
+        color_secundario_oscuro: p.oscuro.secundario,
+        color_fondo_oscuro: p.oscuro.fondo,
+        color_texto_oscuro: p.oscuro.texto,
+        color_texto_titulos_oscuro: p.oscuro.titulos,
+    });
+
+    return (
+        <div className="space-y-14">
+
+            {/* ---------- Estructura ---------- */}
+            <section>
+                <header className="mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight text-af-ink font-title sm:text-3xl">Estructura del sitio</h2>
+                    <p className="mt-1.5 text-af-ink-secondary">Elige cómo se organiza tu menú. Todas las estructuras usan tus colores.</p>
+                </header>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {ARQUETIPOS.map((arq) => {
+                        const activo = arquetipoActivo === arq.id;
                         return (
                             <button
-                                key={idx}
-                                onClick={() => aplicarTema(p.colores)}
+                                key={arq.id}
+                                type="button"
+                                onClick={() => aplicarTema({ estilo_plantilla: arq.id })}
                                 disabled={guardando}
-                                className={`relative group neumorphic rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border text-left
-                                ${isActive ? 'border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10' : 'border-transparent dark:border-white/5 hover:border-primary/30'}
-                                `}
+                                aria-pressed={activo}
+                                className={`af-pulsar relative overflow-hidden rounded-[20px] border text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                                    activo ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
+                                }`}
                             >
-                                <div className="h-24 w-full flex flex-col">
-                                    <div className="flex-1 flex">
-                                        <div className="flex-1 flex items-center justify-center relative" style={{ background: p.colores.color_fondo }}>
-                                            <span className="text-xs font-bold z-10" style={{ color: p.colores.color_texto }}>Muestra</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-8 flex">
-                                        <div className="flex-1 flex items-center justify-center" style={{ background: p.colores.color_primario }}></div>
-                                        <div className="w-1/3 flex items-center justify-center" style={{ background: p.colores.color_secundario }}></div>
-                                    </div>
+                                <div className="h-32 w-full">
+                                    <MiniWireframe tipo={arq.id} paleta={derivadaActiva} />
                                 </div>
-
-                                <div className="p-4 bg-bg flex justify-between items-center">
-                                    <span className={`font-bold text-sm ${isActive ? 'text-primary' : 'text-text-main'}`}>{p.nombre}</span>
-                                    {isActive && <div className="bg-primary text-white p-1 rounded-full"><Check size={14} strokeWidth={3} /></div>}
-                                </div>
-
-                                {guardando && isActive && (
-                                    <div className="absolute inset-0 bg-bg/50 flex items-center justify-center">
-                                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                <div className="border-t border-af/20 bg-af-surface p-4">
+                                    <div className="mb-1 flex items-center gap-2">
+                                        <span className={activo ? 'text-af-accent' : 'text-af-ink-secondary'}>{arq.icono}</span>
+                                        <h3 className={`font-bold ${activo ? 'text-af-accent' : 'text-af-ink'}`}>{arq.nombre}</h3>
                                     </div>
+                                    <p className="text-xs leading-relaxed text-af-ink-secondary">{arq.desc}</p>
+                                </div>
+                                {activo && (
+                                    <span className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-af-accent text-white">
+                                        <Check size={14} strokeWidth={3} />
+                                    </span>
                                 )}
                             </button>
                         );
@@ -116,11 +497,83 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                 </div>
             </section>
 
-            <div className="flex justify-center mt-8">
-                <p className="text-xs text-text-muted flex items-center gap-2 bg-surface px-4 py-2 rounded-full border border-white/5 shadow-sm">
-                    <Clock3 size={14} /> Los cambios se aplican inmediatamente.
+            {/* ---------- Paleta ---------- */}
+            <section>
+                <header className="mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight text-af-ink font-title sm:text-3xl">Paleta de colores</h2>
+                    <p className="mt-1.5 max-w-2xl text-af-ink-secondary">
+                        Cada paleta incluye su versión clara y su versión oscura, y está preparada para leerse bien en las nueve
+                        estructuras. Quien visita tu página elige el modo que prefiera; tú eliges el carácter. Tu panel también
+                        adopta este color de marca, así que reconoces tu restaurante en toda la herramienta.
+                    </p>
+                </header>
+
+                {/* Controles: familia y modo de la vista previa */}
+                <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div
+                        role="group"
+                        aria-label="Filtrar paletas por familia"
+                        /* Envuelve en vez de desplazarse: con siete familias la fila ya
+                           no cabe en una pantalla de portátil, y una barra que se
+                           desplaza en horizontal sin barra visible esconde la última
+                           familia sin que nadie se entere. Con `rounded-[20px]` en vez
+                           de `rounded-full` la cápsula aguanta dos líneas sin cortar
+                           las puntas. */
+                        className="flex flex-wrap gap-1 rounded-[20px] border border-af/25 bg-af-surface p-1"
+                    >
+                        <OpcionSegmentada activa={familia === 'Todas'} onClick={() => setFamilia('Todas')}>Todas</OpcionSegmentada>
+                        {FAMILIAS.map((f) => (
+                            <OpcionSegmentada key={f.id} activa={familia === f.id} onClick={() => setFamilia(f.id)} titulo={f.descripcion}>
+                                {f.id}
+                            </OpcionSegmentada>
+                        ))}
+                    </div>
+
+                    <div
+                        role="group"
+                        aria-label="Modo de la vista previa"
+                        className="flex shrink-0 gap-1 self-start rounded-full border border-af/25 bg-af-surface p-1 lg:self-auto"
+                    >
+                        <OpcionSegmentada activa={modo === 'claro'} onClick={() => setModo('claro')} deshabilitado={guardando}>
+                            <span className="inline-flex items-center gap-1.5"><Sun size={14} /> Claro</span>
+                        </OpcionSegmentada>
+                        <OpcionSegmentada activa={modo === 'oscuro'} onClick={() => setModo('oscuro')} deshabilitado={guardando}>
+                            <span className="inline-flex items-center gap-1.5"><Moon size={14} /> Oscuro</span>
+                        </OpcionSegmentada>
+                    </div>
+                </div>
+
+                <p className="mb-4 text-xs text-af-ink-secondary">
+                    {visibles.length} {visibles.length === 1 ? 'paleta' : 'paletas'} · {descripcionFamilia}
                 </p>
-            </div>
+
+                {!paletaActiva && (
+                    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-[16px] border border-af/25 bg-af-surface px-4 py-3">
+                        <span className="flex gap-1.5">
+                            {[tema.color_primario, tema.color_secundario, tema.color_fondo].map((col) => (
+                                <span key={col} className="h-4 w-4 rounded-full border border-black/10" style={{ backgroundColor: col }} />
+                            ))}
+                        </span>
+                        <p className="text-xs text-af-ink-secondary">
+                            Estás usando colores personalizados. Elige una paleta para unificarlos en claro y en oscuro.
+                        </p>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    {visibles.map((p) => (
+                        <TarjetaPaleta
+                            key={p.id}
+                            paleta={p}
+                            activa={esSeleccionado(p)}
+                            modo={modo}
+                            estructura={arquetipoActivo}
+                            deshabilitado={guardando}
+                            onElegir={() => aplicarPaleta(p)}
+                        />
+                    ))}
+                </div>
+            </section>
         </div>
     );
 };

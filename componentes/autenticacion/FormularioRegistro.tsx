@@ -1,16 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Boton, Input } from '../ui';
-import { MessageCircle, ShieldCheck, Check, XCircle, AlertCircle, AlertTriangle, Mail } from 'lucide-react';
+import { ShieldCheck, Check, XCircle, AlertCircle, AlertTriangle, Mail } from 'lucide-react';
 
 interface FormularioRegistroProps {
   cambiarModo: () => void;
+  /** El papel viaja al trigger de alta: cliente no crea restaurante automático. */
+  rol?: 'cliente' | 'restaurante';
+  textoBoton?: string;
 }
 
-export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarModo }) => {
+export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
+  cambiarModo,
+  rol = 'restaurante',
+  textoBoton = 'Crear Cuenta',
+}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,7 +27,6 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
   const [error, setError] = useState<string | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
 
-  // Asegurar que el formulario siempre esté vacío al montarse
   useEffect(() => {
     setEmail('');
     setPassword('');
@@ -33,52 +38,50 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
     setEmailTouched(false);
   }, []);
 
-  // Validaciones
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasMinLength = password.length >= 8;
-  
+
   const isEmailValid = emailRegex.test(email);
   const isStrongPassword = hasMinLength && hasUpperCase && hasLowerCase && hasNumber;
   const passwordsMatch = password === confirmPassword && password !== '';
-  
+
   const formValid = isEmailValid && isStrongPassword && passwordsMatch && nombre.length > 0 && apellido.length > 0 && aceptaTerminos;
 
   const handleNameChange = (setter: (val: string) => void, value: string) => {
-     if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value) && value.length <= 50) {
-        setter(value);
-     }
+    if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value) && value.length <= 50) {
+      setter(value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValid) return;
-    
+
     setLoading(true);
     setError(null);
 
     try {
-        const { error } = await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            data: { nombre, apellido }
-          }
-        });
-        if (error) throw error;
-        alert("Registro exitoso. Por favor revisa tu correo o inicia sesión.");
-        // Limpiar todos los campos antes de cambiar de modo
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setNombre('');
-        setApellido('');
-        setAceptaTerminos(false);
-        setError(null);
-        setEmailTouched(false);
-        cambiarModo();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { nombre, apellido, rol }
+        }
+      });
+      if (error) throw error;
+      alert("Registro exitoso. Por favor revisa tu correo o inicia sesión.");
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setNombre('');
+      setApellido('');
+      setAceptaTerminos(false);
+      setError(null);
+      setEmailTouched(false);
+      cambiarModo();
     } catch (error: any) {
       if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
         setError("Este correo electrónico ya está registrado. Intenta iniciar sesión.");
@@ -90,152 +93,151 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({ cambiarM
     }
   };
 
-  const ValidationIcon = ({ valid, active }: { valid: boolean, active: boolean }) => {
-    if (!active) return <div className="w-4 h-4 border border-white/10 rounded-full" />;
-    return valid ? <Check size={16} className="text-green-500" /> : <XCircle size={16} className="text-red-500" />;
+  const ValidationIcon = ({ valid, active }: { valid: boolean; active: boolean }) => {
+    if (!active) return <div className="w-4 h-4 border border-af-border/50 rounded-full" />;
+    return valid ? <Check size={16} className="text-af-success" /> : <XCircle size={16} className="text-af-danger" />;
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full" autoComplete="off">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fadeIn">
-            <Input 
-                placeholder="Nombre" 
-                value={nombre} 
-                onChange={e => handleNameChange(setNombre, e.target.value)} 
-                required 
-                className={nombre.length > 1 ? "border-green-500/30" : ""}
-                maxLength={50}
-                autoComplete="off"
-                autoFocus={false}
-            />
-            <Input 
-                placeholder="Apellido" 
-                value={apellido} 
-                onChange={e => handleNameChange(setApellido, e.target.value)} 
-                required 
-                className={apellido.length > 1 ? "border-green-500/30" : ""}
-                maxLength={50}
-                autoComplete="off"
-                autoFocus={false}
-            />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-af">
+        <Input
+          placeholder="Nombre"
+          value={nombre}
+          onChange={e => handleNameChange(setNombre, e.target.value)}
+          required
+          className={nombre.length > 1 ? "border-af-success/30" : ""}
+          maxLength={50}
+          autoComplete="off"
+          autoFocus={false}
+        />
+        <Input
+          placeholder="Apellido"
+          value={apellido}
+          onChange={e => handleNameChange(setApellido, e.target.value)}
+          required
+          className={apellido.length > 1 ? "border-af-success/30" : ""}
+          maxLength={50}
+          autoComplete="off"
+          autoFocus={false}
+        />
+      </div>
 
-        <div className="relative">
-            <Input 
-            type="email" 
-            placeholder="Correo electrónico" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            onBlur={() => setEmailTouched(true)}
-            required 
-            icon={<Mail size={18} />}
-            className={email.length > 0 ? (isEmailValid ? "border-green-500/50" : (emailTouched ? "border-red-500/50" : "")) : ""}
-            maxLength={100}
-            autoComplete="off"
-            autoFocus={false}
-            />
-            {email.length > 0 && !isEmailValid && emailTouched && (
-            <p className="text-[10px] text-red-400 mt-1 ml-1 absolute -bottom-4">Formato inválido</p>
-            )}
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2">
-            <Input 
-                type="password" 
-                placeholder="Contraseña" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                required 
-                icon={<ShieldCheck size={18} />}
-                className={password.length > 0 ? (isStrongPassword ? "border-green-500/50" : "border-orange-500/50") : ""}
-                maxLength={64}
-                autoComplete="new-password"
-                autoFocus={false}
-            />
-
-            <Input 
-                type="password" 
-                placeholder="Confirmar" 
-                value={confirmPassword} 
-                onChange={e => setConfirmPassword(e.target.value)} 
-                required 
-                icon={<ShieldCheck size={18} />}
-                className={confirmPassword.length > 0 ? (passwordsMatch ? "border-green-500/50" : "border-red-500/50") : ""}
-                maxLength={64}
-                autoComplete="new-password"
-                autoFocus={false}
-            />
-        </div>
-
-        <div className="animate-fadeIn space-y-2">
-            {/* Requisitos de contraseña compactos */}
-            <div className="bg-surface/50 p-3 rounded-xl border border-white/5 text-xs flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center justify-between">
-                <span className="font-bold text-text-muted uppercase flex items-center gap-1 mb-1 sm:mb-0">
-                    <AlertCircle size={10} /> Seguridad:
-                </span>
-                <div className="flex flex-wrap gap-x-4 gap-y-2">
-                    <div className={`flex items-center gap-1 ${password.length > 0 ? (hasMinLength ? 'text-green-500' : 'text-red-400') : 'text-text-muted'}`}>
-                        <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8+ chars
-                    </div>
-                    <div className={`flex items-center gap-1 ${password.length > 0 ? (hasUpperCase ? 'text-green-500' : 'text-red-400') : 'text-text-muted'}`}>
-                        <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Mayúscula
-                    </div>
-                    <div className={`flex items-center gap-1 ${password.length > 0 ? (hasLowerCase ? 'text-green-500' : 'text-red-400') : 'text-text-muted'}`}>
-                        <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Minúscula
-                    </div>
-                    <div className={`flex items-center gap-1 ${password.length > 0 ? (hasNumber ? 'text-green-500' : 'text-red-400') : 'text-text-muted'}`}>
-                        <ValidationIcon valid={hasNumber} active={password.length > 0} /> Número
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex items-start gap-3 pt-1">
-                <div className="relative flex items-center pt-1">
-                    <input 
-                    type="checkbox" 
-                    id="terms" 
-                    checked={aceptaTerminos}
-                    onChange={e => setAceptaTerminos(e.target.checked)}
-                    className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-400 dark:border-white/20 bg-surface checked:border-primary checked:bg-primary transition-all"
-                    />
-                    <Check size={12} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" />
-                </div>
-                <label htmlFor="terms" className="text-xs text-text-muted cursor-pointer select-none leading-snug">
-                    Acepto los <Link to="/terminos" target="_blank" className="text-primary hover:underline font-bold">términos</Link> y la <Link to="/privacidad" target="_blank" className="text-primary hover:underline font-bold">política de privacidad</Link>.
-                </label>
-            </div>
-        </div>
-
-        {error && (
-            <div className="animate-fadeIn p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3 text-red-500 text-sm font-medium">
-            <AlertTriangle size={18} className="flex-shrink-0" />
-            <span>{error}</span>
-            </div>
+      <div className="relative">
+        <Input
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onBlur={() => setEmailTouched(true)}
+          required
+          icon={<Mail size={18} />}
+          className={email.length > 0 ? (isEmailValid ? "border-af-success/50" : (emailTouched ? "border-af-danger/50" : "")) : ""}
+          maxLength={100}
+          autoComplete="off"
+          autoFocus={false}
+        />
+        {email.length > 0 && !isEmailValid && emailTouched && (
+          <p className="text-[10px] text-af-danger mt-1 ml-1 absolute -bottom-4 animate-fade-in-af">Formato inválido</p>
         )}
-        
-        <div className="pt-2">
-            <Boton 
-                className={`w-full text-lg transition-all duration-300 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} 
-                type="submit" 
-                cargando={loading}
-                disabled={!formValid}
-            >
-                Crear Cuenta
-            </Boton>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          icon={<ShieldCheck size={18} />}
+          className={password.length > 0 ? (isStrongPassword ? "border-af-success/50" : "border-amber-500/50") : ""}
+          maxLength={64}
+          autoComplete="new-password"
+          autoFocus={false}
+        />
+
+        <Input
+          type="password"
+          placeholder="Confirmar"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          required
+          icon={<ShieldCheck size={18} />}
+          className={confirmPassword.length > 0 ? (passwordsMatch ? "border-af-success/50" : "border-af-danger/50") : ""}
+          maxLength={64}
+          autoComplete="new-password"
+          autoFocus={false}
+        />
+      </div>
+
+      <div className="animate-fade-in-af space-y-2">
+        <div className="bg-af-surface/30 dark:bg-black/30 p-3 rounded-xl border border-af/20 text-xs flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center justify-between">
+          <span className="font-bold text-af-ink-secondary uppercase flex items-center gap-1 mb-1 sm:mb-0">
+            <AlertCircle size={10} /> Seguridad:
+          </span>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasMinLength ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+              <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8+ chars
+            </div>
+            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasUpperCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+              <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Mayúscula
+            </div>
+            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasLowerCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+              <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Minúscula
+            </div>
+            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasNumber ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+              <ValidationIcon valid={hasNumber} active={password.length > 0} /> Número
+            </div>
+          </div>
         </div>
 
-        <div className="mt-6 text-center">
-            <p className="text-sm text-text-muted relative z-10">
-            ¿Ya tienes cuenta? 
-            <button 
-                type="button"
-                onClick={cambiarModo} 
-                className="text-primary font-bold hover:text-accent transition-colors ml-1"
-            >
-                Inicia sesión
-            </button>
-            </p>
+        <div className="flex items-start gap-3 pt-1">
+          <div className="relative flex items-center pt-1">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={aceptaTerminos}
+              onChange={e => setAceptaTerminos(e.target.checked)}
+              className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-400 dark:border-white/20 bg-af-surface checked:border-af-accent checked:bg-af-accent transition-all"
+            />
+            <Check size={12} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" />
+          </div>
+          <label htmlFor="terms" className="text-xs text-af-ink-secondary cursor-pointer select-none leading-snug">
+            Acepto los <Link to="/terminos" target="_blank" className="text-af-accent hover:opacity-80 font-bold">términos</Link> y la <Link to="/privacidad" target="_blank" className="text-af-accent hover:opacity-80 font-bold">política de privacidad</Link>.
+          </label>
         </div>
+      </div>
+
+      {error && (
+        <div className="animate-fade-in-af p-3 rounded-xl bg-af-danger/10 border border-af-danger/30 flex items-center gap-3 text-af-danger text-sm font-medium">
+          <AlertTriangle size={18} className="flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="pt-2">
+        <Boton
+          className={`w-full text-lg transition-all duration-200 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+          type="submit"
+          cargando={loading}
+          disabled={!formValid}
+        >
+          {textoBoton}
+        </Boton>
+      </div>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-af-ink-secondary relative z-10">
+          ¿Ya tienes cuenta?
+          <button
+            type="button"
+            onClick={cambiarModo}
+            className="text-af-accent font-bold hover:opacity-80 transition-colors ml-1"
+          >
+            Inicia sesión
+          </button>
+        </p>
+      </div>
     </form>
   );
 };

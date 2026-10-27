@@ -24,7 +24,10 @@ export const ENV = {
   SUPABASE_ANON_KEY: getEnv("VITE_SUPABASE_ANON_KEY", ""),
   CLOUDINARY_CLOUD_NAME: getEnv("VITE_CLOUDINARY_CLOUD_NAME", ""),
   CLOUDINARY_UPLOAD_PRESET: getEnv("VITE_CLOUDINARY_UPLOAD_PRESET", ""),
-  GROQ_API_KEY: getEnv("VITE_GROQ_API_KEY", "")
+  // Ruta del AI Gateway. Por defecto es el mismo origen (`/api`), que Vite
+  // redirige en desarrollo y Nginx/Ingress en Docker y Kubernetes. La clave de
+  // Groq vive solo en el servidor.
+  AI_GATEWAY_URL: getEnv("VITE_AI_GATEWAY_URL", "/api")
 };
 
 // Límites de caracteres estandarizados para todos los formularios
@@ -36,6 +39,8 @@ export const LIMITES = {
   REST_TELEFONO: 10, // Actualizado a 10 dígitos exactos
   REST_DIRECCION: 120,
   REST_CIUDAD: 50,
+  REST_DEPARTAMENTO: 60, // "Archipiélago de San Andrés, Providencia y Santa Catalina"
+  REST_MUNICIPIO: 80,
   REST_URL: 200, // Facebook, Instagram
   
   PLATILLO_NOMBRE: 60, 
