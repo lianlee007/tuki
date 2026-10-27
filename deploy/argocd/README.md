@@ -4,14 +4,14 @@ Las dos `Application` apuntan al mismo repositorio y a overlays distintos:
 
 | Aplicación | Overlay | Sync | Uso |
 | --- | --- | --- | --- |
-| `riki-local` | `deploy/k8s/overlays/local` | Manual | Docker Desktop / kind / k3d |
-| `riki-production` | `deploy/k8s/overlays/production` | Automático | Clúster real |
+| `tuki-local` | `deploy/k8s/overlays/local` | Manual | Docker Desktop / kind / k3d |
+| `tuki-production` | `deploy/k8s/overlays/production` | Automático | Clúster real |
 
 ## Requisitos
 
 - ArgoCD instalado en el namespace `argocd`.
 - El repositorio accesible desde ArgoCD (público o con credenciales).
-- El secreto `riki-ai-gateway` creado en el namespace `riki` **antes** del
+- El secreto `tuki-ai-gateway` creado en el namespace `tuki` **antes** del
   primer sync (o gestionado con Sealed Secrets / External Secrets).
 - En producción, `SUPABASE_URL` del overlay reemplazada por la real. El gateway
   falla al arrancar si detecta el placeholder.
@@ -23,10 +23,10 @@ kubectl apply -f deploy/argocd/application-local.yaml
 # o
 kubectl apply -f deploy/argocd/application-production.yaml
 
-argocd app get riki-production
-argocd app sync riki-local
-argocd app history riki-production
-argocd app rollback riki-production <ID>
+argocd app get tuki-production
+argocd app sync tuki-local
+argocd app history tuki-production
+argocd app rollback tuki-production <ID>
 ```
 
 ## Notas

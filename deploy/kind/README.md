@@ -1,4 +1,4 @@
-# Clúster local de Riki con kind
+# Clúster local de Tuki con kind
 
 Alternativa reproducible a Docker Desktop para el módulo 2. Crea un clúster de
 tres nodos, carga las imágenes locales y aplica el overlay `local`.
@@ -26,7 +26,7 @@ En Windows, ejecuta los comandos desde WSL o Git Bash.
 
 ```bash
 kind create cluster --config deploy/kind/cluster.yaml
-kubectl cluster-info --context kind-riki
+kubectl cluster-info --context kind-tuki
 kubectl get nodes
 ```
 
@@ -36,7 +36,7 @@ Si el equipo tiene poca memoria:
 
 ```bash
 # Edita cluster.yaml y deja solo el control-plane y un worker antes de crear.
-kind delete cluster --name riki
+kind delete cluster --name tuki
 kind create cluster --config deploy/kind/cluster.yaml
 ```
 
@@ -54,18 +54,18 @@ docker build \
   --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
   --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   --build-arg VITE_AI_GATEWAY_URL=/api \
-  -t riki:local-0.2.0 .
+  -t tuki:local-0.2.0 .
 
-docker build -t riki-ai-gateway:local-0.2.0 services/ai-gateway
+docker build -t tuki-ai-gateway:local-0.2.0 services/ai-gateway
 
-kind load docker-image riki:local-0.2.0 --name riki
-kind load docker-image riki-ai-gateway:local-0.2.0 --name riki
+kind load docker-image tuki:local-0.2.0 --name tuki
+kind load docker-image tuki-ai-gateway:local-0.2.0 --name tuki
 ```
 
 Comprueba que los nodos ven las imágenes:
 
 ```bash
-docker exec -it riki-control-plane crictl images | grep riki
+docker exec -it tuki-control-plane crictl images | grep tuki
 ```
 
 ---
@@ -76,20 +76,20 @@ El manifiesto del overlay crea el namespace, pero el secreto se crea aparte para
 no versionar la clave.
 
 ```bash
-kubectl create namespace riki --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic riki-ai-gateway \
+kubectl create namespace tuki --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic tuki-ai-gateway \
   --from-literal=GROQ_API_KEY="$GROQ_API_KEY" \
-  -n riki
+  -n tuki
 ```
 
 Si el secreto ya existe y cambiaste la clave:
 
 ```bash
-kubectl delete secret riki-ai-gateway -n riki
-kubectl create secret generic riki-ai-gateway \
+kubectl delete secret tuki-ai-gateway -n tuki
+kubectl create secret generic tuki-ai-gateway \
   --from-literal=GROQ_API_KEY="$GROQ_API_KEY" \
-  -n riki
-kubectl rollout restart deployment/riki-ai-gateway -n riki
+  -n tuki
+kubectl rollout restart deployment/tuki-ai-gateway -n tuki
 ```
 
 ---
@@ -98,14 +98,14 @@ kubectl rollout restart deployment/riki-ai-gateway -n riki
 
 ```bash
 kubectl apply -k deploy/k8s/overlays/local
-kubectl rollout status deployment/riki -n riki
-kubectl rollout status deployment/riki-ai-gateway -n riki
-kubectl get pods,svc -n riki -o wide
+kubectl rollout status deployment/tuki -n tuki
+kubectl rollout status deployment/tuki-ai-gateway -n tuki
+kubectl get pods,svc -n tuki -o wide
 ```
 
 El overlay local:
 
-- usa `riki:local-0.2.0` y `riki-ai-gateway:local-0.2.0`;
+- usa `tuki:local-0.2.0` y `tuki-ai-gateway:local-0.2.0`;
 - deja los Services como `ClusterIP`;
 - elimina Ingress, HPA, PDB y NetworkPolicy;
 - desactiva la validación JWT (`AI_AUTH_MODE=disabled`).
@@ -118,13 +118,13 @@ No expongas este clúster a Internet: el modo `disabled` es solo para laboratori
 
 ```bash
 # Terminal 1: SPA y proxy /api
-kubectl port-forward -n riki svc/riki 8081:80
+kubectl port-forward -n tuki svc/tuki 8081:80
 
 # Terminal 2: gateway directo (opcional)
-kubectl port-forward -n riki svc/ai-gateway 8002:8000
+kubectl port-forward -n tuki svc/ai-gateway 8002:8000
 
 # Terminal 3: métricas de Nginx (opcional)
-kubectl port-forward -n riki svc/riki 9114:9113
+kubectl port-forward -n tuki svc/tuki 9114:9113
 ```
 
 Comprobaciones:
@@ -198,9 +198,9 @@ de laboratorio, no una configuración de producción.
 
 | Síntoma | Causa probable | Solución |
 | --- | --- | --- |
-| `ImagePullBackOff` | La imagen no se cargó en los nodos | `kind load docker-image ... --name riki` |
+| `ImagePullBackOff` | La imagen no se cargó en los nodos | `kind load docker-image ... --name tuki` |
 | `CrashLoopBackOff` en el gateway | Falta el secreto o la clave está vacía | Revisa `kubectl logs` y recrea el secreto |
-| `/api` devuelve 502 | El gateway no está Ready | `kubectl describe pod -n riki -l app.kubernetes.io/name=riki-ai-gateway` |
+| `/api` devuelve 502 | El gateway no está Ready | `kubectl describe pod -n tuki -l app.kubernetes.io/name=tuki-ai-gateway` |
 | El pod sigue con la configuración vieja | Tag reutilizado | Usa un tag nuevo y vuelve a cargar |
 | No hay Ingress | El overlay local lo elimina | Usa port-forward o el overlay de producción |
 | NetworkPolicy no bloquea | CNI sin soporte | Instala Calico o prueba en un clúster real |
@@ -210,7 +210,7 @@ de laboratorio, no una configuración de producción.
 ## 10. Eliminar el clúster
 
 ```bash
-kind delete cluster --name riki
+kind delete cluster --name tuki
 ```
 
 Esto borra el clúster y sus volúmenes. No borra las imágenes de Docker locales ni

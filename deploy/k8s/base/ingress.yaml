@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: riki
+  name: tuki
   labels:
-    app.kubernetes.io/name: riki
+    app.kubernetes.io/name: tuki
     app.kubernetes.io/component: web
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "64k"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
@@ -15,10 +15,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - riki.example.com
-      secretName: riki-tls
+        - tuki.example.com
+      secretName: tuki-tls
   rules:
-    - host: riki.example.com
+    - host: tuki.example.com
       http:
         paths:
           # El AI Gateway conserva el prefijo /api; Nginx e Ingress solo
@@ -34,6 +34,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: riki
+                name: tuki
                 port:
                   name: http

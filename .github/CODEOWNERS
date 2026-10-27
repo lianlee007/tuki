@@ -1,10 +1,10 @@
 # Propiedad del código. GitHub asigna revisores automáticamente.
 # En un equipo real se sustituye por los grupos del repositorio institucional.
 
-*                       @Leonardo007x
+*                       @lianlee007
 
 # Superficies críticas: cualquier cambio aquí exige revisión adicional.
-/deploy                 @Leonardo007x
-/.github                @Leonardo007x
-/services/ai-gateway    @Leonardo007x
-/docs/security          @Leonardo007x
+/deploy                 @lianlee007
+/.github                @lianlee007
+/services/ai-gateway    @lianlee007
+/docs/security          @lianlee007

@@ -2,29 +2,29 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # Overlay de producción. Antes de aplicarlo:
-#   1. Reemplaza `ghcr.io/leonardo007x/...` por tus imágenes reales.
+#   1. Reemplaza `ghcr.io/lianlee007/...` por tus imágenes reales.
 #   2. Define el tag que quieres desplegar.
-#   3. Cambia `riki.app` por tu dominio en el patch del Ingress.
+#   3. Cambia `tuki.app` por tu dominio en el patch del Ingress.
 #   4. Ajusta el ClusterIssuer de cert-manager si usas otro nombre.
 #   5. Reemplaza `SUPABASE_URL` por la URL real del proyecto.
-#   6. Crea el secreto `riki-ai-gateway` (ver deploy/k8s/base/ai-gateway-secret.example.yaml).
-namespace: riki
+#   6. Crea el secreto `tuki-ai-gateway` (ver deploy/k8s/base/ai-gateway-secret.example.yaml).
+namespace: tuki
 
 resources:
   - ../../base
 
 images:
-  - name: ghcr.io/leonardo007x/leefood
-    newName: ghcr.io/leonardo007x/leefood
+  - name: ghcr.io/lianlee007/tuki
+    newName: ghcr.io/lianlee007/tuki
     newTag: "0.1.0"
-  - name: ghcr.io/leonardo007x/riki-ai-gateway
-    newName: ghcr.io/leonardo007x/riki-ai-gateway
+  - name: ghcr.io/lianlee007/tuki-ai-gateway
+    newName: ghcr.io/lianlee007/tuki-ai-gateway
     newTag: "0.1.0"
 
 patches:
   - target:
       kind: Ingress
-      name: riki
+      name: tuki
     patch: |-
       - op: add
         path: /metadata/annotations
@@ -36,14 +36,14 @@ patches:
           nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
       - op: replace
         path: /spec/rules/0/host
-        value: riki.app
+        value: tuki.app
       - op: replace
         path: /spec/tls/0/hosts/0
-        value: riki.app
+        value: tuki.app
 
   - target:
       kind: HorizontalPodAutoscaler
-      name: riki
+      name: tuki
     patch: |-
       - op: replace
         path: /spec/maxReplicas
@@ -51,7 +51,7 @@ patches:
 
   - target:
       kind: HorizontalPodAutoscaler
-      name: riki-ai-gateway
+      name: tuki-ai-gateway
     patch: |-
       - op: replace
         path: /spec/maxReplicas

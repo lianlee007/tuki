@@ -1,18 +1,18 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: riki-ai-gateway
+  name: tuki-ai-gateway
   labels:
-    app.kubernetes.io/name: riki-ai-gateway
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/name: tuki-ai-gateway
+    app.kubernetes.io/part-of: tuki
     release: kube-prometheus-stack
 spec:
   namespaceSelector:
     matchNames:
-      - riki
+      - tuki
   selector:
     matchLabels:
-      app.kubernetes.io/name: riki-ai-gateway
+      app.kubernetes.io/name: tuki-ai-gateway
   endpoints:
     - port: http
       path: /metrics

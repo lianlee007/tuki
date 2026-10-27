@@ -1,10 +1,10 @@
 # =============================================================================
-# Clúster local de Riki con kind.
+# Clúster local de Tuki con kind.
 #
 # Uso:
 #   kind create cluster --config deploy/kind/cluster.yaml
-#   kind load docker-image riki:local-0.2.0 --name riki
-#   kind load docker-image riki-ai-gateway:local-0.2.0 --name riki
+#   kind load docker-image tuki:local-0.2.0 --name tuki
+#   kind load docker-image tuki-ai-gateway:local-0.2.0 --name tuki
 #   kubectl apply -k deploy/k8s/overlays/local
 #
 # Tres nodos permiten observar topologySpreadConstraints, PDB y anti-affinity.
@@ -16,7 +16,7 @@
 # =============================================================================
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-name: riki
+name: tuki
 
 nodes:
   - role: control-plane

@@ -9,7 +9,7 @@ kind: Kustomization
 # Ajusta la etiqueta `release` de ServiceMonitor/PrometheusRule al selector de
 # tu instalación. El dashboard se publica como ConfigMap con la etiqueta
 # `grafana_dashboard: "1"`, que el sidecar de Grafana detecta automáticamente.
-namespace: riki
+namespace: tuki
 
 resources:
   - servicemonitor-web.yaml
@@ -17,13 +17,13 @@ resources:
   - prometheusrule.yaml
 
 configMapGenerator:
-  - name: riki-grafana-dashboard
+  - name: tuki-grafana-dashboard
     files:
-      - dashboards/riki-overview.json
+      - dashboards/tuki-overview.json
     options:
       labels:
         grafana_dashboard: "1"
-        app.kubernetes.io/part-of: riki
+        app.kubernetes.io/part-of: tuki
 
 generatorOptions:
   disableNameSuffixHash: true
