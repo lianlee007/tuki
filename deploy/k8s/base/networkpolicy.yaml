@@ -1,5 +1,5 @@
 # =============================================================================
-# NetworkPolicies de Riki.
+# NetworkPolicies de Tuki.
 #
 # - La SPA solo acepta tráfico desde ingress-nginx (8080) y desde el namespace
 #   de monitorización para el exporter (9113).
@@ -13,15 +13,15 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: riki-web
+  name: tuki-web
   labels:
-    app.kubernetes.io/name: riki
+    app.kubernetes.io/name: tuki
     app.kubernetes.io/component: network
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: riki
+      app.kubernetes.io/name: tuki
   policyTypes:
     - Ingress
     - Egress
@@ -48,7 +48,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app.kubernetes.io/name: riki-ai-gateway
+              app.kubernetes.io/name: tuki-ai-gateway
       ports:
         - protocol: TCP
           port: 8000
@@ -67,15 +67,15 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: riki-ai-gateway
+  name: tuki-ai-gateway
   labels:
-    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/name: tuki-ai-gateway
     app.kubernetes.io/component: network
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: riki-ai-gateway
+      app.kubernetes.io/name: tuki-ai-gateway
   policyTypes:
     - Ingress
     - Egress
@@ -87,7 +87,7 @@ spec:
               kubernetes.io/metadata.name: ingress-nginx
         - podSelector:
             matchLabels:
-              app.kubernetes.io/name: riki
+              app.kubernetes.io/name: tuki
       ports:
         - protocol: TCP
           port: 8000

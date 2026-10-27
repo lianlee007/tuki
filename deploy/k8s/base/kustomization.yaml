@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: riki
+namespace: tuki
 
 resources:
   - namespace.yaml
@@ -19,10 +19,10 @@ resources:
   - ai-gateway-pdb.yaml
   - networkpolicy.yaml
 
-# Cambia `ghcr.io/leonardo007x/...` por tu registro y el tag por la versión
+# Cambia `ghcr.io/lianlee007/...` por tu registro y el tag por la versión
 # publicada. También puedes sobreescribirlo desde un overlay.
 images:
-  - name: ghcr.io/leonardo007x/leefood
+  - name: ghcr.io/lianlee007/tuki
     newTag: "0.1.0"
-  - name: ghcr.io/leonardo007x/riki-ai-gateway
+  - name: ghcr.io/lianlee007/tuki-ai-gateway
     newTag: "0.1.0"
