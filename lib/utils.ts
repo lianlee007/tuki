@@ -30,3 +30,29 @@ export const generarSlugUnico = (nombre: string, id: string): string => {
   return slugBase;
 };
 
+/**
+ * ¿El visitante pidió menos movimiento en su sistema?
+ * Se consulta en el momento (no se cachea) para que un cambio de preferencia
+ * se respete sin recargar.
+ */
+export const prefiereMenosMovimiento = (): boolean =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * Texto listo para comparar: minúsculas y sin acentos.
+ * "Jamón" y "jamon" deben encontrar lo mismo al buscar.
+ */
+export const normalizarTexto = (texto: string): string =>
+  (texto || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Precio para mostrar. Punto de miles y sin decimales: una carta no los usa.
+ */
+export const formatearPrecio = (valor: number): string =>
+  `$${Math.round(Number(valor) || 0).toLocaleString('es-CO')}`;
+

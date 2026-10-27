@@ -15,17 +15,18 @@ export const ImagenInteligente: React.FC<ImagenInteligenteProps> = ({
   alt,
   className = '',
   aspectRatio = 'auto',
-  fallbackSrc = 'https://via.placeholder.com/400x300?text=Sin+Imagen',
+  fallbackSrc,
   ...props
 }) => {
   const [estado, setEstado] = useState<'cargando' | 'completo' | 'error'>('cargando');
   const [srcActual, setSrcActual] = useState<string>('');
 
   useEffect(() => {
-    // Si la URL no existe, es vacía o nula, marcar error inmediatamente para mostrar fallback
+    // Si la URL no existe, es vacía o nula, mostramos el estado "sin imagen"
+    // sin pedir nada por red (evita <img src=""> y peticiones fallidas).
     if (!src || src.trim() === '') {
       setEstado('error');
-      setSrcActual(fallbackSrc);
+      setSrcActual(fallbackSrc ?? '');
       return;
     }
 
@@ -40,7 +41,7 @@ export const ImagenInteligente: React.FC<ImagenInteligenteProps> = ({
   const handleError = () => {
     if (estado !== 'error') {
         setEstado('error');
-        setSrcActual(fallbackSrc);
+        setSrcActual(fallbackSrc ?? '');
     }
   };
 
@@ -50,33 +51,36 @@ export const ImagenInteligente: React.FC<ImagenInteligenteProps> = ({
   else if (aspectRatio === 'video') ratioClass = 'aspect-video';
 
   return (
-    <div className={`relative overflow-hidden bg-gray-200 dark:bg-gray-800 ${ratioClass} ${className}`}>
+    <div className={`relative overflow-hidden bg-af-surface ${ratioClass} ${className}`}>
       {/* Skeleton Loader / Error State */}
-      <div 
-        className={`absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 transition-opacity duration-500 ${estado === 'completo' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      <div
+        className={`absolute inset-0 z-10 flex items-center justify-center bg-af-surface transition-opacity duration-500 ${estado === 'completo' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
         {estado === 'cargando' && (
-           <div className="w-full h-full animate-pulse bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-gray-400 animate-spin opacity-20" />
+           <div className="w-full h-full animate-pulse bg-af-border/40 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-af-ink-secondary animate-spin opacity-30" />
            </div>
         )}
         {estado === 'error' && (
-           <div className="flex flex-col items-center text-gray-400">
-              <ImageOff size={24} opacity={0.5} />
+           <div className="flex flex-col items-center text-af-ink-secondary opacity-60">
+              <ImageOff size={24} opacity={0.6} />
            </div>
         )}
       </div>
 
       {/* Imagen Real */}
+      {srcActual && (
       <img
         src={srcActual}
         alt={alt}
         loading="lazy"
+        draggable={false}
         onLoad={handleLoad}
         onError={handleError}
-        className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${estado === 'completo' ? 'scale-100 blur-0 opacity-100' : 'scale-105 blur-lg opacity-0'}`}
+        className={`w-full h-full object-cover select-none transition-[transform,opacity,filter] duration-500 ease-out ${estado === 'completo' ? 'scale-100 blur-0 opacity-100' : 'scale-[1.03] blur-md opacity-0'}`}
         {...props}
       />
+      )}
     </div>
   );
 };
