@@ -1,39 +1,39 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: riki-alertas
+  name: tuki-alertas
   labels:
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
     release: kube-prometheus-stack
 spec:
   groups:
-    - name: riki.disponibilidad
+    - name: tuki.disponibilidad
       rules:
-        - alert: RikiWebDown
-          expr: up{namespace="riki",service="riki"} == 0
+        - alert: TukiWebDown
+          expr: up{namespace="tuki",service="tuki"} == 0
           for: 5m
           labels:
             severity: critical
-            team: riki
+            team: tuki
           annotations:
-            summary: "La SPA de Riki no responde"
-            description: "Prometheus no puede hacer scrape del exporter de Nginx en el Service riki desde hace 5 minutos."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#spa-caida"
+            summary: "La SPA de Tuki no responde"
+            description: "Prometheus no puede hacer scrape del exporter de Nginx en el Service tuki desde hace 5 minutos."
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#spa-caida"
 
-        - alert: RikiGatewayDown
-          expr: up{namespace="riki",service="ai-gateway"} == 0
+        - alert: TukiGatewayDown
+          expr: up{namespace="tuki",service="ai-gateway"} == 0
           for: 5m
           labels:
             severity: critical
-            team: riki
+            team: tuki
           annotations:
             summary: "El AI Gateway no responde"
             description: "Sin gateway, las funciones de IA fallan. Revisa pods, logs y el secreto de Groq."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#gateway-caido"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#gateway-caido"
 
-    - name: riki.calidad
+    - name: tuki.calidad
       rules:
-        - alert: RikiGatewayErrorRate
+        - alert: TukiGatewayErrorRate
           expr: |
             (
               sum(rate(ai_gateway_http_requests_total{status=~"5.."}[5m]))
@@ -43,13 +43,13 @@ spec:
           for: 10m
           labels:
             severity: warning
-            team: riki
+            team: tuki
           annotations:
             summary: "Más del 5 % de peticiones al gateway fallan"
             description: "Revisa Groq, timeouts y logs JSON del gateway (campo code)."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#errores-5xx-en-el-gateway"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#errores-5xx-en-el-gateway"
 
-        - alert: RikiGatewayLatencyHigh
+        - alert: TukiGatewayLatencyHigh
           expr: |
             histogram_quantile(
               0.95,
@@ -58,41 +58,41 @@ spec:
           for: 10m
           labels:
             severity: warning
-            team: riki
+            team: tuki
           annotations:
             summary: "Latencia p95 del gateway por encima de 10 s"
             description: "Puede ser degradación de Groq o saturación del pod. Revisa ai_gateway_upstream_duration_seconds."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#latencia-alta"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#latencia-alta"
 
-        - alert: RikiGatewayRateLimitAbuse
+        - alert: TukiGatewayRateLimitAbuse
           expr: sum(rate(ai_gateway_rate_limited_total[5m])) > 1
           for: 10m
           labels:
             severity: warning
-            team: riki
+            team: tuki
           annotations:
             summary: "Muchas peticiones rechazadas por rate limit"
             description: "Puede ser abuso anónimo o una cuota demasiado baja. Revisa la IP y ajusta AI_RATE_LIMIT_*."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#rate-limit"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#rate-limit"
 
-        - alert: RikiGatewayTimeouts
+        - alert: TukiGatewayTimeouts
           expr: sum(rate(ai_gateway_http_requests_total{status="504"}[5m])) > 0.2
           for: 10m
           labels:
             severity: warning
-            team: riki
+            team: tuki
           annotations:
             summary: "Timeouts frecuentes en el AI Gateway"
             description: "Groq está tardando más que AI_GROQ_TOTAL_TIMEOUT_SECONDS. Considera bajar el timeout o el número de reintentos."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#timeouts"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#timeouts"
 
-        - alert: RikiNginxConnectionsHigh
-          expr: sum(nginx_connections_active{namespace="riki"}) > 800
+        - alert: TukiNginxConnectionsHigh
+          expr: sum(nginx_connections_active{namespace="tuki"}) > 800
           for: 10m
           labels:
             severity: warning
-            team: riki
+            team: tuki
           annotations:
             summary: "Nginx con más de 800 conexiones activas"
             description: "Revisa worker_connections, HPA y latencia del gateway."
-            runbook_url: "https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md#nginx"
+            runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#nginx"

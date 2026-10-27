@@ -1,6 +1,6 @@
 package main
 
-# Políticas mínimas de Riki para Deployments. Se ejecutan con:
+# Políticas mínimas de Tuki para Deployments. Se ejecutan con:
 #   conftest test -p deploy/policies <manifiesto.yaml>
 #
 # No sustituyen a Pod Security Standards ni a kube-linter: cubren las

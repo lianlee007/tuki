@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: ai-gateway-config
   labels:
-    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/name: tuki-ai-gateway
     app.kubernetes.io/component: ai-gateway
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 data:
   AI_ENVIRONMENT: "production"
   AI_LOG_LEVEL: "INFO"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Valida los manifiestos de Riki igual que la CI, usando Docker para no
+# Valida los manifiestos de Tuki igual que la CI, usando Docker para no
 # instalar binarios en la máquina.
 #
 # Uso:
