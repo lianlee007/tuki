@@ -108,7 +108,7 @@ tuki-web          app.kubernetes.io/name=tuki
 El repositorio es privado y el clúster de laboratorio no tiene credenciales de
 GitHub, así que la sincronización se demostró sirviendo **el mismo historial de
 Git** con `git daemon` desde el equipo y apuntando la Application a
-`git://host.docker.internal:9418/Kiri`. Es una limitación del laboratorio, no del
+`git://host.docker.internal:9418/Tuki`. Es una limitación del laboratorio, no del
 diseño: en producción se registra el repositorio institucional con un token de
 solo lectura.
 
