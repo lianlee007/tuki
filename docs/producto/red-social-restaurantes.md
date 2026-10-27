@@ -120,7 +120,7 @@ desde el cliente.
 
 | Fase | Alcance | Criterio de aceptación |
 | --- | --- | --- |
-| **A. Confianza** | A1–A6 | Un comensal califica un plato con foto; el dueño la aprueba; el promedio y el conteo cambian en la ficha y en el feed; la ficha se ve bien a 360 px y no salta al cargar. |
+| **A. Confianza** | A1–A6 | Un comensal califica un plato con estrellas y comentario; el dueño la aprueba; el promedio y el conteo cambian en la ficha y en el feed; la ficha se ve bien a 360 px y no salta al cargar. La foto es A2b. |
 | **B. Pertenencia** | B1–B4 | Guardar un plato sobrevive al recargar; el perfil muestra reseñas y colecciones; seguir un restaurante cambia la pestaña Siguiendo; las reacciones no se pueden duplicar. |
 | **C. Descubrimiento** | C1–C5 | El carril de actividad no desplaza al buscador; el mapa no muestra direcciones exactas sin permiso; las notificaciones se generan en el servidor. |
 
@@ -173,19 +173,20 @@ Sigue las reglas de `docs/estructura.md`:
 - Aviso posterior al pedido: «Pedido enviado. ¿Nos cuentas cómo estuvo?».
 - Pestaña **Reseñas** en el panel: pendientes, publicadas, todas, aprobar y
   ocultar. La reseña nunca se borra.
-- Migración `db/sql-resenas.sql` con columnas nuevas, índices y RLS.
+- Migración `db/sql-resenas.sql` **aplicada** el 2026-10-27 como
+  `resenas_fase_a` (versión `20261027220739`): columnas `usuario_id`,
+  `foto_url`, `respuesta_dueno`, índices únicos y tres políticas RLS.
+- Persistencia verificada con el MCP en una transacción con `set local role`:
+  el autor inserta y ve su reseña pendiente; `anon` no la ve; el dueño la
+  aprueba; `anon` la ve publicada. La transacción se revirtió, así que no dejó
+  filas de prueba.
 - 14 pruebas nuevas de las reglas de reseña (50 en total).
 
 **Pendiente para cerrar la fase A en producción**
 
-- Aplicar `db/sql-resenas.sql` en el proyecto de Supabase. **Verificado con el
-  MCP el 2026-10-27:** `valoraciones` tiene RLS activo y **0 políticas**, así
-  que el cliente no puede leer ni insertar reseñas todavía; tampoco existen
-  `usuario_id`, `foto_url` ni `respuesta_dueno`, ni hay buckets de Storage. La
-  UI muestra el estado vacío porque la consulta devuelve 0 filas, no porque no
-  haya código de persistencia.
-- Fotos de reseña: requieren bucket de Storage, límite de tamaño y moderación
-  de imagen. Es A2b, no bloquea el resto.
+- Fotos de reseña: requieren bucket de Storage, límite de tamaño, políticas de
+  subida y moderación de imagen. `foto_url` ya existe, pero el formulario aún
+  no sube archivos. Es A2b, no bloquea el texto.
 - Respuesta pública del dueño: la columna `respuesta_dueno` ya está en la
   migración; falta el campo en la bandeja.
 - Editar la propia reseña (el índice único ya bloquea duplicados y hoy se
