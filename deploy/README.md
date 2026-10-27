@@ -89,6 +89,9 @@ catalog-info.yaml                           Catálogo mínimo de Backstage
   - Prometheus Operator + Grafana (observabilidad opcional)
 - `uv` solo si vas a recompilar los lockfiles del gateway.
 - Para firmar imágenes: Cosign y acceso a GHCR.
+- En Windows, los scripts de `deploy/scripts/` se ejecutan con Git Bash
+  (`C:\Program Files\Git\bin\bash.exe`); el WSL sin distribución no sirve.
+  La puerta de calidad del repositorio es `pnpm verificar`.
 
 ---
 
@@ -486,13 +489,13 @@ fija la base, pero no congela los parches de seguridad. Se documenta en
 | Cosign keyless | CI | Firma OIDC de la imagen |
 | provenance/SBOM | Buildx | Atestaciones de build |
 
-Resultados locales de referencia (2026-10-25):
+Resultados locales de referencia (2026-10-27):
 
 - `tuki:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
 - `tuki-ai-gateway:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
-- kubeconform: 25 recursos, 22 válidos y 3 CRDs omitidos a propósito.
+- kubeconform: 45 recursos, 42 válidos y 3 CRDs omitidos a propósito.
 - kube-linter: sin errores.
-- conftest: 189 tests, 189 aprobados.
+- conftest: 225 tests, 225 aprobados.
 - hadolint: sin hallazgos.
 - actionlint: workflow válido.
 - shellcheck: scripts sin advertencias.

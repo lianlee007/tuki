@@ -1,0 +1,21 @@
+* text=auto eol=lf
+
+# Los scripts de shell deben viajar siempre con LF: con CRLF el shebang y
+# `set -euo pipefail` fallan en Linux y en Git Bash.
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Los scripts de PowerShell se editan mejor con CRLF en Windows.
+*.ps1 text eol=crlf
+
+# Binarios: Git no debe normalizar saltos de línea.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zip binary

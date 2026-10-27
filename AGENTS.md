@@ -21,7 +21,10 @@ pnpm build            # build de producción
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # ESLint (máximo 20 avisos)
 pnpm test             # Vitest (36 pruebas)
+pnpm verificar        # puerta completa de los módulos 1–3
 pnpm mcp:verificar    # handshake de CodeGraph y Engram
+pnpm mcp:ligero       # apaga los MCP para ahorrar contexto
+pnpm mcp:completo     # los vuelve a encender
 ```
 
 Gateway:
@@ -39,6 +42,18 @@ Despliegue y validación:
 bash deploy/scripts/validar-k8s.sh
 bash deploy/scripts/demo-plataforma.sh verificar
 ```
+
+## Economía de contexto
+
+Cada paso reenvía todo el contexto: el costo crece con el tamaño de la
+conversación multiplicado por el número de pasos.
+
+- Nunca vuelques archivos o logs completos. Filtra (`grep -m`, `-First`, `-Tail`)
+  y lee con `limit`/`offset`.
+- Agrupa en una sola tanda las llamadas independientes.
+- Para búsquedas amplias, delega en el subagente `explore`.
+- Compacta (`/compact`) al cerrar un bloque de trabajo, antes de llegar al
+  límite del modelo.
 
 ## Herramientas MCP
 
