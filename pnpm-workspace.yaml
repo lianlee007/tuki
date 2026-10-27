@@ -1,2 +1,8 @@
 allowBuilds:
   esbuild: true
+
+# `ws` llega de forma transitiva por el cliente de Supabase Realtime. La
+# version que arrastraba (8.18.x) tiene divulgacion de memoria y DoS por
+# fragmentos; se fija la parcheada sin esperar al arbol del SDK.
+overrides:
+  ws: 8.22.0
