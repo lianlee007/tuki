@@ -466,24 +466,45 @@ export type Database = {
       users: {
         Row: {
           apellido: string
+          barrio: string | null
           created_at: string | null
+          datos_envio_actualizado_en: string | null
+          datos_envio_omitidos_en: string | null
+          direccion: string | null
           email: string
           id: string
           nombre: string
+          referencias: string | null
+          rol: string
+          telefono: string | null
         }
         Insert: {
           apellido: string
+          barrio?: string | null
           created_at?: string | null
+          datos_envio_actualizado_en?: string | null
+          datos_envio_omitidos_en?: string | null
+          direccion?: string | null
           email: string
           id: string
           nombre: string
+          referencias?: string | null
+          rol?: string
+          telefono?: string | null
         }
         Update: {
           apellido?: string
+          barrio?: string | null
           created_at?: string | null
+          datos_envio_actualizado_en?: string | null
+          datos_envio_omitidos_en?: string | null
+          direccion?: string | null
           email?: string
           id?: string
           nombre?: string
+          referencias?: string | null
+          rol?: string
+          telefono?: string | null
         }
         Relationships: []
       }

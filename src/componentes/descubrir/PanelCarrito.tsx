@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
+// @ts-ignore — react-router-dom no publica tipos en este proyecto.
+import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../../store/storeCarrito';
 import { apiDescubrir } from '../../api/apiDescubrir';
 import { apiWhatsApp } from '../../api/misApis';
 import { apiPedidos } from '../../api/apiPedidos';
+import { apiCuenta } from '../../api/apiCuenta';
 import { formatearPrecio } from '../../lib/utils';
+import { datosEnvioCompletos, formatearDireccionEnvio } from '../../lib/datosEnvio';
 import { Hoja } from './Hoja';
 
 interface PanelCarritoProps {
@@ -66,6 +70,15 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
   const [telefono, setTelefono] = useState('');
   const [direccion, setDireccion] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [tieneDatosGuardados, setTieneDatosGuardados] = useState(false);
+
+  const usuarioId = user?.id;
+  const nombreCuentaMeta =
+    [user?.user_metadata?.nombre, user?.user_metadata?.apellido]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+  const correoCuenta = user?.email ?? '';
 
   /* El teléfono solo se pide cuando hay un carrito abierto. */
   useEffect(() => {
@@ -92,23 +105,57 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
 
   /* Precarga lo que el comensal ya guardó en cualquier menú de Tuki. */
   useEffect(() => {
-    if (!abierto || !user) return;
+    if (!abierto || !usuarioId) return;
 
     try {
-      const basico = JSON.parse(localStorage.getItem(`tuki_user_basic_${user.id}`) || 'null');
+      const basico = JSON.parse(localStorage.getItem(`tuki_user_basic_${usuarioId}`) || 'null');
       if (basico) {
         setNombre(basico.nombre ?? '');
         setTelefono(basico.telefono ?? '');
       }
 
-      const direcciones = JSON.parse(localStorage.getItem(`tuki_addresses_${user.id}`) || '[]');
+      const direcciones = JSON.parse(localStorage.getItem(`tuki_addresses_${usuarioId}`) || '[]');
       if (Array.isArray(direcciones) && direcciones.length > 0) {
         setDireccion(formatearDireccion(direcciones[0]));
       }
     } catch {
       // Si lo guardado está corrupto se empieza con los campos vacíos.
     }
-  }, [abierto, user?.id]);
+  }, [abierto, usuarioId]);
+
+  /* La cuenta es la fuente que sobrevive al cambio de navegador. Lo que ya
+     haya en localStorage tiene prioridad; los huecos se rellenan con la cuenta. */
+  useEffect(() => {
+    if (!abierto || !usuarioId) {
+      setTieneDatosGuardados(false);
+      return;
+    }
+
+    let vigente = true;
+    const nombreCuenta = nombreCuentaMeta || correoCuenta.split('@')[0] || '';
+
+    apiCuenta
+      .datosEnvio(usuarioId)
+      .then(({ datos }) => {
+        if (!vigente || !datos) return;
+
+        const completo = datosEnvioCompletos(datos);
+        setTieneDatosGuardados(completo);
+        setNombre((previo) => (previo.trim() ? previo : nombreCuenta));
+        setTelefono((previo) => (previo.trim() ? previo : datos.telefono));
+
+        if (completo) {
+          setDireccion((previa) =>
+            previa.trim() ? previa : formatearDireccionEnvio(datos)
+          );
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      vigente = false;
+    };
+  }, [abierto, usuarioId, nombreCuentaMeta, correoCuenta]);
 
   const pedir = () => {
     if (!contacto) return;
@@ -326,6 +373,23 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                 className="w-full resize-none rounded-xl bg-af-surface px-3.5 py-3 text-[15px] leading-relaxed text-af-ink outline-none placeholder:text-af-ink-secondary focus:ring-2 focus:ring-af-accent/40"
               />
             </label>
+
+            {user && (
+              <p className="text-[12px] leading-relaxed text-af-ink-secondary">
+                {tieneDatosGuardados
+                  ? '¿Cambiaste de dirección?'
+                  : '¿Quieres pedir más rápido la próxima vez?'}{' '}
+                <Link
+                  to="/mi-cuenta?seccion=envio"
+                  onClick={onCerrar}
+                  className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
+                >
+                  {tieneDatosGuardados
+                    ? 'Actualiza tus datos de envío'
+                    : 'Guarda tus datos de envío'}
+                </Link>
+              </p>
+            )}
 
             {errorContacto && (
               <p role="alert" className="text-[13px] font-medium text-af-danger">

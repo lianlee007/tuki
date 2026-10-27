@@ -12,6 +12,10 @@ volver.
 > La migración `db/sql-resenas.sql` añadió `usuario_id`, `foto_url`,
 > `respuesta_dueno` y las políticas RLS, y está aplicada en Supabase. Las fotos
 > usan el mismo Cloudinary sin firmar de los platillos; no hay bucket nuevo.
+>
+> La cuenta del comensal ya guarda **teléfono y dirección de entrega** en
+> `public.users` (`db/sql-datos-envio.sql`). El registro los pide y ofrece
+> completarlos más tarde; el carrito los reutiliza.
 
 ## 1. Lo que ya existe (y por eso la propuesta es barata)
 
@@ -101,7 +105,8 @@ buscar → confiar → guardar → pedir → contar
 
 ## 5. Modelo de datos mínimo (propuesta)
 
-No se aplica en esta entrega; queda para la migración de la fase A/B.
+Las filas marcadas como **Aplicado** ya están en la base; el resto queda para
+las migraciones de las fases B y C.
 
 | Tabla | Columnas clave | Regla de acceso |
 | --- | --- | --- |
@@ -111,6 +116,7 @@ No se aplica en esta entrega; queda para la migración de la fase A/B.
 | `reacciones` | `usuario_id`, `platillo_id`, `tipo`, `created_at` | Única por usuario/plato/tipo; conteo público. |
 | `valoraciones` | + `usuario_id`, `foto_url`, `respuesta_dueno` | Insertar la propia; leer las aprobadas o las propias; el dueño responde y modera. |
 | `pedidos` | `usuario_id`, `restaurante_id`, `total`, `estado`, `created_at` | **Aplicado:** el comensal inserta y lee los suyos; el restaurante lee los de su local y mueve el estado. |
+| `users` | + `telefono`, `direccion`, `barrio`, `referencias`, `datos_envio_*` | **Aplicado:** cada cuenta lee y edita solo su propia fila. |
 
 Reglas transversales: RLS activo en todas, `security definer` solo en las
 funciones de conteo, y ninguna política que permita leer correos o teléfonos
@@ -242,3 +248,45 @@ Sigue las reglas de `docs/estructura.md`:
 - Aviso al comensal cuando el restaurante cambia el estado (fase C,
   notificaciones).
 - «Repetir pedido» con el mismo carrito.
+
+## 11. Datos de envío de la cuenta (2026-10-27)
+
+**Implementado**
+
+- El registro de comensal tiene un segundo paso, **Datos de envío**, con
+  teléfono, dirección, barrio y referencias. El botón principal crea la cuenta y
+  guarda los datos; la salida **Ahora no, crear mi cuenta sin dirección** crea
+  la cuenta y deja constancia de que se completarán después.
+- Los datos viajan en el metadata del registro para que funcionen también
+  cuando la confirmación por correo deja la cuenta sin sesión.
+- Pestaña **Datos de envío** en `/mi-cuenta`: resumen de la dirección, edición
+  con validación y estado de éxito. Si faltan, aparece un aviso en la cuenta y
+  el formulario se abre directamente.
+- `PanelCarrito` (Descubrir) y `ModalCarrito` (ficha del restaurante) rellenan
+  nombre, teléfono y dirección desde la cuenta. El carrito de la ficha muestra
+  la dirección guardada como una opción seleccionable.
+- Las direcciones antiguas de `localStorage` siguen teniendo prioridad local;
+  la cuenta es la copia que sobrevive al cambio de navegador.
+
+**Base de datos**
+
+- Migración `datos_envio_cuenta` aplicada el 2026-10-27 (versión
+  `20261027230628`): columnas `telefono`, `direccion`, `barrio`, `referencias`,
+  `datos_envio_actualizado_en` y `datos_envio_omitidos_en` en `public.users`,
+  con restricciones de longitud y teléfono.
+- `handle_new_user()` normaliza el metadata, guarda solo datos completos y
+  conserva lo que ya exista en un `on conflict`. La política `users_edicion`
+  ya limitaba la escritura a la propia fila; se volvió a verificar con
+  `set local role` y rollback: cada cuenta ve y actualiza solo su fila y no
+  puede escribir la de otra.
+- Prueba de extremo a extremo en la SPA con dos cuentas nuevas: una guardó los
+  datos en el paso de registro y los editó desde «Mi cuenta»; la otra omitió el
+  paso, completó los datos después y el carrito los reutilizó. El pedido de
+  prueba guardó la dirección correcta y las cuentas y filas de prueba se
+  borraron al terminar.
+
+**Pendiente**
+
+- Varias direcciones por cuenta (hoy hay una principal).
+- Sincronizar automáticamente la dirección escrita en un pedido si la cuenta
+  todavía no tiene una guardada.

@@ -49,7 +49,7 @@ La aplicación está operativa en local y en el clúster de demostración:
   difusión (QR y enlaces).
 - Reseñas con estrellas, comentario y foto. Toda reseña entra pendiente; el
   dueño la publica, la oculta o la responde.
-- Cuenta del comensal con sus reseñas y su historial de pedidos.
+- Cuenta del comensal con datos de envío, sus reseñas y su historial de pedidos.
 - Pedidos guardados en Supabase además del mensaje de WhatsApp, con bandeja y
   cambio de estado para el restaurante.
 - AI Gateway propio para que la clave de Groq nunca llegue al navegador.
@@ -83,7 +83,13 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
 
 ### Cuenta del comensal
 
-- Ruta `/mi-cuenta` con perfil, reseñas propias e historial de pedidos.
+- Ruta `/mi-cuenta` con perfil, datos de envío, reseñas propias e historial de
+  pedidos.
+- Datos de envío guardados en la base de datos: el registro de comensal pide
+  teléfono, dirección, barrio y referencias, con una salida clara para
+  completarlos más tarde.
+- El carrito rellena nombre, teléfono y dirección con los datos de la cuenta;
+  ya no depende solo de `localStorage`.
 - Estado real de cada reseña: pendiente de moderación o publicada.
 - Borrado de la propia reseña con confirmación.
 - Pedidos en curso e historial, con detalle, total y enlace al menú.
@@ -167,6 +173,8 @@ Los scripts de `db/` se aplican en Supabase, en orden. En un proyecto nuevo:
 2. `db/sql-resenas.sql` añade las columnas y políticas de reseñas.
 3. `db/sql-cuenta-y-pedidos.sql` añade la cuenta del comensal, la tabla de
    pedidos y las claves foráneas.
+4. `db/sql-datos-envio.sql` añade teléfono, dirección, barrio y referencias a
+   `users`, y actualiza la función de alta para guardarlos desde el registro.
 
 En el proyecto de demostración ya están aplicados como migraciones. Revisa
 [Base de datos](#base-de-datos) antes de ejecutarlos en producción.
@@ -245,6 +253,7 @@ de las reseñas.
 | `db/sql-restaurantes-popayan.sql` | Datos de demostración: cinco restaurantes, cuentas, menús y temas |
 | `db/sql-resenas.sql` | Reseñas: `usuario_id`, `foto_url`, `respuesta_dueno`, índices y políticas RLS |
 | `db/sql-cuenta-y-pedidos.sql` | Pedidos con `usuario_id`, estados, políticas RLS y claves foráneas |
+| `db/sql-datos-envio.sql` | Teléfono, dirección, barrio y referencias en `users`; alta desde el registro |
 
 Reglas que aplican los scripts:
 
@@ -253,6 +262,8 @@ Reglas que aplican los scripts:
 - El autor puede leer y borrar su propia reseña.
 - Un pedido solo lo leen el comensal que lo hizo y el restaurante que lo recibe.
 - Solo el restaurante cambia el estado de un pedido.
+- Cada cuenta lee y edita únicamente sus propios datos de envío; el restaurante
+  recibe la dirección dentro del pedido, no desde `users`.
 - Ninguna política permite leer correos o teléfonos desde el cliente fuera de su
   propio registro.
 
@@ -285,7 +296,7 @@ tuki/
 │   ├── api/                    # Cliente de datos del navegador
 │   ├── componentes/
 │   │   ├── autenticacion/      # Acceso y registro
-│   │   ├── cuenta/             # Reseñas y pedidos del comensal
+│   │   ├── cuenta/             # Datos de envío, reseñas y pedidos del comensal
 │   │   ├── descubrir/          # Buscador, filtros y carrito
 │   │   ├── landing/            # Página para restaurantes
 │   │   ├── panel/              # Panel del dueño
@@ -430,7 +441,7 @@ Las convenciones para agentes están en [AGENTS.md](AGENTS.md).
 | [docs/modulos-1-3.md](docs/modulos-1-3.md) | Alcance, evidencias y cierre de los módulos 1–3 |
 | [docs/auditoria-modulos-1-3.md](docs/auditoria-modulos-1-3.md) | Auditoría técnica de la entrega |
 | [docs/estructura.md](docs/estructura.md) | Organización del código y reglas de nombres |
-| [docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md) | Reseñas, cuenta del comensal y pedidos |
+| [docs/producto/red-social-restaurantes.md](docs/producto/red-social-restaurantes.md) | Reseñas, datos de envío, cuenta del comensal y pedidos |
 | [docs/marca/marca-tuki.md](docs/marca/marca-tuki.md) | Sistema de marca, logo y usos |
 | [docs/security/](docs/security/) | Modelo de amenazas, hallazgos y registro de uso de IA |
 | [docs/adr/](docs/adr/) | Decisiones de arquitectura |
