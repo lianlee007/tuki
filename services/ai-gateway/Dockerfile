@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # =============================================================================
-# Riki AI Gateway — FastAPI + uvicorn, sin privilegios.
+# Tuki AI Gateway — FastAPI + uvicorn, sin privilegios.
 #
 # La imagen base está fijada por digest para que un rebuild no cambie el
 # sistema operativo por sorpresa (supply chain, Fase 0).
@@ -38,9 +38,9 @@ FROM ${PYTHON_IMAGE} AS runtime
 ARG VERSION=0.0.0-dev
 ARG REVISION=unknown
 
-LABEL org.opencontainers.image.title="Riki AI Gateway" \
-      org.opencontainers.image.description="Gateway de IA de Riki: Groq, auth Supabase, rate limit y métricas" \
-      org.opencontainers.image.vendor="Riki" \
+LABEL org.opencontainers.image.title="Tuki AI Gateway" \
+      org.opencontainers.image.description="Gateway de IA de Tuki: Groq, auth Supabase, rate limit y métricas" \
+      org.opencontainers.image.vendor="Tuki" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.licenses="Propietaria"

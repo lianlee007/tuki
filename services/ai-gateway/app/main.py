@@ -1,4 +1,4 @@
-"""Punto de entrada del AI Gateway de Riki.
+"""Punto de entrada del AI Gateway de Tuki.
 
 Expone:
 - ``POST /api/v1/ai/chat``: generación de texto con Groq.
@@ -368,9 +368,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     telemetry_ready = setup_telemetry(settings)
 
     app = FastAPI(
-        title="Riki AI Gateway",
+        title="Tuki AI Gateway",
         version=settings.version,
-        description="Gateway que protege la clave de Groq de Riki.",
+        description="Gateway que protege la clave de Groq de Tuki.",
         docs_url="/docs" if settings.environment != "production" else None,
         redoc_url=None,
         openapi_url="/openapi.json" if settings.environment != "production" else None,
