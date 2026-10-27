@@ -1,283 +1,199 @@
-
-import React, { useState, useEffect } from 'react';
-import { Check, X, CreditCard, Zap, Star, Clock, ArrowLeft, X as XIcon } from 'lucide-react';
-import { Boton } from '../ui';
+import React, { useState } from 'react';
+import { Check, CreditCard } from 'lucide-react';
+import { Boton, BotonCTA, BotonTexto, Contenedor, Seccion } from '../ui';
+import { Revelar } from './Revelar';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
 
-interface PlanProps {
+interface Plan {
   titulo: string;
   precio: string;
-  descripcion: string;
+  resumen: string;
   features: string[];
-  noFeatures?: string[];
-  destacado?: boolean;
   cta: string;
-  link: string;
-  mostrarMensaje?: boolean;
-  onAction: (titulo: string) => void;
-  onBack?: () => void;
+  /** El plan estrella: se eleva y lleva el único botón relleno de la sección. */
+  destacado?: boolean;
+  gratis?: boolean;
 }
 
-const PlanCard = ({ titulo, precio, descripcion, features, noFeatures, destacado = false, cta, link, mostrarMensaje = false, onAction, onBack }: PlanProps) => {
-  // Estilos dinámicos
-  const containerClass = destacado 
-    ? "neumorphic relative z-20 transform md:-translate-y-6 border-2 border-primary/50 bg-bg shadow-2xl scale-105" 
-    : "neumorphic-inset bg-surface/50 opacity-90 hover:opacity-100 transition-opacity border border-transparent z-10";
+const PLANES: Plan[] = [
+  {
+    titulo: 'Básico',
+    precio: '$0',
+    resumen: 'Para empezar y tener presencia online.',
+    cta: 'Empezar gratis',
+    gratis: true,
+    features: [
+      'Menú online con hasta 10 platos',
+      'Pedidos por WhatsApp',
+      'Código QR para tus mesas',
+      'Descripciones con IA',
+      'Tu enlace riki.app/tu-restaurante',
+    ],
+  },
+  {
+    titulo: 'Profesional',
+    precio: '$49.900',
+    resumen: 'Para un restaurante que ya vende todos los días.',
+    destacado: true,
+    cta: 'Elegir Profesional',
+    features: [
+      'Todo lo del plan Básico',
+      'Platos ilimitados',
+      'Sin la marca de Riki',
+      'Estadísticas de visitantes',
+      'Galería de fotos propia',
+    ],
+  },
+  {
+    titulo: 'Empresa',
+    precio: '$99.900',
+    resumen: 'Para varios locales o una franquicia.',
+    cta: 'Elegir Empresa',
+    features: [
+      'Todo lo del plan Profesional',
+      'Varias sedes en una cuenta',
+      'Reservas online',
+      'Soporte prioritario',
+    ],
+  },
+];
 
-  const titleColor = destacado ? "text-primary" : "text-text-main";
-  const buttonVariante = destacado ? "primario" : "secundario";
-  const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(false);
+/**
+ * Planes.
+ *
+ * Tres columnas, sí, pero no tres tarjetas iguales: el plan recomendado se eleva
+ * (la única sombra de reposo que la casa permite) y se lleva el único botón
+ * relleno de la sección; los otros dos se cierran con un enlace de texto. Antes
+ * los tres competían por la misma atención y, al ser idénticos, el ojo no sabía
+ * dónde mirar.
+ *
+ * Se fue la lista de lo que NO incluye cada plan. Decirle a alguien lo que no
+ * puede tener es la forma más rápida de enfriar una decisión de compra.
+ */
+const PlanCard: React.FC<{ plan: Plan; onElegir: (plan: Plan) => void }> = ({ plan, onElegir }) => (
+  <div
+    className={`flex h-full flex-col rounded-[28px] bg-af-surface p-8 ${
+      plan.destacado
+        ? 'shadow-[0_35px_70px_-35px_rgba(28,25,23,0.45)]'
+        : ''
+    }`}
+  >
+    {/* El alto fijo del bloque superior mantiene las cinco listas alineadas
+        entre columnas aunque los resúmenes midan distinto. */}
+    <div className="min-h-[9.5rem]">
+      <h3
+        className={`text-xl font-semibold ${
+          plan.destacado ? 'text-af-accent-text' : 'text-af-ink'
+        }`}
+      >
+        {plan.titulo}
+      </h3>
+      <p className="mt-3 flex items-baseline gap-1.5">
+        <span className="text-4xl font-bold tracking-tight text-af-ink">{plan.precio}</span>
+        <span className="text-sm font-medium text-af-ink-secondary">/ mes</span>
+      </p>
+      <p className="mt-3 text-sm leading-relaxed text-af-ink-secondary">{plan.resumen}</p>
+    </div>
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    <ul className="flex-1 space-y-3.5">
+      {plan.features.map((f) => (
+        <li key={f} className="flex items-start gap-3">
+          <Check size={16} strokeWidth={2.6} className="mt-0.5 shrink-0 text-af-accent-text" />
+          <span className="text-sm leading-relaxed text-af-ink">{f}</span>
+        </li>
+      ))}
+    </ul>
 
-  return (
-    <div className={`p-8 rounded-[2rem] flex flex-col h-full transition-all duration-300 overflow-hidden relative ${containerClass}`}>
-      
-      {/* Overlay "Próximamente" (Inline) - Solo en desktop */}
-      {mostrarMensaje && !isMobile ? (
-        <div className="absolute inset-0 bg-bg z-50 flex flex-col items-center justify-center p-6 animate-flipIn text-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary animate-pulse">
-                <Clock size={32} />
-            </div>
-            <h3 className="text-2xl font-bold font-serif mb-2 text-text-main">¡Muy Pronto!</h3>
-            <p className="text-text-muted mb-6 text-sm">
-                El plan <span className="font-bold text-primary">{titulo}</span> estará disponible en breve. Estamos afinando detalles.
-            </p>
-            <div className="w-full space-y-3">
-                <button onClick={onBack} className="w-full py-3 rounded-xl bg-surface border border-white/10 text-text-muted font-bold text-sm hover:text-text-main hover:bg-white/5 flex items-center justify-center gap-2">
-                    <ArrowLeft size={16} /> Volver a planes
-                </button>
-                <button onClick={() => navigate('/auth?mode=register&plan=basico')} className="text-xs text-primary hover:underline font-medium">
-                    Ir al Plan Gratuito
-                </button>
-            </div>
-        </div>
+    <div className="mt-9">
+      {plan.destacado ? (
+        <BotonCTA anchoCompleto onClick={() => onElegir(plan)}>
+          {plan.cta}
+        </BotonCTA>
       ) : (
-        <>
-          {destacado && (
-            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-white px-6 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-primary/30 flex items-center gap-2 tracking-wider w-max">
-              <Star size={12} fill="currentColor" /> RECOMENDADO
-            </div>
-          )}
-
-          <div className="text-center mb-8">
-            <h3 className={`text-xl font-bold mb-2 ${titleColor}`}>{titulo}</h3>
-            <div className="flex justify-center items-baseline gap-1 mb-2">
-                <span className="text-4xl font-black text-text-main font-serif">{precio}</span>
-                {precio !== '$0' && <span className="text-xs font-bold text-text-muted">COP</span>}
-            </div>
-            <p className="text-xs text-text-muted h-10 flex items-center justify-center">{descripcion}</p>
-          </div>
-          
-          <div className={`h-[1px] w-full mb-8 ${destacado ? 'bg-primary/20' : 'bg-black/5 dark:bg-white/5'}`}></div>
-
-          <ul className="space-y-4 mb-8 flex-1">
-            {features.map((f, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm group">
-                <div className={`mt-0.5 p-1 rounded-full flex-shrink-0 ${destacado ? 'bg-primary/10 text-primary' : 'bg-green-500/10 text-green-500'}`}>
-                    <Check size={12} strokeWidth={3} />
-                </div>
-                <span className="text-text-main/80 font-medium text-left">{f}</span>
-              </li>
-            ))}
-            {noFeatures?.map((f, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm opacity-50">
-                <div className="mt-0.5 p-1 bg-gray-500/10 rounded-full text-gray-400"><X size={12} strokeWidth={3} /></div>
-                <span className="text-left">{f}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-auto w-full">
-            <Boton 
-              variante={buttonVariante}
-              onClick={() => onAction(titulo)}
-              className={`w-full justify-center py-4 text-sm ${!destacado && 'bg-transparent shadow-none border border-text-muted/20 hover:bg-white/5'}`}
-            >
-              {cta}
-            </Boton>
-            
-            {precio === '$0' && (
-              <p className="text-[10px] text-center text-text-muted mt-4 flex items-center justify-center gap-1 opacity-70 h-4">
-                  <CreditCard size={10} /> Sin tarjeta de crédito
-              </p>
-            )}
-            {precio !== '$0' && <div className="h-8 mt-2"></div>}
-          </div>
-        </>
+        <BotonTexto className="w-full" onClick={() => onElegir(plan)}>
+          {plan.cta}
+        </BotonTexto>
+      )}
+      {plan.gratis && (
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-af-ink-secondary">
+          <CreditCard size={12} strokeWidth={2.4} />
+          Sin tarjeta de crédito
+        </p>
       )}
     </div>
-  );
-};
+  </div>
+);
 
-export const SeccionPrecios = () => {
-  const [planConMensaje, setPlanConMensaje] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+export const SeccionPrecios: React.FC = () => {
   const navigate = useNavigate();
+  const [planPendiente, setPlanPendiente] = useState<Plan | null>(null);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const handlePlanSelection = (titulo: string) => {
-      if (titulo === 'Profesional' || titulo === 'Empresa') {
-          setPlanConMensaje(titulo);
-      } else {
-          navigate('/auth?mode=register&plan=basico');
-      }
-  };
-
-  const closeMessage = () => {
-      setPlanConMensaje(null);
+  const elegir = (plan: Plan) => {
+    if (plan.gratis) {
+      navigate('/auth?mode=register&plan=basico');
+      return;
+    }
+    setPlanPendiente(plan);
   };
 
   return (
-    <section id="precios" className="py-24 relative bg-bg">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full neumorphic-inset text-xs font-bold text-text-muted mb-6">
-            <Zap size={14} className="text-yellow-500" fill="currentColor" />
-            <span>Potencia tu negocio</span>
+    <Seccion id="precios" padding="grande">
+      <Contenedor maxAncho="grande">
+        <Revelar>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-5xl">
+              Un precio claro, sin sorpresas
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
+              Nunca cobramos comisión sobre tus ventas. Empieza gratis y cambia de plan
+              cuando quieras.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold font-serif mb-4 text-text-main">Planes Flexibles</h2>
-          <p className="text-text-muted text-lg max-w-xl mx-auto">
-            Todo lo que necesitas para digitalizar tu restaurante, incluido en todos los planes.
-          </p>
+        </Revelar>
+
+        <div className="mx-auto mt-16 grid max-w-6xl gap-6 md:grid-cols-3">
+          {PLANES.map((plan, i) => (
+            <Revelar key={plan.titulo} retraso={i * 70} className="h-full">
+              <PlanCard plan={plan} onElegir={elegir} />
+            </Revelar>
+          ))}
         </div>
+      </Contenedor>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-          {/* PLAN BÁSICO */}
-          <PlanCard 
-            titulo="Básico" 
-            precio="$0" 
-            descripcion="Ideal para empezar y tener presencia online."
-            cta="Empezar Gratis"
-            link="/auth?mode=register&plan=basico"
-            onAction={handlePlanSelection}
-            mostrarMensaje={false}
-            features={[
-                'Página web de una sección', 
-                'Menú online (hasta 10 platillos)', 
-                'Integración con WhatsApp',
-                'IA Generativa (Textos)',
-                'Dominio smartfood.app/tu-rest'
-            ]}
-            noFeatures={['Estadísticas avanzadas', 'Soporte Prioritario']}
+      {planPendiente && (
+        <div className="modal-overlay-af" role="dialog" aria-modal="true" aria-label="Plan próximamente">
+          <button
+            type="button"
+            aria-label="Cerrar"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setPlanPendiente(null)}
           />
-
-          {/* PLAN PROFESIONAL */}
-          <PlanCard 
-            titulo="Profesional" 
-            precio="$49.900" 
-            descripcion="La solución completa para hacer crecer tu negocio."
-            destacado={true}
-            cta="Elegir Plan Profesional"
-            link="/auth?mode=register&plan=profesional"
-            onAction={handlePlanSelection}
-            mostrarMensaje={planConMensaje === 'Profesional'}
-            onBack={closeMessage}
-            features={[
-                'Todo lo del plan Básico',
-                'Menú online ILIMITADO',
-                'Integración con WhatsApp',
-                'IA Generativa Ilimitada',
-                'Galería de fotos personalizable',
-                'Sin branding de SmartFood',
-                'Estadísticas de visitantes'
-            ]}
-          />
-
-          {/* PLAN EMPRESA */}
-          <PlanCard 
-            titulo="Empresa" 
-            precio="$99.900" 
-            descripcion="Para restaurantes que buscan la máxima potencia."
-            cta="Elegir Plan Empresa"
-            link="/auth?mode=register&plan=empresa"
-            onAction={handlePlanSelection}
-            mostrarMensaje={planConMensaje === 'Empresa'}
-            onBack={closeMessage}
-            features={[
-                'Todo lo del plan Profesional',
-                'Integración con WhatsApp',
-                'IA Generativa Avanzada',
-                'Sistema de reservas online',
-                'Soporte prioritario por chat',
-                'Multi-sede / Franquicias'
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Popup de Alerta para Móvil */}
-      {isMobile && planConMensaje && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:hidden">
-          {/* Overlay oscuro */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
-            onClick={closeMessage}
-          />
-          
-          {/* Modal de alerta */}
-          <div className="relative w-full max-w-sm bg-bg neumorphic rounded-3xl p-6 animate-zoomIn border border-white/10 shadow-2xl">
-            {/* Botón cerrar */}
-            <button
-              onClick={closeMessage}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-surface border border-white/10 text-text-muted hover:text-text-main hover:bg-white/5 transition-colors"
-            >
-              <XIcon size={18} />
-            </button>
-
-            {/* Contenido */}
-            <div className="text-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary animate-pulse">
-                <Clock size={40} />
-              </div>
-              
-              <h3 className="text-2xl font-bold font-serif mb-3 text-text-main">
-                ¡Muy Pronto!
-              </h3>
-              
-              <p className="text-text-muted mb-6 text-sm leading-relaxed">
-                El plan <span className="font-bold text-primary">{planConMensaje}</span> estará disponible en breve. Estamos afinando detalles para ofrecerte la mejor experiencia.
-              </p>
-              
-              <div className="space-y-3">
-                <button 
-                  onClick={closeMessage}
-                  className="w-full py-3.5 rounded-xl bg-surface border border-white/10 text-white dark:text-text-main font-bold text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2 neumorphic-btn"
-                >
-                  <ArrowLeft size={18} /> Volver a planes
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    closeMessage();
-                    navigate('/auth?mode=register&plan=basico');
-                  }}
-                  className="w-full py-3.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-bold text-sm hover:bg-primary/20 transition-colors"
-                >
-                  Empezar con Plan Gratuito
-                </button>
-              </div>
+          <div className="modal-af relative z-10 mx-4 w-full max-w-sm text-center af-entrada-modal">
+            <h3 className="text-2xl font-semibold text-af-ink">
+              El plan {planPendiente.titulo} llega pronto
+            </h3>
+            <p className="mt-3 leading-relaxed text-af-ink-secondary">
+              Estamos afinando los últimos detalles. Mientras tanto puedes empezar con el
+              plan gratuito, sin tarjeta.
+            </p>
+            <div className="mt-8 flex flex-col gap-3">
+              <BotonCTA
+                anchoCompleto
+                onClick={() => {
+                  setPlanPendiente(null);
+                  navigate('/auth?mode=register&plan=basico');
+                }}
+              >
+                Empezar gratis
+              </BotonCTA>
+              <Boton variante="fantasma" anchoCompleto onClick={() => setPlanPendiente(null)}>
+                Volver a los planes
+              </Boton>
             </div>
           </div>
         </div>
       )}
-    </section>
+    </Seccion>
   );
 };
