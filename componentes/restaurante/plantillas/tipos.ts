@@ -9,7 +9,16 @@
  */
 import type { MouseEvent, MutableRefObject } from 'react';
 import type { Platillo } from '../../../tipos';
-import type { EstilosComunes } from '../PlantillaRestaurante';
+import type { PaletaDerivada } from '../../../lib/color';
+
+/** Colores y medidas ya resueltas que consume cualquier arquetipo de menú. */
+export type EstilosComunes = PaletaDerivada & {
+  /** Borde de tarjeta como valor listo para usar. */
+  cardBorder: string;
+  /** Sombra de hover de tarjeta (el reposo no lleva sombra). */
+  cardHoverShadow: string;
+  isDark: boolean;
+};
 
 export interface PlantillaMenuProps {
   /** Nombres de categoría, en el orden en que se deben mostrar. */
