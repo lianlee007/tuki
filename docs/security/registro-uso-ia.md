@@ -1,0 +1,97 @@
+# Registro de uso de IA en el desarrollo de Riki
+
+Plantilla y registro para el control de **software generado o asistido por IA**
+del módulo 3. No implementa IA local ni modelos en el clúster: solo documenta
+qué se aceptó, cómo se validó y quién lo revisó.
+
+Regla base: **la IA puede acelerar el trabajo, pero la responsabilidad del
+artefacto es humana**. Ningún cambio generado por un modelo se acepta sin
+pruebas, linters, revisión y comparación con la documentación oficial.
+
+---
+
+## 1. Controles mínimos
+
+Antes de aceptar un cambio asistido por IA:
+
+- [ ] El cambio está en un PR revisable, no aplicado directamente a producción.
+- [ ] Pasa las pruebas automatizadas del módulo afectado.
+- [ ] Pasa los linters y el build.
+- [ ] Se revisaron las dependencias añadidas o actualizadas.
+- [ ] No contiene secretos, tokens, correos ni datos personales.
+- [ ] No se pegó información confidencial en el prompt.
+- [ ] Se comparó la API, el manifiesto o el comando con la documentación oficial.
+- [ ] Se revisó la licencia de cualquier fragmento o dependencia nueva.
+- [ ] Una persona distinta de quien generó el cambio lo revisó (cuando sea posible).
+- [ ] El riesgo residual quedó registrado en `docs/security/hallazgos.md`.
+
+Controles automáticos que ya existen en el repositorio:
+
+| Control | Comando o job |
+| --- | --- |
+| Pruebas del gateway | `pytest` |
+| Lint Python | `ruff check app tests` |
+| Build del frontend | `pnpm build` |
+| Lint de Dockerfile | Hadolint |
+| Esquema y políticas K8s | kubeconform, kube-linter, conftest |
+| Vulnerabilidades Python | `pip-audit -r requirements.txt --require-hashes` |
+| Vulnerabilidades frontend | `pnpm audit --prod` |
+| Secretos en el bundle | grep de `gsk_`, `VITE_GROQ_API_KEY`, `api.groq.com` |
+| Workflow | actionlint |
+| Scripts | shellcheck |
+
+---
+
+## 2. Reglas de prompts
+
+- No incluir claves, tokens, cadenas de conexión, correos, teléfonos ni datos de
+  clientes.
+- No pegar volcados completos de la base de datos ni logs con PII.
+- Describir el objetivo, las restricciones y los archivos relevantes; evitar
+  “genera todo el proyecto” sin contexto.
+- Pedir explicaciones y alternativas, no solo código.
+- Verificar las respuestas del modelo contra la documentación oficial.
+- Si el modelo propone un comando destructivo, revisarlo antes de ejecutarlo.
+- No aceptar dependencias nuevas sin revisar mantenimiento, licencia y
+  vulnerabilidades.
+
+---
+
+## 3. Registro
+
+Cada fila documenta un cambio relevante. Las fechas son las de la revisión, no
+necesariamente las de la generación.
+
+| Fecha | Cambio | Asistencia | Resumen del prompt | Archivos | Validación | Revisor | Decisión |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-25 | AI Gateway, tests y manifiestos | Asistente de código (OpenCode) | Diseñar un gateway FastAPI con auth Supabase, cuotas, retries y métricas; generar Dockerfile, K8s y CI | `services/ai-gateway/`, `deploy/`, `.github/workflows/contenedor.yml` | `pytest` 39, `ruff`, Hadolint, kubeconform, kube-linter, conftest 189/189, Trivy, `pip-audit` | Pendiente de revisión por pares | Aceptado con hallazgos abiertos |
+| 2026-10-25 | Documentos de módulos 1–3 | Asistente de código (OpenCode) | Ordenar la matriz de cumplimiento, el modelo de amenazas y la bitácora de hallazgos | `docs/modulos-1-3.md`, `docs/security/`, `docs/plataforma/`, `catalog-info.yaml` | Validación YAML, actionlint, revisión manual de referencias | Pendiente de revisión por pares | Aceptado |
+| 2026-10-25 | Clúster kind y golden path | Asistente de código (OpenCode) | Configurar un clúster local reproducible y documentar el camino para servicios nuevos | `deploy/kind/`, `docs/plataforma/catalogo-backstage.md` | YAML válido; `kind` no ejecutado en este entorno | Pendiente de revisión por pares | Aceptado con limitación de runtime |
+
+> **Nota:** el registro no incluye prompts completos porque pueden contener
+> contexto interno. Se guarda un resumen y la evidencia de validación. Si un
+> cambio es crítico, adjuntar el enlace al PR y a los artefactos de CI.
+
+---
+
+## 4. Criterios de rechazo
+
+Se rechaza un cambio asistido por IA si:
+
+- No se puede explicar qué hace y por qué.
+- Introduce una dependencia sin revisar licencia y vulnerabilidades.
+- Incluye secretos o datos personales en código, tests, logs o prompts.
+- Desactiva un control de seguridad “para que pase el build”.
+- No tiene pruebas para el comportamiento nuevo.
+- Cambia configuración de producción sin un plan de rollback.
+- Genera manifiestos que no cumplen las políticas de `deploy/policies/`.
+
+---
+
+## 5. Referencias
+
+- `docs/security/modelo-de-amenazas.md` — riesgo de prompt injection y datos.
+- `docs/security/hallazgos.md` — hallazgos y tratamiento.
+- `docs/modulos-1-3.md` — matriz del módulo 3.
+- `.github/workflows/contenedor.yml` — controles automáticos.
+- `deploy/policies/kubernetes.rego` — políticas de admisión pre-despliegue.
