@@ -9,6 +9,17 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+# Docker Desktop para Windows necesita la ruta del host (C:/...), no la de
+# MSYS/Git Bash (/c/...). En Linux cygpath no existe y se usa $PWD tal cual.
+if command -v cygpath >/dev/null 2>&1; then
+  HOST_PWD="$(cygpath -m "$PWD")"
+  # Git Bash también convierte rutas del contenedor ("/work") a rutas de
+  # Windows. Esta variable desactiva esa conversión solo para este script.
+  export MSYS_NO_PATHCONV=1
+else
+  HOST_PWD="$PWD"
+fi
+
 OUT="build"
 mkdir -p "$OUT"
 
@@ -19,25 +30,25 @@ kubectl kustomize deploy/k8s/overlays/production > "$OUT/production.yaml"
 kubectl kustomize deploy/observability > "$OUT/observability.yaml"
 
 echo "==> kubeconform"
-docker run --rm -v "$PWD:/work" -w /work \
+docker run --rm -v "$HOST_PWD:/work" -w /work \
   ghcr.io/yannh/kubeconform:latest \
   -strict -summary \
   -skip ServiceMonitor,PrometheusRule \
   "$OUT/local.yaml" "$OUT/local-plataforma.yaml" "$OUT/production.yaml" "$OUT/observability.yaml"
 
-docker run --rm -v "$PWD:/work" -w /work \
+docker run --rm -v "$HOST_PWD:/work" -w /work \
   ghcr.io/yannh/kubeconform:latest \
   -strict -summary -skip Application \
   deploy/argocd/application-local.yaml \
   deploy/argocd/application-production.yaml
 
 echo "==> kube-linter"
-docker run --rm -v "$PWD:/work" -w /work \
+docker run --rm -v "$HOST_PWD:/work" -w /work \
   stackrox/kube-linter:v0.8.3 \
   lint "$OUT/local.yaml" "$OUT/production.yaml"
 
 echo "==> conftest"
-docker run --rm -v "$PWD:/work" -w /work \
+docker run --rm -v "$HOST_PWD:/work" -w /work \
   openpolicyagent/conftest:v0.56.0 \
   test -p deploy/policies "$OUT/local.yaml" "$OUT/production.yaml"
 

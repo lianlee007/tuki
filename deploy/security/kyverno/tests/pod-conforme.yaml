@@ -1,0 +1,23 @@
+# Pod que cumple la línea base: lo usa `deploy/scripts/validar-kyverno.sh`.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-conforme
+  namespace: tuki
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: web
+      image: ghcr.io/lianlee007/tuki:0.1.0
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        privileged: false
+        capabilities:
+          drop:
+            - ALL
