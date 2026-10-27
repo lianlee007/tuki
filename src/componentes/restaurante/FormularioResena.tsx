@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Check, Loader2, Send, X } from 'lucide-react';
+import { Camera, Check, ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { apiResenas } from '../../api/apiResenas';
+import { subirImagen } from '../../lib/servicios';
+import { validarFoto } from '../../lib/imagenes';
 import {
   MAX_COMENTARIO,
   MAX_NOMBRE,
@@ -64,9 +66,13 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   const [platilloId, setPlatilloId] = useState(inicialValido);
   const [nombre, setNombre] = useState(nombreInicial);
   const [comentario, setComentario] = useState('');
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [errorFoto, setErrorFoto] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviada, setEnviada] = useState(false);
+  const selectorFoto = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (nombreInicial && !nombre) setNombre(nombreInicial);
@@ -148,6 +154,36 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     );
   }
 
+  /**
+   * La foto se comprime y sube a Cloudinary antes de enviar la reseña. Si la
+   * subida falla, el formulario no se bloquea: se avisa y se puede publicar
+   * solo con texto. La URL resultante es lo único que viaja a Supabase.
+   */
+  const elegirFoto = async (evento: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = evento.target.files?.[0];
+    // Permite volver a elegir el mismo archivo después de quitarlo.
+    evento.target.value = '';
+    if (!archivo) return;
+
+    const fallo = validarFoto(archivo);
+    if (fallo) {
+      setErrorFoto(fallo);
+      return;
+    }
+
+    setErrorFoto(null);
+    setSubiendoFoto(true);
+    try {
+      setFotoUrl(await subirImagen(archivo));
+    } catch {
+      setErrorFoto(
+        'No pudimos subir la foto. Puedes enviar la reseña sin ella y contarlo con palabras.'
+      );
+    } finally {
+      setSubiendoFoto(false);
+    }
+  };
+
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
     const fallo = validarResena({ calificacion, comentario, nombre });
@@ -166,6 +202,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
         comentario,
         nombre,
         email: user.email ?? null,
+        fotoUrl,
       });
 
       if (errorApi) throw errorApi;
@@ -278,6 +315,70 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
             className="mt-1.5 w-full resize-y rounded-xl border border-af/30 bg-af-ground px-3 py-2.5 text-sm leading-relaxed text-af-ink outline-none placeholder:text-af-ink-secondary focus:border-af-accent-text focus:ring-2 focus:ring-af-accent/25"
           />
         </label>
+
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
+            Una foto, si quieres
+          </span>
+
+          <div className="mt-2">
+            {fotoUrl ? (
+              <div className="relative overflow-hidden rounded-2xl border border-af/30 bg-af-ground">
+                <img
+                  src={fotoUrl}
+                  alt="Foto que acompañará tu reseña"
+                  className="h-44 w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFotoUrl(null)}
+                  aria-label="Quitar la foto"
+                  className="absolute right-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/75 af-pulsar"
+                >
+                  <X size={14} /> Quitar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => selectorFoto.current?.click()}
+                disabled={subiendoFoto}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-af/40 bg-af-ground px-4 py-6 text-sm font-semibold text-af-ink-secondary transition-colors hover:border-af-accent-text hover:text-af-ink disabled:opacity-60 af-pulsar"
+              >
+                {subiendoFoto ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Subiendo la foto…
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus size={18} /> Añadir una foto del plato
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          <input
+            ref={selectorFoto}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            onChange={elegirFoto}
+            className="sr-only"
+            tabIndex={-1}
+          />
+
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-af-ink-secondary">
+            <Camera size={13} /> Se optimiza al subir. Tu foto se publica junto
+            con la reseña cuando el restaurante la apruebe.
+          </p>
+
+          {errorFoto && (
+            <p role="alert" className="mt-1 text-xs font-medium text-af-danger-text">
+              {errorFoto}
+            </p>
+          )}
+        </div>
 
         {error && (
           <p role="alert" className="text-sm font-medium text-af-danger-text">

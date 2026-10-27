@@ -7,6 +7,8 @@ import {
   resenasPublicas,
   resumenDe,
   resumenRestaurante,
+  tieneRespuesta,
+  validarRespuesta,
   validarResena,
   type Resena,
 } from '../../src/lib/resenas';
@@ -145,5 +147,25 @@ describe('validarResena', () => {
     expect(
       validarResena({ calificacion: 5, comentario: '', nombre: 'x'.repeat(61) })
     ).toMatch(/60/);
+  });
+});
+
+describe('validarRespuesta', () => {
+  it('no deja publicar una respuesta vacía', () => {
+    expect(validarRespuesta('')).toMatch(/Escribe/);
+    expect(validarRespuesta('   ')).toMatch(/Escribe/);
+  });
+
+  it('acepta una respuesta normal y limita el largo', () => {
+    expect(validarRespuesta('Gracias por venir.')).toBeNull();
+    expect(validarRespuesta('x'.repeat(401))).toMatch(/400/);
+  });
+});
+
+describe('tieneRespuesta', () => {
+  it('solo cuenta una respuesta con texto', () => {
+    expect(tieneRespuesta(resena())).toBe(false);
+    expect(tieneRespuesta(resena({ respuesta_dueno: '   ' }))).toBe(false);
+    expect(tieneRespuesta(resena({ respuesta_dueno: 'Gracias' }))).toBe(true);
   });
 });

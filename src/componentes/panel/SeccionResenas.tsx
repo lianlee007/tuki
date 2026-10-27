@@ -5,17 +5,23 @@ import {
   Check,
   EyeOff,
   ExternalLink,
+  Image as ImageIcon,
   MessageSquare,
+  MessageSquareQuote,
   RefreshCw,
+  Store,
 } from 'lucide-react';
 import { Avatar } from '../sistema-diseno/Avatar';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { apiResenas } from '../../api/apiResenas';
 import {
+  MAX_RESPUESTA,
   esPublica,
   fechaResena,
   nombreCliente,
   resumenRestaurante,
+  tieneRespuesta,
+  validarRespuesta,
   type Resena,
 } from '../../lib/resenas';
 import type { Platillo, Restaurante } from '../../tipos/modelos';
@@ -46,6 +52,10 @@ export const SeccionResenas: React.FC<Props> = ({
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
+  const [respondiendoId, setRespondiendoId] = useState<string | null>(null);
+  const [borradorRespuesta, setBorradorRespuesta] = useState('');
+  const [errorRespuesta, setErrorRespuesta] = useState<string | null>(null);
+  const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -77,6 +87,10 @@ export const SeccionResenas: React.FC<Props> = ({
     [resenas]
   );
   const resumen = useMemo(() => resumenRestaurante(publicadas), [publicadas]);
+  const conFoto = useMemo(
+    () => publicadas.filter((resena) => Boolean(resena.foto_url)).length,
+    [publicadas]
+  );
 
   const nombresPlatos = useMemo(() => {
     const mapa = new Map<string, string>();
@@ -122,6 +136,75 @@ export const SeccionResenas: React.FC<Props> = ({
     }
   };
 
+  const abrirRespuesta = (resena: Resena) => {
+    setRespondiendoId(resena.id);
+    setBorradorRespuesta(resena.respuesta_dueno ?? '');
+    setErrorRespuesta(null);
+  };
+
+  const cerrarRespuesta = () => {
+    setRespondiendoId(null);
+    setBorradorRespuesta('');
+    setErrorRespuesta(null);
+  };
+
+  /**
+   * La respuesta se publica junto a la reseña aprobada. Se guarda de forma
+   * optimista para que el dueño vea el texto al instante, y si el servidor
+   * falla se restaura la lista anterior: nunca se queda un texto que no existe.
+   */
+  const guardarRespuesta = async (resena: Resena) => {
+    const fallo = validarRespuesta(borradorRespuesta);
+    if (fallo) {
+      setErrorRespuesta(fallo);
+      return;
+    }
+
+    const texto = borradorRespuesta.trim();
+    const anteriores = resenas;
+    setGuardandoRespuesta(resena.id);
+    setErrorRespuesta(null);
+    setResenas((prev) =>
+      prev.map((item) =>
+        item.id === resena.id ? { ...item, respuesta_dueno: texto } : item
+      )
+    );
+
+    try {
+      const { error: falloApi } = await apiResenas.responder(resena.id, texto);
+      if (falloApi) throw falloApi;
+      mostrarMensaje('exito', 'Respuesta publicada junto a la reseña');
+      cerrarRespuesta();
+    } catch {
+      setResenas(anteriores);
+      setErrorRespuesta('No pudimos guardar la respuesta. Inténtalo otra vez.');
+    } finally {
+      setGuardandoRespuesta(null);
+    }
+  };
+
+  const quitarRespuesta = async (resena: Resena) => {
+    const anteriores = resenas;
+    setGuardandoRespuesta(resena.id);
+    setResenas((prev) =>
+      prev.map((item) =>
+        item.id === resena.id ? { ...item, respuesta_dueno: null } : item
+      )
+    );
+
+    try {
+      const { error: falloApi } = await apiResenas.responder(resena.id, null);
+      if (falloApi) throw falloApi;
+      mostrarMensaje('exito', 'Respuesta eliminada');
+      cerrarRespuesta();
+    } catch {
+      setResenas(anteriores);
+      mostrarMensaje('error', 'No pudimos quitar la respuesta.');
+    } finally {
+      setGuardandoRespuesta(null);
+    }
+  };
+
   const tabs: { id: Filtro; texto: string; cantidad: number }[] = [
     { id: 'pendientes', texto: 'Pendientes', cantidad: pendientes.length },
     { id: 'publicadas', texto: 'Publicadas', cantidad: publicadas.length },
@@ -158,7 +241,7 @@ export const SeccionResenas: React.FC<Props> = ({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-af-surface p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
             Promedio publicado
@@ -188,6 +271,14 @@ export const SeccionResenas: React.FC<Props> = ({
           </p>
           <p className="mt-2 text-2xl font-bold tabular-nums text-af-ink">
             {pendientes.length}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-af-surface p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
+            Con foto
+          </p>
+          <p className="mt-2 text-2xl font-bold tabular-nums text-af-ink">
+            {conFoto}
           </p>
         </div>
       </div>
@@ -293,9 +384,118 @@ export const SeccionResenas: React.FC<Props> = ({
                   </span>
                 </div>
 
-                <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-af-ink">
-                  {resena.comentario?.trim() || 'Calificó sin dejar comentario.'}
-                </p>
+                <div className="mt-4 flex gap-3">
+                  {resena.foto_url && (
+                    <a
+                      href={resena.foto_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Abrir la foto de la reseña"
+                      className="group relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-af/20 af-pulsar"
+                    >
+                      <img
+                        src={resena.foto_url}
+                        alt="Foto de la reseña"
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <span className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-md bg-black/55 text-white">
+                        <ImageIcon size={12} />
+                      </span>
+                    </a>
+                  )}
+                  <p className="min-w-0 whitespace-pre-line text-sm leading-relaxed text-af-ink">
+                    {resena.comentario?.trim() || 'Calificó sin dejar comentario.'}
+                  </p>
+                </div>
+
+                {respondiendoId === resena.id ? (
+                  <div className="mt-4 rounded-xl bg-af-ground p-3.5">
+                    <label className="block">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-af-ink-secondary">
+                        Tu respuesta pública
+                      </span>
+                      <textarea
+                        value={borradorRespuesta}
+                        onChange={(evento) => {
+                          setBorradorRespuesta(evento.target.value);
+                          if (errorRespuesta) setErrorRespuesta(null);
+                        }}
+                        maxLength={MAX_RESPUESTA}
+                        rows={3}
+                        autoFocus
+                        placeholder="Gracias por venir. Nos alegra que…"
+                        className="mt-1.5 w-full resize-y rounded-lg border border-af/30 bg-af-surface px-3 py-2 text-sm leading-relaxed text-af-ink outline-none placeholder:text-af-ink-secondary focus:border-af-accent-text focus:ring-2 focus:ring-af-accent/25"
+                      />
+                    </label>
+
+                    {errorRespuesta && (
+                      <p role="alert" className="mt-1 text-xs font-medium text-af-danger-text">
+                        {errorRespuesta}
+                      </p>
+                    )}
+
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <span className="text-[11px] tabular-nums text-af-ink-secondary">
+                        {borradorRespuesta.length}/{MAX_RESPUESTA}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={cerrarRespuesta}
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-af-ink-secondary transition-colors hover:text-af-ink af-pulsar"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => guardarRespuesta(resena)}
+                          disabled={guardandoRespuesta === resena.id}
+                          className="rounded-lg bg-af-accent-solid px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 af-pulsar"
+                        >
+                          {guardandoRespuesta === resena.id ? 'Guardando…' : 'Guardar respuesta'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : tieneRespuesta(resena) ? (
+                  <div className="mt-4 rounded-xl bg-af-ground px-3.5 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-af-ink-secondary">
+                        <Store size={13} /> Respuesta del restaurante
+                      </p>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => abrirRespuesta(resena)}
+                          className="text-[11px] font-semibold text-af-accent-text hover:underline af-pulsar"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => quitarRespuesta(resena)}
+                          disabled={guardandoRespuesta === resena.id}
+                          className="text-[11px] font-semibold text-af-danger-text hover:underline disabled:opacity-50 af-pulsar"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    </div>
+                    <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-af-ink">
+                      {resena.respuesta_dueno}
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => abrirRespuesta(resena)}
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-af-ink-secondary transition-colors hover:bg-af-ink/5 hover:text-af-ink af-pulsar"
+                  >
+                    <MessageSquareQuote size={15} />
+                    Responder públicamente
+                  </button>
+                )}
 
                 <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-af/15 pt-4">
                   {publica ? (

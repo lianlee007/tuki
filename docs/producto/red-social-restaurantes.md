@@ -7,11 +7,11 @@ pedidos por WhatsApp. La capa social es la puerta de entrada y la razón para
 volver.
 
 > Estado: **fase A implementada en la SPA**. La ficha ya muestra reseñas, el
-> comensal puede escribir una (entra como pendiente), el dueño la modera desde
-> el panel y la cabecera social permite compartir. La migración
-> `db/sql-resenas.sql` añade `usuario_id`, `foto_url`, `respuesta_dueno` y las
-> políticas RLS; hay que aplicarla en Supabase. Las fotos y las respuestas del
-> dueño quedan para A2b.
+> comensal puede escribir una con foto (entra como pendiente), el dueño la
+> modera y la responde desde el panel y la cabecera social permite compartir.
+> La migración `db/sql-resenas.sql` añadió `usuario_id`, `foto_url`,
+> `respuesta_dueno` y las políticas RLS, y está aplicada en Supabase. Las fotos
+> usan el mismo Cloudinary sin firmar de los platillos; no hay bucket nuevo.
 
 ## 1. Lo que ya existe (y por eso la propuesta es barata)
 
@@ -120,7 +120,7 @@ desde el cliente.
 
 | Fase | Alcance | Criterio de aceptación |
 | --- | --- | --- |
-| **A. Confianza** | A1–A6 | Un comensal califica un plato con estrellas y comentario; el dueño la aprueba; el promedio y el conteo cambian en la ficha y en el feed; la ficha se ve bien a 360 px y no salta al cargar. La foto es A2b. |
+| **A. Confianza** | A1–A6 | Un comensal califica un plato con estrellas, comentario y foto; el dueño la aprueba y la responde; el promedio y el conteo cambian en la ficha y en el feed; la ficha se ve bien a 360 px y no salta al cargar. |
 | **B. Pertenencia** | B1–B4 | Guardar un plato sobrevive al recargar; el perfil muestra reseñas y colecciones; seguir un restaurante cambia la pestaña Siguiendo; las reacciones no se pueden duplicar. |
 | **C. Descubrimiento** | C1–C5 | El carril de actividad no desplaza al buscador; el mapa no muestra direcciones exactas sin permiso; las notificaciones se generan en el servidor. |
 
@@ -166,13 +166,17 @@ Sigue las reglas de `docs/estructura.md`:
   resumen del local.
 - Sección pública `ResenasPublicas`: promedio, número de reseñas, lista,
   estados vacío/error/carga y «ver todas».
-- `FormularioResena`: estrellas, plato, nombre, comentario, validación, estado
-  de éxito y aviso de que queda pendiente de aprobación.
+- `FormularioResena`: estrellas, plato, nombre, comentario, foto opcional,
+  validación, estado de éxito y aviso de que queda pendiente de aprobación. La
+  foto se comprime en el navegador y se sube a Cloudinary con el preset sin
+  firmar del proyecto (máximo 8 MB; JPG, PNG o WebP).
+- `ResenasPublicas`: promedio, distribución 5→1, lista con foto ampliable,
+  respuesta del restaurante y estados vacío/error/carga.
 - Cabecera social de la ficha: promedio, número de reseñas, **Escribir reseña**
   y **Compartir** (hoja nativa o portapapeles).
 - Aviso posterior al pedido: «Pedido enviado. ¿Nos cuentas cómo estuvo?».
-- Pestaña **Reseñas** en el panel: pendientes, publicadas, todas, aprobar y
-  ocultar. La reseña nunca se borra.
+- Pestaña **Reseñas** en el panel: pendientes, publicadas, todas, aprobar,
+  ocultar, responder y quitar la respuesta. La reseña nunca se borra.
 - Migración `db/sql-resenas.sql` **aplicada** el 2026-10-27 como
   `resenas_fase_a` (versión `20261027220739`): columnas `usuario_id`,
   `foto_url`, `respuesta_dueno`, índices únicos y tres políticas RLS.
@@ -180,15 +184,10 @@ Sigue las reglas de `docs/estructura.md`:
   el autor inserta y ve su reseña pendiente; `anon` no la ve; el dueño la
   aprueba; `anon` la ve publicada. La transacción se revirtió, así que no dejó
   filas de prueba.
-- 14 pruebas nuevas de las reglas de reseña (50 en total).
+- 21 pruebas nuevas de las reglas de reseña y de las fotos (57 en total).
 
 **Pendiente para cerrar la fase A en producción**
 
-- Fotos de reseña: requieren bucket de Storage, límite de tamaño, políticas de
-  subida y moderación de imagen. `foto_url` ya existe, pero el formulario aún
-  no sube archivos. Es A2b, no bloquea el texto.
-- Respuesta pública del dueño: la columna `respuesta_dueno` ya está en la
-  migración; falta el campo en la bandeja.
 - Editar la propia reseña (el índice único ya bloquea duplicados y hoy se
   muestra un aviso).
 - Notificaciones de «reseña aprobada» y «nueva reseña» (fase C).
