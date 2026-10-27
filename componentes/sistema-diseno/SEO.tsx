@@ -10,9 +10,9 @@ interface SEOProps {
 }
 
 export const SEO: React.FC<SEOProps> = ({ 
-  titulo = 'SmartFood - Crea tu menú digital', 
-  descripcion = 'Plataforma para crear sitios web y menús digitales para restaurantes con IA y diseño neumórfico.',
-  imagen = 'https://smartfood.app/og-image.jpg',
+  titulo = 'Riki - Crea tu menú digital', 
+  descripcion = 'Plataforma para crear el sitio web y el menú digital de tu restaurante con IA. Listo en minutos, sin saber programar.',
+  imagen = 'https://riki.app/og-image.jpg',
   url
 }) => {
   const sitioUrl = url || window.location.href;
