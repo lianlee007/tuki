@@ -5,7 +5,7 @@
 
 ## Contexto
 
-El trabajo pide justificar qué servicios se containerizan y cuáles no. Riki usa
+El trabajo pide justificar qué servicios se containerizan y cuáles no. Tuki usa
 tres servicios externos:
 
 - **Supabase:** Postgres, Auth, RLS y almacenamiento.
