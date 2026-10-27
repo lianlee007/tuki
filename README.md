@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🍽️ Riki</h1>
+  <h1>🍽️ Tuki</h1>
   <!-- v0.0.1 -->
   <p><strong>Constructor de sitios web para restaurantes con IA</strong></p>
   <p>Diseña, gestiona y escala. La solución definitiva para restauradores que buscan elegancia visual y eficiencia operativa.</p>
@@ -31,9 +31,9 @@
 
 ## 🎯 Descripción
 
-**Riki** es una plataforma SaaS moderna que permite a restaurantes crear, gestionar y publicar sus sitios web de menú digital en minutos. Con integración de Inteligencia Artificial, un diseño limpio y funcionalidades avanzadas, Riki elimina la necesidad de conocimientos técnicos para tener presencia digital profesional.
+**Tuki** es una plataforma SaaS moderna que permite a restaurantes crear, gestionar y publicar sus sitios web de menú digital en minutos. Con integración de Inteligencia Artificial, un diseño limpio y funcionalidades avanzadas, Tuki elimina la necesidad de conocimientos técnicos para tener presencia digital profesional.
 
-### ¿Qué hace Riki?
+### ¿Qué hace Tuki?
 
 - ✅ **Crea sitios web personalizados** para restaurantes sin código
 - ✅ **Gestiona menús digitales** con categorías, precios e imágenes
@@ -116,7 +116,7 @@ Antes de comenzar, asegúrate de tener instalado:
 1. **Clona el repositorio**
    ```bash
    git clone <url-del-repositorio>
-   cd LeeFood
+   cd tuki
    ```
 
 2. **Instala las dependencias**
@@ -168,7 +168,7 @@ GROQ_API_KEY=tu_clave_de_groq
 1. Crea una cuenta en [cloudinary.com](https://cloudinary.com)
 2. Ve al Dashboard
 3. Copia el Cloud Name
-4. Crea un Upload Preset sin firmar (unsigned) llamado `riki_unsigned` (el nombre real vive en la variable de entorno `VITE_CLOUDINARY_UPLOAD_PRESET`)
+4. Crea un Upload Preset sin firmar (unsigned) llamado `tuki_unsigned` (el nombre real vive en la variable de entorno `VITE_CLOUDINARY_UPLOAD_PRESET`)
 
 #### Groq
 1. Crea una cuenta en [console.groq.com](https://console.groq.com)
@@ -242,7 +242,7 @@ IA en local usa `pnpm dev` o el stack de Compose.
 ## 📁 Estructura del Proyecto
 
 ```
-LeeFood/
+tuki/
 ├── componentes/           # Componentes React organizados por funcionalidad
 │   ├── autenticacion/    # Formularios de login y registro
 │   ├── dinamica/         # Juegos y elementos interactivos
@@ -345,7 +345,7 @@ confirmarse en Git.
 
 ### Otros Proveedores
 
-Cualquier proveedor que soporte aplicaciones estáticas puede hostear Riki:
+Cualquier proveedor que soporte aplicaciones estáticas puede hostear Tuki:
 - GitHub Pages
 - AWS S3 + CloudFront
 - Firebase Hosting
@@ -409,5 +409,5 @@ Este proyecto es privado y de uso interno.
 
 <div align="center">
   <p>Hecho con ❤️ para restaurantes que buscan destacar</p>
-  <p>© 2024 Riki. Todos los derechos reservados.</p>
+  <p>© 2024 Tuki. Todos los derechos reservados.</p>
 </div>

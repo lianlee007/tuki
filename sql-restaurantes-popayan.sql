@@ -1,5 +1,5 @@
 -- ============================================================================
---  Riki · Cinco restaurantes de ejemplo en Popayán
+--  Tuki · Cinco restaurantes de ejemplo en Popayán
 --  ---------------------------------------------------------------------------
 --  QUÉ HACE
 --  Crea cinco restaurantes completos —cuenta, restaurante, tema y carta— para
@@ -37,7 +37,7 @@ begin;
 -- único, un local por cuenta.
 --
 -- La contraseña de las cinco es la misma, para que puedas entrar al panel de
--- cualquiera y ver cómo queda por dentro:  Riki2026*
+-- cualquiera y ver cómo queda por dentro:  Tuki2026*
 -- Cámbiala —o borra las cuentas— cuando termines de mostrar la demo.
 --
 -- Si tu proyecto no te deja escribir en el esquema `auth`, crea las cinco
@@ -55,17 +55,17 @@ select
   'authenticated',
   'authenticated',
   u.email,
-  extensions.crypt('Riki2026*', extensions.gen_salt('bf')),
+  extensions.crypt('Tuki2026*', extensions.gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
   jsonb_build_object('nombre', u.nombre, 'apellido', u.apellido),
   now(), now(), '', '', '', ''
 from (values
-  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@riki.app',     'Ana Lucía', 'Payán'),
-  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@riki.app',     'Julián',    'Arcos'),
-  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@riki.app','Camila',   'Muñoz'),
-  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@riki.app',      'Andrés',    'Bolívar'),
-  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@riki.app',    'Rosa',      'Chamorro')
+  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@tuki.app',     'Ana Lucía', 'Payán'),
+  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@tuki.app',     'Julián',    'Arcos'),
+  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@tuki.app','Camila',   'Muñoz'),
+  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@tuki.app',      'Andrés',    'Bolívar'),
+  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@tuki.app',    'Rosa',      'Chamorro')
 ) as u(id, email, nombre, apellido)
 on conflict (id) do nothing;
 
@@ -75,11 +75,11 @@ select u.id::text, u.id,
        jsonb_build_object('sub', u.id::text, 'email', u.email),
        'email', now(), now(), now()
 from (values
-  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@riki.app'),
-  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@riki.app'),
-  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@riki.app'),
-  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@riki.app'),
-  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@riki.app')
+  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@tuki.app'),
+  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@tuki.app'),
+  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@tuki.app'),
+  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@tuki.app'),
+  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@tuki.app')
 ) as u(id, email)
 where exists (select 1 from auth.users a where a.id = u.id)
   and not exists (
@@ -91,11 +91,11 @@ where exists (select 1 from auth.users a where a.id = u.id)
 insert into public.users (id, email, nombre, apellido)
 select u.id, u.email, u.nombre, u.apellido
 from (values
-  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@riki.app',     'Ana Lucía', 'Payán'),
-  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@riki.app',     'Julián',    'Arcos'),
-  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@riki.app','Camila',   'Muñoz'),
-  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@riki.app',      'Andrés',    'Bolívar'),
-  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@riki.app',    'Rosa',      'Chamorro')
+  ('a1000001-0000-4000-8000-000000000001'::uuid, 'sabor.payanes@tuki.app',     'Ana Lucía', 'Payán'),
+  ('a1000002-0000-4000-8000-000000000002'::uuid, 'asadero.arcos@tuki.app',     'Julián',    'Arcos'),
+  ('a1000003-0000-4000-8000-000000000003'::uuid, 'pizzeria.centenario@tuki.app','Camila',   'Muñoz'),
+  ('a1000004-0000-4000-8000-000000000004'::uuid, 'cafe.bolivar@tuki.app',      'Andrés',    'Bolívar'),
+  ('a1000005-0000-4000-8000-000000000005'::uuid, 'fritanga.fogon@tuki.app',    'Rosa',      'Chamorro')
 ) as u(id, email, nombre, apellido)
 on conflict (id) do nothing;
 
@@ -116,27 +116,27 @@ select
   '{"lunes":true,"martes":true,"miercoles":true,"jueves":true,"viernes":true,"sabado":true,"domingo":true}'::jsonb,
   'COP', 'es', d.banner, true
 from (values
-  ('sabor.payanes@riki.app', 'Sabor Payanés', 'La cocina de siempre, hecha hoy',
+  ('sabor.payanes@tuki.app', 'Sabor Payanés', 'La cocina de siempre, hecha hoy',
    'Pipián, tamales y sopas de la región, con producto del mercado de Popayán y recetas de familia.',
    'Calle 5 # 8-21, Centro Histórico', '+57 300 000 0001', '21:30',
    'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Bandeja_paisa_30062011.jpg/1280px-Bandeja_paisa_30062011.jpg'),
 
-  ('asadero.arcos@riki.app', 'Asadero Los Arcos', 'Carne a la brasa, sin afán',
+  ('asadero.arcos@tuki.app', 'Asadero Los Arcos', 'Carne a la brasa, sin afán',
    'Cortes madurados y leña de eucalipto, con guarniciones de la casa.',
    'Carrera 9 # 4-45, El Empedrado', '+57 300 000 0002', '22:30',
    'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Meat_roasting_at_Carnivore_restaurant_in_Nairobi.jpg/1280px-Meat_roasting_at_Carnivore_restaurant_in_Nairobi.jpg'),
 
-  ('pizzeria.centenario@riki.app', 'Pizzería Centenario', 'Masa madre, horno de piedra',
+  ('pizzeria.centenario@tuki.app', 'Pizzería Centenario', 'Masa madre, horno de piedra',
    'Pizzas de fermentación lenta y pastas frescas, a dos cuadras del Parque Caldas.',
    'Calle 3 # 6-40, Centro Histórico', '+57 300 000 0003', '22:00',
    'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Cafe_Deco_Pizzeria_Interior_Photo.jpg/1280px-Cafe_Deco_Pizzeria_Interior_Photo.jpg'),
 
-  ('cafe.bolivar@riki.app', 'Café Bolívar', 'Café del Cauca y repostería de la casa',
+  ('cafe.bolivar@tuki.app', 'Café Bolívar', 'Café del Cauca y repostería de la casa',
    'Tinto de fincas caucanas, tortas horneadas en el día y mesas para quedarse un rato.',
    'Calle 4 # 5-18, frente al Parque Caldas', '+57 300 000 0004', '20:00',
    'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Guelaguetza_Restaurante_-_February_2024_-_Sarah_Stierch_01.jpg/1280px-Guelaguetza_Restaurante_-_February_2024_-_Sarah_Stierch_01.jpg'),
 
-  ('fritanga.fogon@riki.app', 'Fritanga El Fogón', 'Antojos, sopas y lo que se antoje',
+  ('fritanga.fogon@tuki.app', 'Fritanga El Fogón', 'Antojos, sopas y lo que se antoje',
    'Fritanga de la esquina con sopas del día, hamburguesas y postres de frutas.',
    'Carrera 6 # 12-30, barrio Bolívar', '+57 300 000 0005', '21:00',
    'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Starmugs_Cafe_interior_on_Lordship_Lane_Tottenham_London_England_02.jpg/1280px-Starmugs_Cafe_interior_on_Lordship_Lane_Tottenham_London_England_02.jpg')
@@ -178,11 +178,11 @@ select
   r.id, t.plantilla, t.fuente_titulos, 'Inter',
   t.primario, t.secundario, t.fondo, t.texto, t.titulos
 from (values
-  ('sabor.payanes@riki.app',      'carta',       'Playfair Display', '#8C2F1E', '#C2703B', '#FBF7F0', '#2B211A', '#4A2C1A'),
-  ('asadero.arcos@riki.app',      'moderno',     'Inter',            '#E25822', '#8A6B2F', '#141110', '#EFE7DE', '#FFFFFF'),
-  ('pizzeria.centenario@riki.app','grid',        'Inter',            '#1F7A3D', '#C0392B', '#FFFDF7', '#23201B', '#12321E'),
-  ('cafe.bolivar@riki.app',       'minimalista', 'Playfair Display', '#5B3A21', '#A8743F', '#FAF6F1', '#2A241F', '#3B2314'),
-  ('fritanga.fogon@riki.app',     'mosaico',     'Inter',            '#D97706', '#E11D48', '#FFFBF3', '#291F14', '#5B3A0B')
+  ('sabor.payanes@tuki.app',      'carta',       'Playfair Display', '#8C2F1E', '#C2703B', '#FBF7F0', '#2B211A', '#4A2C1A'),
+  ('asadero.arcos@tuki.app',      'moderno',     'Inter',            '#E25822', '#8A6B2F', '#141110', '#EFE7DE', '#FFFFFF'),
+  ('pizzeria.centenario@tuki.app','grid',        'Inter',            '#1F7A3D', '#C0392B', '#FFFDF7', '#23201B', '#12321E'),
+  ('cafe.bolivar@tuki.app',       'minimalista', 'Playfair Display', '#5B3A21', '#A8743F', '#FAF6F1', '#2A241F', '#3B2314'),
+  ('fritanga.fogon@tuki.app',     'mosaico',     'Inter',            '#D97706', '#E11D48', '#FFFBF3', '#291F14', '#5B3A0B')
 ) as t(email, plantilla, fuente_titulos, primario, secundario, fondo, texto, titulos)
 join public.users u on u.email = t.email
 join public.restaurantes r on r.usuario_id = u.id
@@ -209,8 +209,8 @@ where restaurante_id in (
   from public.restaurantes r
   join public.users u on u.id = r.usuario_id
   where u.email in (
-    'sabor.payanes@riki.app', 'asadero.arcos@riki.app', 'pizzeria.centenario@riki.app',
-    'cafe.bolivar@riki.app', 'fritanga.fogon@riki.app'
+    'sabor.payanes@tuki.app', 'asadero.arcos@tuki.app', 'pizzeria.centenario@tuki.app',
+    'cafe.bolivar@tuki.app', 'fritanga.fogon@tuki.app'
   )
 );
 
@@ -223,53 +223,53 @@ select
   v.orden, true, true, v.destacado
 from (values
   -- Sabor Payanés
-  ('sabor.payanes@riki.app', 'Bandeja paisa', 'Fríjoles, arroz, carne en polvo, chicharrón, huevo, arepa y aguacate.', 28000, 'Típica', 'bandeja', 1, true),
-  ('sabor.payanes@riki.app', 'Ajiaco santafereño', 'Pollo, tres clases de papa, mazorca y guasca, con crema y alcaparras.', 24000, 'Sopas', 'ajiaco', 2, false),
-  ('sabor.payanes@riki.app', 'Sancocho de gallina', 'Gallina criolla, yuca, plátano y mazorca, a fuego lento.', 22000, 'Sopas', 'sancocho', 3, false),
-  ('sabor.payanes@riki.app', 'Tamal huilense', 'Masa de maíz con pollo, cerdo y arroz, envuelta en hoja de plátano.', 15000, 'Típica', 'tamal', 4, false),
-  ('sabor.payanes@riki.app', 'Empanadas de pipián', 'Seis empanadas de papa con pipián de maní, como en el mercado.', 12000, 'Entradas', 'empanadas', 5, false),
-  ('sabor.payanes@riki.app', 'Arepa rellena', 'Arepa asada con carne desmechada y queso campesino.', 10000, 'Entradas', 'arepaRellena', 6, false),
-  ('sabor.payanes@riki.app', 'Mazamorra payanesa', 'Maíz blanco con panela, leche y canela.', 9000, 'Postres', 'mazamorra', 7, false),
-  ('sabor.payanes@riki.app', 'Envueltos de choclo', 'Dulce de maíz tierno envuelto en su propia hoja.', 8000, 'Postres', 'envueltos', 8, false),
+  ('sabor.payanes@tuki.app', 'Bandeja paisa', 'Fríjoles, arroz, carne en polvo, chicharrón, huevo, arepa y aguacate.', 28000, 'Típica', 'bandeja', 1, true),
+  ('sabor.payanes@tuki.app', 'Ajiaco santafereño', 'Pollo, tres clases de papa, mazorca y guasca, con crema y alcaparras.', 24000, 'Sopas', 'ajiaco', 2, false),
+  ('sabor.payanes@tuki.app', 'Sancocho de gallina', 'Gallina criolla, yuca, plátano y mazorca, a fuego lento.', 22000, 'Sopas', 'sancocho', 3, false),
+  ('sabor.payanes@tuki.app', 'Tamal huilense', 'Masa de maíz con pollo, cerdo y arroz, envuelta en hoja de plátano.', 15000, 'Típica', 'tamal', 4, false),
+  ('sabor.payanes@tuki.app', 'Empanadas de pipián', 'Seis empanadas de papa con pipián de maní, como en el mercado.', 12000, 'Entradas', 'empanadas', 5, false),
+  ('sabor.payanes@tuki.app', 'Arepa rellena', 'Arepa asada con carne desmechada y queso campesino.', 10000, 'Entradas', 'arepaRellena', 6, false),
+  ('sabor.payanes@tuki.app', 'Mazamorra payanesa', 'Maíz blanco con panela, leche y canela.', 9000, 'Postres', 'mazamorra', 7, false),
+  ('sabor.payanes@tuki.app', 'Envueltos de choclo', 'Dulce de maíz tierno envuelto en su propia hoja.', 8000, 'Postres', 'envueltos', 8, false),
 
   -- Asadero Los Arcos
-  ('asadero.arcos@riki.app', 'Churrasco', 'Lomo de res a la brasa con papas a la francesa y chimichurri de la casa.', 38000, 'Carnes', 'churrasco', 1, true),
-  ('asadero.arcos@riki.app', 'Picada de carnes', 'Res, cerdo, morcilla, chorizo, papa criolla y plátano, para dos o tres.', 45000, 'Para compartir', 'picada', 2, true),
-  ('asadero.arcos@riki.app', 'Asado huilense', 'Cerdo marinado en cerveza y especias, asado lentamente.', 32000, 'Carnes', 'asadoHuilense', 3, false),
-  ('asadero.arcos@riki.app', 'Punta de anca', 'Corte a la parrilla en su punto, con ensalada de la casa.', 36000, 'Carnes', 'asadoA', 4, false),
-  ('asadero.arcos@riki.app', 'Parrillada para dos', 'Selección de cortes, chorizo, costilla de cerdo y guarniciones.', 62000, 'Para compartir', 'parrillada', 5, false),
-  ('asadero.arcos@riki.app', 'Chuleta a la brasa', 'Chuleta de cerdo con sal gruesa y leña de eucalipto.', 34000, 'Carnes', 'churrascoCampeiro', 6, false),
-  ('asadero.arcos@riki.app', 'Morcilla', 'Morcilla artesanal con arepa asada y limón.', 12000, 'Entradas', 'morcilla', 7, false),
-  ('asadero.arcos@riki.app', 'Patacones', 'Plátano verde prensado y frito, con hogao.', 8000, 'Entradas', 'patacones', 8, false),
+  ('asadero.arcos@tuki.app', 'Churrasco', 'Lomo de res a la brasa con papas a la francesa y chimichurri de la casa.', 38000, 'Carnes', 'churrasco', 1, true),
+  ('asadero.arcos@tuki.app', 'Picada de carnes', 'Res, cerdo, morcilla, chorizo, papa criolla y plátano, para dos o tres.', 45000, 'Para compartir', 'picada', 2, true),
+  ('asadero.arcos@tuki.app', 'Asado huilense', 'Cerdo marinado en cerveza y especias, asado lentamente.', 32000, 'Carnes', 'asadoHuilense', 3, false),
+  ('asadero.arcos@tuki.app', 'Punta de anca', 'Corte a la parrilla en su punto, con ensalada de la casa.', 36000, 'Carnes', 'asadoA', 4, false),
+  ('asadero.arcos@tuki.app', 'Parrillada para dos', 'Selección de cortes, chorizo, costilla de cerdo y guarniciones.', 62000, 'Para compartir', 'parrillada', 5, false),
+  ('asadero.arcos@tuki.app', 'Chuleta a la brasa', 'Chuleta de cerdo con sal gruesa y leña de eucalipto.', 34000, 'Carnes', 'churrascoCampeiro', 6, false),
+  ('asadero.arcos@tuki.app', 'Morcilla', 'Morcilla artesanal con arepa asada y limón.', 12000, 'Entradas', 'morcilla', 7, false),
+  ('asadero.arcos@tuki.app', 'Patacones', 'Plátano verde prensado y frito, con hogao.', 8000, 'Entradas', 'patacones', 8, false),
 
   -- Pizzería Centenario
-  ('pizzeria.centenario@riki.app', 'Pizza de pepperoni', 'Salsa de tomate, mozzarella y pepperoni. Mediana de 8 porciones.', 34000, 'Pizzas', 'pizzaPeperoni', 1, true),
-  ('pizzeria.centenario@riki.app', 'Pizza napolitana', 'Masa de fermentación lenta, horneada en piedra.', 30000, 'Pizzas', 'pizzaNapolitana', 2, false),
-  ('pizzeria.centenario@riki.app', 'Pizza margarita', 'Tomate, mozzarella fresca y albahaca.', 28000, 'Pizzas', 'pizzaMargarita', 3, false),
-  ('pizzeria.centenario@riki.app', 'Lasagna boloñesa', 'Receta boloñesa clásica, con parmesano.', 32000, 'Pastas', 'lasanaCarne', 4, false),
-  ('pizzeria.centenario@riki.app', 'Lasagna de la casa', 'Capas de pasta, carne y bechamel, gratinadas.', 30000, 'Pastas', 'lasana', 5, false),
-  ('pizzeria.centenario@riki.app', 'Espagueti con albóndiga', 'Albóndigas de res en salsa de tomate, sobre espagueti.', 28000, 'Pastas', 'espagueti', 6, false),
-  ('pizzeria.centenario@riki.app', 'Pastas carbonara', 'Pasta fresca con tocineta, huevo, parmesano y pimienta.', 26000, 'Pastas', 'carbonara', 7, false),
-  ('pizzeria.centenario@riki.app', 'Ensalada césar', 'Lechuga romana, pollo a la plancha, parmesano y aderezo césar.', 18000, 'Entradas', 'cesar', 8, false),
+  ('pizzeria.centenario@tuki.app', 'Pizza de pepperoni', 'Salsa de tomate, mozzarella y pepperoni. Mediana de 8 porciones.', 34000, 'Pizzas', 'pizzaPeperoni', 1, true),
+  ('pizzeria.centenario@tuki.app', 'Pizza napolitana', 'Masa de fermentación lenta, horneada en piedra.', 30000, 'Pizzas', 'pizzaNapolitana', 2, false),
+  ('pizzeria.centenario@tuki.app', 'Pizza margarita', 'Tomate, mozzarella fresca y albahaca.', 28000, 'Pizzas', 'pizzaMargarita', 3, false),
+  ('pizzeria.centenario@tuki.app', 'Lasagna boloñesa', 'Receta boloñesa clásica, con parmesano.', 32000, 'Pastas', 'lasanaCarne', 4, false),
+  ('pizzeria.centenario@tuki.app', 'Lasagna de la casa', 'Capas de pasta, carne y bechamel, gratinadas.', 30000, 'Pastas', 'lasana', 5, false),
+  ('pizzeria.centenario@tuki.app', 'Espagueti con albóndiga', 'Albóndigas de res en salsa de tomate, sobre espagueti.', 28000, 'Pastas', 'espagueti', 6, false),
+  ('pizzeria.centenario@tuki.app', 'Pastas carbonara', 'Pasta fresca con tocineta, huevo, parmesano y pimienta.', 26000, 'Pastas', 'carbonara', 7, false),
+  ('pizzeria.centenario@tuki.app', 'Ensalada césar', 'Lechuga romana, pollo a la plancha, parmesano y aderezo césar.', 18000, 'Entradas', 'cesar', 8, false),
 
   -- Café Bolívar
-  ('cafe.bolivar@riki.app', 'Capuchino', 'Espresso doble con leche vaporizada y espuma densa.', 7500, 'Café', 'capuchino', 1, true),
-  ('cafe.bolivar@riki.app', 'Waffle con frutos rojos', 'Waffle recién hecho con frutos rojos y miel.', 14000, 'Repostería', 'waffle', 2, false),
-  ('cafe.bolivar@riki.app', 'Brownie con helado', 'Brownie de chocolate tibio con helado de vainilla.', 12000, 'Repostería', 'brownie', 3, false),
-  ('cafe.bolivar@riki.app', 'Cheesecake de mora', 'Cheesecake horneado con salsa de mora del Cauca.', 11000, 'Repostería', 'cheesecake', 4, false),
-  ('cafe.bolivar@riki.app', 'Torta de chocolate', 'Chocolate 70 %, húmeda y con cobertura de cacao.', 9500, 'Repostería', 'tortaChocolate', 5, false),
-  ('cafe.bolivar@riki.app', 'Torta de fresa', 'Bizcocho de vainilla con fresas frescas y crema chantilly.', 9000, 'Repostería', 'tortaFresa', 6, false),
-  ('cafe.bolivar@riki.app', 'Obleas con arequipe', 'Obleas crujientes con arequipe y queso rallado.', 6000, 'Antojos', 'obleas', 7, false),
-  ('cafe.bolivar@riki.app', 'Café de la finca', 'Tinto del día, de fincas del Cauca, preparado en cafetera de goteo.', 5500, 'Café', 'cafe', 8, false),
+  ('cafe.bolivar@tuki.app', 'Capuchino', 'Espresso doble con leche vaporizada y espuma densa.', 7500, 'Café', 'capuchino', 1, true),
+  ('cafe.bolivar@tuki.app', 'Waffle con frutos rojos', 'Waffle recién hecho con frutos rojos y miel.', 14000, 'Repostería', 'waffle', 2, false),
+  ('cafe.bolivar@tuki.app', 'Brownie con helado', 'Brownie de chocolate tibio con helado de vainilla.', 12000, 'Repostería', 'brownie', 3, false),
+  ('cafe.bolivar@tuki.app', 'Cheesecake de mora', 'Cheesecake horneado con salsa de mora del Cauca.', 11000, 'Repostería', 'cheesecake', 4, false),
+  ('cafe.bolivar@tuki.app', 'Torta de chocolate', 'Chocolate 70 %, húmeda y con cobertura de cacao.', 9500, 'Repostería', 'tortaChocolate', 5, false),
+  ('cafe.bolivar@tuki.app', 'Torta de fresa', 'Bizcocho de vainilla con fresas frescas y crema chantilly.', 9000, 'Repostería', 'tortaFresa', 6, false),
+  ('cafe.bolivar@tuki.app', 'Obleas con arequipe', 'Obleas crujientes con arequipe y queso rallado.', 6000, 'Antojos', 'obleas', 7, false),
+  ('cafe.bolivar@tuki.app', 'Café de la finca', 'Tinto del día, de fincas del Cauca, preparado en cafetera de goteo.', 5500, 'Café', 'cafe', 8, false),
 
   -- Fritanga El Fogón
-  ('fritanga.fogon@riki.app', 'Hamburguesa de la casa', 'Dos carnes de res, queso, lechuga, tomate y papas.', 18000, 'Comidas rápidas', 'hamburguesa', 1, true),
-  ('fritanga.fogon@riki.app', 'Mojarra frita', 'Mojarra entera frita, con patacón, arroz y ensalada.', 26000, 'Pescados', 'mojarra', 2, false),
-  ('fritanga.fogon@riki.app', 'Caldo de res', 'Cocido con papa, zanahoria, mazorca, yuca y cilantro.', 18000, 'Sopas', 'caldoRes', 3, false),
-  ('fritanga.fogon@riki.app', 'Sopa de maíz', 'Crema de maíz tierno con queso y mantequilla.', 16000, 'Sopas', 'sopaMaiz', 4, false),
-  ('fritanga.fogon@riki.app', 'Salpicón de frutas', 'Frutas de la región en jugo de naranja, con helado.', 10000, 'Postres', 'salpicon', 5, false),
-  ('fritanga.fogon@riki.app', 'Patacones con hogao', 'Plátano verde frito con hogao payanés.', 9000, 'Entradas', 'platanoFrito', 6, false),
-  ('fritanga.fogon@riki.app', 'Arepa de choclo', 'Arepa dulce de maíz tierno con queso.', 7000, 'Antojos', 'arepaChoclo', 7, false)
+  ('fritanga.fogon@tuki.app', 'Hamburguesa de la casa', 'Dos carnes de res, queso, lechuga, tomate y papas.', 18000, 'Comidas rápidas', 'hamburguesa', 1, true),
+  ('fritanga.fogon@tuki.app', 'Mojarra frita', 'Mojarra entera frita, con patacón, arroz y ensalada.', 26000, 'Pescados', 'mojarra', 2, false),
+  ('fritanga.fogon@tuki.app', 'Caldo de res', 'Cocido con papa, zanahoria, mazorca, yuca y cilantro.', 18000, 'Sopas', 'caldoRes', 3, false),
+  ('fritanga.fogon@tuki.app', 'Sopa de maíz', 'Crema de maíz tierno con queso y mantequilla.', 16000, 'Sopas', 'sopaMaiz', 4, false),
+  ('fritanga.fogon@tuki.app', 'Salpicón de frutas', 'Frutas de la región en jugo de naranja, con helado.', 10000, 'Postres', 'salpicon', 5, false),
+  ('fritanga.fogon@tuki.app', 'Patacones con hogao', 'Plátano verde frito con hogao payanés.', 9000, 'Entradas', 'platanoFrito', 6, false),
+  ('fritanga.fogon@tuki.app', 'Arepa de choclo', 'Arepa dulce de maíz tierno con queso.', 7000, 'Antojos', 'arepaChoclo', 7, false)
 ) as v(email, nombre, descripcion, precio, categoria, foto, orden, destacado)
 join public.users u on u.email = v.email
 join public.restaurantes r on r.usuario_id = u.id
@@ -335,8 +335,8 @@ join public.users u on u.id = r.usuario_id
 left join public.temas t on t.restaurante_id = r.id
 left join public.platillos p on p.restaurante_id = r.id
 where u.email in (
-  'sabor.payanes@riki.app', 'asadero.arcos@riki.app', 'pizzeria.centenario@riki.app',
-  'cafe.bolivar@riki.app', 'fritanga.fogon@riki.app'
+  'sabor.payanes@tuki.app', 'asadero.arcos@tuki.app', 'pizzeria.centenario@tuki.app',
+  'cafe.bolivar@tuki.app', 'fritanga.fogon@tuki.app'
 )
 group by r.nombre, r.municipio, r.departamento, t.estilo_plantilla
 order by r.nombre;
@@ -351,24 +351,24 @@ order by r.nombre;
 -- where restaurante_id in (
 --   select r.id from public.restaurantes r
 --   join public.users u on u.id = r.usuario_id
---   where u.email like '%@riki.app'
+--   where u.email like '%@tuki.app'
 -- );
 --
 -- delete from public.temas
 -- where restaurante_id in (
 --   select r.id from public.restaurantes r
 --   join public.users u on u.id = r.usuario_id
---   where u.email like '%@riki.app'
+--   where u.email like '%@tuki.app'
 -- );
 --
 -- delete from public.restaurantes
--- where usuario_id in (select id from public.users where email like '%@riki.app');
+-- where usuario_id in (select id from public.users where email like '%@tuki.app');
 --
--- delete from public.users where email like '%@riki.app';
+-- delete from public.users where email like '%@tuki.app';
 --
 -- delete from auth.identities
--- where user_id in (select id from auth.users where email like '%@riki.app');
+-- where user_id in (select id from auth.users where email like '%@tuki.app');
 --
--- delete from auth.users where email like '%@riki.app';
+-- delete from auth.users where email like '%@tuki.app';
 --
 -- commit;

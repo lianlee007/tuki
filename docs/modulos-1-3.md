@@ -1,16 +1,16 @@
-﻿# AplicaciÃ³n de los mÃ³dulos 1â€“3 de CloudForge AI 5.0 a Riki
+﻿# AplicaciÃ³n de los mÃ³dulos 1â€“3 de CloudForge AI 5.0 a Tuki
 
 Este documento traza quÃ© contenidos de los mÃ³dulos **1 (fundamentos Cloud
 Native, Linux, Git y contenedores)**, **2 (Kubernetes, GitOps y Platform
 Engineering)** y **3 (DevSecOps y cadena de suministro)** se aplicaron al
-proyecto Riki, con quÃ© artefacto se demuestran y quÃ© queda fuera de alcance.
+proyecto Tuki, con quÃ© artefacto se demuestran y quÃ© queda fuera de alcance.
 
 Criterio de esta iteraciÃ³n: **aprovechar lo que el proyecto ya tenÃ­a y aÃ±adir
 solo evidencias ligeras y verificables**. No se reescribiÃ³ el producto, no se
 instalÃ³ una plataforma completa y no se implementÃ³ IA local.
 
 > **Fuera de alcance explÃ­cito:** mÃ³dulos 5 y 6 (MLOps/LLMOps e IA local
-> multimodal) y el componente de IA local del proyecto integrador. Riki usa un
+> multimodal) y el componente de IA local del proyecto integrador. Tuki usa un
 > proveedor gestionado (Groq) a travÃ©s de un gateway propio; no sirve modelos en
 > el clÃºster.
 
@@ -18,7 +18,7 @@ instalÃ³ una plataforma completa y no se implementÃ³ IA local.
 
 ## 1. Resumen de cobertura
 
-| MÃ³dulo | Peso en el diplomado | Cobertura en Riki | Evidencia principal |
+| MÃ³dulo | Peso en el diplomado | Cobertura en Tuki | Evidencia principal |
 | --- | --- | --- | --- |
 | 1. Fundamentos Cloud Native, Linux, Git y contenedores | 10 % | **Cubierto** | `Dockerfile`, `docker-compose.yml`, lockfiles, `.dockerignore`, ADR de cadena de suministro |
 | 2. Kubernetes, GitOps y Platform Engineering | 15 % | **Cubierto con adaptaciones** | `deploy/k8s/base`, overlays `local` y `production`, ArgoCD, `catalog-info.yaml`, `deploy/kind/` |
@@ -77,7 +77,7 @@ no usa la aplicaciÃ³n tras eliminar la integraciÃ³n con Gemini.
 
 ### 3.1 Matriz de contenidos
 
-| Contenido del PDF | AplicaciÃ³n en Riki | Evidencia | Estado |
+| Contenido del PDF | AplicaciÃ³n en Tuki | Evidencia | Estado |
 | --- | --- | --- | --- |
 | Terminal, procesos, puertos, DNS, HTTP y TLS | Flujo navegador â†’ Ingress/Nginx â†’ gateway; puertos 8080 y 8000; TLS en Ingress | `deploy/README.md` Â§1, `docker/nginx/conf.d/default.conf`, `deploy/k8s/base/ingress.yaml` | Cubierto |
 | VirtualizaciÃ³n frente a contenedores; namespaces y cgroups | Contenedores sin privilegios, lÃ­mites de CPU/memoria y rootfs de solo lectura | `Dockerfile`, `services/ai-gateway/Dockerfile`, `docker-compose.yml` | Cubierto |
@@ -91,7 +91,7 @@ no usa la aplicaciÃ³n tras eliminar la integraciÃ³n con Gemini.
 | InspecciÃ³n de tamaÃ±o, puertos, procesos y recursos | LÃ­mites en Compose/K8s, imÃ¡genes multi-etapa, usuario no root | `docker-compose.yml`, manifiestos, `deploy/scripts/verificar-supply-chain.sh` | Cubierto |
 | Microproyecto con README, Dockerfile, Compose, variables de ejemplo, pruebas y decisiones | Todo presente en el repositorio | `README.md`, `deploy/README.md`, `docs/adr/`, tests | Cubierto |
 
-### 3.2 Doce factores en Riki
+### 3.2 Doce factores en Tuki
 
 | Factor | CÃ³mo se cumple |
 | --- | --- |
@@ -134,23 +134,23 @@ curl http://localhost:8080/api/healthz
 
 ### 4.1 Matriz de contenidos
 
-| Contenido del PDF | AplicaciÃ³n en Riki | Evidencia | Estado |
+| Contenido del PDF | AplicaciÃ³n en Tuki | Evidencia | Estado |
 | --- | --- | --- | --- |
 | ClÃºster local con kind, minikube o k3d | ConfiguraciÃ³n reproducible de `kind`; el runtime validado fue Docker Desktop | `deploy/kind/cluster.yaml`, `deploy/kind/README.md` | Cubierto (kind no ejecutado en este entorno) |
 | Modelo declarativo y reconciliaciÃ³n | Manifiestos declarativos; ArgoCD con `selfHeal` y `prune` | `deploy/k8s/`, `deploy/argocd/application-production.yaml` | Cubierto |
 | Pods, Deployments, ReplicaSets | Dos Deployments con rolling update, probes y rÃ©plicas | `deploy/k8s/base/deployment.yaml`, `ai-gateway-deployment.yaml` | Cubierto |
 | StatefulSets, DaemonSets, Jobs y CronJobs | No se usan en la aplicaciÃ³n: no hay estado local ni tareas programadas | ADR 0003 | No aplica |
 | Services e Ingress | `Service` ClusterIP e Ingress con `/` y `/api`; verificado en runtime con ingress-nginx (`/healthz` y `/api/healthz` responden 200) | `deploy/k8s/base/ingress.yaml`, `deploy/k8s/overlays/local-plataforma`, `docs/laboratorio/modulo-2-runtime.md` | Cubierto |
-| ConfigMaps y Secrets | ConfigMap del gateway y secreto `riki-ai-gateway` fuera de Git | `ai-gateway-configmap.yaml`, `ai-gateway-secret.example.yaml` | Cubierto |
+| ConfigMaps y Secrets | ConfigMap del gateway y secreto `tuki-ai-gateway` fuera de Git | `ai-gateway-configmap.yaml`, `ai-gateway-secret.example.yaml` | Cubierto |
 | PersistentVolumes y StorageClass | No aplica: datos en Supabase y archivos en Cloudinary | ADR 0003 | No aplica |
-| Namespaces y RBAC | Namespace `riki`; ServiceAccount sin token; `Role`/`RoleBinding` de solo lectura (pods, logs, deployments, ingress) para el grupo de desarrolladores, sin acceso a Secretos | `namespace.yaml`, `serviceaccount.yaml`, `rbac.yaml` | Cubierto |
+| Namespaces y RBAC | Namespace `tuki`; ServiceAccount sin token; `Role`/`RoleBinding` de solo lectura (pods, logs, deployments, ingress) para el grupo de desarrolladores, sin acceso a Secretos | `namespace.yaml`, `serviceaccount.yaml`, `rbac.yaml` | Cubierto |
 | Requests, limits y probes | LÃ­mites, `liveness`/`readiness`/`startup` y recursos por contenedor | Deployments y HPA | Cubierto |
 | Autoscaling, PDB y alta disponibilidad | HPA 2â€“20 con mÃ©tricas reales de metrics-server (escalÃ³ de 1 a 2 rÃ©plicas), PDB `minAvailable: 1`, topologÃ­a y anti-affinity | `hpa.yaml`, `pdb.yaml`, Deployments, `docs/laboratorio/modulo-2-runtime.md` | Cubierto en runtime |
 | NetworkPolicy | AÃ­sla web/gateway y restringe egreso a 443 y DNS | `networkpolicy.yaml` | Cubierto en producciÃ³n; desactivado en local |
 | ActualizaciÃ³n y rollback | Rolling update, `kubectl rollout undo`, rollback de ArgoCD | `docs/runbook.md`, `deploy/README.md` Â§12 | Cubierto |
 | Helm o Kustomize | Kustomize con base y overlays por ambiente | `deploy/k8s/base`, `overlays/local`, `overlays/production` | Cubierto con adaptaciÃ³n |
 | Registro local o institucional | GHCR para imÃ¡genes firmadas; `kind load` para imÃ¡genes locales | CI, `deploy/kind/README.md` | Cubierto con adaptaciÃ³n |
-| GitOps con ArgoCD | Aplicaciones `riki-local`, `riki-production` y `riki-laboratorio`; sync, deriva y `selfHeal` demostrados en runtime | `deploy/argocd/`, `docs/laboratorio/modulo-2-runtime.md` Â§7 | Cubierto en runtime |
+| GitOps con ArgoCD | Aplicaciones `tuki-local`, `tuki-production` y `tuki-laboratorio`; sync, deriva y `selfHeal` demostrados en runtime | `deploy/argocd/`, `docs/laboratorio/modulo-2-runtime.md` Â§7 | Cubierto en runtime |
 | Backstage y catÃ¡logo de servicios | CatÃ¡logo mÃ­nimo con dominio, sistema, componentes, recursos y equipo | `catalog-info.yaml`, `docs/plataforma/catalogo-backstage.md` | Cubierto con adaptaciÃ³n |
 | Golden paths | Ruta guiada para crear un servicio con los mismos controles | `docs/plataforma/catalogo-backstage.md` Â§4 | Cubierto |
 
@@ -182,9 +182,9 @@ bash deploy/scripts/validar-k8s.sh
 
 # Despliegue local (Docker Desktop)
 kubectl apply -k deploy/k8s/overlays/local
-kubectl rollout status deployment/riki -n riki
-kubectl rollout status deployment/riki-ai-gateway -n riki
-kubectl port-forward -n riki svc/riki 8081:80
+kubectl rollout status deployment/tuki -n tuki
+kubectl rollout status deployment/tuki-ai-gateway -n tuki
+kubectl port-forward -n tuki svc/tuki 8081:80
 ```
 
 Con controladores instalados (Ingress, HPA y ArgoCD reales):
@@ -202,8 +202,8 @@ Para `kind`:
 
 ```bash
 kind create cluster --config deploy/kind/cluster.yaml
-kind load docker-image riki:local-0.2.0 --name riki
-kind load docker-image riki-ai-gateway:local-0.2.0 --name riki
+kind load docker-image tuki:local-0.2.0 --name tuki
+kind load docker-image tuki-ai-gateway:local-0.2.0 --name tuki
 kubectl apply -k deploy/k8s/overlays/local
 ```
 
@@ -213,7 +213,7 @@ kubectl apply -k deploy/k8s/overlays/local
 
 ### 5.1 Matriz de contenidos
 
-| Contenido del PDF | AplicaciÃ³n en Riki | Evidencia | Estado |
+| Contenido del PDF | AplicaciÃ³n en Tuki | Evidencia | Estado |
 | --- | --- | --- | --- |
 | Threat modeling bÃ¡sico | Modelo STRIDE con activos, actores, fronteras y riesgos residuales | `docs/security/modelo-de-amenazas.md` | Cubierto |
 | GestiÃ³n de dependencias | Lockfiles, hashes, auditorÃ­a Python y frontend | `pnpm-lock.yaml`, `requirements.txt`, job `auditoria-dependencias` | Cubierto con hallazgos abiertos |

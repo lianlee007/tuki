@@ -1,5 +1,5 @@
 -- ============================================================================
---  Riki — Una foto distinta para cada plato
+--  Tuki — Una foto distinta para cada plato
 -- ============================================================================
 --
 --  El seed de Popayán reutilizó la misma clave de imagen para platos de
