@@ -1,7 +1,7 @@
-# Riki - PRODUCT.md
+# Tuki - PRODUCT.md
 
 ## Producto
-Riki son dos capas sobre la misma base de restaurantes. La primera es **Descubrir**: un buscador de platos —por cocina, precio y preferencias— que lleva a la carta de cualquier restaurante de la ciudad. La segunda es el **constructor de sitios web para restaurantes** (SaaS) con el que cada dueño publica y mantiene ese menú en minutos, sin escribir código. La primera da a los comensales una razón para entrar; la segunda es el negocio.
+Tuki son dos capas sobre la misma base de restaurantes. La primera es **Descubrir**: un buscador de platos —por cocina, precio y preferencias— que lleva a la carta de cualquier restaurante de la ciudad. La segunda es el **constructor de sitios web para restaurantes** (SaaS) con el que cada dueño publica y mantiene ese menú en minutos, sin escribir código. La primera da a los comensales una razón para entrar; la segunda es el negocio.
 
 ## Audiencia
 Dos públicos, uno a cada lado del producto:
@@ -29,7 +29,7 @@ Que quien busca comida encuentre un plato en la portada en menos de un minuto y 
 - Un cliente entra por `/entrar` y vuelve a la portada o a la ruta de la que venía. Un restaurante entra por `/auth` y aterriza en `/panel`. El panel exige el rol: si un cliente abre `/panel`, vuelve a `/`.
 - **Explorar no pide cuenta.** El carrito sí: el aviso aparece al pulsar «+», no al abrir la página, y ofrece entrar o crear la cuenta sin perder la vista.
 - El carrito es **de un solo restaurante**. Si se agrega un plato de otro local, se avisa y se ofrece empezar de cero. Se guarda por usuario en `localStorage`, sobrevive a la recarga y no se mezcla entre cuentas.
-- El pedido se cierra por **WhatsApp** al restaurante, con los mismos datos de entrega que el menú público reutiliza (`riki_user_basic_<uid>` y la primera dirección guardada).
+- El pedido se cierra por **WhatsApp** al restaurante, con los mismos datos de entrega que el menú público reutiliza (`tuki_user_basic_<uid>` y la primera dirección guardada).
 
 ## Stack
 React 19, TypeScript 5.8, Vite, Tailwind CSS, Framer Motion, React Router 7, Zustand, Supabase, Groq (IA), Cloudinary.
