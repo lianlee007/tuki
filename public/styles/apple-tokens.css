@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Riki - Design Tokens (estilo Apple)
+   Tuki - Design Tokens (estilo Apple)
    CSS plano (sin @apply): este archivo se carga por <link>, no lo procesa Tailwind.
    Filosofía: tipografía sistema, colores planos, sin neumorfismo, sin gradientes,
    sin sombras de reposo, blur en barras flotantes, transiciones suaves.
@@ -58,7 +58,7 @@
 
    El panel, la autenticación y el menú público van en papel/tinta neutros,
    porque su color tiene que rendirse ante la marca de cada restaurante. La
-   landing no: es la primera impresión de Riki y habla de comida, así que va
+   landing no: es la primera impresión de Tuki y habla de comida, así que va
    entera en cálido —papel crudo y tinta tostada—. El acento terracota no se
    repite aquí: es el mismo de toda la aplicación y se declara una sola vez, en
    `:root` y en `.dark`, para que no haya dos sitios que puedan separarse.

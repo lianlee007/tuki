@@ -5,9 +5,9 @@ import type { Clausula } from '../componentes/legal/MarcoLegal';
 /**
  * Términos y Condiciones del servicio.
  *
- * Hablan de la relación entre Riki y el restaurante, que es una relación entre
+ * Hablan de la relación entre Tuki y el restaurante, que es una relación entre
  * empresas. Lo importante —y lo que faltaba— es decir con todas las letras que
- * Riki **no vende la comida**: la venta de los platos es del restaurante, y con
+ * Tuki **no vende la comida**: la venta de los platos es del restaurante, y con
  * ella la responsabilidad sanitaria, de precios y de alérgenos. Sin eso, un
  * restaurante puede creer que la plataforma responde por lo que él publica.
  *
@@ -42,7 +42,7 @@ const CLAUSULAS: Clausula[] = [
   },
   {
     id: 'servicio',
-    titulo: 'Qué hace Riki y qué no hace',
+    titulo: 'Qué hace Tuki y qué no hace',
     cuerpo: (
       <>
         <p>{EMPRESA.marca} te permite:</p>
@@ -360,8 +360,8 @@ export default function PaginaTerminos() {
   return (
     <MarcoLegal
       titulo="Términos y Condiciones"
-      descripcion="Condiciones del servicio de Riki para restaurantes: planes, facturación, derecho de retracto, uso aceptable y responsabilidades."
-      entradilla="Estas son las condiciones con las que un restaurante usa Riki: qué hace la plataforma, qué cuesta, qué puedes esperar de nosotros y qué esperamos de ti. Están escritas para leerse, no para esconderse."
+      descripcion="Condiciones del servicio de Tuki para restaurantes: planes, facturación, derecho de retracto, uso aceptable y responsabilidades."
+      entradilla="Estas son las condiciones con las que un restaurante usa Tuki: qué hace la plataforma, qué cuesta, qué puedes esperar de nosotros y qué esperamos de ti. Están escritas para leerse, no para esconderse."
       resumen={[
         <>
           <strong>{EMPRESA.marca} no vende comida.</strong> Presta la herramienta para publicar el

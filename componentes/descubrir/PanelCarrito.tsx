@@ -89,18 +89,18 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
     };
   }, [abierto, restauranteId]);
 
-  /* Precarga lo que el comensal ya guardó en cualquier menú de Riki. */
+  /* Precarga lo que el comensal ya guardó en cualquier menú de Tuki. */
   useEffect(() => {
     if (!abierto || !user) return;
 
     try {
-      const basico = JSON.parse(localStorage.getItem(`riki_user_basic_${user.id}`) || 'null');
+      const basico = JSON.parse(localStorage.getItem(`tuki_user_basic_${user.id}`) || 'null');
       if (basico) {
         setNombre(basico.nombre ?? '');
         setTelefono(basico.telefono ?? '');
       }
 
-      const direcciones = JSON.parse(localStorage.getItem(`riki_addresses_${user.id}`) || '[]');
+      const direcciones = JSON.parse(localStorage.getItem(`tuki_addresses_${user.id}`) || '[]');
       if (Array.isArray(direcciones) && direcciones.length > 0) {
         setDireccion(formatearDireccion(direcciones[0]));
       }
@@ -143,7 +143,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
     // estructurada desde el menú del restaurante, no aquí.
     try {
       localStorage.setItem(
-        `riki_user_basic_${user?.id ?? ''}`,
+        `tuki_user_basic_${user?.id ?? ''}`,
         JSON.stringify({ nombre: nombre.trim(), telefono: telefono.trim() })
       );
     } catch {
