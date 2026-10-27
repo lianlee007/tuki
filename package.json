@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 20",
     "test": "vitest run",
+    "mcp:verificar": "node scripts/verificar-mcp.mjs",
     "verificar:paletas": "node scripts/verificar-paletas.ts"
   },
   "dependencies": {

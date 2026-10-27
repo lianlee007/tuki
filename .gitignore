@@ -8,7 +8,10 @@ licencias.json
 CloudForge_AI_5_0_Diplomado*.pdf
 Skills/
 .opencode/
-opencode.json
+
+# Herramientas locales de desarrollo (binarios descargados por
+# scripts/instalar-herramientas.ps1). No se versionan: pesan ~100 MB.
+.tools/
 
 # Logs
 logs

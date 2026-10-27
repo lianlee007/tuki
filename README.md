@@ -282,7 +282,6 @@ tuki/
 | `pnpm test` | Pruebas unitarias con Vitest |
 
 ## ✅ Calidad y seguridad
-
 El pipeline bloquea el merge si falla cualquiera de estos controles:
 
 | Control | Comando |
@@ -296,6 +295,28 @@ El pipeline bloquea el merge si falla cualquiera de estos controles:
 | Licencias | `node scripts/licencias.mjs licencias.json` |
 | Manifiestos | `bash deploy/scripts/validar-k8s.sh` |
 | Imágenes | `bash deploy/scripts/verificar-supply-chain.sh` |
+
+## 🧠 Herramientas del agente
+
+El repositorio integra dos servidores MCP locales, registrados en
+**`opencode.json`**:
+
+- **CodeGraph** indexa el código en un grafo (símbolos, llamadas, imports,
+  impacto) y lo expone al agente con 42 herramientas.
+- **Engram** conserva decisiones y hallazgos entre sesiones, aislados por
+  proyecto (`tuki`), con 23 herramientas.
+
+```powershell
+# instala los binarios en .tools/ (fuera de Git) y verifica el handshake
+powershell -ExecutionPolicy Bypass -File scripts/instalar-herramientas.ps1
+
+# o solo la verificación, si ya están instalados
+pnpm mcp:verificar
+```
+
+Guía completa, recetas de uso y criterios de privacidad:
+**[docs/herramientas/codegraph-y-engram.md](docs/herramientas/codegraph-y-engram.md)**.
+Las convenciones para agentes están en **[AGENTS.md](AGENTS.md)**.
 
 ## 🔐 Variables de Entorno
 
