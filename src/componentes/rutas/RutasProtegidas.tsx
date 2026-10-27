@@ -7,7 +7,7 @@ import { Logo } from '../ui';
 const PantallaCarga = () => (
   <div className="flex min-h-screen items-center justify-center bg-af-ground">
     <div className="flex animate-pulse items-center gap-2 text-af-ink-secondary">
-      <span className="rounded-xl bg-af-accent p-2 text-white">
+      <span className="rounded-xl bg-af-accent-solid p-2 text-white">
         <Logo size={18} />
       </span>
       <span className="text-[13px] font-semibold">Un momento…</span>

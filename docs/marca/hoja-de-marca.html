@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marca Tuki — hoja de marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --terracota: #C2410C;
+    --tinta: #1D1D1F;
+    --secundaria: #6E6E73;
+    --papel: #FBF8F4;
+    --superficie: #F2ECE4;
+    --borde: #E6DCD0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 56px 64px 72px;
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--secundaria); margin: 0 0 16px;
+  }
+  h1 { font-size: 56px; line-height: 1; letter-spacing: -.045em; margin: 0 0 12px; }
+  .lead { font-size: 18px; line-height: 1.5; color: var(--secundaria); margin: 0 0 48px; max-width: 620px; }
+  .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 20px; }
+  .card {
+    background: #fff; border: 1px solid var(--borde); border-radius: 24px;
+    padding: 32px; min-height: 196px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .card h2 { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--secundaria); margin: 0 0 24px; }
+  .brand { display: inline-flex; align-items: center; gap: 16px; }
+  .tile {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--terracota); color: #fff; border-radius: 14px;
+  }
+  .tile svg { display: block; }
+  .word { font-size: 30px; font-weight: 700; letter-spacing: -.035em; line-height: 1; }
+  .desc { display: block; font-size: 13px; font-weight: 500; color: var(--secundaria); margin-top: 6px; line-height: 1.35; }
+  .stack { display: inline-flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .stack .desc { margin-top: 2px; }
+  .symbols { display: flex; align-items: end; gap: 32px; }
+  .symbols figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .symbols figcaption { font-size: 11px; color: var(--secundaria); font-variant-numeric: tabular-nums; }
+  .dark {
+    margin-top: 20px; background: #131110; border-radius: 24px; padding: 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .dark .word { color: #F5F1EC; }
+  .dark .desc { color: #A79C93; }
+  .dark .note { color: #A79C93; font-size: 12px; max-width: 300px; line-height: 1.5; }
+  .anatomy { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: center; margin-top: 20px; }
+  .anatomy-card { background: #fff; border: 1px solid var(--borde); border-radius: 24px; padding: 24px; display: flex; justify-content: center; }
+  .callouts { display: grid; gap: 16px; }
+  .callout { display: grid; grid-template-columns: 12px 1fr; gap: 14px; align-items: start; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--terracota); margin-top: 5px; }
+  .callout h3 { font-size: 14px; margin: 0 0 3px; }
+  .callout p { font-size: 13px; line-height: 1.5; color: var(--secundaria); margin: 0; }
+  .palette { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .swatch { width: 152px; border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); background: #fff; }
+  .swatch .color { height: 64px; }
+  .swatch .meta { padding: 10px 12px; }
+  .swatch strong { display: block; font-size: 12px; }
+  .swatch span { font-size: 11px; color: var(--secundaria); font-variant-numeric: tabular-nums; }
+  .section { margin-top: 48px; }
+  .section > h2 { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--secundaria); margin: 0 0 18px; }
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; margin: 0; padding: 0; list-style: none; }
+  .rules li { font-size: 13px; line-height: 1.5; color: var(--secundaria); padding-left: 18px; position: relative; }
+  .rules li::before { content: "—"; position: absolute; left: 0; color: var(--terracota); }
+  footer { margin-top: 48px; font-size: 12px; color: var(--secundaria); }
+</style>
+</head>
+<body>
+  <p class="eyebrow">Sistema de marca · 2026</p>
+  <h1>Tuki</h1>
+  <p class="lead">La T de la mesa. Un símbolo, un logotipo y un descriptor que se combinan según el espacio. Sin degradados, sin sombras y sin colores que se desincronicen.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Marca horizontal</h2>
+      <div class="brand">
+        <span class="tile" style="width:46px;height:46px">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#fff"/></g></svg>
+        </span>
+        <span class="word">Tuki</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Marca apilada</h2>
+      <div class="stack">
+        <span class="tile" style="width:46px;height:46px">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#fff"/></g></svg>
+        </span>
+        <span class="word" style="font-size:24px">Tuki</span>
+        <span class="desc">La mesa se comparte</span>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:20px">
+    <h2>Símbolo · tamaños mínimos</h2>
+    <div class="symbols">
+      <figure>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/></g></svg>
+        <figcaption>16 px</figcaption>
+      </figure>
+      <figure>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/></g></svg>
+        <figcaption>24 px</figcaption>
+      </figure>
+      <figure>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/></g></svg>
+        <figcaption>40 px</figcaption>
+      </figure>
+      <figure>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/></g></svg>
+        <figcaption>64 px</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="brand">
+      <span class="tile" style="width:46px;height:46px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#fff"/></g></svg>
+      </span>
+      <span>
+        <span class="word">Tuki</span>
+        <span class="desc">La mesa se comparte</span>
+      </span>
+    </div>
+    <p class="note">La baldosa usa el terracota sólido en claro y en oscuro. El logotipo y el descriptor heredan la tinta del contexto.</p>
+  </section>
+
+  <div class="section anatomy">
+    <div class="anatomy-card">
+      <svg width="140" height="140" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(-1.25 1.35)"><path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/><path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/></g></svg>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="dot"></span><div><h3>La mesa</h3><p>El trazo horizontal. Es lo que se comparte: el plato, la conversación, la reseña.</p></div></div>
+      <div class="callout"><span class="dot"></span><div><h3>El sostén</h3><p>El trazo vertical. Es el restaurante que pone la mesa y mantiene la promesa.</p></div></div>
+      <div class="callout"><span class="dot"></span><div><h3>La chispa</h3><p>La misma de <code>RobotIA</code>. La comunidad y la IA hablan el mismo idioma visual.</p></div></div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2>Color</h2>
+    <div class="palette">
+      <div class="swatch"><div class="color" style="background:#C2410C"></div><div class="meta"><strong>Terracota sólido</strong><span>#C2410C · bg-af-accent-solid</span></div></div>
+      <div class="swatch"><div class="color" style="background:#1D1D1F"></div><div class="meta"><strong>Tinta</strong><span>#1D1D1F · text-af-ink</span></div></div>
+      <div class="swatch"><div class="color" style="background:#FBF8F4; border-bottom:1px solid var(--borde)"></div><div class="meta"><strong>Papel</strong><span>#FBF8F4 · fondo de la landing</span></div></div>
+      <div class="swatch"><div class="color" style="background:#6E6E73"></div><div class="meta"><strong>Secundaria</strong><span>#6E6E73 · descriptor</span></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Reglas</h2>
+    <ul class="rules">
+      <li>No se rota, no se estira, no se inclina.</li>
+      <li>No se cambia la chispa por un corazón ni por un tenedor.</li>
+      <li>No se usa la chispa sola: la T dice el nombre.</li>
+      <li>No se escribe TUKI ni Tuki Social.</li>
+      <li>No se traduce el nombre propio.</li>
+      <li>No se pone sobre una foto sin una baldosa sólida.</li>
+      <li>No se usa la marca de Tuki como logo del restaurante.</li>
+      <li>No se añaden degradados, sombras ni contornos.</li>
+    </ul>
+  </section>
+
+  <footer>Tuki · La mesa se comparte · Documento de marca, octubre de 2026.</footer>
+</body>
+</html>
