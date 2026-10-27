@@ -5,6 +5,8 @@ export * from './sistema-diseno/TemaToggle';
 export * from './sistema-diseno/ImagenInteligente';
 export * from './sistema-diseno/Logo';
 export * from './sistema-diseno/RobotIA';
+export * from './sistema-diseno/Estrellas';
+export * from './sistema-diseno/Avatar';
 export * from './sistema-diseno/SEO';
 export * from './sistema-diseno/TransicionPagina';
 
