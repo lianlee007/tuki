@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { Platillo } from '../../tipos/modelos';
 import { LogoWhatsApp } from '../ui';
-import { apiWhatsApp } from '../../servicios/misApis';
+import { apiWhatsApp } from '../../api/misApis';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { variablesAf } from '../../lib/color';

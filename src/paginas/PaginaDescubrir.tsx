@@ -18,7 +18,7 @@ import {
   type ClaveDieta,
   type ClavePrecio,
 } from '../componentes/descubrir/filtros';
-import { apiDescubrir } from '../servicios/apiDescubrir';
+import { apiDescubrir } from '../api/apiDescubrir';
 import { useAuth } from '../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../store/storeCarrito';
 import { formatearPrecio } from '../lib/utils';

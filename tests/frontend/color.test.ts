@@ -9,7 +9,7 @@ import {
   textoSobre,
   tonoLegible,
   variablesAf,
-} from '../../lib/color';
+} from '../../src/lib/color';
 
 /**
  * Estas pruebas fijan el contrato que sostiene la legibilidad del menú público:
