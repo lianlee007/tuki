@@ -6,21 +6,9 @@ interface TransicionPaginaProps {
 }
 
 const variants = {
-  initial: { 
-    opacity: 0, 
-    y: 20, 
-    filter: "blur(5px)" 
-  },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
-    filter: "blur(0px)" 
-  },
-  exit: { 
-    opacity: 0, 
-    y: -20, 
-    filter: "blur(5px)" 
-  }
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 export const TransicionPagina: React.FC<TransicionPaginaProps> = ({ children }) => {
@@ -30,8 +18,8 @@ export const TransicionPagina: React.FC<TransicionPaginaProps> = ({ children }) 
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-full h-full"
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="w-full h-full page-af"
     >
       {children}
     </motion.div>

@@ -1,0 +1,779 @@
+/* ==========================================================================
+   Riki - Design Tokens (estilo Apple)
+   CSS plano (sin @apply): este archivo se carga por <link>, no lo procesa Tailwind.
+   Filosofía: tipografía sistema, colores planos, sin neumorfismo, sin gradientes,
+   sin sombras de reposo, blur en barras flotantes, transiciones suaves.
+
+   IMPORTANTE: los colores se escriben SIEMPRE como rgb(var(--af-x-rgb)) y nunca
+   a través de una variable intermedia (--af-x: rgb(...)). Las variables CSS se
+   sustituyen en el elemento donde se declaran, así que una variable intermedia
+   "congelaría" el color en :root y una plantilla de restaurante no podría
+   redefinirlo. Usando el canal directamente, cada elemento resuelve el canal en
+   su propio ámbito y la paleta del restaurante se hereda correctamente.
+   ========================================================================== */
+
+/* Canales de color (r g b) */
+:root {
+  --af-ground-rgb: 255 255 255;
+  --af-surface-rgb: 242 242 247;
+  --af-ink-rgb: 29 29 31;
+  --af-ink-secondary-rgb: 110 110 115;
+  /* El acento cumple dos papeles que en un fondo oscuro son incompatibles:
+     leerse como TEXTO sobre el fondo (necesita ser claro) y servir de RELLENO
+     con blanco encima (necesita ser oscuro). Ningún color hace las dos cosas a
+     4.5:1, así que hay un tono por papel. En claro los tres coinciden. */
+  --af-accent-rgb: 194 65 12;
+  --af-accent-text-rgb: 194 65 12;
+  --af-accent-solid-rgb: 194 65 12;
+  --af-accent-solid-hover-rgb: 168 54 10;
+  --af-accent-hover-rgb: 168 54 10;
+  --af-border-rgb: 209 209 214;
+  --af-success-rgb: 21 128 61;
+  /* Igual que el acento: el rojo de relleno y el rojo de texto no pueden ser el
+     mismo. #FF453A sobre blanco da 3.05:1 y sobre la superficie 3.0:1, así que
+     un mensaje de error sería el texto menos legible del panel. En oscuro sí
+     sirve para las dos cosas. */
+  --af-danger-rgb: 255 69 58;
+  --af-danger-text-rgb: 215 0 21;
+}
+
+.dark {
+  --af-ground-rgb: 0 0 0;
+  --af-surface-rgb: 28 28 30;
+  --af-ink-rgb: 255 255 255;
+  --af-ink-secondary-rgb: 152 152 157;
+  --af-accent-rgb: 232 131 79;
+  --af-accent-text-rgb: 232 131 79;
+  --af-accent-solid-rgb: 194 65 12;
+  --af-accent-solid-hover-rgb: 178 58 10;
+  --af-accent-hover-rgb: 240 150 100;
+  --af-border-rgb: 44 44 46;
+  --af-success-rgb: 48 209 88;
+  --af-danger-rgb: 255 69 58;
+  --af-danger-text-rgb: 255 69 58;
+}
+
+/* -------------------------------------------------------------------------
+   Landing de venta (Persuade): la única superficie con temperamento propio.
+
+   El panel, la autenticación y el menú público van en papel/tinta neutros,
+   porque su color tiene que rendirse ante la marca de cada restaurante. La
+   landing no: es la primera impresión de Riki y habla de comida, así que va
+   entera en cálido —papel crudo y tinta tostada—. El acento terracota no se
+   repite aquí: es el mismo de toda la aplicación y se declara una sola vez, en
+   `:root` y en `.dark`, para que no haya dos sitios que puedan separarse.
+
+   Contrastes comprobados en claro: acento de texto 4.89:1 sobre el papel,
+   blanco sobre el relleno 5.18:1, secundaria 5.03:1 sobre superficie. En
+   oscuro: acento de texto 6.99:1 sobre el fondo, secundaria 6.31:1.
+   ------------------------------------------------------------------------- */
+.af-landing {
+  --af-ground-rgb: 251 248 244;
+  --af-surface-rgb: 242 236 228;
+  --af-ink-rgb: 34 28 24;
+  --af-ink-secondary-rgb: 110 98 90;
+  --af-border-rgb: 230 220 208;
+  --af-danger-rgb: 190 30 30;
+  --af-danger-text-rgb: 175 26 26;
+}
+
+.dark .af-landing {
+  --af-ground-rgb: 19 17 16;
+  --af-surface-rgb: 31 28 26;
+  --af-ink-rgb: 245 241 236;
+  --af-ink-secondary-rgb: 167 156 147;
+  --af-border-rgb: 51 46 42;
+  --af-danger-rgb: 255 92 76;
+  --af-danger-text-rgb: 255 120 106;
+}
+
+/* Fondo y texto base */
+html, body {
+  background-color: rgb(var(--af-ground-rgb));
+  color: rgb(var(--af-ink-rgb));
+  min-height: 100vh;
+}
+
+/* -------------------------------------------------------------------------
+   Alto del panel del dueño.
+   `100vh` no sirve en móvil: cuando la barra del navegador aparece y
+   desaparece, el elemento queda más alto que lo visible, el documento entero
+   se vuelve desplazable y la cabecera "fija" del menú se va con el scroll
+   (justo lo que no puede pasar). `100dvh` es el alto realmente visible; el
+   `100vh` de arriba queda como respaldo para navegadores que aún no lo leen.
+   ------------------------------------------------------------------------- */
+.af-pantalla {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Tipografía sistema (Apple) */
+.font-system,
+.font-sans {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* -------------------------------------------------------------------------
+   Utilidades de color semánticas
+   ------------------------------------------------------------------------- */
+.text-af-ink { color: rgb(var(--af-ink-rgb)); }
+.text-af-ink-secondary { color: rgb(var(--af-ink-secondary-rgb)); }
+.text-af-accent { color: rgb(var(--af-accent-rgb)); }
+.text-af-accent-text { color: rgb(var(--af-accent-text-rgb, var(--af-accent-rgb))); }
+.text-af-success { color: rgb(var(--af-success-rgb)); }
+.text-af-danger { color: rgb(var(--af-danger-rgb)); }
+.text-af-danger-text { color: rgb(var(--af-danger-text-rgb, var(--af-danger-rgb))); }
+
+/* -------------------------------------------------------------------------
+   Etiquetas de dieta y alérgenos.
+   El color es semántico (verde = vegetariano, rojo = picante, ámbar =
+   alérgeno), no de marca, así que no depende de la paleta del restaurante.
+   Pero SÍ depende del modo: el verde oscuro que funciona sobre papel es
+   ilegible sobre negro, y al revés. Se resuelve con variables que cambian en
+   .dark, y el fondo es siempre un tinte del propio color (currentColor).
+   ------------------------------------------------------------------------- */
+:root {
+  --af-tag-verde: #166534;
+  --af-tag-rojo: #b91c1c;
+  --af-tag-ambar: #92400e;
+  /* Sobre fotografía el fondo es oscuro siempre, así que los colores deben ser
+     los claros aunque el visitante esté en modo claro. */
+  --af-tag-verde-foto: #86efac;
+  --af-tag-rojo-foto: #fca5a5;
+  --af-tag-ambar-foto: #fcd34d;
+}
+.dark {
+  --af-tag-verde: #86efac;
+  --af-tag-rojo: #fca5a5;
+  --af-tag-ambar: #fcd34d;
+}
+
+.af-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 0.25rem 0.55rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  background-color: color-mix(in srgb, currentColor 14%, transparent);
+}
+.af-etiqueta--compacta {
+  font-size: 10px;
+  padding: 0.15rem 0.5rem;
+}
+.af-etiqueta-vegetariano { color: var(--af-tag-verde); }
+.af-etiqueta-picante { color: var(--af-tag-rojo); }
+.af-etiqueta-alergeno { color: var(--af-tag-ambar); }
+
+/* Variante para etiquetas que van sobre una foto: se garantiza un fondo
+   oscuro con desenfoque para que el color claro siempre se lea, incluso si la
+   foto es blanca justo debajo (un velo flojo dejaría la etiqueta ilegible). */
+.af-etiqueta.sobre-imagen {
+  background-color: rgba(12, 12, 12, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.af-etiqueta.sobre-imagen.af-etiqueta-vegetariano { color: var(--af-tag-verde-foto); }
+.af-etiqueta.sobre-imagen.af-etiqueta-picante { color: var(--af-tag-rojo-foto); }
+.af-etiqueta.sobre-imagen.af-etiqueta-alergeno { color: var(--af-tag-ambar-foto); }
+
+.bg-af-ground { background-color: rgb(var(--af-ground-rgb)); }
+.bg-af-surface { background-color: rgb(var(--af-surface-rgb)); }
+.bg-af-accent { background-color: rgb(var(--af-accent-rgb)); }
+
+/* Relleno con etiqueta blanca (`bg-af-accent text-white`). Un relleno claro no
+   aguanta blanco encima, y Tailwind genera `bg-af-accent` desde el acento de
+   marca (que en oscuro es claro para poder leerse como texto). Aquí se redirige
+   al relleno profundo. Dos clases ganan a la clase generada por Tailwind sin
+   depender del orden en que se inyecte. */
+.bg-af-accent.text-white,
+.bg-af-accent.text-white\/90,
+.bg-af-accent.text-white\/95 {
+  background-color: rgb(var(--af-accent-solid-rgb, var(--af-accent-rgb)));
+}
+.bg-af-border { background-color: rgb(var(--af-border-rgb)); }
+
+.border-af { border-color: rgb(var(--af-border-rgb)); }
+.border-af-accent { border-color: rgb(var(--af-accent-rgb)); }
+.border-af-danger { border-color: rgb(var(--af-danger-rgb)); }
+.border-af-success { border-color: rgb(var(--af-success-rgb)); }
+
+/* -------------------------------------------------------------------------
+   Botones Apple: planos, un solo color, radio medio, sin sombra de reposo
+   ------------------------------------------------------------------------- */
+.btn-af,
+.btn-af-secondary,
+.btn-af-danger,
+.btn-af-ghost,
+.input-af {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-af:disabled,
+.btn-af-secondary:disabled,
+.btn-af-danger:disabled,
+.btn-af-ghost:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primario */
+.btn-af {
+  background-color: rgb(var(--af-accent-solid-rgb, var(--af-accent-rgb)));
+  color: #FFFFFF;
+  border: 1px solid transparent;
+}
+.btn-af:hover:not(:disabled) {
+  background-color: rgb(var(--af-accent-solid-hover-rgb, var(--af-accent-hover-rgb)));
+}
+.btn-af:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Secundario */
+.btn-af-secondary {
+  background-color: rgb(var(--af-surface-rgb));
+  color: rgb(var(--af-ink-rgb));
+  border: 1px solid rgb(var(--af-border-rgb));
+}
+.btn-af-secondary:hover:not(:disabled) {
+  background-color: #E5E5EA;
+  border-color: #C7C7CC;
+}
+.dark .btn-af-secondary:hover:not(:disabled) {
+  background-color: #323236;
+  border-color: #48484A;
+}
+.btn-af-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Peligro */
+.btn-af-danger {
+  background-color: rgb(var(--af-danger-rgb));
+  color: #FFFFFF;
+  border: 1px solid transparent;
+}
+.btn-af-danger:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.btn-af-danger:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Fantasma (texto) */
+.btn-af-ghost {
+  background-color: transparent;
+  color: rgb(var(--af-accent-text-rgb, var(--af-accent-rgb)));
+  border: 1px solid transparent;
+}
+.btn-af-ghost:hover:not(:disabled) {
+  background-color: rgb(var(--af-ink-rgb) / 0.06);
+}
+.dark .btn-af-ghost:hover:not(:disabled) {
+  background-color: rgb(var(--af-ink-rgb) / 0.12);
+}
+
+/* -------------------------------------------------------------------------
+   Inputs Apple: borde sutil, focus con anillo de acento
+   ------------------------------------------------------------------------- */
+.input-af {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: rgb(var(--af-surface-rgb));
+  color: rgb(var(--af-ink-rgb));
+  border: 1px solid rgb(var(--af-border-rgb));
+  cursor: text;
+}
+.input-af:focus,
+.input-af:focus-within {
+  border-color: rgb(var(--af-accent-rgb));
+  box-shadow: 0 0 0 3px rgb(var(--af-accent-rgb) / 0.18);
+}
+.input-af::placeholder {
+  color: rgb(var(--af-ink-secondary-rgb));
+  opacity: 0.7;
+}
+
+/* -------------------------------------------------------------------------
+   Tarjetas Apple: sin sombra de reposo, solo elevación al hover
+   ------------------------------------------------------------------------- */
+.card-af {
+  border-radius: 24px;
+  padding: 2rem;
+  background-color: rgb(var(--af-surface-rgb));
+  border: 1px solid transparent;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-af:hover {
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.card-af-link {
+  border-radius: 24px;
+  padding: 1.5rem;
+  background-color: rgb(var(--af-surface-rgb));
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-af-link:hover {
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.25);
+    border-color: rgb(var(--af-border-rgb));
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Barra de navegación flotante Apple (backdrop blur)
+   ------------------------------------------------------------------------- */
+.nav-af {
+  background-color: color-mix(in srgb, rgb(var(--af-ground-rgb)) 80%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid color-mix(in srgb, rgb(var(--af-border-rgb)) 60%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Modal Apple
+   ------------------------------------------------------------------------- */
+.modal-af {
+  border-radius: 32px;
+  padding: 2rem;
+  background-color: rgb(var(--af-surface-rgb));
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.modal-overlay-af {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* -------------------------------------------------------------------------
+   Transición de página Apple: crossfade suave
+   ------------------------------------------------------------------------- */
+.page-af {
+  transition: opacity 0.5s ease-out;
+}
+
+/* Marcador de foco accesible.
+   Dentro de un restaurante usa el acento LEGIBLE (no el color de marca puro):
+   un amarillo de marca sobre blanco da un foco casi invisible. Fuera del
+   restaurante cae al acento normal de la aplicación. */
+:focus-visible {
+  outline: 2px solid rgb(var(--af-accent-text-rgb, var(--af-accent-rgb)));
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------
+   Utilidades
+   ------------------------------------------------------------------------- */
+.line-clamp-2-webkit {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fade-in-af {
+  transition: opacity 0.5s ease-out;
+}
+.fade-in-af.enter { opacity: 0; }
+.fade-in-af.enterActive { opacity: 1; }
+.fade-in-af.exit { opacity: 1; }
+.fade-in-af.exitActive { opacity: 0; }
+
+/* -------------------------------------------------------------------------
+   Interruptor de tema (sol / luna).
+   Un raíl con el sol a la izquierda y la luna a la derecha; una bolita blanca
+   se desliza hasta la mitad activa y el icono activo se rellena (sol cálido,
+   luna fría) mientras el otro queda apagado y algo más pequeño.
+
+   - El raíl es un TINTE del color de texto de la paleta, no un gris fijo: así
+     funciona igual en la landing (papel/negro) y dentro de un restaurante
+     (paleta de marca), en claro y en oscuro.
+   - La bolita es blanca siempre, así que el icono activo tiene el mismo
+     contraste en los dos modos y no depende del color de fondo.
+
+   Geometría (si cambias una medida, cambia las demás o los iconos dejan de
+   centrarse con la bolita):
+     ancho 56 · alto 32 · borde 1 · relleno 3 · bolita 24 · recorrido 24
+     → 56 − 2·1 − 2·3 = 48 = dos mitades exactas de 24.
+   ------------------------------------------------------------------------- */
+:root {
+  /* Iconos activos sobre la bolita blanca: 3:1 o mejor en los dos. */
+  --af-tema-sol: #D97706;
+  --af-tema-luna: #4F46E5;
+  /* Curva de muelle: llega y se pasa ~6 % antes de asentarse. Es lo que hace
+     que la bolita se sienta viva y no como un rectángulo desplazándose. */
+  --af-muelle: cubic-bezier(0.34, 1.42, 0.48, 1);
+  /* Curva del cruce de color al cambiar de modo. No puede ser el muelle: el
+     muelle da por alcanzado el destino al ~40 % del tiempo y se queda ahí
+     (con un color, pasarse del destino se recorta y no se ve), así que el
+     cruce duraría 120 ms de los 280. Y tampoco una salida fuerte, que se come
+     el 83 % del cambio en el primer 29 % del tiempo. Para el color, una curva
+     repartida: el cambio se ve durante toda la duración. */
+  --af-cruce: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Una curva por propiedad, en el orden en que se declaran más abajo: color
+     con `--af-cruce`, movimiento con `--af-muelle`. */
+  --af-cambio-timing:
+    var(--af-cruce), var(--af-cruce), var(--af-cruce), var(--af-cruce),
+    var(--af-cruce), var(--af-cruce), var(--af-cruce), var(--af-cruce),
+    var(--af-muelle);
+  /* Lo que dura el cruce de color al cambiar de modo. Lo lee `ContextoTema`
+     para saber cuándo retirar `.af-tema-cambiando`, así la duración vive en un
+     solo sitio. */
+  --af-cambio-tema-ms: 280;
+}
+
+.af-tema {
+  /* Densidad del raíl. Es una variable para que el hover y la variante `--fondo`
+     solo muevan el número, sin repetir el color. */
+  --af-tema-riel: 0.14;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 56px;
+  height: 32px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background-color: rgb(var(--af-ink-rgb) / var(--af-tema-riel));
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.af-tema:active { transform: scale(0.97); }
+
+/* Sobre una barra con desenfoque el raíl necesita algo más de cuerpo. */
+.af-tema--fondo {
+  --af-tema-riel: 0.18;
+  border-color: rgb(var(--af-ink-rgb) / 0.06);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .af-tema:hover { --af-tema-riel: 0.22; }
+  .af-tema--fondo:hover { --af-tema-riel: 0.26; }
+}
+
+/* Bolita */
+.af-tema__bola {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.2);
+  transition: transform 0.28s var(--af-muelle);
+}
+.af-tema[aria-checked='true'] .af-tema__bola { transform: translateX(24px); }
+
+/* Las dos mitades: apagadas por defecto, la activa se rellena más abajo. */
+.af-tema__lado {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: rgb(var(--af-ink-secondary-rgb));
+  transition:
+    color 0.28s ease,
+    transform 0.28s var(--af-muelle);
+}
+.af-tema__lado svg {
+  fill: none;
+  transition: fill 0.28s ease;
+}
+
+/* La mitad apagada se encoge; el muelle la deja entrar con un rebote mínimo
+   cuando vuelve a ser la activa. */
+.af-tema[aria-checked='false'] .af-tema__luna,
+.af-tema[aria-checked='true'] .af-tema__sol {
+  transform: scale(0.8);
+}
+
+.af-tema[aria-checked='false'] .af-tema__sol { color: var(--af-tema-sol); }
+.af-tema[aria-checked='false'] .af-tema__sol svg { fill: currentColor; }
+.af-tema[aria-checked='true'] .af-tema__luna { color: var(--af-tema-luna); }
+.af-tema[aria-checked='true'] .af-tema__luna svg { fill: currentColor; }
+
+/* -------------------------------------------------------------------------
+   Ventana de cambio de modo (claro ↔ oscuro).
+   `ContextoTema` pone `.af-tema-cambiando` en <html> justo antes de cambiar la
+   clase del modo, y la retira al terminar. Mientras está puesta, todo el árbol
+   interpola su color en lugar de saltar de golpe, que es lo que hacía que el
+   cambio se viera tosco. Sin esto, solo cambiarían de golpe las superficies que
+   ya tenían una transición propia, y el resto saltaría: peor que no animar
+   nada.
+
+   Lleva `!important` a propósito: tiene que ganarle a las transiciones que los
+   componentes ya tienen para otras cosas (un botón, una tarjeta) y que aquí
+   solo estorban. Y conserva `transform` en la lista para que la bolita del
+   interruptor siga viajando mientras el resto del árbol cruza de color: el
+   orden de las propiedades es el orden de `--af-cambio-timing`.
+   ------------------------------------------------------------------------- */
+html.af-tema-cambiando,
+html.af-tema-cambiando *,
+html.af-tema-cambiando *::before,
+html.af-tema-cambiando *::after {
+  transition-property:
+    background-color, border-color, color, fill, stroke, box-shadow, filter, opacity, transform !important;
+  transition-duration: calc(var(--af-cambio-tema-ms) * 1ms) !important;
+  transition-timing-function: var(--af-cambio-timing) !important;
+  transition-delay: 0s !important;
+}
+
+/* -------------------------------------------------------------------------
+   Movimiento (criterio: sólo transform y opacity; nada anima sin propósito)
+
+   - Las barras fijas publican su altura real en `--af-nav-h`; las anclas de
+     scroll la usan para no quedar nunca debajo de la barra.
+   - Las entradas son animaciones CSS de un solo uso: se ejecutan fuera del hilo
+     principal, así que no se entrecortan mientras cargan imágenes.
+   - Los hover de movimiento van con `@media (hover: hover) and (pointer: fine)`
+     porque en pantalla táctil el hover se dispara con el dedo y miente.
+   ------------------------------------------------------------------------- */
+
+/* Ancla de scroll: deja el título justo debajo de la barra fija. */
+.af-ancla {
+  scroll-margin-top: calc(var(--af-nav-h, 108px) + 14px);
+}
+
+@keyframes af-entrada-velo {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes af-entrada-modal {
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes af-entrada-panel {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+
+/* Hoja que sube (filtros, acciones). 220 ms: se siente inmediata y no
+   bloquea el siguiente toque. */
+@keyframes af-hoja-entrada {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.af-hoja-entrada { animation: af-hoja-entrada 0.22s cubic-bezier(0.23, 1, 0.32, 1) both; }
+
+.af-entrada-velo { animation: af-entrada-velo 0.2s ease-out both; }
+.af-entrada-modal { animation: af-entrada-modal 0.24s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.af-entrada-panel { animation: af-entrada-panel 0.34s cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+/* -------------------------------------------------------------------------
+   Entradas de la landing.
+
+   La landing es una superficie de Persuade que se ve una sola vez, así que el
+   escalonamiento de entradas (30–80 ms) cae dentro del presupuesto de "primera
+   impresión". Aquí sí se permite pasar de 300 ms: es contenido explicativo de
+   marketing, no una interacción que el usuario repita.
+
+   `.af-subir` entra al montar (el héroe). `.af-revelar` se queda esperando a
+   que el bloque llegue a pantalla; el componente `Revelar` añade `es-visible`.
+   Los 18 px de recorrido son suficientes para que el ojo note que algo llegó,
+   pocos para que el texto se lea moviéndose.
+   ------------------------------------------------------------------------- */
+@keyframes af-subir {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+.af-subir {
+  animation: af-subir 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: var(--af-retraso, 0ms);
+}
+
+.af-revelar {
+  opacity: 0;
+  transform: translateY(18px);
+}
+/* Las transiciones se arman solo cuando el bloque ya está medido y esperando.
+   Si se declararan junto a `opacity: 0`, el paso de «visible en el primer
+   render» a «oculto» dispararía un fundido de 1 a 0 antes de pintar nada. */
+.af-revelar--listo {
+  transition:
+    opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.af-revelar.es-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Respuesta al pulsar: inmediata (al bajar el dedo, no al soltar) y breve. */
+.af-pulsar {
+  transition:
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    opacity 0.18s ease,
+    filter 0.18s ease;
+}
+.af-pulsar:active { transform: scale(0.97); }
+
+/* Elevación al pasar el ratón. */
+.af-elevar {
+  transition: transform 0.18s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.18s ease-out, border-color 0.18s ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .af-elevar:hover { transform: translateY(-3px); }
+}
+
+/* Acerca la foto al pasar el ratón; el recorte lo hace el contenedor.
+   Sin `will-change`: hay muchas fotos por página y promocionarlas todas a capa
+   propia consumiría memoria sin ganancia real. */
+.af-zoom img {
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .af-zoom:hover img { transform: scale(1.045); }
+}
+
+/* Barra de scroll oculta (carrusel de categorías de la barra superior). */
+.af-sin-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.af-sin-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+   Documento legal (términos y privacidad).
+   Es una superficie de Read: se lee de arriba abajo y de una sentada. El orden
+   lo dan el espacio y el titular, no las cajas con borde ni los iconos. Lo que
+   sí necesita ayuda es el cuerpo, porque ese marcado no se escribe a mano: cada
+   cláusula lo hereda de aquí.
+   ------------------------------------------------------------------------- */
+.af-legal__cuerpo strong {
+  color: rgb(var(--af-ink-rgb));
+  font-weight: 600;
+}
+
+.af-legal__cuerpo a {
+  color: rgb(var(--af-accent-text-rgb));
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgb(var(--af-accent-text-rgb) / 0.35);
+  transition: text-decoration-color 0.16s ease;
+}
+
+.af-legal__cuerpo a:hover {
+  text-decoration-color: rgb(var(--af-accent-text-rgb));
+}
+
+.af-legal__cuerpo ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.af-legal__cuerpo ul > li::marker {
+  color: rgb(var(--af-accent-rgb));
+}
+
+/* -------------------------------------------------------------------------
+   Menos movimiento no es cero movimiento.
+   Se quitan los desplazamientos y las entradas (que son lo que marea) y se
+   conservan, más cortos, los cambios de color y opacidad, porque explican qué
+   acaba de pasar. Sobrevive un solo movimiento: el del interruptor de tema,
+   que son 24 px dentro de un control de 56 px justo donde está mirando el
+   usuario. Apple tampoco apaga el interruptor con «Reducir movimiento» activo.
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow !important;
+    transition-duration: 0.15s !important;
+    transition-timing-function: ease-out !important;
+    transition-delay: 0s !important;
+  }
+
+  /* El interruptor conserva su deslizamiento, más corto. */
+  .af-tema,
+  .af-tema * {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform !important;
+    transition-duration: 0.15s !important;
+    transition-timing-function: var(--af-muelle) !important;
+  }
+
+  /* Y la ventana del cambio de modo también se acorta. */
+  html.af-tema-cambiando,
+  html.af-tema-cambiando *,
+  html.af-tema-cambiando *::before,
+  html.af-tema-cambiando *::after {
+    transition-duration: 0.15s !important;
+  }
+
+  .btn-af:active:not(:disabled),
+  .btn-af-secondary:active:not(:disabled),
+  .btn-af-danger:active:not(:disabled),
+  .af-elevar:hover,
+  .af-zoom:hover img,
+  .af-pulsar:active,
+  .af-tema:active {
+    transform: none !important;
+  }
+
+  /* Los bloques que aparecen al hacer scroll no se desplazan: solo se
+     funden. Sin esto entrarían desplazados 18 px y saltarían al asentarse. */
+  .af-revelar {
+    transform: none !important;
+  }
+}

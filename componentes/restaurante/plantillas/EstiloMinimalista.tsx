@@ -1,102 +1,117 @@
-
 import React from 'react';
-import { Platillo, Categoria } from '../../../tipos/modelos';
-import { ImagenInteligente } from '../../ui';
-import { Plus, Info, ArrowRight } from 'lucide-react';
+import { Star } from 'lucide-react';
+import type { PlantillaMenuProps } from './tipos';
+import { AbrirPlatillo, BotonAgregar, FotoPlatillo } from './piezas';
+import { EtiquetasPlatillo } from '../EtiquetasPlatillo';
 
-interface Props {
-    categorias: Categoria[];
-    platillosPorCategoria: { [key: string]: Platillo[] };
-    estilos: any;
-    onVerPlatillo: (platillo: Platillo) => void;
-    onAgregarCarrito: (platillo: Platillo) => void;
-}
-
-export const EstiloMinimalista: React.FC<Props> = ({
-    categorias,
-    platillosPorCategoria,
-    estilos,
-    onVerPlatillo,
-    onAgregarCarrito
+/**
+ * Minimal: el plato manda. Se eliminaron la ceja "01 — Sección" y las reglas de
+ * 1 px entre platos; ahora la separación es puro aire, que es lo que hace que
+ * una carta corta se lea como una pieza y no como una tabla.
+ *
+ * Es la estructura pensada para cocina de autor: pocos platos, tipografía
+ * grande y ningún contenedor compitiendo con el nombre.
+ */
+export const EstiloMinimalista: React.FC<PlantillaMenuProps> = ({
+  categorias,
+  menuPorCategoria,
+  estilos,
+  refs,
+  onVerPlatillo,
+  onAgregarAlCarrito,
+  localAbierto,
 }) => {
-    return (
-        <div className="space-y-32 pb-32 animate-fadeIn">
-            {categorias.map((categoria) => {
-                const platillos = platillosPorCategoria[categoria.id] || [];
-                if (platillos.length === 0) return null;
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
+      {categorias.map((categoria, indiceCat) => {
+        const platillos = menuPorCategoria[categoria] || [];
+        if (platillos.length === 0) return null;
 
+        return (
+          <section
+            key={categoria}
+            id={`cat-${categoria}`}
+            ref={(el) => { refs.current[categoria] = el; }}
+            className={`af-ancla ${indiceCat > 0 ? 'mt-20 sm:mt-28' : ''}`}
+          >
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-semibold font-title tracking-[-0.035em] leading-[1.05] mb-2"
+              style={{ color: estilos.title }}
+            >
+              {categoria}
+            </h2>
+            <p className="text-xs font-semibold tabular-nums mb-10 sm:mb-14" style={{ color: estilos.muted }}>
+              {platillos.length} {platillos.length === 1 ? 'plato' : 'platos'}
+            </p>
+
+            <div>
+              {platillos.map((p) => {
+                const agotado = !p.disponible;
                 return (
-                    <section key={categoria.id} className="scroll-mt-32" id={`cat-${categoria.id}`}>
-                        <div className="mb-16 md:mb-24 text-center relative px-4">
-                            <span className="block text-xs font-bold tracking-[0.3em] uppercase mb-4 opacity-60" style={{ color: estilos.primary }}>
-                                Categoría
-                            </span>
-                            <h2 className="text-5xl md:text-7xl font-thin tracking-tight mb-6" style={{ color: estilos.title }}>
-                                {categoria.nombre}
-                            </h2>
-                            <div className="w-24 h-[1px] mx-auto" style={{ backgroundColor: estilos.text, opacity: 0.1 }}></div>
+                  <article key={p.id} className="af-zoom relative py-7 sm:py-8">
+                    <AbrirPlatillo platillo={p} onVer={onVerPlatillo} radio="rounded-2xl" />
+
+                    <div className="flex items-baseline gap-5">
+                      {p.imagen_url && (
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0 self-start" style={{ backgroundColor: estilos.surface }}>
+                          <FotoPlatillo platillo={p} estilos={estilos} clase="w-full h-full" icono={20} />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline justify-between gap-4">
+                          <h3
+                            className="text-xl sm:text-2xl font-title font-semibold leading-snug min-w-0 break-words"
+                            style={{
+                              color: estilos.title,
+                              textDecoration: agotado ? 'line-through' : 'none',
+                              opacity: agotado ? 0.55 : 1,
+                            }}
+                          >
+                            {p.destacado && (
+                              <Star size={14} className="inline-block align-[-2px] mr-1.5" style={{ color: estilos.secondaryText }} fill="currentColor" />
+                            )}
+                            {p.nombre}
+                          </h3>
+                          <span
+                            className="shrink-0 rounded-full px-3 py-1 text-lg sm:text-xl font-semibold tabular-nums"
+                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                          >
+                            ${p.precio.toLocaleString()}
+                          </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24 max-w-6xl mx-auto px-6">
-                            {platillos.map((platillo) => (
-                                <div
-                                    key={platillo.id}
-                                    className="group cursor-pointer flex flex-col gap-6"
-                                    onClick={() => onVerPlatillo(platillo)}
-                                >
-                                    {/* Imagen Grande y Limpia con Efecto Hover Sutil */}
-                                    <div className="aspect-[4/3] w-full overflow-hidden relative bg-gray-50 dark:bg-white/5 transition-all duration-700 ease-out group-hover:shadow-2xl"
-                                        style={{ boxShadow: estilos.isDark ? 'none' : '0 20px 40px -10px rgba(0,0,0,0.1)' }}>
-                                        <ImagenInteligente
-                                            src={platillo.imagen_url || ''}
-                                            alt={platillo.nombre}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale-[30%] group-hover:grayscale-0"
-                                        />
-                                        {platillo.destacado && (
-                                            <div className="absolute top-0 left-0 bg-white dark:bg-black px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm" style={{ color: estilos.primary }}>
-                                                Destacado
-                                            </div>
-                                        )}
+                        {p.descripcion && (
+                          <p className="mt-2 text-sm leading-relaxed max-w-2xl break-words" style={{ color: estilos.muted }}>
+                            {p.descripcion}
+                          </p>
+                        )}
 
-                                        {/* Overlay Hover Minimalista */}
-                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                                            <div className="w-16 h-16 rounded-full bg-white dark:bg-black flex items-center justify-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
-                                                <Plus size={24} style={{ color: estilos.primary }} />
-                                            </div>
-                                        </div>
-                                    </div>
+                        {p.ingredientes && p.ingredientes.length > 0 && (
+                          <p className="mt-1.5 text-xs leading-relaxed break-words" style={{ color: estilos.muted, opacity: 0.8 }}>
+                            {p.ingredientes.join(' · ')}
+                          </p>
+                        )}
 
-                                    {/* Info Minimalista */}
-                                    <div className="flex flex-col gap-3 px-2">
-                                        <div className="flex justify-between items-baseline gap-8 border-b pb-4 border-dashed" style={{ borderColor: estilos.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
-                                            <h3 className="text-2xl md:text-3xl font-light leading-tight group-hover:text-primary transition-colors duration-300" style={{ color: estilos.title }}>
-                                                {platillo.nombre}
-                                            </h3>
-                                            <span className="text-xl md:text-2xl font-light whitespace-nowrap" style={{ color: estilos.text }}>
-                                                ${platillo.precio.toLocaleString()}
-                                            </span>
-                                        </div>
-
-                                        <p className="text-sm md:text-base opacity-60 font-light leading-relaxed line-clamp-2 mt-2">
-                                            {platillo.descripcion}
-                                        </p>
-
-                                        <div className="pt-4 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity duration-500">
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); onAgregarCarrito(platillo); }}
-                                                className="text-xs font-bold uppercase tracking-[0.15em] hover:underline flex items-center gap-2 group/btn"
-                                                style={{ color: estilos.primary }}
-                                            >
-                                                Agregar al pedido <ArrowRight size={12} className="transition-transform group-hover/btn:translate-x-1" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="relative z-20 mt-3 flex items-center gap-3 flex-wrap">
+                          <EtiquetasPlatillo platillo={p} compacto className="pointer-events-none" />
+                          <BotonAgregar
+                            platillo={p}
+                            estilos={estilos}
+                            localAbierto={localAbierto}
+                            variante="texto"
+                            onAgregar={(e) => onAgregarAlCarrito(p, e)}
+                          />
                         </div>
-                    </section>
+                      </div>
+                    </div>
+                  </article>
                 );
-            })}
-        </div>
-    );
+              })}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
 };

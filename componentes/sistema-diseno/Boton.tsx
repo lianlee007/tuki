@@ -1,86 +1,115 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
-import { useHaptics } from '../../hooks/useHaptics';
+import { Loader2, ArrowRight } from 'lucide-react';
 
 interface BotonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variante?: 'primario' | 'secundario' | 'peligro';
+  variante?: 'primario' | 'secundario' | 'peligro' | 'fantasma';
+  tamanio?: 'pequeno' | 'mediano' | 'grande';
   cargando?: boolean;
   icono?: React.ReactNode;
+  anchoCompleto?: boolean;
 }
 
-export const Boton: React.FC<BotonProps> = ({ 
-  children, 
-  variante = 'primario', 
-  className = '', 
+export const Boton: React.FC<BotonProps> = ({
+  children,
+  variante = 'primario',
+  tamanio = 'mediano',
+  className = '',
   cargando,
   icono,
   onClick,
-  ...props 
+  anchoCompleto = false,
+  type = 'button',
+  disabled,
+  ...props
 }) => {
-  const { haptics } = useHaptics();
-
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Trigger haptic feedback
-    if (!props.disabled && !cargando) {
-      if (variante === 'peligro') haptics.heavy();
-      else haptics.medium();
-    }
-    
-    if (onClick) onClick(e);
+  const base = "btn-af rounded-xl font-medium transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed select-none";
+  const sizeMap = {
+    pequeno: "px-4 py-2 text-xs",
+    mediano: "px-6 py-3 text-sm",
+    grande: "px-8 py-4 text-base",
+  };
+  const variantMap: Record<string, string> = {
+    primario: "btn-af",
+    secundario: "btn-af-secondary",
+    peligro: "btn-af-danger",
+    fantasma: "btn-af-ghost",
   };
 
-  const baseClass = "neumorphic-btn px-6 py-3 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed select-none tracking-wide transition-all duration-300 font-bold";
-  
-  const colores = {
-    primario: `
-      text-white
-      dark:text-primary
-      hover:text-white
-      dark:hover:text-[#C2410C]
-      border-transparent
-    `,
-    secundario: `
-      text-white
-      dark:text-[#047857]
-      hover:text-white
-      dark:hover:text-[#064E3B]
-      border-transparent
-    `,
-    peligro: `
-      text-white
-      dark:text-red-600
-      hover:text-white
-      dark:hover:text-red-800
-      border-transparent
-    `
-  };
+  const classes = `${base} ${variantMap[variante]} ${sizeMap[tamanio]} ${anchoCompleto ? 'w-full' : ''} ${className}`;
 
   return (
-    <button 
-      className={`${baseClass} ${colores[variante]} ${className}`} 
-      disabled={cargando || props.disabled} 
-      onClick={handleClick}
+    // `{...props}` va primero: si se esparce al final pisaría `disabled`, y un
+    // botón con `cargando` volvería a quedar pulsable durante la petición.
+    <button
       {...props}
+      type={type}
+      className={classes}
+      disabled={cargando || disabled}
+      onClick={onClick}
     >
-      {cargando && <Loader2 className="animate-spin h-5 w-5" />}
-      {!cargando && icono}
+      {cargando ? <Loader2 className="animate-spin h-4 w-4" /> : icono}
       {children}
     </button>
   );
 };
 
-export const BotonIA: React.FC<{ onClick: () => void; cargando: boolean; texto?: string }> = ({ onClick, cargando, texto = "IA" }) => {
-  const { haptics } = useHaptics();
-  
+/* Extiende los atributos nativos del botón: sin esto, `onClick`, `className`
+   o `type` no existían en el tipo y cada uso del botón daba un error de
+   compilación (aunque en tiempo de ejecución sí se reenviaban). */
+interface BotonCTAProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children?: React.ReactNode;
+  cargando?: boolean;
+  /** `true` añade una flecha; también acepta un nodo propio. */
+  iconoDerecho?: boolean | React.ReactNode;
+  /** Ocupa todo el ancho disponible del contenedor. */
+  anchoCompleto?: boolean;
+}
+
+/**
+ * Botón de acción primaria destacada (CTA principal). Idealmente uno por pantalla.
+ */
+export function BotonCTA({
+  children = null,
+  className = '',
+  onClick,
+  cargando,
+  iconoDerecho,
+  ...props
+}: BotonCTAProps) {
+  const icono = iconoDerecho === true ? <ArrowRight size={18} /> : (iconoDerecho || null);
   return (
-    <button
-      type="button"
-      onClick={() => { haptics.light(); onClick(); }}
-      disabled={cargando}
-      className="absolute top-0 right-0 mt-8 mr-2 text-xs bg-primary text-white px-3 py-1 rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-1 z-10 shadow-lg hover:shadow-xl transition-all font-bold"
+    <Boton
+      variante="primario"
+      tamanio="grande"
+      cargando={cargando}
+      onClick={onClick}
+      className={className}
+      {...props}
     >
-      {cargando ? <Loader2 className="h-3 w-3 animate-spin" /> : "✨"}
-      {texto}
-    </button>
+      {children}
+      {!cargando && icono}
+    </Boton>
   );
-};
+}
+
+/**
+ * Botón secundario de texto (menos énfasis).
+ */
+export function BotonTexto({
+  children = null,
+  className = '',
+  onClick,
+  ...props
+}: BotonCTAProps) {
+  return (
+    <Boton
+      variante="fantasma"
+      tamanio="mediano"
+      onClick={onClick}
+      className={className}
+      {...props}
+    >
+      {children}
+    </Boton>
+  );
+}
