@@ -40,11 +40,28 @@ export function RutaPanel({ children }: PropsWithChildren) {
 }
 
 /**
+ * «Mi cuenta» es de cualquier persona con sesión: el comensal ve sus reseñas y
+ * sus pedidos, y el dueño puede entrar a la suya sin perder el panel. Sin
+ * sesión se vuelve al acceso con la ruta de origen para no perder el hilo.
+ */
+export function RutaCuenta({ children }: PropsWithChildren) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <PantallaCarga />;
+  if (!user) {
+    const volver = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/entrar?volver=${volver}`} replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * Páginas de acceso. Si ya hay sesión no se muestra el formulario: cada papel
  * va a su casa (el panel o la portada) o a la ruta de la que venía.
  */
-export function RutaAuth({ children }: PropsWithChildren) {
-  const { user, loading, rol, cargandoRol } = useAuth();
+export function RutaAuth({ children }: PropsWithChildren) {  const { user, loading, rol, cargandoRol } = useAuth();
   const location = useLocation();
 
   if (loading) return null;
