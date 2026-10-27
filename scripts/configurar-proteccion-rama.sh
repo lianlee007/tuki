@@ -5,12 +5,23 @@
 #   gh auth login
 #   gh auth status
 #
+# Requiere además GitHub Pro (o el repositorio público): en un repositorio
+# privado con GitHub Free la API responde
+#   403 Upgrade to GitHub Pro or make this repository public to enable this feature.
+#
 # Uso:
 #   bash scripts/configurar-proteccion-rama.sh
 #   REPO=dueno/repositorio RAMA=main bash scripts/configurar-proteccion-rama.sh
 #
-# Deja main con: PR obligatorio, una revisión, checks del pipeline en verde,
-# historial lineal, sin force push y sin borrado.
+# En Windows, si `bash` apunta a un WSL sin distribución:
+#   & "C:\Program Files\Git\bin\bash.exe" scripts/configurar-proteccion-rama.sh
+#
+# Por defecto no exige aprobaciones (proyecto individual) y permite al
+# administrador saltarse la regla. Para un equipo:
+#   REQUIRED_APPROVALS=1 ENFORCE_ADMINS=true bash scripts/configurar-proteccion-rama.sh
+#
+# Deja main con: PR obligatorio, checks del pipeline en verde, historial
+# lineal, sin force push y sin borrado.
 set -euo pipefail
 
 if ! command -v gh >/dev/null 2>&1; then
@@ -25,6 +36,14 @@ fi
 
 REPO="${REPO:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
 RAMA="${RAMA:-main}"
+APROBACIONES="${REQUIRED_APPROVALS:-0}"
+ADMINS="${ENFORCE_ADMINS:-false}"
+
+if [ "$APROBACIONES" -gt 0 ]; then
+  CODEOWNERS=true
+else
+  CODEOWNERS=false
+fi
 
 # Nombres exactos de los jobs de .github/workflows/contenedor.yml.
 CHECKS=(
@@ -48,11 +67,11 @@ cat > "$CUERPO" <<JSON
     "strict": true,
     "contexts": [$json_checks]
   },
-  "enforce_admins": true,
+  "enforce_admins": $ADMINS,
   "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
+    "required_approving_review_count": $APROBACIONES,
     "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": true
+    "require_code_owner_reviews": $CODEOWNERS
   },
   "restrictions": null,
   "allow_force_pushes": false,
