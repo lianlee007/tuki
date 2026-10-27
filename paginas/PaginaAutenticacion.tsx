@@ -1,34 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 // @ts-ignore
-import { useLocation } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { LayoutAuth } from '../componentes/autenticacion/LayoutAuth';
 import { FormularioLogin } from '../componentes/autenticacion/FormularioLogin';
 import { FormularioRegistro } from '../componentes/autenticacion/FormularioRegistro';
 
 export default function PaginaAutenticacion() {
-  const [isLogin, setIsLogin] = useState(true);
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get('mode') === 'register') {
-      setIsLogin(false);
-    }
-  }, [location]);
+  const [params] = useSearchParams();
+  const [isLogin, setIsLogin] = useState(params.get('mode') !== 'register');
 
   return (
     <LayoutAuth
+      volverA="/para-restaurantes"
       titulo={isLogin ? 'Bienvenido de nuevo' : 'Comienza tu viaje digital'}
-      subtitulo={isLogin 
-        ? 'Gestiona tu restaurante, actualiza tu menú y conecta con tus clientes desde un solo lugar.' 
+      subtitulo={isLogin
+        ? 'Gestiona tu restaurante, actualiza tu menú y conecta con tus clientes desde un solo lugar.'
         : 'Crea una experiencia web inolvidable para tu restaurante en cuestión de minutos.'}
     >
       {isLogin ? (
-        <FormularioLogin key="login" cambiarModo={() => setIsLogin(false)} />
+        <FormularioLogin cambiarModo={() => setIsLogin(false)} textoBoton="Ingresar al Panel" />
       ) : (
-        <FormularioRegistro key="register" cambiarModo={() => setIsLogin(true)} />
+        <FormularioRegistro
+          cambiarModo={() => setIsLogin(true)}
+          rol="restaurante"
+          textoBoton="Crear cuenta de restaurante"
+        />
       )}
+
+      <p className="mt-8 text-center text-[13px] text-af-ink-secondary">
+        ¿Solo vienes a comer?{' '}
+        <Link
+          to="/entrar"
+          className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
+        >
+          Entra como comensal
+        </Link>
+      </p>
     </LayoutAuth>
   );
 }

@@ -1,5 +1,4 @@
 
-import { Platillo } from '../tipos/modelos';
 
 // --- API PROPIA 1: SERVICIO DE DISPONIBILIDAD HORARIA ---
 export const apiHorarios = {
@@ -108,10 +107,16 @@ export const apiWhatsApp = {
       `🕒 *Pedido realizado:* ${fecha}%0A%0A` +
       `¡Quedo atento a la confirmación! ✅`;
 
+    // El número puede venir con el indicativo (+57 300…) o sin él. Se
+    // normaliza una sola vez para no producir «5757…» al abrir WhatsApp.
     const numeroLimpio = restaurante.telefono.replace(/\D/g, '');
-    
+    const numeroConPais =
+      numeroLimpio.startsWith('57') && numeroLimpio.length > 10
+        ? numeroLimpio
+        : `57${numeroLimpio}`;
+
     return {
-      url: `https://wa.me/57${numeroLimpio}?text=${mensaje}`,
+      url: `https://wa.me/${numeroConPais}?text=${mensaje}`,
       mensaje_texto: mensaje
     };
   }

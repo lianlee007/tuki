@@ -1,621 +1,453 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Restaurante } from '../../tipos';
-import { Boton, Tarjeta, Input, Logo, LogoWhatsApp } from '../ui';
-import { QrCode, Share2, Copy, Download, Printer, Check, ExternalLink } from 'lucide-react';
+import { Boton, Input, LogoWhatsApp } from '../ui';
+import { Copy, Check, Download, Printer, ExternalLink, Link2 } from 'lucide-react';
 import { apiQR } from '../../servicios/misApis';
 import { generarSlugUnico } from '../../lib/utils';
 
-// --- LOGOS OFICIALES DE MARCA (SVG) ---
+/* -------------------------------------------------------------------------
+   Difusión: llevar el menú a la mesa y a las redes.
 
-const LogoFacebook = () => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z" fill="white"/>
+   La sección se lee de arriba abajo en el orden en el que se usa: primero el
+   enlace (que es lo que se comparte), después el QR (que es lo que se imprime)
+   y al lado las redes. La cabecera que tenía antes —«Difusión y Marketing» con
+   un icono en acento— repetía el título que ya está en la barra del panel, así
+   que se fue: aquí el primer titular útil es «Tu enlace público».
+   ------------------------------------------------------------------------- */
+
+/** La tinta del QR. Negro suave y no el color de marca: el código va impreso
+    sobre papel blanco y lo que tiene que rendir ahí es la lectura de la cámara,
+    no la identidad. */
+const TINTA_QR = '#111111';
+
+/** Medidas de la tarjeta imprimible, en un solo sitio. */
+const TARJETA = { codigo: 400, margen: 20, logo: 84, pie: 56 };
+
+/* Los glifos de las redes van en la tinta del panel y no en el color de cada
+   marca. Cuatro rellenos saturados distintos —verde, azul, negro, fucsia—
+   competirían entre ellos y con el acento del restaurante, que es el único
+   color con derecho a destacar en esta pantalla. La silueta ya las identifica. */
+
+const MarcaFacebook: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z" fill="currentColor" />
   </svg>
 );
 
-// Logo Instagram oficial (Cámara simple)
-const LogoInstagram = () => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="20" height="20" rx="5" stroke="white" strokeWidth="2"/>
-    <circle cx="12" cy="12" r="4" stroke="white" strokeWidth="2"/>
-    <circle cx="18" cy="6" r="1" fill="white"/>
+const MarcaInstagram: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+    <circle cx="18" cy="6" r="1" fill="currentColor" />
   </svg>
 );
 
-const LogoX = () => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.9 5.25h-2.15L12.2 10.3 8.2 5.25H4.5l6.4 8.4L4.5 18.75h2.15l4.95-5.55 4.4 5.55h3.7l-6.8-8.9L18.9 5.25zm-3 12.15h-1.2L7.8 6.65H9l8.9 10.75z" fill="white"/>
+const MarcaX: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor" />
   </svg>
 );
+
+/* -------------------------------------------------------------------------
+   La tarjeta del QR
+   ------------------------------------------------------------------------- */
+
+const cargarImagen = (url: string) =>
+  new Promise<HTMLImageElement>((resolver, rechazar) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolver(img);
+    img.onerror = () => rechazar(new Error(`No se pudo cargar ${url}`));
+    img.src = url;
+  });
+
+const recortarNombre = (nombre: string, maximo = 26) =>
+  nombre.length <= maximo ? nombre : `${nombre.slice(0, maximo - 1).trimEnd()}…`;
+
+/**
+ * Dibuja la tarjeta imprimible: el código, el logo del restaurante en el centro
+ * y su nombre debajo.
+ *
+ * El MISMO dibujo alimenta la vista previa, la descarga y la impresión. Antes
+ * la vista previa era la imagen del servicio con un logo superpuesto por CSS
+ * mientras el archivo descargado lo llevaba dibujado por dentro, así que lo que
+ * el dueño veía no era lo que le salía del navegador. Ahora la tarjeta se
+ * define una sola vez y las tres cosas coinciden.
+ */
+const dibujarTarjeta = async (codigoUrl: string, nombre: string, logoUrl?: string | null) => {
+  const { codigo, margen, logo, pie } = TARJETA;
+  const ancho = codigo + margen * 2;
+
+  const lienzo = document.createElement('canvas');
+  lienzo.width = ancho;
+  lienzo.height = ancho + pie;
+  const ctx = lienzo.getContext('2d');
+  if (!ctx) throw new Error('No se pudo dibujar el QR');
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+
+  ctx.drawImage(await cargarImagen(codigoUrl), margen, margen, codigo, codigo);
+
+  const centro = margen + codigo / 2;
+  if (logoUrl) {
+    // Si el logo no llega (sin conexión, sin permiso de lectura) la tarjeta se
+    // dibuja igual, solo que sin el centro. Nunca dejamos al dueño sin QR.
+    const marca = await cargarImagen(logoUrl).catch(() => null);
+    if (marca) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(centro, centro, logo / 2 + 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centro, centro, logo / 2, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(marca, centro - logo / 2, centro - logo / 2, logo, logo);
+      ctx.restore();
+    }
+  }
+
+  // El pie lleva el nombre del RESTAURANTE, no el de Riki: esta tarjeta la
+  // imprime el dueño y acaba en su mesa, así que lo que tiene que leerse ahí es
+  // lo suyo.
+  ctx.fillStyle = TINTA_QR;
+  ctx.font = '600 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(recortarNombre(nombre), centro, ancho + pie / 2);
+
+  return lienzo;
+};
+
+const escaparHtml = (texto: string) =>
+  texto.replace(/[&<>"']/g, (caracter) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[caracter] as string));
+
+const descargarArchivo = (url: string, nombre: string) => {
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  document.body.removeChild(enlace);
+};
+
+/* -------------------------------------------------------------------------
+   Botón de red social
+   ------------------------------------------------------------------------- */
+
+const TarjetaRed: React.FC<{
+  nombre: string;
+  icono: React.ReactNode;
+  /** Si viene `href`, es un enlace; si no, es una acción. */
+  href?: string;
+  onClick?: () => void;
+  titulo: string;
+  /** Cambia la etiqueta mientras dura el acuse (p. ej. «Enlace copiado»). */
+  acuse?: string;
+}> = ({ nombre, icono, href, onClick, titulo, acuse }) => {
+  const clases =
+    'af-pulsar flex flex-col items-center justify-center gap-2 rounded-[18px] bg-af-ground px-2 py-4 ' +
+    'text-xs font-semibold text-af-ink outline-none hover:bg-af-ink/[0.06]';
+
+  const contenido = (
+    <>
+      {icono}
+      <span className="truncate">{acuse ?? nombre}</span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" title={titulo} className={clases}>
+        {contenido}
+      </a>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} title={titulo} className={clases}>
+      {contenido}
+    </button>
+  );
+};
+
+/* ------------------------------------------------------------------------- */
 
 interface SeccionDifusionProps {
   restaurante: Restaurante;
+  /** Banda de avisos del panel. Si no llega, solo se callan los errores. */
+  mostrarMensaje?: (tipo: 'exito' | 'error', texto: string) => void;
 }
 
-export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante }) => {
-  const [copiado, setCopiado] = useState(false);
-
-  // Construimos la URL pública usando slug del nombre del restaurante
-  const baseUrl = window.location.origin;
+export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, mostrarMensaje }) => {
   const slug = generarSlugUnico(restaurante.nombre, restaurante.id);
-  const publicUrl = `${baseUrl}/restaurante/${slug}`;
-  
-  // --- CONSUMO API PROPIA 2 (QR) ---
-  const colorPrimarioQR = "FF8C42"; // Naranja marca
-  const qrData = apiQR.generarCodigoQR(publicUrl, colorPrimarioQR, 400);
-  const qrImage = qrData.imagen_url;
+  const publicUrl = `${window.location.origin}/restaurante/${slug}`;
+  const qrServicio = apiQR.generarCodigoQR(publicUrl, TINTA_QR, TARJETA.codigo).imagen_url;
 
-  const copiarEnlace = () => {
-    navigator.clipboard.writeText(publicUrl);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
+  const [copiado, setCopiado] = useState<'enlace' | 'instagram' | null>(null);
+  const [accion, setAccion] = useState<'descargar' | 'imprimir' | null>(null);
+  /** Empieza siendo el código del generador y pasa a ser la tarjeta compuesta. */
+  const [vistaTarjeta, setVistaTarjeta] = useState<string>(qrServicio);
+  const temporizador = useRef<number | undefined>(undefined);
+  const entrada = useRef<HTMLInputElement>(null);
+
+  useEffect(() => () => window.clearTimeout(temporizador.current), []);
+
+  /* La vista previa se compone con el mismo dibujo que se descarga, así que lo
+     que se ve aquí es literalmente lo que sale del navegador. Hasta que el
+     lienzo está listo —y si falla— queda el código tal cual lo sirve el
+     generador: un QR igual de válido, no un hueco. */
+  useEffect(() => {
+    let vivo = true;
+    dibujarTarjeta(qrServicio, restaurante.nombre, restaurante.imagen_logo_url)
+      .then((lienzo) => { if (vivo) setVistaTarjeta(lienzo.toDataURL('image/png')); })
+      .catch(() => { /* se queda el código del generador */ });
+    return () => { vivo = false; };
+  }, [qrServicio, restaurante.nombre, restaurante.imagen_logo_url]);
+
+  const acusar = (origen: 'enlace' | 'instagram') => {
+    setCopiado(origen);
+    window.clearTimeout(temporizador.current);
+    temporizador.current = window.setTimeout(() => setCopiado(null), 2000);
   };
 
-  const imprimirQR = async () => {
+  /* Copiar el enlace.
+     La API moderna exige que la pestaña tenga el foco: cuando no lo tiene
+     (pestaña en segundo plano, permiso denegado) se cae al método clásico,
+     seleccionar el texto y copiarlo. Y si tampoco, el enlace queda seleccionado
+     y el aviso dice qué hacer. Este es el botón principal de la pantalla; no
+     puede quedarse mudo sin decir por qué. */
+  const copiar = async (origen: 'enlace' | 'instagram') => {
+    let listo = false;
     try {
-      // Crear canvas para combinar QR con logo (misma lógica que descargarQR)
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('No se pudo obtener contexto del canvas');
-      }
+      await navigator.clipboard.writeText(publicUrl);
+      listo = true;
+    } catch {
+      entrada.current?.select();
+      try { listo = document.execCommand('copy'); } catch { listo = false; }
+    }
 
-      // Tamaño del QR (400x400 según la API)
-      const qrSize = 400;
-      const padding = 20;
-      const logoSize = 80;
-      const logoPadding = 8;
-      const textHeight = 30;
-      const totalSize = qrSize + (padding * 2);
-      const canvasHeight = totalSize + textHeight;
+    if (listo) acusar(origen);
+    else mostrarMensaje?.('error', 'El navegador no dejó copiar. El enlace ya está seleccionado: pulsa Ctrl+C.');
+  };
 
-      canvas.width = totalSize;
-      canvas.height = canvasHeight;
-
-      // Fondo blanco
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, totalSize, canvasHeight);
-
-      // Cargar imagen del QR
-      const qrImg = new Image();
-      qrImg.crossOrigin = 'anonymous';
-      
-      await new Promise((resolve, reject) => {
-        qrImg.onload = () => resolve(qrImg);
-        qrImg.onerror = (err) => {
-          console.error('Error cargando QR:', err);
-          reject(new Error('No se pudo cargar la imagen del QR'));
-        };
-        qrImg.src = qrImage;
+  const descargar = async () => {
+    setAccion('descargar');
+    try {
+      const lienzo = await dibujarTarjeta(qrServicio, restaurante.nombre, restaurante.imagen_logo_url);
+      const url = await new Promise<string>((resolver, rechazar) => {
+        lienzo.toBlob(
+          (blob) => (blob ? resolver(URL.createObjectURL(blob)) : rechazar(new Error('sin imagen'))),
+          'image/png',
+        );
       });
+      descargarArchivo(url, `QR-${slug}.png`);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      mostrarMensaje?.('error', 'No se pudo componer el QR con tu logo. Se abrió el código sin él.');
+      window.open(qrServicio, '_blank');
+    } finally {
+      setAccion(null);
+    }
+  };
 
-      // Dibujar QR
-      ctx.drawImage(qrImg, padding, padding, qrSize, qrSize);
+  const imprimir = async () => {
+    setAccion('imprimir');
+    try {
+      const lienzo = await dibujarTarjeta(qrServicio, restaurante.nombre, restaurante.imagen_logo_url);
+      const dataUrl = lienzo.toDataURL('image/png');
+      const nombre = escaparHtml(restaurante.nombre);
 
-      // Cargar y dibujar logo
-      const logoImg = new Image();
-      let logoCargado = false;
-      
-      if (restaurante.imagen_logo_url) {
-        logoImg.crossOrigin = 'anonymous';
-        
-        try {
-          await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              reject(new Error('Timeout cargando logo'));
-            }, 5000);
-            
-            logoImg.onload = () => {
-              clearTimeout(timeout);
-              logoCargado = true;
-              resolve(logoImg);
-            };
-            logoImg.onerror = (err) => {
-              clearTimeout(timeout);
-              resolve(null);
-            };
-            logoImg.src = restaurante.imagen_logo_url;
-          });
-
-          if (logoCargado && logoImg.complete && logoImg.naturalWidth > 0) {
-            const logoX = padding + (qrSize / 2) - (logoSize / 2);
-            const logoY = padding + (qrSize / 2) - (logoSize / 2);
-
-            // Fondo blanco circular
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.arc(
-              padding + qrSize / 2,
-              padding + qrSize / 2,
-              logoSize / 2 + logoPadding,
-              0,
-              2 * Math.PI
-            );
-            ctx.fill();
-
-            // Borde
-            ctx.strokeStyle = '#FF8C42';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // Logo
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(
-              padding + qrSize / 2,
-              padding + qrSize / 2,
-              logoSize / 2,
-              0,
-              2 * Math.PI
-            );
-            ctx.clip();
-            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-            ctx.restore();
-          }
-        } catch (logoError) {
-          console.warn('Error procesando logo, continuando sin él:', logoError);
-        }
-      }
-
-      // Firma SmartFood
-      ctx.fillStyle = '#FF8C42';
-      ctx.font = 'bold 16px Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-      ctx.shadowBlur = 2;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 1;
-      ctx.fillText('SmartFood', totalSize / 2, totalSize + textHeight / 2);
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-
-      // Convertir canvas a data URL
-      const dataUrl = canvas.toDataURL('image/png');
-
-      // Crear ventana nueva solo para imprimir
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        alert('Por favor, permite ventanas emergentes para imprimir');
+      // `document.write` sobre una pestaña en blanco es lo único que permite
+      // mandar la imagen a imprimir sin pasar por el servidor. La ventana se
+      // cierra sola al terminar (o a los 20 s, si el dueño cancela el diálogo).
+      const ventana = window.open('', '_blank');
+      if (!ventana) {
+        mostrarMensaje?.('error', 'El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes.');
         return;
       }
 
-      // Escribir HTML con solo el QR
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>QR - ${restaurante.nombre}</title>
-            <style>
-              @page {
-                margin: 0;
-                size: auto;
-              }
-              @media print {
-                * {
-                  margin: 0;
-                  padding: 0;
-                }
-                body { 
-                  margin: 0; 
-                  padding: 0; 
-                  display: flex; 
-                  justify-content: center; 
-                  align-items: center; 
-                  min-height: 100vh;
-                  page-break-inside: avoid;
-                  page-break-after: avoid;
-                }
-                .qr-container { 
-                  display: flex; 
-                  justify-content: center; 
-                  align-items: center; 
-                  width: 100%;
-                  height: 100vh;
-                  page-break-inside: avoid;
-                }
-                img { 
-                  max-width: 100%; 
-                  height: auto; 
-                  display: block;
-                  page-break-inside: avoid;
-                }
-              }
-              body { 
-                margin: 0; 
-                padding: 0; 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                min-height: 100vh;
-                background: white;
-              }
-              .qr-container {
-                text-align: center;
-                width: 100%;
-                height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="qr-container">
-              <img id="qrImage" src="${dataUrl}" alt="Código QR" onload="handleImageLoad()" onerror="handleImageError()" />
-            </div>
-            <script>
-              function handleImageLoad() {
-                setTimeout(function() {
-                  window.print();
-                }, 500);
-              }
-              
-              function handleImageError() {
-                alert('Error al cargar la imagen del QR');
-                window.close();
-              }
-              
-              window.onload = function() {
-                var img = document.getElementById('qrImage');
-                if (img.complete && img.naturalHeight !== 0) {
-                  handleImageLoad();
-                }
-              };
-              
-              window.onafterprint = function() {
-                setTimeout(function() {
-                  window.close();
-                }, 100);
-              };
-              
-              // Fallback: cerrar después de un tiempo si no se imprime
-              setTimeout(function() {
-                if (document.visibilityState === 'visible') {
-                  // Si la ventana sigue visible después de 5 segundos, cerrarla
-                  window.close();
-                }
-              }, 5000);
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    } catch (error) {
-      console.error('Error imprimiendo QR', error);
-      alert('Error al preparar el QR para imprimir');
+      ventana.document.write(`<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>QR · ${nombre}</title>
+    <style>
+      @page { margin: 12mm; }
+      html, body { height: 100%; }
+      body { margin: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+      img { display: block; width: 120mm; max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <img id="qr" src="${dataUrl}" alt="Código QR de ${nombre}" onload="imprimirAhora()" onerror="window.close()" />
+    <script>
+      function imprimirAhora() {
+        setTimeout(function () { window.print(); }, 200);
+      }
+      /* Si la imagen venía en caché, ya estaba cargada antes de que este script
+         corriera y su onload no se dispara: hay que preguntarlo. */
+      window.onload = function () {
+        var img = document.getElementById('qr');
+        if (img && img.complete && img.naturalHeight !== 0) imprimirAhora();
+      };
+      window.onafterprint = function () {
+        setTimeout(function () { window.close(); }, 200);
+      };
+      setTimeout(function () {
+        if (document.visibilityState === 'visible') window.close();
+      }, 20000);
+    </script>
+  </body>
+</html>`);
+      ventana.document.close();
+    } catch {
+      mostrarMensaje?.('error', 'No se pudo preparar el QR para imprimir.');
+    } finally {
+      setAccion(null);
     }
   };
 
-  const descargarQR = async () => {
-    try {
-      // Crear canvas para combinar QR con logo
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('No se pudo obtener contexto del canvas');
-      }
-
-      // Tamaño del QR (400x400 según la API)
-      const qrSize = 400;
-      const padding = 20; // Padding alrededor del QR
-      const logoSize = 80; // Tamaño del logo en el centro
-      const logoPadding = 8; // Padding interno del logo
-      const textHeight = 30; // Altura para el texto "SmartFood"
-      const totalSize = qrSize + (padding * 2);
-      const canvasHeight = totalSize + textHeight; // Altura total incluyendo texto
-
-      canvas.width = totalSize;
-      canvas.height = canvasHeight;
-
-      // Fondo blanco
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, totalSize, canvasHeight);
-
-      // Cargar imagen del QR
-      const qrImg = new Image();
-      qrImg.crossOrigin = 'anonymous';
-      
-      await new Promise((resolve, reject) => {
-        qrImg.onload = () => resolve(qrImg);
-        qrImg.onerror = (err) => {
-          console.error('Error cargando QR:', err);
-          reject(new Error('No se pudo cargar la imagen del QR'));
-        };
-        qrImg.src = qrImage;
-      });
-
-      // Dibujar QR en el canvas
-      ctx.drawImage(qrImg, padding, padding, qrSize, qrSize);
-
-      // Cargar y dibujar logo
-      const logoImg = new Image();
-      let logoCargado = false;
-      
-      if (restaurante.imagen_logo_url) {
-        logoImg.crossOrigin = 'anonymous';
-        
-        try {
-          await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              reject(new Error('Timeout cargando logo'));
-            }, 5000);
-            
-            logoImg.onload = () => {
-              clearTimeout(timeout);
-              logoCargado = true;
-              resolve(logoImg);
-            };
-            logoImg.onerror = (err) => {
-              clearTimeout(timeout);
-              console.warn('No se pudo cargar el logo, continuando sin él:', err);
-              resolve(null);
-            };
-            logoImg.src = restaurante.imagen_logo_url;
-          });
-
-          if (logoCargado && logoImg.complete && logoImg.naturalWidth > 0) {
-          // Calcular posición del logo (centro del QR)
-          const logoX = padding + (qrSize / 2) - (logoSize / 2);
-          const logoY = padding + (qrSize / 2) - (logoSize / 2);
-
-          // Dibujar fondo blanco circular para el logo
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.arc(
-            padding + qrSize / 2,
-            padding + qrSize / 2,
-            logoSize / 2 + logoPadding,
-            0,
-            2 * Math.PI
-          );
-          ctx.fill();
-
-          // Dibujar borde del logo
-          ctx.strokeStyle = '#FF8C42';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-
-          // Dibujar logo en el centro
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(
-            padding + qrSize / 2,
-            padding + qrSize / 2,
-            logoSize / 2,
-            0,
-            2 * Math.PI
-          );
-          ctx.clip();
-          
-          ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-          ctx.restore();
-          }
-        } catch (logoError) {
-          console.warn('Error procesando logo, continuando sin él:', logoError);
-        }
-      }
-
-      // Agregar firma "SmartFood" en la parte inferior
-      ctx.fillStyle = '#FF8C42'; // Color primario naranja
-      ctx.font = 'bold 16px Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      // Dibujar texto con sombra sutil para mejor legibilidad
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-      ctx.shadowBlur = 2;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 1;
-      
-      ctx.fillText(
-        'SmartFood',
-        totalSize / 2,
-        totalSize + textHeight / 2
-      );
-      
-      // Resetear sombra
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-
-      // Convertir canvas a blob y descargar
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          throw new Error('Error generando imagen');
-        }
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `QR-${restaurante.nombre.replace(/\s+/g, '-')}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      }, 'image/png');
-    } catch (error) {
-      console.error('Error descargando QR con logo', error);
-      // Fallback: descargar solo el QR
-      try {
-        const response = await fetch(qrImage);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `QR-${restaurante.nombre.replace(/\s+/g, '-')}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } catch (fallbackError) {
-        console.error('Error en fallback', fallbackError);
-        window.open(qrImage, '_blank');
-      }
-    }
-  };
+  const mensaje = `¡Hola! Mira nuestro menú en ${restaurante.nombre}: ${publicUrl}`;
+  const enlaceWhatsApp = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+  const enlaceFacebook = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicUrl)}`;
+  const enlaceX = `https://x.com/intent/tweet?text=${encodeURIComponent(mensaje)}`;
 
   return (
-    <div className="animate-fadeIn space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-            <Share2 size={20} /> Difusión y Marketing
-          </h2>
-          <p className="text-text-muted text-sm">Comparte tu restaurante con el mundo.</p>
+    /* Las dos columnas entran en `xl` y no en `lg` a propósito: el ancho de la
+       tarjeta no crece con el de la ventana. Por debajo de `md` la barra
+       lateral es un cajón (la tarjeta ocupa todo el ancho), de `md` a `xl` la
+       barra ya come 288 px, y solo a partir de `xl` media tarjeta sigue
+       siendo ancha. Cambiar de columna antes deja una tarjeta de 342 px con
+       cuatro botones de red que no caben.
+       El enlace y las redes se apilan en la columna izquierda —son las dos
+       formas de repartir la misma dirección— y el QR se queda la derecha
+       entera. Así las dos columnas miden parecido y no queda un bloque gris
+       vacío debajo de la tarjeta corta. */
+    <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
+
+      {/* ---------- El enlace ---------- */}
+      <section className="rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-1">
+        <h2 className="text-base font-bold text-af-ink">Tu enlace público</h2>
+        <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
+          Es la dirección de tu menú. No cambia aunque cambies los platos: siempre muestra lo que tengas publicado hoy.
+        </p>
+
+        {/* El enlace va en su propio renglón: es largo, y compartido con los
+            botones se cortaba a la mitad justo donde importa. */}
+        <div className="mt-4 flex flex-col gap-3">
+          <Input
+            ref={entrada}
+            value={publicUrl}
+            readOnly
+            aria-label="Enlace público del menú"
+            icon={<Link2 size={16} />}
+            className="text-sm"
+          />
+          <div className="flex gap-3">
+            <Boton
+              onClick={() => copiar('enlace')}
+              icono={copiado === 'enlace' ? <Check size={16} /> : <Copy size={16} />}
+              className="flex-1 justify-center"
+            >
+              {copiado === 'enlace' ? 'Copiado' : 'Copiar enlace'}
+            </Boton>
+            <Boton
+              variante="secundario"
+              onClick={() => window.open(publicUrl, '_blank', 'noopener')}
+              icono={<ExternalLink size={16} />}
+              className="flex-1 justify-center"
+            >
+              Abrir
+            </Boton>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* COLUMNA IZQUIERDA: QR */}
-        <section>
-           <Tarjeta className="flex flex-col items-center justify-center text-center space-y-6 border border-white/5 h-full">
-              <div className="space-y-2">
-                 <h3 className="font-bold text-xl font-serif text-text-main">Código QR de Mesa</h3>
-                 <p className="text-sm text-text-muted px-4">
-                    Escanea para ver el menú. El logo en el centro no afecta su funcionamiento.
-                 </p>
-              </div>
+      {/* ---------- El QR ---------- */}
+      <section className="flex flex-col rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-2 xl:row-start-1 xl:row-end-3">
+        <h2 className="text-base font-bold text-af-ink">Código QR</h2>
+        <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
+          Imprímelo y ponlo en la mesa, en la barra o en el escaparate. Se abre con la cámara del celular.
+        </p>
 
-              {/* Contenedor del QR con Logo Superpuesto */}
-              <div className="relative group transform transition-transform hover:scale-105">
-                  {/* Fondo blanco para el QR */}
-                  <div className="p-4 bg-white rounded-2xl shadow-xl border-4 border-white relative z-0">
-                    <img 
-                        src={qrImage} 
-                        alt="Código QR Restaurante" 
-                        className="w-56 h-56 object-contain mix-blend-multiply" 
-                    />
-                  </div>
+        {/* El papel se reserva con la proporción exacta del archivo (440×496)
+            para que no haya salto de altura cuando llega el lienzo, y es
+            blanco en los dos modos: es papel, y el QR impreso va sobre blanco.
+            Dentro cabe cualquier versión del código sin deformarse. */}
+        <div className="mx-auto mt-5 aspect-[440/496] w-full max-w-[272px] overflow-hidden rounded-[20px] bg-white">
+          <img
+            src={vistaTarjeta}
+            alt={`Tarjeta con el código QR del menú de ${restaurante.nombre}`}
+            className="block h-full w-full object-contain"
+          />
+        </div>
 
-                  {/* Logo Central Absoluto */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-white p-1 shadow-lg flex items-center justify-center border-2 border-primary/20">
-                    {restaurante.imagen_logo_url ? (
-                        <img 
-                            src={restaurante.imagen_logo_url} 
-                            className="w-full h-full rounded-full object-cover" 
-                            alt="Logo Centro"
-                        />
-                    ) : (
-                        <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <Logo size={24} />
-                        </div>
-                    )}
-                  </div>
-              </div>
+        <div className="mt-auto flex flex-wrap gap-3 pt-5">
+          <Boton
+            variante="secundario"
+            onClick={descargar}
+            cargando={accion === 'descargar'}
+            disabled={accion !== null}
+            icono={<Download size={16} />}
+          >
+            Descargar PNG
+          </Boton>
+          <Boton
+            variante="secundario"
+            onClick={imprimir}
+            cargando={accion === 'imprimir'}
+            disabled={accion !== null}
+            icono={<Printer size={16} />}
+          >
+            Imprimir
+          </Boton>
+        </div>
+      </section>
 
-              <div className="flex gap-3 w-full justify-center pt-4">
-                 <Boton variante="secundario" onClick={descargarQR} className="text-xs" icono={<Download size={16}/>}>
-                    Descargar PNG
-                 </Boton>
-                 <Boton variante="secundario" onClick={imprimirQR} className="text-xs" icono={<Printer size={16}/>}>
-                    Imprimir
-                 </Boton>
-              </div>
-           </Tarjeta>
-        </section>
+      {/* ---------- Las redes ---------- */}
+      <section className="flex flex-col rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-2">
+        <h2 className="text-base font-bold text-af-ink">Compartir</h2>
+        <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
+          Un enlace, no una foto: quien lo abra ve tu carta completa y tus precios de hoy.
+        </p>
 
-        {/* COLUMNA DERECHA: ENLACES Y REDES */}
-        <section className="space-y-6">
-           <Tarjeta className="border border-white/5 space-y-6">
-              <div>
-                 <label className="block text-sm font-bold text-text-muted mb-3 ml-1">Enlace Público del Menú</label>
-                 <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                       <Input 
-                          value={publicUrl} 
-                          readOnly 
-                          className="pr-12 text-sm text-text-muted bg-surface" 
-                       />
-                       <a 
-                          href={publicUrl} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-accent transition-colors"
-                          title="Abrir en nueva pestaña"
-                       >
-                          <ExternalLink size={16} />
-                       </a>
-                    </div>
-                    <button 
-                       onClick={copiarEnlace}
-                       className="neumorphic-btn p-3 rounded-xl text-white dark:text-text-main hover:text-white dark:hover:text-primary transition-colors active:scale-95"
-                       title="Copiar enlace"
-                    >
-                       {copiado ? <Check size={20} className="text-green-500"/> : <Copy size={20} className="text-white dark:text-text-main"/>}
-                    </button>
-                 </div>
-              </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <TarjetaRed
+            nombre="WhatsApp"
+            titulo="Compartir el menú por WhatsApp"
+            href={enlaceWhatsApp}
+            icono={<LogoWhatsApp className="h-6 w-6" />}
+          />
+          <TarjetaRed
+            nombre="Facebook"
+            titulo="Compartir el menú en Facebook"
+            href={enlaceFacebook}
+            icono={<MarcaFacebook className="h-6 w-6" />}
+          />
+          <TarjetaRed
+            nombre="X"
+            titulo="Compartir el menú en X"
+            href={enlaceX}
+            icono={<MarcaX className="h-6 w-6" />}
+          />
+          <TarjetaRed
+            nombre="Instagram"
+            titulo="Copiar el enlace para pegarlo en Instagram"
+            onClick={() => copiar('instagram')}
+            acuse={copiado === 'instagram' ? 'Copiado' : undefined}
+            icono={<MarcaInstagram className="h-6 w-6" />}
+          />
+        </div>
 
-              <div className="pt-4 border-t border-white/10">
-                 <label className="block text-sm font-bold text-text-muted mb-4 ml-1">Compartir en Redes Sociales</label>
-                 <div className="grid grid-cols-2 gap-3">
-                    <a 
-                       href={`https://wa.me/?text=${encodeURIComponent(`¡Hola! Mira nuestro menú en ${restaurante.nombre}: ${publicUrl}`)}`}
-                       target="_blank"
-                       rel="noreferrer"
-                       className="col-span-2 neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group bg-[#25D366] border-none"
-                    >
-                       <LogoWhatsApp fill="white" />
-                       <span className="font-bold text-white">WhatsApp</span>
-                    </a>
-                    
-                    <a 
-                       href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicUrl)}&quote=${encodeURIComponent(`¡Descubre el menú de ${restaurante.nombre}! ${publicUrl}`)}`}
-                       target="_blank"
-                       rel="noreferrer"
-                       className="neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group bg-[#1877F2] border-none"
-                    >
-                       <LogoFacebook />
-                       <span className="font-bold text-white">Facebook</span>
-                    </a>
-
-                    <a 
-                       href={`https://x.com/intent/tweet?text=${encodeURIComponent(`Descubre el menú de ${restaurante.nombre} aquí: ${publicUrl}`)}`}
-                       target="_blank"
-                       rel="noreferrer"
-                       className="neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity group bg-black border-white/20"
-                    >
-                       <LogoX />
-                    </a>
-
-                    {/* Botón Instagram con color oficial #E1306C */}
-                    <button
-                       onClick={() => {
-                           copiarEnlace();
-                           window.open('https://instagram.com', '_blank');
-                       }}
-                       className="col-span-2 neumorphic-btn w-full py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group border-none bg-[#E1306C] relative overflow-hidden"
-                       title="Copiar enlace y abrir Instagram"
-                    >
-                       <div className="relative flex items-center gap-3">
-                           <LogoInstagram />
-                           <span className="font-bold text-white">Instagram</span>
-                       </div>
-                    </button>
-                 </div>
-                 <p className="text-[10px] text-center text-text-muted mt-2 opacity-70">
-                    * Para Instagram, el botón copia el enlace y abre la web.
-                 </p>
-              </div>
-           </Tarjeta>
-
-           <div className="neumorphic p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-4">
-              <div className="p-2 bg-primary/20 rounded-full text-primary">
-                 <QrCode size={24} />
-              </div>
-              <div>
-                 <h4 className="font-bold text-primary text-sm">Tip Pro</h4>
-                 <p className="text-xs text-text-muted mt-1">
-                    Al usar alta corrección de errores, el QR sigue funcionando incluso con el logo en el centro.
-                 </p>
-              </div>
-           </div>
-        </section>
-      </div>
+        <p className="mt-4 text-xs leading-relaxed text-af-ink-secondary">
+          Instagram no enlaza a páginas web, así que ahí el botón te copia la dirección para pegarla en tu biografía.
+        </p>
+      </section>
     </div>
   );
 };

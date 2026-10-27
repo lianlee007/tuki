@@ -23,7 +23,8 @@ export const useDatosPanel = (user: User | null) => {
     setCargando(true);
     try {
       // 1. Cargar Restaurante
-      let { data: restData, error: restError } = await apiRestaurante.obtenerPorUsuario(user.id);
+      const { data: restInicial, error: restError } = await apiRestaurante.obtenerPorUsuario(user.id);
+      let restData = restInicial;
       if (restError) throw restError;
 
       if (!restData) {
