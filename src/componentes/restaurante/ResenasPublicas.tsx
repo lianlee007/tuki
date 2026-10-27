@@ -153,18 +153,18 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
             ))}
           </div>
         ) : resenas.length === 0 ? (
-          <div className="mt-8 rounded-[22px] bg-af-surface px-6 py-12 text-center">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-af-ground text-af-ink-secondary">
-              <MessageSquare size={22} />
-            </span>
-            <p className="mt-3 text-base font-semibold text-af-ink">
-              Aún no hay reseñas
-            </p>
-            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-af-ink-secondary">
-              Si ya pediste, cuéntale a los demás cómo estuvo. Es la primera
-              reseña de este restaurante.
-            </p>
-            {!formularioAbierto && (
+          !formularioAbierto && (
+            <div className="mt-8 rounded-[22px] bg-af-surface px-6 py-12 text-center">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-af-ground text-af-ink-secondary">
+                <MessageSquare size={22} />
+              </span>
+              <p className="mt-3 text-base font-semibold text-af-ink">
+                Aún no hay reseñas
+              </p>
+              <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-af-ink-secondary">
+                Si ya pediste, cuéntale a los demás cómo estuvo. Es la primera
+                reseña de este restaurante.
+              </p>
               <button
                 type="button"
                 onClick={onAbrirFormulario}
@@ -172,8 +172,8 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
               >
                 Escribir la primera reseña
               </button>
-            )}
-          </div>
+            </div>
+          )
         ) : (
           <>
             <ul className="mt-8 grid gap-4 sm:grid-cols-2">
