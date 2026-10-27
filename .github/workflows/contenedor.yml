@@ -183,6 +183,7 @@ jobs:
         run: |
           mkdir -p build
           kustomize build deploy/k8s/overlays/local > build/local.yaml
+          kustomize build deploy/k8s/overlays/local-plataforma > build/local-plataforma.yaml
           kustomize build deploy/k8s/overlays/production > build/production.yaml
           kustomize build deploy/observability > build/observability.yaml
 
@@ -192,7 +193,7 @@ jobs:
             ghcr.io/yannh/kubeconform:latest \
             -strict -summary \
             -skip ServiceMonitor,PrometheusRule \
-            build/local.yaml build/production.yaml build/observability.yaml
+            build/local.yaml build/local-plataforma.yaml build/production.yaml build/observability.yaml
           docker run --rm -v "$PWD:/work" -w /work \
             ghcr.io/yannh/kubeconform:latest \
             -strict -summary -skip Application \
@@ -203,13 +204,13 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/work" -w /work \
             stackrox/kube-linter:v0.8.3 \
-            lint build/local.yaml build/production.yaml
+            lint build/local.yaml build/local-plataforma.yaml build/production.yaml
 
       - name: conftest · políticas propias
         run: |
           docker run --rm -v "$PWD:/work" -w /work \
             openpolicyagent/conftest:v0.56.0 \
-            test -p deploy/policies build/local.yaml build/production.yaml
+            test -p deploy/policies build/local.yaml build/local-plataforma.yaml build/production.yaml
 
   # ===========================================================================
   # Catálogo de plataforma
