@@ -212,6 +212,9 @@ jobs:
             openpolicyagent/conftest:v0.56.0 \
             test -p deploy/policies build/local.yaml build/local-plataforma.yaml build/production.yaml
 
+      - name: Kyverno · políticas de admisión
+        run: bash deploy/scripts/validar-kyverno.sh
+
   # ===========================================================================
   # Catálogo de plataforma
   # ===========================================================================
@@ -228,44 +231,7 @@ jobs:
       - name: Validar catalog-info.yaml
         run: |
           python -m pip install --disable-pip-version-check pyyaml==6.0.3
-          python - <<'PY'
-          import pathlib
-          import sys
-          import yaml
-
-          docs = [
-              d
-              for d in yaml.safe_load_all(
-                  pathlib.Path("catalog-info.yaml").read_text(encoding="utf-8")
-              )
-              if d
-          ]
-          kinds = {(d["kind"], d["metadata"]["name"]) for d in docs}
-          errors = []
-
-          if len(docs) != 8:
-              errors.append(f"se esperaban 8 entidades, hay {len(docs)}")
-
-          for d in docs:
-              kind = d["kind"]
-              name = d["metadata"]["name"]
-              spec = d.get("spec", {})
-              owner = spec.get("owner")
-              if owner and ("Group", owner) not in kinds:
-                  errors.append(f"{kind}/{name}: owner inexistente {owner}")
-              system = spec.get("system")
-              if system and ("System", system) not in kinds:
-                  errors.append(f"{kind}/{name}: system inexistente {system}")
-              domain = spec.get("domain")
-              if domain and ("Domain", domain) not in kinds:
-                  errors.append(f"{kind}/{name}: domain inexistente {domain}")
-
-          if errors:
-              print("\n".join(f"::error::{e}" for e in errors))
-              sys.exit(1)
-
-          print(f"Catálogo válido: {len(docs)} entidades y referencias correctas")
-          PY
+          python scripts/validar-catalogo.py
 
   # ===========================================================================
   # Workflows y scripts
@@ -406,6 +372,23 @@ jobs:
             --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
+      - name: Adjuntar el SBOM a la imagen
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign attest --yes --predicate tuki-web.spdx.json --type spdxjson "${IMAGE}@${DIGEST}"
+
+      - name: Verificar la atestación del SBOM
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cosign verify-attestation --type spdxjson "${IMAGE}@${DIGEST}" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
   # ===========================================================================
   # Imagen del AI Gateway
   # ===========================================================================
@@ -508,5 +491,22 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           cosign verify "${IMAGE}@${DIGEST}" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+      - name: Adjuntar el SBOM a la imagen (gateway)
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign attest --yes --predicate tuki-ai-gateway.spdx.json --type spdxjson "${IMAGE}@${DIGEST}"
+
+      - name: Verificar la atestación del SBOM (gateway)
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cosign verify-attestation --type spdxjson "${IMAGE}@${DIGEST}" \
             --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
