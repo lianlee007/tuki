@@ -22,6 +22,8 @@ interface Props {
   isDark: boolean;
   vaciarCarrito: () => void;
   localAbierto?: boolean;
+  /** Avisa al padre cuando el pedido ya salió hacia WhatsApp. */
+  onPedidoEnviado?: (platilloId?: string) => void;
 }
 
 interface DireccionEstructurada {
@@ -47,6 +49,7 @@ const claveComensal = (baseKey: string, userId?: string, prefijo = PREFIJO_CLAVE
 
 export const ModalCarrito: React.FC<Props> = ({
   carrito, onClose, onRemove, onUpdate, restaurante, estilos, isDark, vaciarCarrito, localAbierto = true,
+  onPedidoEnviado,
 }) => {
   const { user } = useAuth();
   const e = estilos;
@@ -262,6 +265,7 @@ export const ModalCarrito: React.FC<Props> = ({
       { items, total },
     );
     window.open(resultadoAPI.url, '_blank');
+    onPedidoEnviado?.(carrito[0]?.platillo.id);
     onClose();
   };
 

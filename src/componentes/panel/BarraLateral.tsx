@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Store, UtensilsCrossed, Eye, ExternalLink, LogOut, Share2,
-  PanelLeftClose, ChevronRight, X,
+  PanelLeftClose, ChevronRight, X, MessageSquare,
 } from 'lucide-react';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { Restaurante } from '../../tipos';
 import { generarSlugUnico } from '../../lib/utils';
 
-type TabPanel = 'info' | 'tema' | 'menu' | 'difusion';
+type TabPanel = 'info' | 'tema' | 'menu' | 'difusion' | 'resenas';
 
 interface BarraLateralProps {
   tabActiva: TabPanel;
@@ -46,6 +46,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
   const navItems: { id: TabPanel; icon: React.ReactNode; label: string }[] = [
     { id: 'info', icon: <Store size={18} />, label: 'Restaurante' },
     { id: 'menu', icon: <UtensilsCrossed size={18} />, label: 'Menú' },
+    { id: 'resenas', icon: <MessageSquare size={18} />, label: 'Reseñas' },
     { id: 'tema', icon: <Eye size={18} />, label: 'Apariencia' },
     { id: 'difusion', icon: <Share2 size={18} />, label: 'Difusión' },
   ];

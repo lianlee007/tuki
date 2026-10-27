@@ -6,9 +6,12 @@ cambia la promesa del panel: el dueño sigue publicando su menú y recibiendo
 pedidos por WhatsApp. La capa social es la puerta de entrada y la razón para
 volver.
 
-> Estado: propuesta. El único cambio implementado en esta entrega es la marca
-> (`docs/marca/marca-tuki.md`). Nada de lo que sigue toca la base de datos
-> todavía.
+> Estado: **fase A implementada en la SPA**. La ficha ya muestra reseñas, el
+> comensal puede escribir una (entra como pendiente), el dueño la modera desde
+> el panel y la cabecera social permite compartir. La migración
+> `db/sql-resenas.sql` añade `usuario_id`, `foto_url`, `respuesta_dueno` y las
+> políticas RLS; hay que aplicarla en Supabase. Las fotos y las respuestas del
+> dueño quedan para A2b.
 
 ## 1. Lo que ya existe (y por eso la propuesta es barata)
 
@@ -153,3 +156,35 @@ Sigue las reglas de `docs/estructura.md`:
 - Clientes HTTP: `src/api/` (`apiResenas.ts`, `apiSocial.ts`).
 - Migraciones y RPC: `db/`.
 - Decisiones: `docs/adr/` (una por la capa social y otra por la moderación).
+
+## 9. Estado de la fase A (2026-10-27)
+
+**Implementado**
+
+- `Estrellas` y `Avatar` como piezas del sistema de diseño.
+- `useResenas` + `apiResenas`: una sola consulta por ficha, filtro público y
+  resumen del local.
+- Sección pública `ResenasPublicas`: promedio, número de reseñas, lista,
+  estados vacío/error/carga y «ver todas».
+- `FormularioResena`: estrellas, plato, nombre, comentario, validación, estado
+  de éxito y aviso de que queda pendiente de aprobación.
+- Cabecera social de la ficha: promedio, número de reseñas, **Escribir reseña**
+  y **Compartir** (hoja nativa o portapapeles).
+- Aviso posterior al pedido: «Pedido enviado. ¿Nos cuentas cómo estuvo?».
+- Pestaña **Reseñas** en el panel: pendientes, publicadas, todas, aprobar y
+  ocultar. La reseña nunca se borra.
+- Migración `db/sql-resenas.sql` con columnas nuevas, índices y RLS.
+- 14 pruebas nuevas de las reglas de reseña (50 en total).
+
+**Pendiente para cerrar la fase A en producción**
+
+- Aplicar `db/sql-resenas.sql` en el proyecto de Supabase. Sin ella, la app
+  funciona con las columnas existentes, pero no hay `usuario_id`, foto ni
+  respuesta del dueño, y las políticas de inserción pueden ser más laxas.
+- Fotos de reseña: requieren bucket de Storage, límite de tamaño y moderación
+  de imagen. Es A2b, no bloquea el resto.
+- Respuesta pública del dueño: la columna `respuesta_dueno` ya está en la
+  migración; falta el campo en la bandeja.
+- Editar la propia reseña (el índice único ya bloquea duplicados y hoy se
+  muestra un aviso).
+- Notificaciones de «reseña aprobada» y «nueva reseña» (fase C).

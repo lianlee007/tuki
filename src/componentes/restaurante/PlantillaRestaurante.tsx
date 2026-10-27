@@ -29,12 +29,18 @@ import {
   Sparkles,
   Lock,
   ArrowDown,
+  Share2,
+  PenLine,
+  Check,
+  X,
 } from 'lucide-react';
-import { ImagenInteligente, LogoWhatsApp, ThemeToggle, BotonTexto } from '../ui';
+import { ImagenInteligente, LogoWhatsApp, ThemeToggle, BotonTexto, Estrellas } from '../ui';
 import { useTema } from '../../contexto/ContextoTema';
 import { useStoreCarrito } from '../../store/storeCarrito';
 import { ModalCarrito } from './ModalCarrito';
 import { ModalDetallePlatillo } from './ModalDetallePlatillo';
+import { ResenasPublicas } from './ResenasPublicas';
+import { useResenas } from '../../hooks/useResenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
 
@@ -164,6 +170,18 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   const [platilloSeleccionado, setPlatilloSeleccionado] = useState<Platillo | null>(null);
   const [saludoDinamico, setSaludoDinamico] = useState<string>('');
   const [estadoLocal, setEstadoLocal] = useState<{ abierto: boolean; mensaje: string }>({ abierto: true, mensaje: '' });
+  const [resenaAbierta, setResenaAbierta] = useState(false);
+  const [platilloResena, setPlatilloResena] = useState<string | null>(null);
+  const [compartido, setCompartido] = useState(false);
+  const [avisoPedido, setAvisoPedido] = useState(false);
+
+  const {
+    publicas: resenasPublicas,
+    resumen: resumenResenas,
+    cargando: cargandoResenas,
+    error: errorResenas,
+    recargar: recargarResenas,
+  } = useResenas(restaurante.id);
 
   const navRef = useRef<HTMLElement | null>(null);
   const [altoNav, setAltoNav] = useState(108);
@@ -328,6 +346,51 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
     if (!estadoLocal.abierto) return;
     agregarItem(p);
   }, [estadoLocal.abierto, agregarItem]);
+
+  /**
+   * Abre el formulario de reseña. Si viene de un plato concreto (el que se
+   * acaba de pedir), lo deja seleccionado. El desplazamiento espera un frame
+   * para que la sección ya esté montada cuando se pide su posición.
+   */
+  const abrirResena = (platilloId?: string | null) => {
+    setPlatilloResena(platilloId ?? null);
+    setResenaAbierta(true);
+    window.setTimeout(() => {
+      document.getElementById('resenas')?.scrollIntoView({
+        behavior: prefiereMenosMovimiento() ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    }, 60);
+  };
+
+  /**
+   * Compartir la ficha. En móvil usa la hoja nativa; en escritorio copia el
+   * enlace. Nunca se comparte el carrito ni datos del comensal.
+   */
+  const compartir = async () => {
+    const url = window.location.href;
+    const datos = {
+      title: restaurante.nombre,
+      text: `Mira el menú de ${restaurante.nombre} en Tuki`,
+      url,
+    };
+
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        await navigator.share(datos);
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setCompartido(true);
+        window.setTimeout(() => setCompartido(false), 2200);
+      } else {
+        window.prompt('Copia el enlace del restaurante', url);
+      }
+    } catch {
+      // El usuario canceló la hoja nativa o el navegador negó el portapapeles.
+    }
+  };
 
   const tieneBanner = Boolean(restaurante.imagen_banner_url);
   const enlaceWhatsApp = restaurante.whatsapp
@@ -533,6 +596,52 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
                   )}
                 </div>
 
+                <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                  {cargandoResenas ? (
+                    <span className="h-8 w-32 animate-pulse rounded-full bg-white/20" />
+                  ) : errorResenas ? (
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md">
+                      Reseñas no disponibles
+                    </span>
+                  ) : resumenResenas.cantidad > 0 ? (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-white backdrop-blur-md">
+                      <Estrellas
+                        valor={resumenResenas.promedio}
+                        tamano={14}
+                        className="text-white"
+                      />
+                      <span className="text-sm font-semibold tabular-nums">
+                        {resumenResenas.promedio.toFixed(1)}
+                      </span>
+                      <span className="text-xs text-white/75">
+                        ({resumenResenas.cantidad})
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md">
+                      Sé el primero en reseñar
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => abrirResena()}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 af-pulsar"
+                  >
+                    <PenLine size={14} />
+                    Escribir reseña
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={compartir}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 af-pulsar"
+                  >
+                    <Share2 size={14} />
+                    {compartido ? 'Enlace copiado' : 'Compartir'}
+                  </button>
+                </div>
+
                 {saludoDinamico && (
                   <p className="mt-6 inline-flex items-start gap-2 text-white/95 text-xs sm:text-sm bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl px-3.5 py-2.5 max-w-xl">
                     <Sparkles size={13} className="text-amber-300 shrink-0 mt-0.5" /> {saludoDinamico}
@@ -618,6 +727,21 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           />
         )}
       </main>
+
+      <ResenasPublicas
+        restauranteId={restaurante.id}
+        platillos={platillos}
+        resenas={resenasPublicas}
+        resumen={resumenResenas}
+        cargando={cargandoResenas}
+        error={errorResenas}
+        onRecargar={recargarResenas}
+        formularioAbierto={resenaAbierta}
+        onAbrirFormulario={() => abrirResena()}
+        onCerrarFormulario={() => setResenaAbierta(false)}
+        platilloInicialId={platilloResena}
+        estilos={estilos}
+      />
 
       {/* PIE */}
       <footer className="border-t border-af/20 mt-16 sm:mt-24 relative z-10">
@@ -722,7 +846,59 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           isDark={isDark}
           vaciarCarrito={vaciarCarrito}
           localAbierto={estadoLocal.abierto}
+          onPedidoEnviado={(platilloId) => {
+            setPlatilloResena(platilloId ?? null);
+            setAvisoPedido(true);
+          }}
         />
+      )}
+
+      {avisoPedido && !modoPreview && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-4 left-1/2 z-[80] w-[min(92vw,460px)] -translate-x-1/2 rounded-[22px] border border-af/20 bg-af-surface p-4 shadow-2xl"
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-af-success/15 text-af-success">
+              <Check size={20} strokeWidth={2.6} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-af-ink">Pedido enviado</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-af-ink-secondary">
+                ¿Nos cuentas cómo estuvo? Tu reseña ayuda a quien viene detrás.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAvisoPedido(false)}
+              aria-label="Cerrar aviso"
+              className="rounded-full p-1 text-af-ink-secondary transition-colors hover:text-af-ink af-pulsar"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setAvisoPedido(false);
+                abrirResena(platilloResena);
+              }}
+              className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold text-white af-pulsar"
+              style={{ backgroundColor: estilos.primary, color: estilos.onPrimary }}
+            >
+              Escribir reseña
+            </button>
+            <button
+              type="button"
+              onClick={() => setAvisoPedido(false)}
+              className="rounded-xl px-3 py-2 text-xs font-semibold text-af-ink-secondary transition-colors hover:text-af-ink af-pulsar"
+            >
+              Ahora no
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

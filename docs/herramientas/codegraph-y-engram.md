@@ -1,14 +1,17 @@
-# CodeGraph y Engram en Tuki
+# CodeGraph, Engram y Supabase en Tuki
 
-Dos herramientas MCP que trabajan en capas distintas:
+Tres herramientas MCP que trabajan en capas distintas:
 
 | Herramienta | Qué aporta | Dónde vive |
 | --- | --- | --- |
 | **CodeGraph** | Índice AST del repositorio expuesto como grafo: símbolos, llamadas, imports, impacto y ciclos. 42 herramientas. | `.tools/codegraph` (motor nativo, fuera de Git) |
 | **Engram** | Memoria persistente por proyecto: decisiones, hallazgos y convenciones sobreviven a la sesión. 23 herramientas en perfil `agent`. | `.tools/engram/engram.exe` y su base local |
+| **Supabase** | Esquema, políticas, SQL de solo lectura y documentación del proyecto. | Servidor remoto de Supabase (`mcp.supabase.com`), autenticado por OAuth |
 
-Ambas se registran en `opencode.json` como servidores MCP locales, así que
-cualquier sesión del agente las tiene disponibles sin configuración manual.
+Los dos primeros se registran en `opencode.json` como servidores MCP locales;
+Supabase es remoto y opcional. Cualquier sesión abierta en la carpeta del
+proyecto los ve sin configuración manual, salvo la primera autenticación de
+Supabase.
 
 ## Instalación
 
@@ -33,14 +36,22 @@ npm install --prefix .tools/codegraph @astudioplus/codegraph-mcp@0.21.0
 
 ## Configuración
 
-`opencode.json` solo contiene los dos servidores; los comandos son envoltorios
-en Node para que funcionen igual en Windows, macOS y Linux:
+`opencode.json` declara los servidores dentro de `mcp.servers`. Los comandos
+locales son envoltorios en Node para que funcionen igual en Windows, macOS y
+Linux:
 
 ```json
 {
   "mcp": {
-    "codegraph": { "type": "local", "command": ["node", "scripts/mcp-codegraph.mjs"] },
-    "engram": { "type": "local", "command": ["node", "scripts/mcp-engram.mjs"] }
+    "servers": {
+      "codegraph": { "type": "local", "command": ["node", "scripts/mcp-codegraph.mjs"] },
+      "engram": { "type": "local", "command": ["node", "scripts/mcp-engram.mjs"] },
+      "supabase": {
+        "type": "remote",
+        "url": "https://mcp.supabase.com/mcp?project_ref=…&read_only=true&features=…",
+        "enabled": true
+      }
+    }
   }
 }
 ```
@@ -49,6 +60,32 @@ en Node para que funcionen igual en Windows, macOS y Linux:
   del índice, y apaga la telemetría del paquete (`CODEGRAPH_TELEMETRY=off`).
 - `scripts/mcp-engram.mjs` fija `--project tuki` y el perfil `agent`, para que
   las memorias no se mezclen con otros repositorios del equipo.
+- Supabase va con `read_only=true`: sirve para leer esquema, políticas y
+  documentación, **no** para aplicar migraciones. Las migraciones se aplican
+  desde el SQL Editor o con `supabase db push`.
+
+## Autenticar Supabase
+
+La primera vez hay que autorizar el servidor remoto:
+
+```powershell
+# Windows (CLI de la app)
+& "$env:APPDATA\ai.opencode.desktop\cli\2.2.0-x64\opencode-cli.exe" mcp auth supabase
+
+# macOS / Linux
+opencode mcp auth supabase
+```
+
+El comando abre el navegador y espera el callback en `127.0.0.1`. Al terminar:
+
+```powershell
+& "$env:APPDATA\ai.opencode.desktop\cli\2.2.0-x64\opencode-cli.exe" mcp list
+# ✓ supabase connected
+```
+
+Las herramientas MCP se cargan al iniciar la sesión. Si se autoriza a mitad de
+una sesión, hay que abrir una nueva (o recargar la app) para ver
+`tools.supabase.*` dentro de `execute`.
 
 ## Verificación
 

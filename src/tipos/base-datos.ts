@@ -494,10 +494,13 @@ export type Database = {
           comentario: string | null
           created_at: string | null
           email_cliente: string | null
+          foto_url: string | null
           id: string
           nombre_cliente: string
           platillo_id: string | null
           restaurante_id: string
+          respuesta_dueno: string | null
+          usuario_id: string | null
           visible: boolean | null
         }
         Insert: {
@@ -506,10 +509,13 @@ export type Database = {
           comentario?: string | null
           created_at?: string | null
           email_cliente?: string | null
+          foto_url?: string | null
           id?: string
           nombre_cliente: string
           platillo_id?: string | null
           restaurante_id: string
+          respuesta_dueno?: string | null
+          usuario_id?: string | null
           visible?: boolean | null
         }
         Update: {
@@ -518,10 +524,13 @@ export type Database = {
           comentario?: string | null
           created_at?: string | null
           email_cliente?: string | null
+          foto_url?: string | null
           id?: string
           nombre_cliente?: string
           platillo_id?: string | null
           restaurante_id?: string
+          respuesta_dueno?: string | null
+          usuario_id?: string | null
           visible?: boolean | null
         }
         Relationships: []
