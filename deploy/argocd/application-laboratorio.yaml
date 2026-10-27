@@ -14,7 +14,7 @@ spec:
   #   git daemon --base-path=<ruta-del-repo> --export-all --port=9418
   # En un entorno real se sustituye por la URL del repositorio institucional.
   source:
-    repoURL: git://host.docker.internal:9418/Kiri
+    repoURL: git://host.docker.internal:9418/Tuki
     targetRevision: main
     path: deploy/k8s/overlays/local-plataforma
 
