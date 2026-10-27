@@ -1,0 +1,511 @@
+name: CI/CD · imágenes y supply chain
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  security-events: write
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: "12.14.0"
+
+jobs:
+  # ===========================================================================
+  # Calidad del frontend
+  # ===========================================================================
+  validar-web:
+    name: Web · build y Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Tipos · tsc --noEmit
+        run: pnpm typecheck
+
+      - name: Lint · ESLint
+        run: pnpm lint
+
+      - name: Pruebas unitarias · Vitest
+        run: pnpm test
+
+      - name: Compilar la SPA
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: ci-placeholder
+          VITE_CLOUDINARY_CLOUD_NAME: ci-placeholder
+          VITE_CLOUDINARY_UPLOAD_PRESET: ci-placeholder
+          VITE_AI_GATEWAY_URL: /api
+        run: pnpm build
+
+      - name: Verificar que la clave de Groq no está en el bundle
+        run: |
+          if grep -RInE 'gsk_[A-Za-z0-9]{20,}|VITE_GROQ_API_KEY' dist; then
+            echo "::error::Se encontró una clave de Groq o la variable antigua en el bundle"
+            exit 1
+          fi
+
+      - name: Hadolint · Dockerfile web
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+  # ===========================================================================
+  # Calidad del AI Gateway
+  # ===========================================================================
+  validar-gateway:
+    name: Gateway · tests y lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/ai-gateway
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/ai-gateway/requirements*.txt
+
+      - name: Instalar dependencias con hashes
+        run: pip install --require-hashes -r requirements-dev.txt
+
+      - name: Ruff
+        run: ruff check app tests
+
+      - name: Pytest
+        run: pytest
+
+      - name: Hadolint · Dockerfile gateway
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: services/ai-gateway/Dockerfile
+          failure-threshold: warning
+
+  # ===========================================================================
+  # Dependencias: vulnerabilidades conocidas
+  # ===========================================================================
+  auditoria-dependencias:
+    name: Dependencias · pip-audit + pnpm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: pip-audit · gateway
+        working-directory: services/ai-gateway
+        run: |
+          python -m pip install --disable-pip-version-check pip-audit==2.10.1
+          pip-audit -r requirements.txt --require-hashes
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: pnpm audit · críticas (bloqueante)
+        run: pnpm audit --prod --audit-level critical
+
+      # Las vulnerabilidades altas y moderadas se revisan en
+      # docs/security/hallazgos.md (H-005). Este paso las hace visibles sin
+      # bloquear mientras se planifica la actualización de React Router y Zod.
+      - name: pnpm audit · altas y moderadas (informativo)
+        continue-on-error: true
+        run: pnpm audit --prod --audit-level high
+
+      - name: Inventario de licencias
+        run: pnpm licenses list --prod --json > licencias.json
+
+      - name: Revisión de licencias
+        run: node scripts/licencias.mjs licencias.json
+
+  # ===========================================================================
+  # Secretos: escaneo del repositorio y del historial
+  # ===========================================================================
+  secretos:
+    name: Secretos · gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  # ===========================================================================
+  # Manifiestos: esquema, buenas prácticas y políticas
+  # ===========================================================================
+  validar-manifiestos:
+    name: Kubernetes · kubeconform + kube-linter + conftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: imranismail/setup-kustomize@2ba527d4d055ab63514ba50a99456fc35684947f # v2
+
+      - name: Renderizar overlays
+        run: |
+          mkdir -p build
+          kustomize build deploy/k8s/overlays/local > build/local.yaml
+          kustomize build deploy/k8s/overlays/production > build/production.yaml
+          kustomize build deploy/observability > build/observability.yaml
+
+      - name: kubeconform · esquemas de Kubernetes
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            ghcr.io/yannh/kubeconform:latest \
+            -strict -summary \
+            -skip ServiceMonitor,PrometheusRule \
+            build/local.yaml build/production.yaml build/observability.yaml
+          docker run --rm -v "$PWD:/work" -w /work \
+            ghcr.io/yannh/kubeconform:latest \
+            -strict -summary -skip Application \
+            deploy/argocd/application-local.yaml \
+            deploy/argocd/application-production.yaml
+
+      - name: kube-linter · buenas prácticas
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            stackrox/kube-linter:v0.8.3 \
+            lint build/local.yaml build/production.yaml
+
+      - name: conftest · políticas propias
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            openpolicyagent/conftest:v0.56.0 \
+            test -p deploy/policies build/local.yaml build/production.yaml
+
+  # ===========================================================================
+  # Catálogo de plataforma
+  # ===========================================================================
+  validar-catalogo:
+    name: Catálogo · Backstage YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Validar catalog-info.yaml
+        run: |
+          python -m pip install --disable-pip-version-check pyyaml==6.0.3
+          python - <<'PY'
+          import pathlib
+          import sys
+          import yaml
+
+          docs = [
+              d
+              for d in yaml.safe_load_all(
+                  pathlib.Path("catalog-info.yaml").read_text(encoding="utf-8")
+              )
+              if d
+          ]
+          kinds = {(d["kind"], d["metadata"]["name"]) for d in docs}
+          errors = []
+
+          if len(docs) != 8:
+              errors.append(f"se esperaban 8 entidades, hay {len(docs)}")
+
+          for d in docs:
+              kind = d["kind"]
+              name = d["metadata"]["name"]
+              spec = d.get("spec", {})
+              owner = spec.get("owner")
+              if owner and ("Group", owner) not in kinds:
+                  errors.append(f"{kind}/{name}: owner inexistente {owner}")
+              system = spec.get("system")
+              if system and ("System", system) not in kinds:
+                  errors.append(f"{kind}/{name}: system inexistente {system}")
+              domain = spec.get("domain")
+              if domain and ("Domain", domain) not in kinds:
+                  errors.append(f"{kind}/{name}: domain inexistente {domain}")
+
+          if errors:
+              print("\n".join(f"::error::{e}" for e in errors))
+              sys.exit(1)
+
+          print(f"Catálogo válido: {len(docs)} entidades y referencias correctas")
+          PY
+
+  # ===========================================================================
+  # Workflows y scripts
+  # ===========================================================================
+  validar-workflows:
+    name: Workflows · actionlint + shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: actionlint
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color
+
+      - name: shellcheck
+        run: docker run --rm -v "$PWD:/repo" -w /repo koalaman/shellcheck:stable deploy/scripts/*.sh
+
+  # ===========================================================================
+  # Imagen web
+  # ===========================================================================
+  imagen-web:
+    name: Web · imagen, SBOM, escaneo y firma
+    runs-on: ubuntu-latest
+    needs: [validar-web, validar-manifiestos, auditoria-dependencias]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Calcular nombre de la imagen
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiquetas y metadatos
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Construir y publicar
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # En PR se usan placeholders para no exponer secretos a forks. En
+          # push/tag los secretos son obligatorios: si faltan, el Dockerfile
+          # falla en vez de publicar una imagen con configuración de ejemplo.
+          build-args: |
+            VITE_SUPABASE_URL=${{ github.event_name == 'pull_request' && 'https://placeholder.supabase.co' || secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_SUPABASE_ANON_KEY }}
+            VITE_CLOUDINARY_CLOUD_NAME=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+            VITE_CLOUDINARY_UPLOAD_PRESET=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}
+            VITE_AI_GATEWAY_URL=/api
+            VERSION=${{ github.ref_name }}
+            REVISION=${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+          provenance: true
+          sbom: true
+
+      - name: Trivy · repositorio (pull request)
+        if: github.event_name == 'pull_request'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          skip-dirs: node_modules,dist,services/ai-gateway/.venv,Skills
+          exit-code: "1"
+
+      - name: Trivy · imagen publicada
+        if: github.event_name != 'pull_request'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          format: sarif
+          output: trivy-web.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Subir resultados de Trivy
+        if: always() && github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
+        with:
+          sarif_file: trivy-web.sarif
+          category: trivy-web
+
+      - name: Syft · SBOM SPDX
+        if: github.event_name != 'pull_request'
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          image: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: riki-web.spdx.json
+          artifact-name: riki-web.spdx.json
+
+      - name: Instalar Cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+
+      - name: Firmar la imagen (keyless)
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+
+      - name: Verificar la firma
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cosign verify "${IMAGE}@${DIGEST}" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+  # ===========================================================================
+  # Imagen del AI Gateway
+  # ===========================================================================
+  imagen-gateway:
+    name: Gateway · imagen, SBOM, escaneo y firma
+    runs-on: ubuntu-latest
+    needs: [validar-gateway, validar-manifiestos, auditoria-dependencias]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Calcular nombre de la imagen
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/riki-ai-gateway" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiquetas y metadatos
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Construir y publicar
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ./services/ai-gateway
+          file: ./services/ai-gateway/Dockerfile
+          platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            REVISION=${{ github.sha }}
+            WITH_OTEL=false
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,mode=max,scope=gateway
+          provenance: true
+          sbom: true
+
+      - name: Trivy · imagen publicada
+        if: github.event_name != 'pull_request'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          format: sarif
+          output: trivy-gateway.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Subir resultados de Trivy
+        if: always() && github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
+        with:
+          sarif_file: trivy-gateway.sarif
+          category: trivy-gateway
+
+      - name: Syft · SBOM SPDX
+        if: github.event_name != 'pull_request'
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          image: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: riki-ai-gateway.spdx.json
+          artifact-name: riki-ai-gateway.spdx.json
+
+      - name: Instalar Cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+
+      - name: Firmar la imagen (keyless)
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+
+      - name: Verificar la firma
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          cosign verify "${IMAGE}@${DIGEST}" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
