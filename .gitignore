@@ -1,3 +1,15 @@
+# Artefactos de validación local (kubeconform, kube-linter, SBOM)
+build/
+build-*.yaml
+coverage/
+licencias.json
+
+# Material de trabajo ajeno al producto
+CloudForge_AI_5_0_Diplomado*.pdf
+Skills/
+.opencode/
+opencode.json
+
 # Logs
 logs
 *.log
@@ -11,6 +23,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.venv
+__pycache__
+.pytest_cache
+.ruff_cache
+
+# Variables de entorno: nunca se versionan (solo el ejemplo sin valores)
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
