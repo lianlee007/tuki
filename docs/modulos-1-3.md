@@ -353,7 +353,7 @@ bash deploy/scripts/verificar-supply-chain.sh
 | --- | --- | --- |
 | Sin clúster ni registro de producción | Operativo | Repetir las validaciones en el entorno real antes del despliegue |
 | NetworkPolicy no aplicada por `kindnet` | Medio | Repetir el laboratorio con Calico o Cilium |
-| Protección de rama no activada en GitHub | Medio | `scripts/configurar-proteccion-rama.sh` la aplica tras `gh auth login` |
+| Protección de rama no activada en GitHub | Medio | Bloqueada por el plan: repositorio privado + GitHub Free devuelve 403. `scripts/configurar-proteccion-rama.sh` la aplica tras pasar a Pro o a repositorio público |
 | Backstage no instalado | Bajo | El catálogo ya está listo para registrarse cuando exista portal |
 | Rate limit por réplica | Bajo | Redis o un limitador compartido; ADR 0004 |
 | Sin WAF ni protección DDoS de aplicación | Medio | Cloudflare/ingress-nginx con límites y reglas |

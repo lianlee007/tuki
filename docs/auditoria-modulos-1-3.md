@@ -100,7 +100,7 @@ aplica cuando el clúster consume las imágenes firmadas de GHCR.
 
 | Elemento | Estado | Motivo |
 | --- | --- | --- |
-| Protección de rama en GitHub | Lista para aplicar | `scripts/configurar-proteccion-rama.sh`; solo falta `gh auth login` con permisos de administración |
+| Protección de rama en GitHub | Bloqueada por el plan | Repositorio privado con GitHub Free: la API responde 403 «Upgrade to GitHub Pro or make this repository public». El script `scripts/configurar-proteccion-rama.sh` queda listo para cuando se cambie de plan o de visibilidad |
 | Kyverno instalado en el clúster | Pendiente | Hace falta instalarlo; las políticas ya están listas y probadas |
 | NetworkPolicy efectiva | Pendiente | `kindnet` no aplica políticas; requiere Calico o Cilium |
 | CSP estricta | Pendiente | Tailwind se carga por CDN y exige `unsafe-inline`/`unsafe-eval` |
