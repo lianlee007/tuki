@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # =============================================================================
-# Riki — imagen de producción para una SPA de Vite servida por Nginx.
+# Tuki — imagen de producción para una SPA de Vite servida por Nginx.
 #
 # Etapas:
 #   deps    -> instala dependencias con el lockfile congelado.
@@ -85,9 +85,9 @@ FROM ${NGINX_IMAGE} AS runtime
 ARG VERSION=0.0.0-dev
 ARG REVISION=unknown
 
-LABEL org.opencontainers.image.title="Riki" \
+LABEL org.opencontainers.image.title="Tuki" \
       org.opencontainers.image.description="Constructor de menús digitales para restaurantes (SPA estática)" \
-      org.opencontainers.image.vendor="Riki" \
+      org.opencontainers.image.vendor="Tuki" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.licenses="Propietaria"
@@ -99,7 +99,7 @@ COPY docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY docker/nginx/snippets/security-headers.conf /etc/nginx/snippets/security-headers.conf
 
 # La imagen base trae páginas por defecto (index.html, 50x.html). Se eliminan
-# para que el único contenido servido sea el build de Riki.
+# para que el único contenido servido sea el build de Tuki.
 # UID 0 numérico: hadolint (DL3066) exige IDs resolubles por el host.
 # `apk upgrade` aplica los parches de seguridad de Alpine publicados después
 # de la imagen base. Se ejecuta solo en la etapa runtime y se limpia la caché.

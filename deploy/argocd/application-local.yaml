@@ -1,26 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: riki-local
+  name: tuki-local
   namespace: argocd
   labels:
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
     environment: local
 spec:
   project: default
 
   source:
-    repoURL: https://github.com/Leonardo007x/LeeFood.git
+    repoURL: https://github.com/lianlee007/tuki.git
     targetRevision: main
     path: deploy/k8s/overlays/local
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: riki
+    namespace: tuki
 
-  # En local el sync es manual a propósito: las imágenes son `riki:local-*` y
+  # En local el sync es manual a propósito: las imágenes son `tuki:local-*` y
   # el secreto de Groq se crea fuera de Git. Desde la UI/CLI:
-  #   argocd app sync riki-local
+  #   argocd app sync tuki-local
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

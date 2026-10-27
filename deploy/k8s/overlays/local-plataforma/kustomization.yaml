@@ -8,25 +8,25 @@ kind: Kustomization
 #
 # Uso:
 #   kubectl apply -k deploy/k8s/overlays/local-plataforma
-#   kubectl -n riki get ingress,hpa
-#   curl -H 'Host: riki.localhost' http://localhost/healthz
-namespace: riki
+#   kubectl -n tuki get ingress,hpa
+#   curl -H 'Host: tuki.localhost' http://localhost/healthz
+namespace: tuki
 
 resources:
   - ../../base
 
 images:
-  - name: ghcr.io/leonardo007x/leefood
-    newName: riki
+  - name: ghcr.io/lianlee007/tuki
+    newName: tuki
     newTag: local-0.2.0
-  - name: ghcr.io/leonardo007x/riki-ai-gateway
-    newName: riki-ai-gateway
+  - name: ghcr.io/lianlee007/tuki-ai-gateway
+    newName: tuki-ai-gateway
     newTag: local-0.2.0
 
 replicas:
-  - name: riki
+  - name: tuki
     count: 1
-  - name: riki-ai-gateway
+  - name: tuki-ai-gateway
     count: 1
 
 patches:
@@ -34,11 +34,11 @@ patches:
   # repositorio. En laboratorio se sirve HTTP sobre un host local.
   - target:
       kind: Ingress
-      name: riki
+      name: tuki
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: riki.localhost
+        value: tuki.localhost
       - op: remove
         path: /spec/tls
 

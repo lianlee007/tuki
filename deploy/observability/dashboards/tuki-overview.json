@@ -114,12 +114,12 @@
       "id": 7,
       "targets": [
         {
-          "expr": "sum(nginx_connections_active{namespace=\"riki\"})",
+          "expr": "sum(nginx_connections_active{namespace=\"tuki\"})",
           "legendFormat": "activas",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(nginx_http_requests_total{namespace=\"riki\"}[5m]))",
+          "expr": "sum(rate(nginx_http_requests_total{namespace=\"tuki\"}[5m]))",
           "legendFormat": "req/s",
           "refId": "B"
         }
@@ -130,7 +130,7 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["riki", "ai-gateway", "cloudforge"],
+  "tags": ["tuki", "ai-gateway", "cloudforge"],
   "templating": {
     "list": [
       {
@@ -152,7 +152,7 @@
   "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Riki · SPA y AI Gateway",
-  "uid": "riki-overview",
+  "title": "Tuki · SPA y AI Gateway",
+  "uid": "tuki-overview",
   "version": 1
 }

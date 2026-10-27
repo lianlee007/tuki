@@ -1,6 +1,6 @@
-# Despliegue de Riki con Docker y Kubernetes
+# Despliegue de Tuki con Docker y Kubernetes
 
-Guía operativa del empaquetado profesional de Riki: SPA servida por Nginx,
+Guía operativa del empaquetado profesional de Tuki: SPA servida por Nginx,
 AI Gateway en FastAPI, observabilidad, GitOps con ArgoCD y cadena de suministro
 verificable (Fases 0 y 1 del trabajo CloudForge AI).
 
@@ -21,7 +21,7 @@ Navegador
   │
   ▼
 Ingress (ingress-nginx + cert-manager)
-  │  /            → Service riki        → Pods Nginx UID 101 :8080
+  │  /            → Service tuki        → Pods Nginx UID 101 :8080
   │  /api         → Service ai-gateway  → Pods FastAPI UID 10001 :8000
   │
   └─ Nginx /api/ ──► ai-gateway:8000 ──► api.groq.com:443
@@ -32,8 +32,8 @@ Dos contenedores propios:
 
 | Servicio | Imagen | Responsabilidad |
 | --- | --- | --- |
-| `web` | `ghcr.io/leonardo007x/leefood` | Sirve `dist/` de Vite y hace de proxy `/api` en Compose/K8s local |
-| `ai-gateway` | `ghcr.io/leonardo007x/riki-ai-gateway` | Auth Supabase, cuotas, reintentos y llamada a Groq |
+| `web` | `ghcr.io/lianlee007/tuki` | Sirve `dist/` de Vite y hace de proxy `/api` en Compose/K8s local |
+| `ai-gateway` | `ghcr.io/lianlee007/tuki-ai-gateway` | Auth Supabase, cuotas, reintentos y llamada a Groq |
 
 Decisiones clave:
 
@@ -175,7 +175,7 @@ docker build \
   --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
   --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   --build-arg VITE_AI_GATEWAY_URL=/api \
-  -t ghcr.io/leonardo007x/leefood:0.1.0 .
+  -t ghcr.io/lianlee007/tuki:0.1.0 .
 ```
 
 La imagen web **no** acepta `GROQ_API_KEY`: si aparece una variable así en el
@@ -187,7 +187,7 @@ contexto, es un error de configuración, no una feature.
 docker build \
   --build-arg VERSION=0.1.0 \
   --build-arg REVISION="$(git rev-parse --short HEAD)" \
-  -t ghcr.io/leonardo007x/riki-ai-gateway:0.1.0 \
+  -t ghcr.io/lianlee007/tuki-ai-gateway:0.1.0 \
   services/ai-gateway
 ```
 
@@ -287,10 +287,10 @@ En otra terminal, `pnpm dev`: Vite proxya `/api` a `http://localhost:8001`.
 El secreto **no** se versiona. Créalo antes del primer sync:
 
 ```bash
-kubectl create namespace riki --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic riki-ai-gateway \
+kubectl create namespace tuki --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic tuki-ai-gateway \
   --from-literal=GROQ_API_KEY="$GROQ_API_KEY" \
-  -n riki
+  -n tuki
 ```
 
 En GitOps usa Sealed Secrets, External Secrets Operator o SOPS. La plantilla
@@ -298,26 +298,26 @@ En GitOps usa Sealed Secrets, External Secrets Operator o SOPS. La plantilla
 
 ### 7.2 Overlay local (Docker Desktop / kind / k3d)
 
-El overlay usa `riki:local-0.2.0` y `riki-ai-gateway:local-0.2.0`, una réplica y
+El overlay usa `tuki:local-0.2.0` y `tuki-ai-gateway:local-0.2.0`, una réplica y
 desactiva Ingress, HPA, PDB, NetworkPolicy y la validación JWT.
 
 ```bash
-docker build -t riki:local-0.2.0 \
+docker build -t tuki:local-0.2.0 \
   --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
   --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
   --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
   --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   .
-docker build -t riki-ai-gateway:local-0.2.0 services/ai-gateway
+docker build -t tuki-ai-gateway:local-0.2.0 services/ai-gateway
 
 kubectl apply -k deploy/k8s/overlays/local
-kubectl rollout status deployment/riki -n riki
-kubectl rollout status deployment/riki-ai-gateway -n riki
+kubectl rollout status deployment/tuki -n tuki
+kubectl rollout status deployment/tuki-ai-gateway -n tuki
 
-kubectl port-forward -n riki svc/riki 8081:80
+kubectl port-forward -n tuki svc/tuki 8081:80
 # en otra terminal:
-kubectl port-forward -n riki svc/ai-gateway 8002:8000
-kubectl port-forward -n riki svc/riki 9114:9113
+kubectl port-forward -n tuki svc/ai-gateway 8002:8000
+kubectl port-forward -n tuki svc/tuki 9114:9113
 
 curl http://localhost:8081/healthz
 curl http://localhost:8081/api/healthz
@@ -336,13 +336,13 @@ Si prefieres un clúster reproducible en lugar de Docker Desktop:
 
 ```bash
 kind create cluster --config deploy/kind/cluster.yaml
-kind load docker-image riki:local-0.2.0 --name riki
-kind load docker-image riki-ai-gateway:local-0.2.0 --name riki
-kubectl create namespace riki --dry-run=client -o yaml | kubectl apply -f -
-kubectl create secret generic riki-ai-gateway \
-  --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n riki
+kind load docker-image tuki:local-0.2.0 --name tuki
+kind load docker-image tuki-ai-gateway:local-0.2.0 --name tuki
+kubectl create namespace tuki --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic tuki-ai-gateway \
+  --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n tuki
 kubectl apply -k deploy/k8s/overlays/local
-kubectl port-forward -n riki svc/riki 8081:80
+kubectl port-forward -n tuki svc/tuki 8081:80
 ```
 
 El clúster tiene un `control-plane` y dos `worker` para observar
@@ -360,33 +360,33 @@ Antes de aplicar:
 
 1. Cambia `images[].newName` si tu registro no es GHCR.
 2. Cambia `newTag` por la versión firmada.
-3. Reemplaza `riki.app` por tu dominio.
+3. Reemplaza `tuki.app` por tu dominio.
 4. Ajusta el `ClusterIssuer` de cert-manager.
 5. Reemplaza `SUPABASE_URL` (`https://TU_PROYECTO.supabase.co`). El gateway
    falla al arrancar si detecta el placeholder.
-6. Crea el secreto `riki-ai-gateway`.
+6. Crea el secreto `tuki-ai-gateway`.
 
 ```bash
 kubectl kustomize deploy/k8s/overlays/production | less
 kubectl apply -k deploy/k8s/overlays/production
-kubectl rollout status deployment/riki -n riki
-kubectl rollout status deployment/riki-ai-gateway -n riki
-kubectl get pods,svc,ingress,hpa,pdb -n riki
+kubectl rollout status deployment/tuki -n tuki
+kubectl rollout status deployment/tuki-ai-gateway -n tuki
+kubectl get pods,svc,ingress,hpa,pdb -n tuki
 ```
 
 ### 7.4 Recursos creados
 
 | Recurso | Función |
 | --- | --- |
-| `Namespace riki` | Pod Security `restricted` |
-| `ServiceAccount riki` | Sin token montado |
-| `Deployment riki` | 2 réplicas, rolling update, probes, sidecar exporter |
-| `Service riki` | :80 → :8080 y :9113 para métricas |
-| `Deployment riki-ai-gateway` | 2 réplicas, no-root 10001, probes `/readyz` |
+| `Namespace tuki` | Pod Security `restricted` |
+| `ServiceAccount tuki` | Sin token montado |
+| `Deployment tuki` | 2 réplicas, rolling update, probes, sidecar exporter |
+| `Service tuki` | :80 → :8080 y :9113 para métricas |
+| `Deployment tuki-ai-gateway` | 2 réplicas, no-root 10001, probes `/readyz` |
 | `Service ai-gateway` | `ai-gateway:8000` (host estable para Nginx) |
 | `ConfigMap ai-gateway-config` | Configuración no secreta |
-| `Secret riki-ai-gateway` | `GROQ_API_KEY` (fuera de Git) |
-| `Ingress riki` | `/` → web, `/api` → gateway, TLS |
+| `Secret tuki-ai-gateway` | `GROQ_API_KEY` (fuera de Git) |
+| `Ingress tuki` | `/` → web, `/api` → gateway, TLS |
 | `HPA` | web 2–20, gateway 2–20 por CPU |
 | `PDB` | `minAvailable: 1`, `AlwaysAllow` para pods unhealthy |
 | `NetworkPolicy` | Aísla web/gateway y limita egreso a 443/DNS |
@@ -409,11 +409,11 @@ kubectl apply -k deploy/observability
 
 Incluye:
 
-- `ServiceMonitor/riki-web` → `nginx-exporter:9113`.
-- `ServiceMonitor/riki-ai-gateway` → `/metrics:8000`.
-- `PrometheusRule/riki-alertas` con 7 alertas de disponibilidad, errores,
+- `ServiceMonitor/tuki-web` → `nginx-exporter:9113`.
+- `ServiceMonitor/tuki-ai-gateway` → `/metrics:8000`.
+- `PrometheusRule/tuki-alertas` con 7 alertas de disponibilidad, errores,
   latencia, rate limit, timeouts y conexiones de Nginx.
-- Dashboard `Riki · SPA y AI Gateway` como ConfigMap con etiqueta
+- Dashboard `Tuki · SPA y AI Gateway` como ConfigMap con etiqueta
   `grafana_dashboard: "1"` (7 paneles).
 
 Ajusta la etiqueta `release` de los ServiceMonitor/PrometheusRule al selector de
@@ -437,15 +437,15 @@ Métricas principales del gateway:
 
 | Aplicación | Overlay | Sync |
 | --- | --- | --- |
-| `riki-local` | `deploy/k8s/overlays/local` | Manual |
-| `riki-production` | `deploy/k8s/overlays/production` | Auto + selfHeal + prune |
+| `tuki-local` | `deploy/k8s/overlays/local` | Manual |
+| `tuki-production` | `deploy/k8s/overlays/production` | Auto + selfHeal + prune |
 
 ```bash
 kubectl apply -f deploy/argocd/application-local.yaml
 kubectl apply -f deploy/argocd/application-production.yaml
-argocd app get riki-production
-argocd app history riki-production
-argocd app rollback riki-production <ID>
+argocd app get tuki-production
+argocd app history tuki-production
+argocd app rollback tuki-production <ID>
 ```
 
 `ignoreDifferences` evita que ArgoCD pelee con el HPA por `replicas`. Para
@@ -488,8 +488,8 @@ fija la base, pero no congela los parches de seguridad. Se documenta en
 
 Resultados locales de referencia (2026-10-25):
 
-- `riki:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
-- `riki-ai-gateway:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
+- `tuki:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
+- `tuki-ai-gateway:local-0.2.0`: 0 vulnerabilidades HIGH/CRITICAL corregibles.
 - kubeconform: 25 recursos, 22 válidos y 3 CRDs omitidos a propósito.
 - kube-linter: sin errores.
 - conftest: 189 tests, 189 aprobados.
@@ -519,13 +519,13 @@ En Windows, ejecuta los scripts desde WSL o Git Bash; usan `$PWD` y
 ### 10.4 Verificar una imagen firmada
 
 ```bash
-cosign verify ghcr.io/leonardo007x/leefood@sha256:<digest> \
-  --certificate-identity-regexp '^https://github.com/Leonardo007x/LeeFood/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$' \
+cosign verify ghcr.io/lianlee007/tuki@sha256:<digest> \
+  --certificate-identity-regexp '^https://github.com/lianlee007/tuki/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
-cosign verify-attestation ghcr.io/leonardo007x/leefood@sha256:<digest> \
+cosign verify-attestation ghcr.io/lianlee007/tuki@sha256:<digest> \
   --type spdxjson \
-  --certificate-identity-regexp '^https://github.com/Leonardo007x/LeeFood/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$' \
+  --certificate-identity-regexp '^https://github.com/lianlee007/tuki/.github/workflows/contenedor.yml@refs/(heads|tags)/.*$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
@@ -576,29 +576,29 @@ VITE_CLOUDINARY_UPLOAD_PRESET
 | Síntoma | Causa probable | Solución |
 | --- | --- | --- |
 | Build: faltan variables | No se pasaron los `--build-arg` | Usa Compose o el archivo de entorno |
-| `502` en `/api` | El gateway no está Ready o no resuelve | `kubectl logs deploy/riki-ai-gateway`; revisa el secreto |
+| `502` en `/api` | El gateway no está Ready o no resuelve | `kubectl logs deploy/tuki-ai-gateway`; revisa el secreto |
 | `401` con sesión iniciada | Token expirado o `SUPABASE_URL` incorrecta | Renueva sesión; verifica JWKS |
 | `503 auth_unavailable` | Supabase JWKS inaccesible | Revisa egreso 443 y estado de Supabase |
 | `429` constante | Cuota baja o abuso | Ajusta `AI_RATE_LIMIT_*`; revisa el panel |
 | `504` en chat | Groq lento o timeout bajo | Sube `AI_GROQ_TOTAL_TIMEOUT_SECONDS` o baja reintentos |
 | Pods con imagen vieja | Caché por tag | Usa un tag nuevo |
 | HPA en `<unknown>` | Falta metrics-server | Instálalo o desactiva HPA |
-| Ingress 404 | Host/clase no coinciden | `kubectl describe ingress -n riki` |
+| Ingress 404 | Host/clase no coinciden | `kubectl describe ingress -n tuki` |
 | Pods reinician por probes | NetworkPolicy bloquea al kubelet | Ajusta la política |
 
 Rollback:
 
 ```bash
 # Kubernetes
-kubectl rollout undo deployment/riki -n riki
-kubectl rollout undo deployment/riki-ai-gateway -n riki
-kubectl rollout history deployment/riki -n riki
+kubectl rollout undo deployment/tuki -n tuki
+kubectl rollout undo deployment/tuki-ai-gateway -n tuki
+kubectl rollout history deployment/tuki -n tuki
 
 # ArgoCD
-argocd app rollback riki-production <ID>
+argocd app rollback tuki-production <ID>
 
 # Imagen concreta
-kubectl set image deployment/riki web=ghcr.io/leonardo007x/leefood:<tag> -n riki
+kubectl set image deployment/tuki web=ghcr.io/lianlee007/tuki:<tag> -n tuki
 ```
 
 Guía completa de incidentes y rotación de claves: `docs/runbook.md`.

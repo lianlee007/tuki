@@ -1,4 +1,4 @@
-name: riki
+name: tuki
 
 # Uso:
 #   docker compose --env-file .env.local up -d --build
@@ -21,13 +21,13 @@ services:
         VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:?Define VITE_CLOUDINARY_CLOUD_NAME en el archivo de entorno}
         VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET:?Define VITE_CLOUDINARY_UPLOAD_PRESET en el archivo de entorno}
         VITE_AI_GATEWAY_URL: ${VITE_AI_GATEWAY_URL:-/api}
-        VERSION: ${RIKI_VERSION:-local}
-        REVISION: ${RIKI_REVISION:-local}
+        VERSION: ${TUKI_VERSION:-local}
+        REVISION: ${TUKI_REVISION:-local}
 
-    image: ${RIKI_IMAGE:-riki}:${RIKI_VERSION:-local}
+    image: ${TUKI_IMAGE:-tuki}:${TUKI_VERSION:-local}
 
     ports:
-      - "${RIKI_PORT:-8080}:8080"
+      - "${TUKI_PORT:-8080}:8080"
 
     depends_on:
       ai-gateway:
@@ -73,11 +73,11 @@ services:
       context: ./services/ai-gateway
       dockerfile: Dockerfile
       args:
-        VERSION: ${RIKI_VERSION:-local}
-        REVISION: ${RIKI_REVISION:-local}
+        VERSION: ${TUKI_VERSION:-local}
+        REVISION: ${TUKI_REVISION:-local}
         WITH_OTEL: ${AI_WITH_OTEL:-false}
 
-    image: ${AI_GATEWAY_IMAGE:-riki-ai-gateway}:${RIKI_VERSION:-local}
+    image: ${AI_GATEWAY_IMAGE:-tuki-ai-gateway}:${TUKI_VERSION:-local}
 
     # Solo para probar el gateway directamente; Nginx lo consume por la red
     # interna. En producción este puerto no se publica.
