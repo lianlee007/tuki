@@ -30,7 +30,7 @@ export default function PaginaEntrar() {
         subtitulo={
           isLogin
             ? 'Tu carrito, tus pedidos y tus restaurantes de siempre, en un solo lugar.'
-            : 'Solo necesitas un correo. Explorar y pedir en Tuki no tiene costo.'
+            : 'Solo necesitas un correo. Al final te pediremos tu dirección de entrega; puedes guardarla ahora o hacerlo más tarde.'
         }
       >
         <div>

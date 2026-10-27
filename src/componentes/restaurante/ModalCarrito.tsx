@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ShoppingCart, X, Trash2, Plus, Minus, User, MapPin, Phone, ChevronLeft, Edit2, Home, Briefcase, Save, Lock, ArrowRight,
@@ -7,8 +7,10 @@ import { Platillo } from '../../tipos/modelos';
 import { LogoWhatsApp } from '../ui';
 import { apiWhatsApp } from '../../api/misApis';
 import { apiPedidos } from '../../api/apiPedidos';
+import { apiCuenta } from '../../api/apiCuenta';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
+import { datosEnvioCompletos, formatearDireccionEnvio } from '../../lib/datosEnvio';
 import { variablesAf } from '../../lib/color';
 import { LIMITES } from '../../constantes';
 import type { EstilosComunes } from './PlantillaRestaurante';
@@ -59,7 +61,16 @@ export const ModalCarrito: React.FC<Props> = ({
   const subtotal = carrito.reduce((acc, item) => acc + (item.platillo.precio * item.cantidad), 0);
   const total = subtotal;
 
-  const getStorageKey = (baseKey: string) => claveComensal(baseKey, user?.id);
+  const usuarioId = user?.id;
+  const nombreCuentaMeta = [user?.user_metadata?.nombre, user?.user_metadata?.apellido]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  const getStorageKey = useCallback(
+    (baseKey: string) => claveComensal(baseKey, usuarioId),
+    [usuarioId]
+  );
 
   const [paso, setPaso] = useState<'resumen' | 'datos'>('resumen');
   const [modoDireccion, setModoDireccion] = useState<'lista' | 'editar'>('lista');
@@ -70,6 +81,9 @@ export const ModalCarrito: React.FC<Props> = ({
   const [telefono, setTelefono] = useState('');
   const [direccionesGuardadas, setDireccionesGuardadas] = useState<DireccionEstructurada[]>([]);
   const [direccionSeleccionadaId, setDireccionSeleccionadaId] = useState<string | null>(null);
+  /** Dirección completa guardada en la cuenta, si ya la completó. */
+  const [direccionCuenta, setDireccionCuenta] = useState<string | null>(null);
+  const [usarDireccionCuenta, setUsarDireccionCuenta] = useState(false);
   const [formDir, setFormDir] = useState<DireccionEstructurada>({
     id: '', alias: 'Casa', via: 'Calle', n1: '', n2: '', n3: '', barrio: '', complemento: '',
   });
@@ -92,30 +106,84 @@ export const ModalCarrito: React.FC<Props> = ({
     (['user_basic', 'addresses'] as const).forEach((sufijo) => {
       const nueva = getStorageKey(sufijo);
       if (localStorage.getItem(nueva) !== null) return;
-      const valor = localStorage.getItem(claveComensal(sufijo, user?.id, PREFIJO_CLAVE_ANTERIOR));
+      const valor = localStorage.getItem(claveComensal(sufijo, usuarioId, PREFIJO_CLAVE_ANTERIOR));
       if (valor !== null) localStorage.setItem(nueva, valor);
     });
-  }, [user]);
+  }, [getStorageKey, usuarioId]);
 
   useEffect(() => {
-    const userKey = getStorageKey('user_basic');
-    const savedUser = localStorage.getItem(userKey);
-    if (savedUser) {
-      const parsed = JSON.parse(savedUser);
-      setNombre(parsed.nombre || '');
-      setTelefono(parsed.telefono || '');
-    }
-    const addressesKey = getStorageKey('addresses');
-    const savedAddrs = localStorage.getItem(addressesKey);
-    if (savedAddrs) {
-      const parsed = JSON.parse(savedAddrs);
-      setDireccionesGuardadas(parsed);
-      setDireccionSeleccionadaId(parsed.length > 0 ? parsed[0].id : null);
-      if (parsed.length === 0) setModoDireccion('editar');
-    } else {
-      setModoDireccion('editar');
-    }
-  }, [user]);
+    let vigente = true;
+
+    const cargar = async () => {
+      const savedUser = localStorage.getItem(getStorageKey('user_basic'));
+      let localNombre = '';
+      let localTelefono = '';
+
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          localNombre = parsed.nombre || '';
+          localTelefono = parsed.telefono || '';
+        } catch {
+          // Un JSON corrupto no debe impedir pedir.
+        }
+      }
+
+      const savedAddrs = localStorage.getItem(getStorageKey('addresses'));
+      let locales: DireccionEstructurada[] = [];
+      if (savedAddrs) {
+        try {
+          const parsed = JSON.parse(savedAddrs);
+          if (Array.isArray(parsed)) locales = parsed;
+        } catch {
+          // Se ignora y se ofrece crear una dirección nueva.
+        }
+      }
+
+      let deCuenta: string | null = null;
+      let telefonoCuenta = '';
+      if (usuarioId) {
+        try {
+          const { datos } = await apiCuenta.datosEnvio(usuarioId);
+          if (datos && datosEnvioCompletos(datos)) {
+            deCuenta = formatearDireccionEnvio(datos);
+            telefonoCuenta = datos.telefono;
+          }
+        } catch {
+          // Sin red, la copia local sigue siendo útil.
+        }
+      }
+
+      if (!vigente) return;
+
+      setNombre(localNombre || nombreCuentaMeta || '');
+      setTelefono(localTelefono || telefonoCuenta);
+      setDireccionCuenta(deCuenta);
+
+      if (locales.length > 0) {
+        setDireccionesGuardadas(locales);
+        setDireccionSeleccionadaId(locales[0].id);
+        setUsarDireccionCuenta(false);
+        setModoDireccion('lista');
+      } else if (deCuenta) {
+        setDireccionesGuardadas([]);
+        setDireccionSeleccionadaId(null);
+        setUsarDireccionCuenta(true);
+        setModoDireccion('lista');
+      } else {
+        setDireccionesGuardadas([]);
+        setDireccionSeleccionadaId(null);
+        setUsarDireccionCuenta(false);
+        setModoDireccion('editar');
+      }
+    };
+
+    void cargar();
+
+    return () => {
+      vigente = false;
+    };
+  }, [getStorageKey, usuarioId, nombreCuentaMeta]);
 
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -135,11 +203,13 @@ export const ModalCarrito: React.FC<Props> = ({
 
   const iniciarNuevaDireccion = () => {
     setFormDir({ id: Date.now().toString(), alias: 'Casa', via: 'Calle', n1: '', n2: '', n3: '', barrio: '', complemento: '' });
+    setUsarDireccionCuenta(false);
     setModoDireccion('editar');
   };
 
   const editarDireccion = (dir: DireccionEstructurada) => {
     setFormDir(dir);
+    setUsarDireccionCuenta(false);
     setModoDireccion('editar');
   };
 
@@ -149,7 +219,14 @@ export const ModalCarrito: React.FC<Props> = ({
     const addressesKey = getStorageKey('addresses');
     localStorage.setItem(addressesKey, JSON.stringify(nuevas));
     if (direccionSeleccionadaId === id) setDireccionSeleccionadaId(nuevas.length > 0 ? nuevas[0].id : null);
-    if (nuevas.length === 0) iniciarNuevaDireccion();
+    if (nuevas.length === 0) {
+      if (direccionCuenta) {
+        setUsarDireccionCuenta(true);
+        setModoDireccion('lista');
+      } else {
+        iniciarNuevaDireccion();
+      }
+    }
   };
 
   const guardarDireccion = () => {
@@ -161,6 +238,7 @@ export const ModalCarrito: React.FC<Props> = ({
     setDireccionesGuardadas(nuevas);
     const addressesKey = getStorageKey('addresses');
     localStorage.setItem(addressesKey, JSON.stringify(nuevas));
+    setUsarDireccionCuenta(false);
     setDireccionSeleccionadaId(formDir.id);
     setModoDireccion('lista');
     if (errorEnvio) setErrorEnvio(null);
@@ -212,7 +290,7 @@ export const ModalCarrito: React.FC<Props> = ({
     if (telefono.length !== 10) return false;
     if (modoDireccion === 'editar') {
       if (!formDir.n1 || !formDir.n2 || !formDir.n3 || !formDir.barrio) return false;
-    } else {
+    } else if (!(usarDireccionCuenta && direccionCuenta)) {
       if (direccionSeleccionadaId === null) return false;
     }
     return true;
@@ -227,7 +305,7 @@ export const ModalCarrito: React.FC<Props> = ({
       if (!formDir.n2) errors.push('Falta el número secundario de la dirección');
       if (!formDir.n3) errors.push('Falta el número adicional de la dirección');
       if (!formDir.barrio) errors.push('Falta el barrio de la dirección');
-    } else {
+    } else if (!(usarDireccionCuenta && direccionCuenta)) {
       if (direccionSeleccionadaId === null) errors.push('Debes seleccionar o crear una dirección de entrega');
     }
     return errors;
@@ -247,16 +325,22 @@ export const ModalCarrito: React.FC<Props> = ({
     if (modoDireccion === 'editar') guardarDireccion();
     const userKey = getStorageKey('user_basic');
     localStorage.setItem(userKey, JSON.stringify({ nombre, telefono }));
-    let dirSeleccionada = direccionesGuardadas.find((d) => d.id === direccionSeleccionadaId);
-    if (!dirSeleccionada && modoDireccion === 'editar') {
-      const addressesKey = getStorageKey('addresses');
-      const savedAddrs = localStorage.getItem(addressesKey);
-      if (savedAddrs) {
-        const parsed = JSON.parse(savedAddrs);
-        dirSeleccionada = parsed[parsed.length - 1];
+
+    let direccionStr = 'Sin dirección';
+    if (usarDireccionCuenta && direccionCuenta) {
+      direccionStr = direccionCuenta;
+    } else {
+      let dirSeleccionada = direccionesGuardadas.find((d) => d.id === direccionSeleccionadaId);
+      if (!dirSeleccionada && modoDireccion === 'editar') {
+        const addressesKey = getStorageKey('addresses');
+        const savedAddrs = localStorage.getItem(addressesKey);
+        if (savedAddrs) {
+          const parsed = JSON.parse(savedAddrs);
+          dirSeleccionada = parsed[parsed.length - 1];
+        }
       }
+      if (dirSeleccionada) direccionStr = formatDireccion(dirSeleccionada);
     }
-    const direccionStr = dirSeleccionada ? formatDireccion(dirSeleccionada) : 'Sin dirección';
     const items = carrito.map((item) => ({
       platillo_id: item.platillo.id,
       nombre: item.platillo.nombre,
@@ -336,7 +420,10 @@ export const ModalCarrito: React.FC<Props> = ({
     const elegida = direccionSeleccionadaId === dir.id;
     return (
       <div
-        onClick={() => setDireccionSeleccionadaId(dir.id)}
+        onClick={() => {
+          setUsarDireccionCuenta(false);
+          setDireccionSeleccionadaId(dir.id);
+        }}
         className="p-3 rounded-xl border-2 cursor-pointer flex items-center gap-3 relative group"
         style={{
           borderColor: elegida ? e.primary : 'transparent',
@@ -451,8 +538,41 @@ export const ModalCarrito: React.FC<Props> = ({
 
         {modoDireccion === 'lista' ? (
           <div className="space-y-3">
+            {direccionCuenta && (
+              <button
+                type="button"
+                onClick={() => {
+                  setUsarDireccionCuenta(true);
+                  setDireccionSeleccionadaId(null);
+                }}
+                aria-pressed={usarDireccionCuenta}
+                className="w-full p-3 rounded-xl border-2 cursor-pointer flex items-center gap-3 text-left af-pulsar"
+                style={{
+                  borderColor: usarDireccionCuenta ? e.primary : 'transparent',
+                  backgroundColor: usarDireccionCuenta ? e.accentSoft : e.surface,
+                }}
+              >
+                <div
+                  className="p-2 rounded-full shrink-0"
+                  style={usarDireccionCuenta
+                    ? { backgroundColor: e.primary, color: e.onPrimary }
+                    : { backgroundColor: e.bg, color: e.muted }}
+                >
+                  <MapPin size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold uppercase mb-0.5" style={{ color: e.muted }}>
+                    Guardada en mi cuenta
+                  </p>
+                  <p className="text-sm font-medium break-words" style={{ color: e.text }}>
+                    {direccionCuenta}
+                  </p>
+                </div>
+              </button>
+            )}
+
             {direccionesGuardadas.map((dir) => <DireccionItem key={dir.id} dir={dir} />)}
-            {direccionesGuardadas.length === 0 && (
+            {!direccionCuenta && direccionesGuardadas.length === 0 && (
               <div className="text-center py-6 text-sm rounded-xl border border-dashed" style={{ color: e.muted, borderColor: e.border }}>
                 No tienes direcciones guardadas.
               </div>

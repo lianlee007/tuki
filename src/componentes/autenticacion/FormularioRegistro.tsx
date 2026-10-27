@@ -3,7 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Boton, Input } from '../ui';
-import { ShieldCheck, Check, XCircle, AlertCircle, AlertTriangle, Mail } from 'lucide-react';
+import {
+  ShieldCheck,
+  Check,
+  XCircle,
+  AlertCircle,
+  AlertTriangle,
+  Mail,
+  ArrowLeft,
+  MapPin,
+} from 'lucide-react';
+import { FormularioDatosEnvio } from '../cuenta/FormularioDatosEnvio';
+import type { DatosEnvio } from '../../lib/datosEnvio';
 
 interface FormularioRegistroProps {
   cambiarModo: () => void;
@@ -26,6 +37,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
+  /** El comensal elige sus datos de entrega antes de crear la cuenta. */
+  const [paso, setPaso] = useState<'cuenta' | 'envio'>('cuenta');
 
   useEffect(() => {
     setEmail('');
@@ -36,6 +49,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
     setAceptaTerminos(false);
     setError(null);
     setEmailTouched(false);
+    setPaso('cuenta');
   }, []);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,47 +70,116 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formValid) return;
-
+  const crearCuenta = async (envio?: DatosEnvio, omitirEnvio = false) => {
     setLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const metadata: Record<string, string> = { nombre, apellido, rol };
+      if (envio) {
+        metadata.telefono = envio.telefono;
+        metadata.direccion = envio.direccion;
+        metadata.barrio = envio.barrio;
+        metadata.referencias = envio.referencias;
+      }
+      if (omitirEnvio) {
+        metadata.omitir_datos_envio = 'true';
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { nombre, apellido, rol }
-        }
+          data: metadata,
+        },
       });
       if (error) throw error;
-      alert("Registro exitoso. Por favor revisa tu correo o inicia sesión.");
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setNombre('');
-      setApellido('');
-      setAceptaTerminos(false);
-      setError(null);
-      setEmailTouched(false);
-      cambiarModo();
+
+      if (!data.session) {
+        alert(
+          'Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.'
+        );
+        cambiarModo();
+        return;
+      }
+
+      if (rol === 'restaurante') {
+        alert('Registro exitoso. Ya puedes administrar tu restaurante.');
+        cambiarModo();
+      }
+      // Con sesión activa, `RutaAuth` lleva al comensal a la portada. No se
+      // navega aquí para no competir con ese guardia de ruta.
     } catch (error: any) {
-      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
-        setError("Este correo electrónico ya está registrado. Intenta iniciar sesión.");
+      if (
+        error.message?.includes('already registered') ||
+        error.message?.includes('already exists')
+      ) {
+        setError('Este correo electrónico ya está registrado. Intenta iniciar sesión.');
       } else {
-        setError(error.message || "Ocurrió un error inesperado.");
+        setError(error.message || 'Ocurrió un error inesperado.');
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formValid) return;
+
+    // El comensal ve primero el paso de entrega; su botón de omitir crea la
+    // cuenta sin dirección. El restaurante no necesita datos de envío.
+    if (rol === 'cliente') {
+      setError(null);
+      setPaso('envio');
+      return;
+    }
+
+    await crearCuenta();
+  };
+
   const ValidationIcon = ({ valid, active }: { valid: boolean; active: boolean }) => {
     if (!active) return <div className="w-4 h-4 border border-af-border/50 rounded-full" />;
     return valid ? <Check size={16} className="text-af-success" /> : <XCircle size={16} className="text-af-danger" />;
   };
+
+  if (paso === 'envio') {
+    return (
+      <div className="relative z-10 w-full space-y-5">
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            setPaso('cuenta');
+          }}
+          className="af-pulsar inline-flex items-center gap-1.5 text-xs font-semibold text-af-ink-secondary transition-colors hover:text-af-ink"
+        >
+          <ArrowLeft size={14} /> Volver a los datos de acceso
+        </button>
+
+        <div className="rounded-2xl border border-af-accent/20 bg-af-accent/5 p-4">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-af-accent-text">
+            <MapPin size={14} /> Datos de envío
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-af-ink-secondary">
+            Guárdalos ahora y tus próximos pedidos se llenan solos. Si prefieres,
+            puedes crear la cuenta sin dirección y completarla después desde{' '}
+            <strong className="font-semibold text-af-ink">Mi cuenta</strong>.
+          </p>
+        </div>
+
+        <FormularioDatosEnvio
+          guardando={loading}
+          error={error}
+          textoBoton="Crear mi cuenta y guardar"
+          textoOmitir="Ahora no, crear mi cuenta sin dirección"
+          nota="Solo lo ve el restaurante que recibe tu pedido. Podrás cambiarlo cuando quieras desde Mi cuenta."
+          onGuardar={(datos) => crearCuenta(datos)}
+          onOmitir={() => crearCuenta(undefined, true)}
+        />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full" autoComplete="off">
