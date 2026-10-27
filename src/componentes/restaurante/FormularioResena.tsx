@@ -54,8 +54,14 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     (platillo) => platillo.disponible !== false && platillo.visible !== false
   );
 
+  const inicialValido =
+    platilloInicialId &&
+    platosResenables.some((platillo) => platillo.id === platilloInicialId)
+      ? platilloInicialId
+      : '';
+
   const [calificacion, setCalificacion] = useState(0);
-  const [platilloId, setPlatilloId] = useState(platilloInicialId || '');
+  const [platilloId, setPlatilloId] = useState(inicialValido);
   const [nombre, setNombre] = useState(nombreInicial);
   const [comentario, setComentario] = useState('');
   const [enviando, setEnviando] = useState(false);
