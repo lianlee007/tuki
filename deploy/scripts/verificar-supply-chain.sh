@@ -4,7 +4,7 @@
 #
 # Uso:
 #   bash deploy/scripts/verificar-supply-chain.sh
-#   WEB_IMAGE=riki:local-0.2.0 GATEWAY_IMAGE=riki-ai-gateway:local-0.2.0 \
+#   WEB_IMAGE=tuki:local-0.2.0 GATEWAY_IMAGE=tuki-ai-gateway:local-0.2.0 \
 #     bash deploy/scripts/verificar-supply-chain.sh
 #
 # Para firmar en local necesitas una clave Cosign:
@@ -14,8 +14,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-WEB_IMAGE="${WEB_IMAGE:-riki:local-0.2.0}"
-GATEWAY_IMAGE="${GATEWAY_IMAGE:-riki-ai-gateway:local-0.2.0}"
+WEB_IMAGE="${WEB_IMAGE:-tuki:local-0.2.0}"
+GATEWAY_IMAGE="${GATEWAY_IMAGE:-tuki-ai-gateway:local-0.2.0}"
 OUT="build/supply-chain"
 mkdir -p "$OUT"
 

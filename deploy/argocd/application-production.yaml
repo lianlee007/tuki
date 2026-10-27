@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: riki-production
+  name: tuki-production
   namespace: argocd
   labels:
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
     environment: production
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -12,13 +12,13 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/Leonardo007x/LeeFood.git
+    repoURL: https://github.com/lianlee007/tuki.git
     targetRevision: main
     path: deploy/k8s/overlays/production
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: riki
+    namespace: tuki
 
   # ArgoCD no debe pelear con el HPA por el campo replicas.
   ignoreDifferences:

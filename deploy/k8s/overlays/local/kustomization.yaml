@@ -4,8 +4,8 @@ kind: Kustomization
 # Overlay para Docker Desktop, kind o k3d.
 #
 # A diferencia de producción:
-#   - usa las imágenes locales `riki:local-0.2.0` y
-#     `riki-ai-gateway:local-0.2.0`;
+#   - usa las imágenes locales `tuki:local-0.2.0` y
+#     `tuki-ai-gateway:local-0.2.0`;
 #   - deja los Services como ClusterIP y se accede con `kubectl port-forward`;
 #   - deja fuera Ingress, HPA, PDB y NetworkPolicy, porque dependen de
 #     controladores (ingress-nginx, metrics-server, CNI con políticas) que un
@@ -13,108 +13,108 @@ kind: Kustomization
 #   - desactiva la validación JWT (`AI_AUTH_MODE=disabled`).
 #
 # Antes de aplicar, crea el secreto del gateway:
-#   kubectl create namespace riki --dry-run=client -o yaml | kubectl apply -f -
-#   kubectl create secret generic riki-ai-gateway \
-#     --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n riki
+#   kubectl create namespace tuki --dry-run=client -o yaml | kubectl apply -f -
+#   kubectl create secret generic tuki-ai-gateway \
+#     --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n tuki
 #
 # Uso:
-#   docker build ... -t riki:local-0.2.0 .
-#   docker build -t riki-ai-gateway:local-0.2.0 services/ai-gateway
+#   docker build ... -t tuki:local-0.2.0 .
+#   docker build -t tuki-ai-gateway:local-0.2.0 services/ai-gateway
 #   kubectl apply -k deploy/k8s/overlays/local
-#   kubectl port-forward -n riki svc/riki 8080:80
-#   kubectl port-forward -n riki svc/ai-gateway 8001:8000
+#   kubectl port-forward -n tuki svc/tuki 8080:80
+#   kubectl port-forward -n tuki svc/ai-gateway 8001:8000
 #   curl http://localhost:8080/healthz
 #   curl http://localhost:8080/api/healthz
-namespace: riki
+namespace: tuki
 
 resources:
   - ../../base
 
 images:
-  - name: ghcr.io/leonardo007x/leefood
-    newName: riki
+  - name: ghcr.io/lianlee007/tuki
+    newName: tuki
     newTag: local-0.2.0
-  - name: ghcr.io/leonardo007x/riki-ai-gateway
-    newName: riki-ai-gateway
+  - name: ghcr.io/lianlee007/tuki-ai-gateway
+    newName: tuki-ai-gateway
     newTag: local-0.2.0
 
 replicas:
-  - name: riki
+  - name: tuki
     count: 1
-  - name: riki-ai-gateway
+  - name: tuki-ai-gateway
     count: 1
 
 patches:
   # Recursos que no aplican en un clúster de desarrollo sin controladores.
   - target:
       kind: Ingress
-      name: riki
+      name: tuki
     patch: |-
       $patch: delete
       apiVersion: networking.k8s.io/v1
       kind: Ingress
       metadata:
-        name: riki
+        name: tuki
 
   - target:
       kind: HorizontalPodAutoscaler
-      name: riki
+      name: tuki
     patch: |-
       $patch: delete
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler
       metadata:
-        name: riki
+        name: tuki
 
   - target:
       kind: HorizontalPodAutoscaler
-      name: riki-ai-gateway
+      name: tuki-ai-gateway
     patch: |-
       $patch: delete
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler
       metadata:
-        name: riki-ai-gateway
+        name: tuki-ai-gateway
 
   - target:
       kind: PodDisruptionBudget
-      name: riki
+      name: tuki
     patch: |-
       $patch: delete
       apiVersion: policy/v1
       kind: PodDisruptionBudget
       metadata:
-        name: riki
+        name: tuki
 
   - target:
       kind: PodDisruptionBudget
-      name: riki-ai-gateway
+      name: tuki-ai-gateway
     patch: |-
       $patch: delete
       apiVersion: policy/v1
       kind: PodDisruptionBudget
       metadata:
-        name: riki-ai-gateway
+        name: tuki-ai-gateway
 
   - target:
       kind: NetworkPolicy
-      name: riki-web
+      name: tuki-web
     patch: |-
       $patch: delete
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
-        name: riki-web
+        name: tuki-web
 
   - target:
       kind: NetworkPolicy
-      name: riki-ai-gateway
+      name: tuki-ai-gateway
     patch: |-
       $patch: delete
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
-        name: riki-ai-gateway
+        name: tuki-ai-gateway
 
   # En local no hay Supabase JWKS: se confía en la red del clúster y la cuota
   # por IP. Nunca uses este modo en producción.

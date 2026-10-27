@@ -1,16 +1,16 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: riki-ai-gateway
+  name: tuki-ai-gateway
   labels:
-    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/name: tuki-ai-gateway
     app.kubernetes.io/component: ai-gateway
-    app.kubernetes.io/part-of: riki
+    app.kubernetes.io/part-of: tuki
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: riki-ai-gateway
+    name: tuki-ai-gateway
   minReplicas: 2
   maxReplicas: 10
   behavior:
