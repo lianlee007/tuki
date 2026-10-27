@@ -18,6 +18,7 @@ import { SeccionInfo } from '../componentes/panel/SeccionInfo';
 import { SeccionDiseno } from '../componentes/panel/SeccionDiseno';
 import { SeccionMenu } from '../componentes/panel/SeccionMenu';
 import { SeccionResenas } from '../componentes/panel/SeccionResenas';
+import { SeccionPedidos } from '../componentes/panel/SeccionPedidos';
 import { EditorPlatillo } from '../componentes/panel/EditorPlatillo';
 import { useDatosPanel } from '../hooks/useDatosPanel';
 import { apiRestaurante } from '../api/apiRestaurante';
@@ -81,7 +82,7 @@ export default function PanelControl() {
     }
   }, [user?.id, marcaClara, marcaOscura]);
 
-  const [tabActiva, setTabActiva] = useState<'info' | 'tema' | 'menu' | 'difusion' | 'resenas'>('info');
+  const [tabActiva, setTabActiva] = useState<'info' | 'tema' | 'menu' | 'difusion' | 'resenas' | 'pedidos'>('info');
   const [guardando, setGuardando] = useState(false);
   const [vistaPreviaAbierta, setVistaPreviaAbierta] = useState(false);
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
@@ -246,7 +247,7 @@ export default function PanelControl() {
             <div className="flex justify-between items-center h-full">
               <div className="flex items-center gap-3">
                 <button onClick={() => setMenuMovilAbierto(!menuMovilAbierto)} className="md:hidden p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"><Menu size={24} /></button>
-                <div><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : 'Difusión')}</h1></div>
+                <div><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="hidden items-center gap-2 rounded-full bg-af-accent/10 px-3 py-1.5 text-xs font-semibold text-af-accent-text md:flex" title="La IA puede redactar textos y completar platillos">
@@ -277,6 +278,7 @@ export default function PanelControl() {
             {tabActiva === 'tema' && tema && !editandoPlatillo && <SeccionDiseno tema={tema} aplicarTema={aplicarTema} guardando={guardando} />}
             {tabActiva === 'menu' && !editandoPlatillo && <SeccionMenu platillos={platillos} setEditandoPlatillo={setEditandoPlatillo} cambiarEstadoPlatillo={cambiarEstadoPlatillo} eliminarPlatillo={iniciarEliminacion} />}
             {tabActiva === 'resenas' && restaurante && !editandoPlatillo && <SeccionResenas restaurante={restaurante} platillos={platillos} mostrarMensaje={mostrarMensaje} />}
+            {tabActiva === 'pedidos' && restaurante && !editandoPlatillo && <SeccionPedidos restaurante={restaurante} mostrarMensaje={mostrarMensaje} />}
             {tabActiva === 'difusion' && restaurante && <SeccionDifusion restaurante={restaurante} mostrarMensaje={mostrarMensaje} />}
           </div>
         </div>
