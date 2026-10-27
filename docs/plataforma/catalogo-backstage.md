@@ -1,8 +1,8 @@
-# Catálogo de servicios y golden path de Riki
+# Catálogo de servicios y golden path de Tuki
 
 Documento de Platform Engineering (módulo 2). Describe el catálogo mínimo de
 Backstage, cómo registrarlo y qué camino debe seguir un servicio nuevo para
-reutilizar los controles de Riki.
+reutilizar los controles de Tuki.
 
 > **Alcance:** modelo de catálogo y golden path. No se instala Backstage en este
 > repositorio; el PDF admite esta alternativa cuando la infraestructura no
@@ -16,11 +16,11 @@ El archivo `catalog-info.yaml` de la raíz define:
 
 | Entidad | Kind | Nombre | Propósito |
 | --- | --- | --- | --- |
-| Equipo | `Group` | `riki-team` | Propietario de todos los recursos |
-| Dominio | `Domain` | `riki` | Agrupa el sistema de menús digitales |
-| Sistema | `System` | `riki` | Conjunto SPA + gateway + servicios gestionados |
-| Componente | `Component` | `riki-web` | SPA React/Vite servida por Nginx |
-| Componente | `Component` | `riki-ai-gateway` | Gateway FastAPI hacia Groq |
+| Equipo | `Group` | `tuki-team` | Propietario de todos los recursos |
+| Dominio | `Domain` | `tuki` | Agrupa el sistema de menús digitales |
+| Sistema | `System` | `tuki` | Conjunto SPA + gateway + servicios gestionados |
+| Componente | `Component` | `tuki-web` | SPA React/Vite servida por Nginx |
+| Componente | `Component` | `tuki-ai-gateway` | Gateway FastAPI hacia Groq |
 | Recurso | `Resource` | `supabase` | Postgres, Auth y RLS |
 | Recurso | `Resource` | `cloudinary` | Imágenes de platillos |
 | Recurso | `Resource` | `groq` | Inferencia de texto externa |
@@ -28,7 +28,7 @@ El archivo `catalog-info.yaml` de la raíz define:
 Relaciones:
 
 ```
-riki-web ──dependsOn──► riki-ai-gateway
+tuki-web ──dependsOn──► tuki-ai-gateway
    │                         │
    ├──► supabase ◄───────────┤
    ├──► cloudinary           └──► groq
@@ -37,11 +37,11 @@ riki-web ──dependsOn──► riki-ai-gateway
 Anotaciones relevantes:
 
 - `backstage.io/kubernetes-id`: nombre del Deployment/Service que el plugin de
-  Kubernetes debe correlacionar (`riki` y `riki-ai-gateway`). Los Deployments de
+  Kubernetes debe correlacionar (`tuki` y `tuki-ai-gateway`). Los Deployments de
   `deploy/k8s/base/` llevan la misma etiqueta en `metadata.labels` y en el
   `template`, que es lo que consulta el plugin.
-- `backstage.io/kubernetes-namespace`: `riki`.
-- `github.com/project-slug`: `Leonardo007x/LeeFood`, para el plugin de GitHub.
+- `backstage.io/kubernetes-namespace`: `tuki`.
+- `github.com/project-slug`: `lianlee007/tuki`, para el plugin de GitHub.
 
 No se usa `backstage.io/techdocs-ref` porque el repositorio no incluye
 `mkdocs.yml`. Añadirlo sin esa configuración produciría un TechDocs roto.
@@ -56,7 +56,7 @@ En una instancia de Backstage existente:
 2. Pegar la URL del archivo en la rama principal:
 
    ```
-   https://github.com/Leonardo007x/LeeFood/blob/main/catalog-info.yaml
+   https://github.com/lianlee007/tuki/blob/main/catalog-info.yaml
    ```
 
 3. Elegir el tipo `url` y guardar.
@@ -88,7 +88,7 @@ Resultado esperado: 8 entidades (`Group`, `Domain`, `System`, 3 `Resource` y 2
 
 El catálogo se valida al registrar la location. Los errores típicos son:
 
-- `owner` que no existe: debe ser `riki-team`.
+- `owner` que no existe: debe ser `tuki-team`.
 - `system` o `domain` inexistente.
 - `dependsOn` con un nombre mal escrito.
 - `metadata.name` con mayúsculas o guiones bajos.
@@ -97,11 +97,11 @@ El catálogo se valida al registrar la location. Los errores típicos son:
 
 ## 3. Convenciones de propiedad y ciclo de vida
 
-| Campo | Convención en Riki |
+| Campo | Convención en Tuki |
 | --- | --- |
-| `metadata.name` | Minúsculas, guiones, sin espacios (`riki-web`) |
-| `spec.owner` | `riki-team`; si el equipo crece, un grupo por dominio |
-| `spec.system` | `riki` para todo lo que compone el producto |
+| `metadata.name` | Minúsculas, guiones, sin espacios (`tuki-web`) |
+| `spec.owner` | `tuki-team`; si el equipo crece, un grupo por dominio |
+| `spec.system` | `tuki` para todo lo que compone el producto |
 | `spec.lifecycle` | `production`; usar `experimental` para prototipos |
 | `spec.type` | `website` para la SPA, `service` para el gateway |
 | `dependsOn` | Declarar solo dependencias reales de ejecución |
@@ -114,7 +114,7 @@ su utilidad operativa.
 
 ## 4. Golden path para un servicio nuevo
 
-El objetivo es que un servicio nuevo herede los controles de Riki sin copiar
+El objetivo es que un servicio nuevo herede los controles de Tuki sin copiar
 decisiones a mano. Ruta mínima:
 
 ### Paso 1 — Repositorio y decisiones

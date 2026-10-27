@@ -1,4 +1,4 @@
-# Registro de uso de IA en el desarrollo de Riki
+# Registro de uso de IA en el desarrollo de Tuki
 
 Plantilla y registro para el control de **software generado o asistido por IA**
 del módulo 3. No implementa IA local ni modelos en el clúster: solo documenta

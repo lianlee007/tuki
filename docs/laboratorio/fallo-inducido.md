@@ -15,7 +15,7 @@ Cada fallo tiene síntoma esperado, causa y comando de verificación.
 **Cómo se induce.** Compila la imagen sin `VITE_SUPABASE_URL`:
 
 ```bash
-docker build -t riki:fallo .
+docker build -t tuki:fallo .
 ```
 
 **Síntoma esperado.** El build falla en la etapa `build`, no en runtime:
@@ -78,7 +78,7 @@ curl -fsS http://localhost:8080/api/healthz
 **Cómo se induce.** Cambia el tag del overlay local por uno que no exista:
 
 ```bash
-kubectl -n riki set image deployment/riki riki=riki:no-existe
+kubectl -n tuki set image deployment/tuki tuki=tuki:no-existe
 ```
 
 **Síntoma esperado.** El pod queda en `ImagePullBackOff` y el rollout no avanza.
@@ -86,9 +86,9 @@ kubectl -n riki set image deployment/riki riki=riki:no-existe
 **Diagnóstico.**
 
 ```bash
-kubectl -n riki get pods
-kubectl -n riki describe pod -l app.kubernetes.io/name=riki | tail -20
-kubectl -n riki get events --sort-by=.lastTimestamp | tail -10
+kubectl -n tuki get pods
+kubectl -n tuki describe pod -l app.kubernetes.io/name=tuki | tail -20
+kubectl -n tuki get events --sort-by=.lastTimestamp | tail -10
 ```
 
 La cadena de lectura es: estado del pod → evento del kubelet → causa
@@ -98,15 +98,15 @@ drift: el Deployment deja de coincidir con Git y Argo lo marca `OutOfSync`.
 **Restauración.**
 
 ```bash
-kubectl -n riki rollout undo deployment/riki
-kubectl -n riki rollout status deployment/riki
+kubectl -n tuki rollout undo deployment/tuki
+kubectl -n tuki rollout status deployment/tuki
 ```
 
 ---
 
 ## Fallo 4 — Secreto del gateway sin crear
 
-**Cómo se induce.** Aplica el overlay sin crear `riki-ai-gateway`:
+**Cómo se induce.** Aplica el overlay sin crear `tuki-ai-gateway`:
 
 ```bash
 kubectl apply -k deploy/k8s/base
@@ -118,19 +118,19 @@ kubectl apply -k deploy/k8s/base
 **Diagnóstico.**
 
 ```bash
-kubectl -n riki describe pod -l app.kubernetes.io/name=riki-ai-gateway | grep -A3 Events
+kubectl -n tuki describe pod -l app.kubernetes.io/name=tuki-ai-gateway | grep -A3 Events
 ```
 
-El evento dice `secret "riki-ai-gateway" not found`. Este fallo es intencional en
+El evento dice `secret "tuki-ai-gateway" not found`. Este fallo es intencional en
 el diseño: el secreto no vive en Git y el manifiesto solo incluye un
 `.example.yaml`.
 
 **Restauración.**
 
 ```bash
-kubectl create secret generic riki-ai-gateway \
-  --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n riki
-kubectl -n riki rollout restart deployment/riki-ai-gateway
+kubectl create secret generic tuki-ai-gateway \
+  --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n tuki
+kubectl -n tuki rollout restart deployment/tuki-ai-gateway
 ```
 
 ---

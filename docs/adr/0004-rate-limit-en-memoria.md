@@ -43,5 +43,5 @@ Si el tráfico o el presupuesto lo exigen:
 4. Añadir una alerta de divergencia entre réplicas.
 
 Mientras tanto, el Ingress y `NetworkPolicy` limitan el abuso grueso, y el panel
-`Riki · SPA y AI Gateway` muestra `ai_gateway_rate_limited_total` para detectar
+`Tuki · SPA y AI Gateway` muestra `ai_gateway_rate_limited_total` para detectar
 cuotas mal dimensionadas.

@@ -32,10 +32,10 @@ detectar el mínimo declarado), PDB, NetworkPolicy y HPA creados.
 
 ```text
 NAME                              READY   STATUS    RESTARTS   AGE
-riki-8648c79d96-5wth2             2/2     Running   0          53s
-riki-8648c79d96-clrdc             2/2     Running   0          38s
-riki-ai-gateway-77fb969579-65ts7  1/1     Running   0          53s
-riki-ai-gateway-77fb969579-pt774  1/1     Running   0          38s
+tuki-8648c79d96-5wth2             2/2     Running   0          53s
+tuki-8648c79d96-clrdc             2/2     Running   0          38s
+tuki-ai-gateway-77fb969579-65ts7  1/1     Running   0          53s
+tuki-ai-gateway-77fb969579-pt774  1/1     Running   0          38s
 ```
 
 ## 3. HPA con métricas reales
@@ -44,8 +44,8 @@ Antes de instalar metrics-server el HPA mostraba `cpu: <unknown>`. Después:
 
 ```text
 NAME              REFERENCE                    TARGETS     MINPODS   MAXPODS   REPLICAS
-riki              Deployment/riki              cpu: 5%/70% 2         10        2
-riki-ai-gateway   Deployment/riki-ai-gateway   cpu: 6%/70% 2         10        2
+tuki              Deployment/tuki              cpu: 5%/70% 2         10        2
+tuki-ai-gateway   Deployment/tuki-ai-gateway   cpu: 6%/70% 2         10        2
 ```
 
 Esto demuestra el lazo completo: métricas del kubelet → metrics-server →
@@ -54,20 +54,20 @@ Esto demuestra el lazo completo: métricas del kubelet → metrics-server →
 ## 4. Ingress enrutando de verdad
 
 El Ingress de producción usa TLS con un certificado externo. El overlay
-`local-plataforma` lo sirve por HTTP en `riki.localhost`:
+`local-plataforma` lo sirve por HTTP en `tuki.localhost`:
 
 ```text
 NAME   CLASS   HOSTS            ADDRESS      PORTS   AGE
-riki   nginx   riki.localhost   172.18.0.5   80      53s
+tuki   nginx   tuki.localhost   172.18.0.5   80      53s
 ```
 
 Comprobación a través del controlador (`port-forward` al servicio de
-ingress-nginx, cabecera `Host: riki.localhost`):
+ingress-nginx, cabecera `Host: tuki.localhost`):
 
 ```text
 GET /healthz      -> 200
 GET /api/healthz  -> 200
-{"status":"ok","service":"riki-ai-gateway","version":"1.0.0","environment":"development"}
+{"status":"ok","service":"tuki-ai-gateway","version":"1.0.0","environment":"development"}
 ```
 
 El segundo código confirma que la ruta `/api` llega al AI Gateway y no al
@@ -77,8 +77,8 @@ documentado en `deploy/README.md`.
 ## 5. Endurecimiento observado en el pod, no solo declarado
 
 ```text
-riki-8648c79d96-5wth2             uid=101   rootfs=True  allowPrivilegeEscalation=False
-riki-ai-gateway-77fb969579-65ts7  uid=10001 rootfs=True  allowPrivilegeEscalation=False
+tuki-8648c79d96-5wth2             uid=101   rootfs=True  allowPrivilegeEscalation=False
+tuki-ai-gateway-77fb969579-65ts7  uid=10001 rootfs=True  allowPrivilegeEscalation=False
 ```
 
 Los procesos no corren como root (UID 101 para Nginx sin privilegios, 10001 para
@@ -90,12 +90,12 @@ el API server.
 
 ```text
 NAME              MIN AVAILABLE   ALLOWED DISRUPTIONS
-riki              1               1
-riki-ai-gateway   1               1
+tuki              1               1
+tuki-ai-gateway   1               1
 
 NAME              POD-SELECTOR
-riki-ai-gateway   app.kubernetes.io/name=riki-ai-gateway
-riki-web          app.kubernetes.io/name=riki
+tuki-ai-gateway   app.kubernetes.io/name=tuki-ai-gateway
+tuki-web          app.kubernetes.io/name=tuki
 ```
 
 > **Límite honesto:** `kindnet` (el CNI de Docker Desktop) no aplica
@@ -119,14 +119,14 @@ sync=Synced  health=Healthy  revision=e4629682d0ece385c7b99229c581dcbbdfdb6f05
 **Deriva corregida.** Se cambió la imagen a mano:
 
 ```bash
-kubectl -n riki set image deployment/riki web=riki:local-0.2.0-deriva
+kubectl -n tuki set image deployment/tuki web=tuki:local-0.2.0-deriva
 ```
 
 En menos de 30 segundos ArgoCD volvió al valor declarado en Git:
 
 ```text
 SYNC:  Synced
-IMAGE: riki:local-0.2.0
+IMAGE: tuki:local-0.2.0
 ```
 
 Esto es lo que el módulo 2 pide demostrar: el clúster no se arregla editando
