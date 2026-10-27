@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 // @ts-ignore
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Menu, X } from 'lucide-react';
-import { BotonCTA, BotonTexto, Contenedor, Logo, SEO, Seccion, ThemeToggle } from '../componentes/ui';
+import { BotonCTA, BotonTexto, Contenedor, MarcaTuki, SEO, Seccion, ThemeToggle } from '../componentes/ui';
 import { SeccionHero } from '../componentes/landing/SeccionHero';
 import { SeccionBeneficios } from '../componentes/landing/SeccionBeneficios';
 import { SeccionDemo } from '../componentes/landing/SeccionDemo';
@@ -63,10 +63,7 @@ export default function PaginaParaRestaurantes() {
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="af-pulsar flex shrink-0 items-center gap-2.5 sm:gap-3"
             >
-              <span className="rounded-xl bg-af-accent p-1.5 text-white sm:p-2">
-                <Logo size={22} />
-              </span>
-              <span className="text-lg font-bold tracking-tight text-af-ink sm:text-xl">Tuki</span>
+              <MarcaTuki tamano={22} />
             </button>
 
             <div className="hidden items-center gap-8 text-sm font-medium text-af-ink-secondary lg:flex">
@@ -171,17 +168,11 @@ export default function PaginaParaRestaurantes() {
       <footer className="bg-af-ground pb-12 pt-16">
         <Contenedor maxAncho="grande">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="rounded-xl bg-af-accent p-2 text-white">
-                <Logo size={20} />
-              </span>
-              <span>
-                <span className="block font-bold tracking-tight text-af-ink">Tuki</span>
-                <span className="block text-sm text-af-ink-secondary">
-                  Webs para restaurantes, hechas en Colombia.
-                </span>
-              </span>
-            </div>
+            <MarcaTuki
+              tamano={20}
+              conDescriptor
+              descriptor="Webs para restaurantes, hechas en Colombia."
+            />
 
             <nav className="flex flex-wrap gap-x-7 gap-y-3 text-sm font-medium text-af-ink-secondary">
               {ENLACES.map((enlace) => (

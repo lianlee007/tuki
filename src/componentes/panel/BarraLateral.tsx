@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
-import { ThemeToggle, Logo } from '../ui';
+import { ThemeToggle, Logo, MarcaTuki } from '../ui';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { Restaurante } from '../../tipos';
 import { generarSlugUnico } from '../../lib/utils';
@@ -89,7 +89,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
             title="Desplegar el menú"
             aria-label="Desplegar el menú"
             aria-expanded={false}
-            className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-af-accent text-white outline-none transition-opacity hover:opacity-90 md:flex"
+            className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-af-accent-solid text-white outline-none transition-opacity hover:opacity-90 md:flex"
           >
             <Logo size={22} />
             <span className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-af-ground text-af-ink ring-1 ring-af/25">
@@ -98,11 +98,8 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
           </button>
         )}
 
-        <div className={`flex min-w-0 items-center gap-3 ${etiqueta}`}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-af-accent text-white">
-            <Logo size={22} />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-af-ink">Tuki</span>
+        <div className={`flex min-w-0 items-center ${etiqueta}`}>
+          <MarcaTuki tamano={22} />
         </div>
 
         {/* Desplegada: botón con nombre para plegar (escritorio). En móvil, cerrar. */}

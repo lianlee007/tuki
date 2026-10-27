@@ -60,7 +60,7 @@ export const MarcoLegal: React.FC<{
       <Contenedor maxAncho="grande">
         <div className="flex h-16 items-center justify-between sm:h-20 md:h-24">
           <Link to="/para-restaurantes" className="flex items-center gap-3" aria-label={`${EMPRESA.marca}, ir al inicio`}>
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-af-accent text-white">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-af-accent-solid text-white">
               <Logo size={20} />
             </span>
             <span className="text-xl font-bold tracking-tight text-af-ink">{EMPRESA.marca}</span>
