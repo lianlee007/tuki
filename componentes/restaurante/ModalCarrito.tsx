@@ -38,7 +38,7 @@ interface DireccionEstructurada {
 const VIAS = ['Calle', 'Carrera', 'Avenida', 'Diagonal', 'Transversal', 'Circular'];
 
 /** Claves del comensal en `localStorage`: contacto y direcciones guardadas. */
-const PREFIJO_CLAVE = 'riki';
+const PREFIJO_CLAVE = 'tuki';
 /** Prefijo anterior al renombrado; solo se usa para arrastrar lo ya guardado. */
 const PREFIJO_CLAVE_ANTERIOR = 'smartfood';
 
@@ -80,7 +80,7 @@ export const ModalCarrito: React.FC<Props> = ({
     return () => window.removeEventListener('keydown', alPulsar);
   }, [onClose]);
 
-  // Al renombrar la app, las claves pasaron de `smartfood_*` a `riki_*`. Se copia
+  // Al renombrar la app, las claves pasaron de `smartfood_*` a `tuki_*`. Se copia
   // lo que el comensal ya tenía guardado para que no pierda sus datos.
   useEffect(() => {
     (['user_basic', 'addresses'] as const).forEach((sufijo) => {

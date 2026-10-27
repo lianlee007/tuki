@@ -8,7 +8,7 @@ interface LogoProps {
 }
 
 /**
- * MARCA RIKI — la «R» del plato.
+ * MARCA TUKI — la «R» del plato.
  *
  * Dos piezas y nada más. Una «R» geométrica de trazo redondeado cuyo cuenco es
  * un semicírculo: media campana de restaurante, medio plato. Y una chispa de

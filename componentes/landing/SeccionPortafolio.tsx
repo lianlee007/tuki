@@ -78,7 +78,7 @@ export const SeccionPortafolio: React.FC = () => {
       <Contenedor maxAncho="grande">
         <Revelar>
           <h2 className="mx-auto max-w-2xl text-center font-title text-2xl font-bold tracking-tight text-af-ink sm:text-3xl">
-            Restaurantes que ya reciben pedidos con Riki
+            Restaurantes que ya reciben pedidos con Tuki
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-base text-af-ink-secondary">
             Menús publicados y funcionando hoy mismo.

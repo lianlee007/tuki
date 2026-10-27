@@ -129,11 +129,11 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
     <header className="nav-af sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl flex-col gap-2.5 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
         <div className="flex items-center gap-3">
-          <Link to="/" className="af-pulsar flex shrink-0 items-center gap-2" aria-label="Riki, descubrir platos">
+          <Link to="/" className="af-pulsar flex shrink-0 items-center gap-2" aria-label="Tuki, descubrir platos">
             <span className="rounded-xl bg-af-accent p-1.5 text-white">
               <Logo size={20} />
             </span>
-            <span className="text-lg font-bold tracking-tight text-af-ink">Riki</span>
+            <span className="text-lg font-bold tracking-tight text-af-ink">Tuki</span>
           </Link>
 
           <div className="ml-auto sm:hidden">{acciones(true)}</div>

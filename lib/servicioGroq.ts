@@ -1,5 +1,5 @@
 /**
- * Descripción: Servicio de IA que habla con el AI Gateway de Riki.
+ * Descripción: Servicio de IA que habla con el AI Gateway de Tuki.
  *
  * La clave de Groq ya no viaja en el bundle: el gateway la guarda en el
  * servidor, autentica con Supabase cuando hay sesión, aplica rate limit y
