@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from app.rate_limit import RateLimiter, RateRule
+from app.adaptadores.memoria import RateLimiter
+from app.dominio.modelos import RateRule
 
 
 def test_permite_el_burst_y_luego_bloquea():

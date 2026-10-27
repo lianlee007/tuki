@@ -24,9 +24,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-from app.auth import AuthError, Identity, resolve_identity
+from app.adaptadores.groq import GroqClient
+from app.adaptadores.memoria import RateLimiter
+from app.adaptadores.supabase import AuthError, resolve_identity
 from app.config import Settings, get_settings
-from app.groq import GroqClient, GroqError
+from app.dominio.errores import ErrorIA
+from app.dominio.modelos import Identity, RateDecision
 from app.observability import (
     AUTH_FAILURES,
     HTTP_DURATION,
@@ -41,8 +44,8 @@ from app.observability import (
     setup_logging,
     setup_telemetry,
 )
-from app.rate_limit import RateDecision, RateLimiter
 from app.schemas import ChatRequest, ChatResponse, HealthResponse, Usage
+from app.servicios.chat import ServicioChat
 
 logger = logging.getLogger(__name__)
 
@@ -195,8 +198,8 @@ def _register_middleware(app: FastAPI) -> None:
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
-    @app.exception_handler(GroqError)
-    async def groq_error_handler(request: Request, exc: GroqError) -> JSONResponse:
+    @app.exception_handler(ErrorIA)
+    async def ai_error_handler(request: Request, exc: ErrorIA) -> JSONResponse:
         headers = None
         if exc.retry_after:
             headers = {"Retry-After": str(exc.retry_after)}
@@ -306,24 +309,11 @@ def _register_routes(app: FastAPI) -> None:
     async def chat(
         payload: ChatRequest,
         request: Request,
-        settings: Annotated[Settings, Depends(_settings_from)],
         identity: Annotated[Identity, Depends(current_identity)],
         _: Annotated[RateDecision, Depends(enforce_rate_limit)],
     ) -> ChatResponse:
-        if len(payload.prompt) > settings.request_max_chars:
-            raise HTTPException(
-                status_code=413,
-                detail={
-                    "code": "prompt_too_long",
-                    "message": (
-                        "El texto supera el máximo de "
-                        f"{settings.request_max_chars} caracteres."
-                    ),
-                },
-            )
-
-        groq: GroqClient = request.app.state.groq
-        result = await groq.generate(
+        servicio: ServicioChat = request.app.state.chat
+        result = await servicio.generar(
             prompt=payload.prompt,
             system=payload.system or SISTEMA_POR_DEFECTO,
             temperature=payload.temperature,
@@ -406,7 +396,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             headers={"User-Agent": f"{settings.app_name}/{settings.version}"},
         )
         application.state.http = client
-        application.state.groq = GroqClient(settings, client)
+        application.state.chat = ServicioChat(
+            GroqClient(settings, client),
+            max_chars=settings.request_max_chars,
+        )
         if telemetry_ready:
             instrument_httpx(client)
 
