@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { MessageSquare, PenLine, RefreshCw } from 'lucide-react';
+import { Image as ImageIcon, MessageSquare, PenLine, RefreshCw, Store, X } from 'lucide-react';
 import { Avatar } from '../sistema-diseno/Avatar';
 import { Estrellas } from '../sistema-diseno/Estrellas';
+import { ImagenInteligente } from '../sistema-diseno/ImagenInteligente';
 import {
   fechaResena,
   nombreCliente,
+  tieneRespuesta,
   type Resena,
   type ResumenResenas,
 } from '../../lib/resenas';
@@ -51,6 +53,21 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
   estilos,
 }) => {
   const [verTodas, setVerTodas] = useState(false);
+  const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null);
+
+  /**
+   * El visor de fotos se cierra con Escape: en escritorio el usuario no
+   * espera tener que apuntar al aspa después de abrir una imagen a pantalla
+   * completa.
+   */
+  React.useEffect(() => {
+    if (!fotoAmpliada) return;
+    const cerrar = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') setFotoAmpliada(null);
+    };
+    window.addEventListener('keydown', cerrar);
+    return () => window.removeEventListener('keydown', cerrar);
+  }, [fotoAmpliada]);
 
   const nombresPlatos = useMemo(() => {
     const mapa = new Map<string, string>();
@@ -106,6 +123,53 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
             </button>
           )}
         </div>
+
+        {hayResumen && !cargando && (
+          <div className="mt-7 grid gap-5 rounded-[22px] bg-af-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+            <div className="flex items-center gap-4 sm:border-r sm:border-af/20 sm:pr-7">
+              <span className="text-4xl font-bold tabular-nums leading-none text-af-ink">
+                {resumen.promedio.toFixed(1)}
+              </span>
+              <div>
+                <Estrellas
+                  valor={resumen.promedio}
+                  tamano={15}
+                  className="text-af-accent-text"
+                />
+                <p className="mt-1 text-xs text-af-ink-secondary">
+                  {resumen.cantidad === 1 ? '1 reseña' : `${resumen.cantidad} reseñas`}
+                </p>
+              </div>
+            </div>
+
+            <ul className="space-y-1.5" aria-label="Distribución de las notas">
+              {[5, 4, 3, 2, 1].map((nota) => {
+                const cuantas = resumen.distribucion[nota - 1] ?? 0;
+                const porcentaje =
+                  resumen.cantidad > 0 ? Math.round((cuantas / resumen.cantidad) * 100) : 0;
+                return (
+                  <li key={nota} className="flex items-center gap-2.5 text-xs">
+                    <span className="w-3 text-right font-semibold tabular-nums text-af-ink-secondary">
+                      {nota}
+                    </span>
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-af-ground">
+                      <span
+                        className="block h-full rounded-full transition-[width] duration-500"
+                        style={{
+                          width: `${porcentaje}%`,
+                          backgroundColor: estilos.primary,
+                        }}
+                      />
+                    </span>
+                    <span className="w-8 tabular-nums text-af-ink-secondary">
+                      {cuantas}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         {formularioAbierto && (
           <div className="mt-7">
@@ -206,10 +270,41 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
                       {resena.comentario?.trim() || 'Calificó sin dejar comentario.'}
                     </p>
 
+                    {resena.foto_url && (
+                      <button
+                        type="button"
+                        onClick={() => setFotoAmpliada(resena.foto_url ?? null)}
+                        className="mt-4 block w-full overflow-hidden rounded-2xl border border-af/20 af-pulsar"
+                        aria-label={`Ampliar la foto de la reseña de ${autor}`}
+                      >
+                        <ImagenInteligente
+                          src={resena.foto_url}
+                          alt={`Foto de la reseña de ${autor}`}
+                          className="aspect-[4/3] w-full"
+                        />
+                      </button>
+                    )}
+
+                    {tieneRespuesta(resena) && (
+                      <div className="mt-4 rounded-xl bg-af-ground px-3.5 py-3">
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-af-ink-secondary">
+                          <Store size={13} /> Respuesta del restaurante
+                        </p>
+                        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-af-ink">
+                          {resena.respuesta_dueno}
+                        </p>
+                      </div>
+                    )}
+
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-af-ground px-2.5 py-1 text-[11px] font-semibold text-af-ink-secondary">
                         {plato ? `Sobre ${plato}` : 'Sobre el restaurante'}
                       </span>
+                      {resena.foto_url && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-af-ground px-2.5 py-1 text-[11px] font-semibold text-af-ink-secondary">
+                          <ImageIcon size={12} /> Con foto
+                        </span>
+                      )}
                     </div>
                   </li>
                 );
@@ -230,6 +325,31 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
           </>
         )}
       </div>
+
+      {fotoAmpliada && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Foto de la reseña"
+          onClick={() => setFotoAmpliada(null)}
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+        >
+          <img
+            src={fotoAmpliada}
+            alt="Foto de la reseña ampliada"
+            onClick={(evento) => evento.stopPropagation()}
+            className="max-h-[86vh] max-w-full rounded-2xl object-contain shadow-2xl"
+          />
+          <button
+            type="button"
+            onClick={() => setFotoAmpliada(null)}
+            aria-label="Cerrar la foto"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25 af-pulsar"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
     </section>
   );
 };

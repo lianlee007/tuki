@@ -16,6 +16,10 @@ export interface Resena {
   platillo_id: string | null;
   aprobado: boolean | null;
   visible: boolean | null;
+  /** Foto de la reseña ya optimizada por Cloudinary. */
+  foto_url?: string | null;
+  /** Respuesta pública del dueño; `null` mientras no conteste. */
+  respuesta_dueno?: string | null;
 }
 
 export interface ResumenResenas {
@@ -30,6 +34,7 @@ const NOTA_MINIMA = 1;
 const NOTA_MAXIMA = 5;
 export const MAX_COMENTARIO = 600;
 export const MAX_NOMBRE = 60;
+export const MAX_RESPUESTA = 400;
 
 /**
  * Una reseña es pública solo si el dueño la aprobó explícitamente y nadie la
@@ -130,3 +135,21 @@ export const validarResena = (entrada: {
 
   return null;
 };
+
+/**
+ * La respuesta del dueño es pública y va pegada a la reseña. Se valida como
+ * texto: se recorta y se exige algo antes de guardar, porque un hueco vacío
+ * dejaría un bloque «Respuesta del restaurante» sin nada dentro.
+ */
+export const validarRespuesta = (texto: string): string | null => {
+  const limpio = texto.trim();
+  if (limpio.length === 0) return 'Escribe una respuesta antes de guardar.';
+  if (limpio.length > MAX_RESPUESTA) {
+    return `La respuesta no puede pasar de ${MAX_RESPUESTA} caracteres.`;
+  }
+  return null;
+};
+
+/** `true` cuando la reseña ya trae la contestación del restaurante. */
+export const tieneRespuesta = (resena: Resena): boolean =>
+  Boolean(resena.respuesta_dueno?.trim());
