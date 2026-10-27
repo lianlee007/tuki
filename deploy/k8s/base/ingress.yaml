@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: riki
+  labels:
+    app.kubernetes.io/name: riki
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: riki
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "64k"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - riki.example.com
+      secretName: riki-tls
+  rules:
+    - host: riki.example.com
+      http:
+        paths:
+          # El AI Gateway conserva el prefijo /api; Nginx e Ingress solo
+          # enrutan, no reescriben la ruta.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-gateway
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: riki
+                port:
+                  name: http

@@ -1,0 +1,165 @@
+# =============================================================================
+# Catálogo mínimo de Backstage para Riki.
+#
+# Este archivo se puede registrar tal cual en un Backstage existente:
+#   Catalog → Locations → Add location → URL del archivo en el repositorio.
+#
+# No requiere que Backstage esté instalado para ser útil: documenta el modelo
+# de dominio, sistema, componentes, recursos, dependencias y propietario.
+#
+# Anotaciones usadas:
+#   - backstage.io/kubernetes-id: nombre del Deployment/Service en el clúster.
+#   - backstage.io/kubernetes-namespace: namespace de Riki.
+#   - github.com/project-slug: repositorio para el plugin de GitHub.
+# =============================================================================
+
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: riki-team
+  description: Equipo responsable del producto Riki, su plataforma y su operación.
+spec:
+  type: team
+  profile:
+    displayName: Equipo Riki
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: riki
+  description: Dominio de menús digitales y presencia web para restaurantes.
+spec:
+  owner: riki-team
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: riki
+  description: "Sistema completo de Riki: SPA pública, panel de restaurante, API gestionada y AI Gateway."
+  links:
+    - url: https://github.com/Leonardo007x/LeeFood
+      title: Repositorio
+      icon: github
+    - url: https://github.com/Leonardo007x/LeeFood/blob/main/deploy/README.md
+      title: Guía de despliegue
+      icon: docs
+spec:
+  owner: riki-team
+  domain: riki
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: supabase
+  description: Postgres, autenticación, RLS y JWKS del proyecto. Servicio gestionado.
+  links:
+    - url: https://supabase.com
+      title: Supabase
+      icon: cloud
+spec:
+  type: database
+  owner: riki-team
+  system: riki
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: cloudinary
+  description: Almacenamiento y transformación de imágenes de platillos. Servicio gestionado.
+  links:
+    - url: https://cloudinary.com
+      title: Cloudinary
+      icon: cloud
+spec:
+  type: object-storage
+  owner: riki-team
+  system: riki
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: groq
+  description: Proveedor externo de inferencia de texto usado por el AI Gateway.
+  links:
+    - url: https://groq.com
+      title: Groq
+      icon: cloud
+spec:
+  type: external-api
+  owner: riki-team
+  system: riki
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: riki-web
+  description: SPA React/Vite servida por Nginx; incluye la landing, el panel del restaurante y las vistas públicas.
+  annotations:
+    backstage.io/kubernetes-id: riki
+    backstage.io/kubernetes-namespace: riki
+    github.com/project-slug: Leonardo007x/LeeFood
+  tags:
+    - react
+    - vite
+    - nginx
+    - spa
+  links:
+    - url: https://github.com/Leonardo007x/LeeFood
+      title: Código fuente
+      icon: github
+    - url: https://github.com/Leonardo007x/LeeFood/blob/main/deploy/README.md
+      title: Despliegue
+      icon: docs
+    - url: https://github.com/Leonardo007x/LeeFood/blob/main/docs/runbook.md
+      title: Runbook
+      icon: docs
+spec:
+  type: website
+  lifecycle: production
+  owner: riki-team
+  system: riki
+  dependsOn:
+    - resource:supabase
+    - resource:cloudinary
+    - component:riki-ai-gateway
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: riki-ai-gateway
+  description: Gateway FastAPI que valida JWT de Supabase, aplica cuotas y llama a Groq sin exponer la clave.
+  annotations:
+    backstage.io/kubernetes-id: riki-ai-gateway
+    backstage.io/kubernetes-namespace: riki
+    github.com/project-slug: Leonardo007x/LeeFood
+  tags:
+    - fastapi
+    - python
+    - ai-gateway
+    - security
+  links:
+    - url: https://github.com/Leonardo007x/LeeFood/tree/main/services/ai-gateway
+      title: Código fuente
+      icon: github
+    - url: https://github.com/Leonardo007x/LeeFood/blob/main/docs/adr/0001-ai-gateway.md
+      title: ADR del gateway
+      icon: docs
+    - url: https://github.com/Leonardo007x/LeeFood/blob/main/docs/security/modelo-de-amenazas.md
+      title: Modelo de amenazas
+      icon: docs
+  dependsOn:
+    - resource:supabase
+    - resource:groq
+spec:
+  type: service
+  lifecycle: production
+  owner: riki-team
+  system: riki

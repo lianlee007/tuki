@@ -1,0 +1,72 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Overlay de producción. Antes de aplicarlo:
+#   1. Reemplaza `ghcr.io/leonardo007x/...` por tus imágenes reales.
+#   2. Define el tag que quieres desplegar.
+#   3. Cambia `riki.app` por tu dominio en el patch del Ingress.
+#   4. Ajusta el ClusterIssuer de cert-manager si usas otro nombre.
+#   5. Reemplaza `SUPABASE_URL` por la URL real del proyecto.
+#   6. Crea el secreto `riki-ai-gateway` (ver deploy/k8s/base/ai-gateway-secret.example.yaml).
+namespace: riki
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/leonardo007x/leefood
+    newName: ghcr.io/leonardo007x/leefood
+    newTag: "0.1.0"
+  - name: ghcr.io/leonardo007x/riki-ai-gateway
+    newName: ghcr.io/leonardo007x/riki-ai-gateway
+    newTag: "0.1.0"
+
+patches:
+  - target:
+      kind: Ingress
+      name: riki
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          nginx.ingress.kubernetes.io/proxy-body-size: "64k"
+          nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+          nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+          nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+      - op: replace
+        path: /spec/rules/0/host
+        value: riki.app
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: riki.app
+
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: riki
+    patch: |-
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: riki-ai-gateway
+    patch: |-
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+
+  - target:
+      kind: ConfigMap
+      name: ai-gateway-config
+    patch: |-
+      - op: replace
+        path: /data/AI_ENVIRONMENT
+        value: production
+      - op: replace
+        path: /data/AI_AUTH_MODE
+        value: supabase
+      - op: replace
+        path: /data/SUPABASE_URL
+        value: https://TU_PROYECTO.supabase.co

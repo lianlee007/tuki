@@ -1,0 +1,32 @@
+# =============================================================================
+# Clúster local de Riki con kind.
+#
+# Uso:
+#   kind create cluster --config deploy/kind/cluster.yaml
+#   kind load docker-image riki:local-0.2.0 --name riki
+#   kind load docker-image riki-ai-gateway:local-0.2.0 --name riki
+#   kubectl apply -k deploy/k8s/overlays/local
+#
+# Tres nodos permiten observar topologySpreadConstraints, PDB y anti-affinity.
+# Si el equipo tiene poca memoria, deja solo el control-plane y un worker.
+#
+# Este clúster no publica los puertos 80/443 en el host. El acceso se hace con
+# `kubectl port-forward`, igual que en el overlay local. Para probar Ingress
+# necesitas añadir extraPortMappings y instalar ingress-nginx; ver el README.
+# =============================================================================
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: riki
+
+nodes:
+  - role: control-plane
+    # Etiqueta útil si más adelante instalas ingress-nginx en kind.
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+
+  - role: worker
+  - role: worker

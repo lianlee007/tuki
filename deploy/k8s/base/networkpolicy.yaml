@@ -1,0 +1,121 @@
+# =============================================================================
+# NetworkPolicies de Riki.
+#
+# - La SPA solo acepta tráfico desde ingress-nginx (8080) y desde el namespace
+#   de monitorización para el exporter (9113).
+# - La SPA solo puede salir hacia el AI Gateway (8000) y DNS.
+# - El gateway acepta tráfico de ingress-nginx, de la SPA y de monitorización;
+#   sale a Internet solo por 443 (Groq y JWKS de Supabase) y DNS.
+#
+# Nota: algunos CNI aplican la política también a las sondas del kubelet. Si
+# los pods fallan probes, añade una regla desde el CIDR de los nodos.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: riki-web
+  labels:
+    app.kubernetes.io/name: riki
+    app.kubernetes.io/component: network
+    app.kubernetes.io/part-of: riki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: riki
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9113
+
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: riki-ai-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: riki-ai-gateway
+  labels:
+    app.kubernetes.io/name: riki-ai-gateway
+    app.kubernetes.io/component: network
+    app.kubernetes.io/part-of: riki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: riki-ai-gateway
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: riki
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Groq (api.groq.com) y JWKS de Supabase. No se permite tráfico lateral a
+    # otros puertos; el gateway no necesita base de datos ni colas.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

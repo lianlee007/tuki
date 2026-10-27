@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: riki-web
+  labels:
+    app.kubernetes.io/name: riki
+    app.kubernetes.io/part-of: riki
+    # Ajusta esta etiqueta al selector de tu Prometheus Operator.
+    # kube-prometheus-stack suele usar `release: kube-prometheus-stack`.
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - riki
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: riki
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
