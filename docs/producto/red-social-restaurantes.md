@@ -64,7 +64,7 @@ buscar → confiar → guardar → pedir → contar
 | B2 | **Guardados y colecciones** | «Quiero probar», «Favoritos», «Para una cita». El corazón va sobre la foto del plato y en la cabecera del restaurante; la colección se elige en una hoja. | `TarjetaPlato`, `TarjetaRestaurante`, `ModalDetallePlatillo` y nueva ruta `/guardados`. | `guardados` (`usuario_id`, `platillo_id` o `restaurante_id`, `coleccion_id`). |
 | B3 | **Seguir restaurantes y personas** | El botón **Seguir** en la ficha y en el perfil; una pestaña **Siguiendo** en Descubrir filtra el feed. El contador de seguidores aparece solo en restaurantes. | Cabecera social (A3), perfil (B1) y `PaginaDescubrir` (`?vista=siguiendo`). | `seguimientos` (`seguidor_id`, `seguido_id`, `tipo`). |
 | B4 | **Reacciones de dominio** | En vez de un «me gusta» genérico: **Me antoja** y **Ya lo probé**. Se muestran en el detalle del plato y en la reseña. | `ModalDetallePlatillo`, `FormularioResena`. | `reacciones` (`usuario_id`, `platillo_id`, `tipo`). |
-| B5 | **Historial de pedidos del comensal** | «Pediste esto» en la ficha del restaurante y en el perfil. Convierte un pedido por WhatsApp en una relación que se puede repetir. | `/perfil/pedidos`; bloque «Tus pedidos» en la ficha. | `pedidos` (nueva; hoy el pedido vive en el mensaje de WhatsApp). |
+| B5 | **Historial de pedidos del comensal** | «Pediste esto» en la ficha del restaurante y en **Mi cuenta**. Convierte un pedido por WhatsApp en una relación que se puede repetir. | `/mi-cuenta` (pestaña **Mis pedidos**) y bandeja **Pedidos** del panel. | `pedidos` + `usuario_id` (columna nueva). |
 
 ### Capa C — Descubrimiento (P2)
 
@@ -110,7 +110,7 @@ No se aplica en esta entrega; queda para la migración de la fase A/B.
 | `seguimientos` | `seguidor_id`, `seguido_id`, `tipo`, `created_at` | El seguidor crea y borra; el conteo es público. |
 | `reacciones` | `usuario_id`, `platillo_id`, `tipo`, `created_at` | Única por usuario/plato/tipo; conteo público. |
 | `valoraciones` | + `usuario_id`, `foto_url`, `respuesta_dueno` | Insertar la propia; leer las aprobadas o las propias; el dueño responde y modera. |
-| `pedidos` | `usuario_id`, `restaurante_id`, `total`, `estado`, `created_at` | Solo el comensal y el restaurante. |
+| `pedidos` | `usuario_id`, `restaurante_id`, `total`, `estado`, `created_at` | **Aplicado:** el comensal inserta y lee los suyos; el restaurante lee los de su local y mueve el estado. |
 
 Reglas transversales: RLS activo en todas, `security definer` solo en las
 funciones de conteo, y ninguna política que permita leer correos o teléfonos
@@ -191,3 +191,44 @@ Sigue las reglas de `docs/estructura.md`:
 - Editar la propia reseña (el índice único ya bloquea duplicados y hoy se
   muestra un aviso).
 - Notificaciones de «reseña aprobada» y «nueva reseña» (fase C).
+
+## 10. Cuenta del comensal y pedidos (2026-10-27)
+
+**Implementado**
+
+- Ruta `/mi-cuenta`, protegida para cualquier cuenta con sesión. Cabecera de
+  perfil con nombre, correo, rol y fecha de alta; aviso de qué se publica y qué
+  no.
+- Pestaña **Mis reseñas**: estado real (pendiente o publicada), foto, respuesta
+  del restaurante, enlace a la ficha y borrado propio con confirmación en dos
+  pasos.
+- Pestaña **Mis pedidos**: pedidos en curso e historial, con código corto,
+  estado, detalle, total y enlace al menú del restaurante.
+- Menú de cuenta en `BarraDescubrir` (avatar → Mi cuenta, Mi panel, Cerrar
+  sesión) y avatar de acceso a la cuenta en la barra de la ficha pública.
+- La ficha pública añade una píldora **Reseñas** a la barra de categorías, que
+  ahora se muestra aunque el local no tenga platos publicados.
+- Al enviar un pedido por WhatsApp se guarda una copia en `pedidos` cuando hay
+  sesión. Si el guardado falla, el pedido sigue su curso y no se bloquea.
+- Pestaña **Pedidos** en el panel: por confirmar, en curso, cerrados y todos;
+  ventas de hoy; detalle del pedido, teléfono con enlace a WhatsApp y avance de
+  estado (confirmar → en camino → entregado) o cancelación.
+
+**Base de datos**
+
+- Migración `cuenta_y_pedidos` aplicada el 2026-10-27 con el MCP:
+  `pedidos.usuario_id` con `default auth.uid()`, índices por restaurante y por
+  usuario, restricción de estados y tres políticas RLS (alta del comensal,
+  lectura del comensal o del dueño, edición solo del dueño). La política
+  `valoraciones_borrado_propio` deja al autor borrar su propia reseña.
+- Verificado en una transacción con `set local role` y rollback: el comensal
+  ve su pedido, otro comensal no, el dueño lo ve y lo actualiza, y el comensal
+  no puede editar. También se comprobó que el autor borra su reseña y que otro
+  usuario no puede borrarla. La tabla quedó sin filas de prueba.
+- El correo y el teléfono de `pedidos` no se pueden leer con la clave anónima.
+
+**Pendiente**
+
+- Aviso al comensal cuando el restaurante cambia el estado (fase C,
+  notificaciones).
+- «Repetir pedido» con el mismo carrito.

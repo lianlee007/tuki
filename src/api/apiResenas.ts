@@ -4,6 +4,16 @@ import type { Resena } from '../lib/resenas';
 const CAMPOS =
   'id, calificacion, comentario, created_at, nombre_cliente, platillo_id, aprobado, visible, foto_url, respuesta_dueno';
 
+/** Reseña con el restaurante al que pertenece, tal como la usa «Mi cuenta». */
+export type ResenaConRestaurante = Resena & {
+  restaurante: {
+    id: string;
+    nombre: string;
+    imagen_logo_url: string | null;
+    ciudad: string | null;
+  } | null;
+};
+
 /**
  * Reseñas de un restaurante.
  *
@@ -48,14 +58,7 @@ export const apiResenas = {
         calificacion: Number(fila.calificacion),
         restaurante: fila.restaurantes ?? null,
         restaurantes: undefined,
-      })) as (Resena & {
-        restaurante: {
-          id: string;
-          nombre: string;
-          imagen_logo_url: string | null;
-          ciudad: string | null;
-        } | null;
-      })[],
+      })) as ResenaConRestaurante[],
       error,
     };
   },
@@ -102,6 +105,12 @@ export const apiResenas = {
       .update({ respuesta_dueno: texto })
       .eq('id', id);
 
+    return { error };
+  },
+
+  /** Borra una reseña propia. La política de borrado solo deja al autor. */
+  eliminar: async (id: string) => {
+    const { error } = await supabase.from('valoraciones').delete().eq('id', id);
     return { error };
   },
 };
