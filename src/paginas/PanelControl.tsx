@@ -19,8 +19,8 @@ import { SeccionDiseno } from '../componentes/panel/SeccionDiseno';
 import { SeccionMenu } from '../componentes/panel/SeccionMenu';
 import { EditorPlatillo } from '../componentes/panel/EditorPlatillo';
 import { useDatosPanel } from '../hooks/useDatosPanel';
-import { apiRestaurante } from '../servicios/apiRestaurante';
-import { apiPlatillos } from '../servicios/apiPlatillos';
+import { apiRestaurante } from '../api/apiRestaurante';
+import { apiPlatillos } from '../api/apiPlatillos';
 import { EstadoPlatillo, camposDeEstado } from '../componentes/panel/estadoPlatillo';
 import { Contenedor, RobotIA } from '../componentes/ui';
 

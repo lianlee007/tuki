@@ -7,10 +7,10 @@
  * distancia perceptiva entre paletas para confirmar que ninguna se repite.
  *
  * Es la garantía de la promesa que se le hace al dueño en el panel: cualquier
- * paleta que se añada a componentes/panel/paletas.ts tiene que pasar esto.
+ * paleta que se añada a src/componentes/panel/paletas.ts tiene que pasar esto.
  */
-import { derivarPaleta, contraste, luminancia, mezclar, acentoPanel } from '../lib/color.ts';
-import { PALETAS, aBase, FAMILIAS } from '../componentes/panel/paletas.ts';
+import { derivarPaleta, contraste, luminancia, mezclar, acentoPanel } from '../src/lib/color.ts';
+import { PALETAS, aBase, FAMILIAS } from '../src/componentes/panel/paletas.ts';
 
 /* ---------- Lab (D65) para medir "se parecen o no" ---------- */
 function aLab(hex: string): [number, number, number] {
@@ -88,7 +88,7 @@ for (const p of PALETAS) {
 }
 
 /* ---------- Acento del panel (personalización del dueño) ---------- */
-// El panel se pinta con el color de marca del restaurante (lib/color.acentoPanel).
+// El panel se pinta con el color de marca del restaurante (src/lib/color.acentoPanel).
 // El panel es una superficie distinta de la página: blanco/#F2F2F7 y negro/#1C1C1E.
 // Estas comprobaciones son las que garantizan que cualquier paleta del catálogo
 // deja el panel legible en los dos modos.
