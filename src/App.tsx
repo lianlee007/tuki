@@ -8,7 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { ProveedorAutenticacion } from './contexto/ContextoAutenticacion';
 import { ProveedorTema } from './contexto/ContextoTema';
-import { RutaPanel, RutaAuth } from './componentes/rutas/RutasProtegidas';
+import { RutaPanel, RutaAuth, RutaCuenta } from './componentes/rutas/RutasProtegidas';
 import { Logo } from './componentes/ui';
 import { TransicionPagina } from './componentes/sistema-diseno/TransicionPagina';
 import { ErrorBoundary } from './componentes/sistema-diseno/ErrorBoundary';
@@ -24,6 +24,7 @@ const VistaPublica = lazy(() => import('./paginas/VistaPublica'));
 const PaginaTerminos = lazy(() => import('./paginas/PaginaTerminos'));
 const PaginaPrivacidad = lazy(() => import('./paginas/PaginaPrivacidad'));
 const PaginaQR = lazy(() => import('./paginas/PaginaQR'));
+const PaginaMiCuenta = lazy(() => import('./paginas/PaginaMiCuenta'));
 const Pagina404 = lazy(() => import('./paginas/Pagina404'));
 
 // Componente de carga
@@ -55,6 +56,7 @@ const ContenidoAnimado = () => {
           <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
           <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
           <Route path="/panel" element={<RutaPanel><TransicionPagina><PanelControl /></TransicionPagina></RutaPanel>} />
+          <Route path="/mi-cuenta" element={<RutaCuenta><TransicionPagina><PaginaMiCuenta /></TransicionPagina></RutaCuenta>} />
           <Route path="/restaurante/:slug" element={<TransicionPagina><VistaPublica /></TransicionPagina>} />
           <Route path="/terminos" element={<TransicionPagina><PaginaTerminos /></TransicionPagina>} />
           <Route path="/privacidad" element={<TransicionPagina><PaginaPrivacidad /></TransicionPagina>} />
