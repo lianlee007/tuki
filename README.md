@@ -277,6 +277,25 @@ LeeFood/
 | `pnpm dev` | Inicia el servidor de desarrollo en modo watch |
 | `pnpm build` | Construye la aplicación para producción |
 | `pnpm preview` | Previsualiza la build de producción localmente |
+| `pnpm typecheck` | Verifica los tipos con `tsc --noEmit` |
+| `pnpm lint` | ESLint sobre todo el frontend |
+| `pnpm test` | Pruebas unitarias con Vitest |
+
+## ✅ Calidad y seguridad
+
+El pipeline bloquea el merge si falla cualquiera de estos controles:
+
+| Control | Comando |
+|---------|---------|
+| Tipos | `pnpm typecheck` |
+| Lint | `pnpm lint` |
+| Pruebas del frontend | `pnpm test` |
+| Pruebas del gateway | `pytest` en `services/ai-gateway` |
+| Secretos en el historial | gitleaks |
+| Vulnerabilidades | `pnpm audit --prod` y `pip-audit` |
+| Licencias | `node scripts/licencias.mjs licencias.json` |
+| Manifiestos | `bash deploy/scripts/validar-k8s.sh` |
+| Imágenes | `bash deploy/scripts/verificar-supply-chain.sh` |
 
 ## 🔐 Variables de Entorno
 
@@ -359,6 +378,18 @@ Kubernetes/GitOps/Platform Engineering y DevSecOps) está documentada en
 **[docs/modulos-1-3.md](docs/modulos-1-3.md)**, con el modelo de amenazas en
 **[docs/security/](docs/security/)** y el catálogo de servicios en
 **[catalog-info.yaml](catalog-info.yaml)**.
+
+La práctica de diagnóstico está en
+**[docs/laboratorio/fallo-inducido.md](docs/laboratorio/fallo-inducido.md)** y las
+evidencias de clúster en
+**[docs/laboratorio/modulo-2-runtime.md](docs/laboratorio/modulo-2-runtime.md)**.
+Para reproducir la demostración:
+
+```bash
+bash deploy/scripts/demo-plataforma.sh plataforma
+bash deploy/scripts/demo-plataforma.sh app
+bash deploy/scripts/demo-plataforma.sh verificar
+```
 
 ## 🤝 Contribuir
 
