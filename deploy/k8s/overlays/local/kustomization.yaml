@@ -4,8 +4,8 @@ kind: Kustomization
 # Overlay para Docker Desktop, kind o k3d.
 #
 # A diferencia de producción:
-#   - usa las imágenes locales `tuki:local-0.2.0` y
-#     `tuki-ai-gateway:local-0.2.0`;
+#   - usa las imágenes locales `tuki:local-0.3.0` y
+#     `tuki-ai-gateway:local-0.3.0`;
 #   - deja los Services como ClusterIP y se accede con `kubectl port-forward`;
 #   - deja fuera Ingress, HPA, PDB y NetworkPolicy, porque dependen de
 #     controladores (ingress-nginx, metrics-server, CNI con políticas) que un
@@ -18,8 +18,8 @@ kind: Kustomization
 #     --from-literal=GROQ_API_KEY="$GROQ_API_KEY" -n tuki
 #
 # Uso:
-#   docker build ... -t tuki:local-0.2.0 .
-#   docker build -t tuki-ai-gateway:local-0.2.0 services/ai-gateway
+#   docker build ... -t tuki:local-0.3.0 .
+#   docker build -t tuki-ai-gateway:local-0.3.0 services/ai-gateway
 #   kubectl apply -k deploy/k8s/overlays/local
 #   kubectl port-forward -n tuki svc/tuki 8080:80
 #   kubectl port-forward -n tuki svc/ai-gateway 8001:8000
@@ -33,10 +33,10 @@ resources:
 images:
   - name: ghcr.io/lianlee007/tuki
     newName: tuki
-    newTag: local-0.2.0
+    newTag: local-0.3.0
   - name: ghcr.io/lianlee007/tuki-ai-gateway
     newName: tuki-ai-gateway
-    newTag: local-0.2.0
+    newTag: local-0.3.0
 
 replicas:
   - name: tuki
