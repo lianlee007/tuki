@@ -1,5 +1,5 @@
 -- ============================================================================
---  Riki — Dos públicos: clientes y restaurantes
+--  Tuki — Dos públicos: clientes y restaurantes
 -- ============================================================================
 --
 --  Hasta hoy toda cuenta era de restaurante: al registrarse se creaba un

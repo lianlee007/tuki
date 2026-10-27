@@ -1,5 +1,5 @@
 -- ============================================================================
---  Riki — Guardar la paleta del modo oscuro
+--  Tuki — Guardar la paleta del modo oscuro
 -- ============================================================================
 --
 --  Cada paleta del panel tiene DOS juegos de colores: uno para el modo claro y
