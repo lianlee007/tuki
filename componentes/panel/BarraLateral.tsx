@@ -102,7 +102,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-af-accent text-white">
             <Logo size={22} />
           </div>
-          <span className="text-lg font-bold tracking-tight text-af-ink">Riki</span>
+          <span className="text-lg font-bold tracking-tight text-af-ink">Tuki</span>
         </div>
 
         {/* Desplegada: botón con nombre para plegar (escritorio). En móvil, cerrar. */}

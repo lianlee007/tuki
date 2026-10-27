@@ -36,7 +36,7 @@ const PantallaCarga = () => (
       <div className="h-1.5 w-32 bg-surface rounded-full overflow-hidden">
         <div className="h-full bg-primary w-1/2 animate-[shimmer_1s_infinite_linear] rounded-full"></div>
       </div>
-      <span className="text-xs font-bold text-text-muted uppercase tracking-widest">Cargando Riki...</span>
+      <span className="text-xs font-bold text-text-muted uppercase tracking-widest">Cargando Tuki...</span>
     </div>
   </div>
 );

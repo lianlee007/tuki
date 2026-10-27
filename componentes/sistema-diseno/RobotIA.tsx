@@ -9,12 +9,12 @@ interface RobotIAProps {
 }
 
 /**
- * ASISTENTE RIKI — la cabeza del robot.
+ * ASISTENTE TUKI — la cabeza del robot.
  *
  * Tres trazos y nada más: una cabeza redondeada, una antena y dos ojos. La
  * antena no termina en un punto cualquiera: termina en la misma chispa de
  * cuatro puntas que lleva la «R» de la marca, así que el asistente se lee como
- * parte de Riki y no como un icono genérico de «IA».
+ * parte de Tuki y no como un icono genérico de «IA».
  *
  * Todo se pinta con `currentColor` y un solo grosor de trazo, para que herede
  * el color del texto y encaje con el resto de iconos. Los ojos y la chispa van

@@ -10,9 +10,9 @@ interface SEOProps {
 }
 
 export const SEO: React.FC<SEOProps> = ({ 
-  titulo = 'Riki - Crea tu menú digital', 
+  titulo = 'Tuki - Crea tu menú digital', 
   descripcion = 'Plataforma para crear el sitio web y el menú digital de tu restaurante con IA. Listo en minutos, sin saber programar.',
-  imagen = 'https://riki.app/og-image.jpg',
+  imagen = 'https://tuki.app/og-image.jpg',
   url
 }) => {
   const sitioUrl = url || window.location.href;
