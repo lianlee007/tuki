@@ -1,4 +1,4 @@
-﻿# BitÃ¡cora de hallazgos de seguridad de Riki
+﻿# BitÃ¡cora de hallazgos de seguridad de Tuki
 
 Registro de hallazgos del mÃ³dulo 3 (DevSecOps y cadena de suministro). Cada
 hallazgo separa **criticidad tÃ©cnica**, **explotabilidad en este contexto** y
@@ -9,7 +9,7 @@ un riesgo real del despliegue.
 - **Alcance:** SPA, AI Gateway, imÃ¡genes, CI/CD y manifiestos de Kubernetes.
 - **Fuera de alcance:** IA local (mÃ³dulos 5 y 6), seguridad fÃ­sica y auditorÃ­a
   legal de licencias.
-- **Responsable:** equipo de plataforma de Riki.
+- **Responsable:** equipo de plataforma de Tuki.
 
 ## Criterios de severidad
 
@@ -138,7 +138,7 @@ Estados: **Resuelto**, **Mitigado**, **Aceptado**, **Abierto**, **En seguimiento
   | `zod` | 4.1.12 | 4.6.7 | Agotamiento de memoria con colecciones grandes |
   | `ws` (transitiva) | 8.18.3 | 8.22.0 | DivulgaciÃ³n de memoria y DoS por fragmentos |
 
-- **Explotabilidad contextual:** Riki es una SPA sin SSR. Los avisos de RCE y
+- **Explotabilidad contextual:** Tuki es una SPA sin SSR. Los avisos de RCE y
   XSS de SSR de React Router no aplican directamente, pero los de open redirect,
   XSS en `ScrollRestoration` y denegaciÃ³n de servicio sÃ­ pueden afectar al
   navegador. `zod` se usa para validar formularios; una entrada acotada reduce el
@@ -238,7 +238,7 @@ Estados: **Resuelto**, **Mitigado**, **Aceptado**, **Abierto**, **En seguimiento
 - **Severidad:** Media
 - **Estado:** Aceptado
 - **DescripciÃ³n:** el entorno solo tiene Docker Desktop. Las imÃ¡genes
-  `riki:local-0.2.0` y `riki-ai-gateway:local-0.2.0` no estÃ¡n firmadas ni
+  `tuki:local-0.2.0` y `tuki-ai-gateway:local-0.2.0` no estÃ¡n firmadas ni
   publicadas; Cosign y GHCR solo se ejecutan en GitHub Actions.
 - **Tratamiento:** se documenta como limitaciÃ³n. Antes de producciÃ³n hay que
   publicar, firmar, verificar y desplegar por digest.
@@ -360,8 +360,8 @@ Estas comprobaciones no son hallazgos, pero forman parte de la evidencia:
 
 | VerificaciÃ³n | Resultado | Fecha |
 | --- | --- | --- |
-| Trivy `riki:local-0.2.0` | 0 `HIGH`/`CRITICAL` corregibles | 2026-10-25 |
-| Trivy `riki-ai-gateway:local-0.2.0` | 0 `HIGH`/`CRITICAL` corregibles | 2026-10-25 |
+| Trivy `tuki:local-0.2.0` | 0 `HIGH`/`CRITICAL` corregibles | 2026-10-25 |
+| Trivy `tuki-ai-gateway:local-0.2.0` | 0 `HIGH`/`CRITICAL` corregibles | 2026-10-25 |
 | `pip-audit -r requirements.txt --require-hashes` | Sin vulnerabilidades conocidas | 2026-10-25 |
 | `pnpm audit --prod` | Sin vulnerabilidades conocidas (H-005 cerrado) | 2026-10-27 |
 | `pnpm typecheck` | Sin errores de tipos | 2026-10-27 |

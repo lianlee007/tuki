@@ -1,4 +1,4 @@
-# Modelo de amenazas de Riki
+# Modelo de amenazas de Tuki
 
 Documento de trabajo del módulo 3 (DevSecOps y seguridad de la cadena de
 suministro). Cubre la SPA, el AI Gateway, la cadena de CI/CD y el despliegue en
@@ -6,7 +6,7 @@ Kubernetes. No cubre la IA local porque está fuera del alcance de este trabajo.
 
 - **Fecha:** 2026-10-25
 - **Versión:** 1.0
-- **Alcance:** Riki en Compose y Kubernetes, con Supabase, Cloudinary y Groq como
+- **Alcance:** Tuki en Compose y Kubernetes, con Supabase, Cloudinary y Groq como
   servicios gestionados.
 - **Metodología:** STRIDE para el análisis por frontera de confianza, con
   criticidad basada en probabilidad × impacto. Se toma como referencia NIST SSDF

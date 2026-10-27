@@ -1,4 +1,4 @@
-# Runbook de Riki
+# Runbook de Tuki
 
 Guía de operación para la SPA y el AI Gateway. Los enlaces de las alertas de
 `deploy/observability/prometheusrule.yaml` apuntan a las secciones de este
@@ -23,28 +23,28 @@ documento.
 
 ## SPA caída
 
-**Alerta:** `RikiWebDown` (`up{namespace="riki",service="riki"} == 0`, 5 min).
+**Alerta:** `TukiWebDown` (`up{namespace="tuki",service="tuki"} == 0`, 5 min).
 
 1. Verificar pods y eventos:
 
    ```bash
-   kubectl get pods -n riki -l app.kubernetes.io/name=riki -o wide
-   kubectl describe pod -n riki -l app.kubernetes.io/name=riki
-   kubectl get events -n riki --sort-by=.lastTimestamp | tail -20
+   kubectl get pods -n tuki -l app.kubernetes.io/name=tuki -o wide
+   kubectl describe pod -n tuki -l app.kubernetes.io/name=tuki
+   kubectl get events -n tuki --sort-by=.lastTimestamp | tail -20
    ```
 
 2. Probar el pod sin pasar por Ingress:
 
    ```bash
-   kubectl port-forward -n riki svc/riki 8081:80
+   kubectl port-forward -n tuki svc/tuki 8081:80
    curl -i http://localhost:8081/healthz
    ```
 
 3. Revisar logs de Nginx y del exporter:
 
    ```bash
-   kubectl logs -n riki deploy/riki -c web --tail=100
-   kubectl logs -n riki deploy/riki -c nginx-exporter --tail=50
+   kubectl logs -n tuki deploy/tuki -c web --tail=100
+   kubectl logs -n tuki deploy/tuki -c nginx-exporter --tail=50
    ```
 
 4. Causas frecuentes:
@@ -59,28 +59,28 @@ documento.
 5. Si el problema es la última release:
 
    ```bash
-   kubectl rollout undo deployment/riki -n riki
-   kubectl rollout status deployment/riki -n riki --timeout=180s
+   kubectl rollout undo deployment/tuki -n tuki
+   kubectl rollout status deployment/tuki -n tuki --timeout=180s
    ```
 
 ## Gateway caído
 
-**Alerta:** `RikiGatewayDown` (`up{namespace="riki",service="ai-gateway"} == 0`).
+**Alerta:** `TukiGatewayDown` (`up{namespace="tuki",service="ai-gateway"} == 0`).
 
 La SPA sigue sirviendo; solo fallan las funciones de IA.
 
 1. Estado y causa:
 
    ```bash
-   kubectl get pods -n riki -l app.kubernetes.io/name=riki-ai-gateway -o wide
-   kubectl describe pod -n riki -l app.kubernetes.io/name=riki-ai-gateway
-   kubectl logs -n riki deploy/riki-ai-gateway --tail=120
+   kubectl get pods -n tuki -l app.kubernetes.io/name=tuki-ai-gateway -o wide
+   kubectl describe pod -n tuki -l app.kubernetes.io/name=tuki-ai-gateway
+   kubectl logs -n tuki deploy/tuki-ai-gateway --tail=120
    ```
 
 2. Readiness (no liveness):
 
    ```bash
-   kubectl port-forward -n riki svc/ai-gateway 8002:8000
+   kubectl port-forward -n tuki svc/ai-gateway 8002:8000
    curl -i http://localhost:8002/readyz
    ```
 
@@ -91,8 +91,8 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 3. Verificar el secreto:
 
    ```bash
-   kubectl get secret riki-ai-gateway -n riki
-   kubectl get secret riki-ai-gateway -n riki \
+   kubectl get secret tuki-ai-gateway -n tuki
+   kubectl get secret tuki-ai-gateway -n tuki \
      -o jsonpath='{.data.GROQ_API_KEY}' | base64 -d | wc -c
    ```
 
@@ -101,31 +101,31 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 4. Configuración efectiva:
 
    ```bash
-   kubectl get configmap ai-gateway-config -n riki -o yaml
+   kubectl get configmap ai-gateway-config -n tuki -o yaml
    ```
 
 5. Si el gateway no arranca tras un cambio de imagen, volver a la revisión
    anterior:
 
    ```bash
-   kubectl rollout undo deployment/riki-ai-gateway -n riki
+   kubectl rollout undo deployment/tuki-ai-gateway -n tuki
    ```
 
 ## Errores 5xx en el gateway
 
-**Alerta:** `RikiGatewayErrorRate` (>5 % de 5xx durante 10 min).
+**Alerta:** `TukiGatewayErrorRate` (>5 % de 5xx durante 10 min).
 
 1. Identificar el código y la ruta:
 
    ```bash
-   kubectl logs -n riki deploy/riki-ai-gateway --tail=200 \
+   kubectl logs -n tuki deploy/tuki-ai-gateway --tail=200 \
      | ConvertFrom-Json | Where-Object { $_.status -ge 500 }
    ```
 
    En Linux/macOS:
 
    ```bash
-   kubectl logs -n riki deploy/riki-ai-gateway --tail=200 | jq 'select(.status >= 500)'
+   kubectl logs -n tuki deploy/tuki-ai-gateway --tail=200 | jq 'select(.status >= 500)'
    ```
 
 2. Buscar `code` en los logs:
@@ -148,7 +148,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 
 ## Latencia alta
 
-**Alerta:** `RikiGatewayLatencyHigh` (p95 > 10 s durante 10 min).
+**Alerta:** `TukiGatewayLatencyHigh` (p95 > 10 s durante 10 min).
 
 1. Separar latencia propia de la de Groq:
 
@@ -162,14 +162,14 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 2. Revisar CPU/memoria y reinicios:
 
    ```bash
-   kubectl top pods -n riki
-   kubectl get pods -n riki -l app.kubernetes.io/name=riki-ai-gateway
+   kubectl top pods -n tuki
+   kubectl get pods -n tuki -l app.kubernetes.io/name=tuki-ai-gateway
    ```
 
 3. Si el HPA no escala, confirmar `metrics-server`:
 
    ```bash
-   kubectl get hpa -n riki
+   kubectl get hpa -n tuki
    ```
 
 4. Ajustes temporales:
@@ -182,7 +182,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 
 ## Rate limit
 
-**Alerta:** `RikiGatewayRateLimitAbuse` (>1 rechazo/s durante 10 min).
+**Alerta:** `TukiGatewayRateLimitAbuse` (>1 rechazo/s durante 10 min).
 
 1. Ver la distribución por identidad:
 
@@ -197,14 +197,14 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 3. Revisar IPs en logs (el gateway no registra el texto del prompt):
 
    ```bash
-   kubectl logs -n riki deploy/riki-ai-gateway --tail=200 | jq 'select(.event=="http_request" and .status==429)'
+   kubectl logs -n tuki deploy/tuki-ai-gateway --tail=200 | jq 'select(.event=="http_request" and .status==429)'
    ```
 
 4. Ajustar cuotas en el ConfigMap y reiniciar:
 
    ```bash
-   kubectl edit configmap ai-gateway-config -n riki
-   kubectl rollout restart deployment/riki-ai-gateway -n riki
+   kubectl edit configmap ai-gateway-config -n tuki
+   kubectl rollout restart deployment/tuki-ai-gateway -n tuki
    ```
 
 5. Si el abuso es sostenido, bloquear en el Ingress o en el WAF. El rate limit
@@ -212,7 +212,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 
 ## Timeouts
 
-**Alerta:** `RikiGatewayTimeouts` (>0,2 timeouts/s durante 10 min).
+**Alerta:** `TukiGatewayTimeouts` (>0,2 timeouts/s durante 10 min).
 
 1. Confirmar que son 504 del gateway y no del Ingress:
 
@@ -223,7 +223,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 2. Revisar la configuración efectiva:
 
    ```bash
-   kubectl get configmap ai-gateway-config -n riki -o jsonpath='{.data}'
+   kubectl get configmap ai-gateway-config -n tuki -o jsonpath='{.data}'
    ```
 
 3. Orden de timeouts (debe ser creciente):
@@ -239,13 +239,13 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 
 ## Nginx
 
-**Alerta:** `RikiNginxConnectionsHigh` (>800 conexiones activas durante 10 min).
+**Alerta:** `TukiNginxConnectionsHigh` (>800 conexiones activas durante 10 min).
 
 1. Ver conexiones y requests:
 
    ```promql
-   sum(nginx_connections_active{namespace="riki"})
-   sum(rate(nginx_http_requests_total{namespace="riki"}[5m]))
+   sum(nginx_connections_active{namespace="tuki"})
+   sum(rate(nginx_http_requests_total{namespace="tuki"}[5m]))
    ```
 
 2. Revisar límites del pod y del HPA. Si el HPA no escala, falta
@@ -262,11 +262,11 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 2. Actualizar el secreto **sin reiniciar todo el clúster**:
 
    ```bash
-   kubectl create secret generic riki-ai-gateway \
+   kubectl create secret generic tuki-ai-gateway \
      --from-literal=GROQ_API_KEY="$GROQ_API_KEY_NUEVA" \
-     -n riki --dry-run=client -o yaml | kubectl apply -f -
-   kubectl rollout restart deployment/riki-ai-gateway -n riki
-   kubectl rollout status deployment/riki-ai-gateway -n riki
+     -n tuki --dry-run=client -o yaml | kubectl apply -f -
+   kubectl rollout restart deployment/tuki-ai-gateway -n tuki
+   kubectl rollout status deployment/tuki-ai-gateway -n tuki
    ```
 
 3. Verificar `readyz` y una petición real.
@@ -288,26 +288,26 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 ### Kubernetes
 
 ```bash
-kubectl rollout history deployment/riki -n riki
-kubectl rollout undo deployment/riki -n riki
-kubectl rollout undo deployment/riki-ai-gateway -n riki
-kubectl rollout status deployment/riki -n riki
+kubectl rollout history deployment/tuki -n tuki
+kubectl rollout undo deployment/tuki -n tuki
+kubectl rollout undo deployment/tuki-ai-gateway -n tuki
+kubectl rollout status deployment/tuki -n tuki
 ```
 
 ### ArgoCD
 
 ```bash
-argocd app history riki-production
-argocd app rollback riki-production <ID>
-argocd app get riki-production
+argocd app history tuki-production
+argocd app rollback tuki-production <ID>
+argocd app get tuki-production
 ```
 
 ### Imagen concreta
 
 ```bash
-kubectl set image deployment/riki web=ghcr.io/leonardo007x/leefood:<tag> -n riki
-kubectl set image deployment/riki-ai-gateway \
-  gateway=ghcr.io/leonardo007x/riki-ai-gateway:<tag> -n riki
+kubectl set image deployment/tuki web=ghcr.io/lianlee007/tuki:<tag> -n tuki
+kubectl set image deployment/tuki-ai-gateway \
+  gateway=ghcr.io/lianlee007/tuki-ai-gateway:<tag> -n tuki
 ```
 
 Después de un rollback, verifica:
@@ -322,7 +322,7 @@ curl -fsS https://<dominio>/api/readyz
 1. Ver el diff:
 
    ```bash
-   argocd app diff riki-production
+   argocd app diff tuki-production
    ```
 
 2. Causas frecuentes:
@@ -334,7 +334,7 @@ curl -fsS https://<dominio>/api/readyz
 4. Si hay que forzar:
 
    ```bash
-   argocd app sync riki-production --prune
+   argocd app sync tuki-production --prune
    ```
 
 ## Checklist de incidente

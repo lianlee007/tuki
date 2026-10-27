@@ -1,8 +1,8 @@
 -- ============================================================================
---  Riki — Descubrir: tipo de cocina y búsqueda de platos
+--  Tuki — Descubrir: tipo de cocina y búsqueda de platos
 -- ============================================================================
 --
---  La portada de Riki dejó de ser la landing de venta: ahora es un buscador de
+--  La portada de Tuki dejó de ser la landing de venta: ahora es un buscador de
 --  platos. Para eso hacen falta tres cosas que la base no tenía.
 --
 --  1. `tipos_cocina` — la taxonomía global (cafetería, china, italiana…). Ojo:
