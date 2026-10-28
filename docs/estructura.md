@@ -20,7 +20,7 @@ tuki/
 ├── .tools/, .opencode/     Herramientas del agente (no van a la imagen)
 ├── Skills/                 Habilidades del agente (no van a la imagen)
 ├── Dockerfile              Imagen de la SPA (Node → Nginx)
-├── docker-compose.yml      Stack local: web + gateway
+├── docker-compose.yml      Stack local: frontend + backend
 └── package.json            Dependencias y scripts del frontend
 ```
 

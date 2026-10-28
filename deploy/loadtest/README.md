@@ -27,7 +27,7 @@ gateway. Para medir la latencia real de Groq, sube temporalmente las cuotas:
 
 ```bash
 AI_RATE_LIMIT_ANON_PER_MINUTE=180 AI_RATE_LIMIT_ANON_BURST=60 \
-  docker compose --env-file .env.local up -d ai-gateway
+  docker compose --env-file .env.local up -d backend
 ```
 
 No uses este script contra producción con la clave real sin presupuesto: cada

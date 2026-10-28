@@ -22,18 +22,22 @@ Navegador
   ▼
 Ingress (ingress-nginx + cert-manager)
   │  /            → Service tuki        → Pods Nginx UID 101 :8080
-  │  /api         → Service ai-gateway  → Pods FastAPI UID 10001 :8000
+  │  /api         → Service backend     → Pods FastAPI UID 10001 :8000
   │
-  └─ Nginx /api/ ──► ai-gateway:8000 ──► api.groq.com:443
-                                       └► Supabase JWKS:443
+  └─ Nginx /api/ ──► backend:8000 ──► api.groq.com:443
+                                   └► Supabase JWKS:443
 ```
 
 Dos contenedores propios:
 
 | Servicio | Imagen | Responsabilidad |
 | --- | --- | --- |
-| `web` | `ghcr.io/lianlee007/tuki` | Sirve `dist/` de Vite y hace de proxy `/api` en Compose/K8s local |
-| `ai-gateway` | `ghcr.io/lianlee007/tuki-ai-gateway` | Auth Supabase, cuotas, reintentos y llamada a Groq |
+| `frontend` | `ghcr.io/lianlee007/tuki` | Sirve `dist/` de Vite y hace de proxy `/api` en Compose/K8s local |
+| `backend` | `ghcr.io/lianlee007/tuki-ai-gateway` | AI Gateway: auth Supabase, cuotas, reintentos y llamada a Groq |
+
+Los nombres de servicio son `frontend` y `backend`; el nombre del componente y
+de la imagen del gateway (`tuki-ai-gateway`) se mantiene para no romper la
+cadena de suministro ni los despliegues existentes.
 
 Decisiones clave:
 
@@ -54,7 +58,7 @@ Decisiones clave:
 
 ```
 Dockerfile                                  Imagen web multi-etapa (Node → Nginx)
-docker-compose.yml                          Stack local web + ai-gateway
+docker-compose.yml                          Stack local frontend + backend
 docker/nginx/                               Configuración de Nginx y cabeceras
 services/ai-gateway/                        Código, Dockerfile, tests y lockfiles
 deploy/k8s/base/                            Manifiestos comunes
@@ -144,14 +148,14 @@ cp .env.example .env.local        # rellena Supabase, Cloudinary y GROQ_API_KEY
 docker compose --env-file .env.local up -d --build
 
 docker compose --env-file .env.local ps
-docker compose --env-file .env.local logs -f web ai-gateway
+docker compose --env-file .env.local logs -f frontend backend
 ```
 
 Servicios:
 
-- **web** en <http://localhost:8080>, rootfs `read_only`, `cap_drop: ALL`,
+- **frontend** en <http://localhost:8080>, rootfs `read_only`, `cap_drop: ALL`,
   usuario `101:101`, límites de CPU/memoria y logs rotados.
-- **ai-gateway** accesible solo en `127.0.0.1:8001`, usuario `10001:10001`,
+- **backend** accesible solo en `127.0.0.1:8001`, usuario `10001:10001`,
   también con rootfs de solo lectura y `/tmp` efímero.
 
 Comprobaciones:
@@ -319,7 +323,7 @@ kubectl rollout status deployment/tuki-ai-gateway -n tuki
 
 kubectl port-forward -n tuki svc/tuki 8081:80
 # en otra terminal:
-kubectl port-forward -n tuki svc/ai-gateway 8002:8000
+kubectl port-forward -n tuki svc/backend 8002:8000
 kubectl port-forward -n tuki svc/tuki 9114:9113
 
 curl http://localhost:8081/healthz
@@ -386,7 +390,7 @@ kubectl get pods,svc,ingress,hpa,pdb -n tuki
 | `Deployment tuki` | 2 réplicas, rolling update, probes, sidecar exporter |
 | `Service tuki` | :80 → :8080 y :9113 para métricas |
 | `Deployment tuki-ai-gateway` | 2 réplicas, no-root 10001, probes `/readyz` |
-| `Service ai-gateway` | `ai-gateway:8000` (host estable para Nginx) |
+| `Service backend` | `backend:8000` (host estable para Nginx) |
 | `ConfigMap ai-gateway-config` | Configuración no secreta |
 | `Secret tuki-ai-gateway` | `GROQ_API_KEY` (fuera de Git) |
 | `Ingress tuki` | `/` → web, `/api` → gateway, TLS |

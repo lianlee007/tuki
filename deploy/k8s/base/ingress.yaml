@@ -27,7 +27,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ai-gateway
+                name: backend
                 port:
                   name: http
           - path: /

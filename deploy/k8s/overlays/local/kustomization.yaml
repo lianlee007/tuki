@@ -22,7 +22,7 @@ kind: Kustomization
 #   docker build -t tuki-ai-gateway:local-0.3.0 services/ai-gateway
 #   kubectl apply -k deploy/k8s/overlays/local
 #   kubectl port-forward -n tuki svc/tuki 8080:80
-#   kubectl port-forward -n tuki svc/ai-gateway 8001:8000
+#   kubectl port-forward -n tuki svc/backend 8001:8000
 #   curl http://localhost:8080/healthz
 #   curl http://localhost:8080/api/healthz
 namespace: tuki
