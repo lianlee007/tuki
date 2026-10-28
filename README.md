@@ -321,7 +321,7 @@ tuki/
 ├── scripts/                    # Verificación y utilidades
 ├── docker/                     # Configuración de Nginx
 ├── Dockerfile                  # Imagen de la SPA (Node y Nginx)
-└── docker-compose.yml          # Stack local: web y AI Gateway
+└── docker-compose.yml          # Stack local: frontend y backend
 ```
 
 El mapa completo, con las reglas de nombres y la justificación de cada carpeta,

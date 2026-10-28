@@ -121,7 +121,7 @@ No expongas este clúster a Internet: el modo `disabled` es solo para laboratori
 kubectl port-forward -n tuki svc/tuki 8081:80
 
 # Terminal 2: gateway directo (opcional)
-kubectl port-forward -n tuki svc/ai-gateway 8002:8000
+kubectl port-forward -n tuki svc/backend 8002:8000
 
 # Terminal 3: métricas de Nginx (opcional)
 kubectl port-forward -n tuki svc/tuki 9114:9113

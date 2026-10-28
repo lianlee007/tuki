@@ -57,7 +57,7 @@ curl -i http://localhost:8080/api/healthz
 **Diagnóstico.**
 
 ```bash
-docker compose logs --tail=50 ai-gateway | jq 'select(.level=="error")'
+docker compose logs --tail=50 backend | jq 'select(.level=="error")'
 ```
 
 Los logs son JSON con `request_id`; el campo `event` distingue
@@ -67,7 +67,7 @@ problema de credenciales de uno de red.
 **Restauración.** Exporta la clave y recrea solo el gateway:
 
 ```bash
-docker compose --env-file .env.local up -d --force-recreate ai-gateway
+docker compose --env-file .env.local up -d --force-recreate backend
 curl -fsS http://localhost:8080/api/healthz
 ```
 

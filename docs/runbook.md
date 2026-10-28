@@ -65,7 +65,7 @@ documento.
 
 ## Gateway caído
 
-**Alerta:** `TukiGatewayDown` (`up{namespace="tuki",service="ai-gateway"} == 0`).
+**Alerta:** `TukiGatewayDown` (`up{namespace="tuki",service="backend"} == 0`).
 
 La SPA sigue sirviendo; solo fallan las funciones de IA.
 
@@ -80,7 +80,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 2. Readiness (no liveness):
 
    ```bash
-   kubectl port-forward -n tuki svc/ai-gateway 8002:8000
+   kubectl port-forward -n tuki svc/backend 8002:8000
    curl -i http://localhost:8002/readyz
    ```
 
