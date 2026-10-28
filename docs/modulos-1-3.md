@@ -99,7 +99,7 @@ no usa la aplicación tras eliminar la integración con Gemini.
 | Configuración externa y secretos de laboratorio | Variables `VITE_*` en build; `GROQ_API_KEY` solo en runtime; plantillas `.env.example` | `deploy/README.md` §4, `.env.example`, `services/ai-gateway/.env.example` | Cubierto |
 | Doce factores | Aplicación sin estado, configuración por entorno, logs a stdout, puertos explícitos, procesos descartables | Ver tabla 3.2 | Cubierto con matices |
 | Construcción reproducible | `pnpm-lock.yaml`, `requirements.txt` con hashes, `--frozen-lockfile`, bases por digest | `pnpm-lock.yaml`, `services/ai-gateway/requirements.txt`, CI | Cubierto |
-| Docker Compose con dependencias | `web` + `ai-gateway`; Supabase/Cloudinary/Groq como servicios gestionados | `docker-compose.yml`, ADR 0003 | Cubierto con adaptación |
+| Docker Compose con dependencias | `frontend` + `backend`; Supabase/Cloudinary/Groq como servicios gestionados | `docker-compose.yml`, ADR 0003 | Cubierto con adaptación |
 | Pruebas y validación | `pytest` (39 pruebas), `vitest` (36 pruebas), `tsc --noEmit`, ESLint, Ruff, build de Vite, Hadolint | CI, `services/ai-gateway/tests/`, `tests/frontend/` | Cubierto |
 | Inspección de tamaño, puertos, procesos y recursos | Límites en Compose/K8s, imágenes multi-etapa, usuario no root | `docker-compose.yml`, manifiestos, `deploy/scripts/verificar-supply-chain.sh` | Cubierto |
 | Microproyecto con README, Dockerfile, Compose, variables de ejemplo, pruebas y decisiones | Todo presente en el repositorio | `README.md`, `deploy/README.md`, `docs/adr/`, tests | Cubierto |

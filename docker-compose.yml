@@ -3,15 +3,20 @@ name: tuki
 # Uso:
 #   docker compose --env-file .env.local up -d --build
 #   docker compose --env-file .env.local ps
-#   docker compose --env-file .env.local logs -f web ai-gateway
+#   docker compose --env-file .env.local logs -f frontend backend
 #   docker compose --env-file .env.local down
+#
+# Dos contenedores:
+#   frontend -> SPA de Vite servida por Nginx.
+#   backend  -> AI Gateway en FastAPI (auth, cuotas, Groq y métricas).
 #
 # Nota: las variables VITE_* se incrustan en el bundle durante el build, por
 # eso aparecen en `build.args` y no en `environment`. La clave de Groq es un
-# secreto de servidor y solo se pasa al contenedor `ai-gateway` en runtime.
+# secreto de servidor y solo se pasa al contenedor `backend` en runtime.
 
 services:
-  web:
+  # Frontend: compila la SPA y la sirve con Nginx en el puerto 8080.
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -30,7 +35,7 @@ services:
       - "${TUKI_PORT:-8080}:8080"
 
     depends_on:
-      ai-gateway:
+      backend:
         condition: service_healthy
 
     # El proceso corre sin privilegios y no necesita escribir en el rootfs.
@@ -68,7 +73,8 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  ai-gateway:
+  # Backend: AI Gateway de FastAPI. Nginx lo alcanza como `backend:8000`.
+  backend:
     build:
       context: ./services/ai-gateway
       dockerfile: Dockerfile

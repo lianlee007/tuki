@@ -28,7 +28,7 @@ y verificadas con la CLI.
 | Dockerfile multi-etapa | Sí | `Dockerfile` (`deps` → `build` → `runtime`) y `services/ai-gateway/Dockerfile` (`builder` → `runtime`) |
 | Usuario no root | Sí | `USER 101:101` en la web; `USER 10001:10001` en el gateway; `runAsNonRoot` en Kubernetes |
 | `.dockerignore` | Sí | Excluye `.git`, `node_modules`, `dist`, `.env*`, `docs`, `services` y material de agente |
-| Compose para dependencias | Sí, con adaptación | `docker-compose.yml`: `web` + `ai-gateway` con `healthcheck` y `depends_on`. La base de datos es Supabase gestionado (ADR 0003), no un contenedor |
+| Compose para dependencias | Sí, con adaptación | `docker-compose.yml`: `frontend` + `backend` con `healthcheck` y `depends_on`. La base de datos es Supabase gestionado (ADR 0003), no un contenedor |
 | Variables de entorno | Sí | `.env.example` y `services/ai-gateway/.env.example`; `VITE_*` en build, `GROQ_API_KEY` solo en runtime |
 | Empaquetado reproducible | Sí | `pnpm-lock.yaml`, `requirements.txt` con hashes, bases fijadas por digest, `--frozen-lockfile` |
 | Imágenes pequeñas y endurecidas | Sí | Web 98,6 MB y gateway 280 MB; sin toolchain en runtime, `cap_drop: ALL`, rootfs de solo lectura |

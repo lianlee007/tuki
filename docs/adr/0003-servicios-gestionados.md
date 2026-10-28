@@ -14,7 +14,8 @@ tres servicios externos:
 
 ## Decisión
 
-No containerizarlos. El clúster solo ejecuta la SPA (`web`) y el AI Gateway.
+No containerizarlos. El clúster solo ejecuta la SPA (`frontend`) y el AI Gateway
+(`backend`).
 
 ## Motivos
 

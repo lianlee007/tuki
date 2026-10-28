@@ -21,7 +21,7 @@ spec:
             runbook_url: "https://github.com/lianlee007/tuki/blob/main/docs/runbook.md#spa-caida"
 
         - alert: TukiGatewayDown
-          expr: up{namespace="tuki",service="ai-gateway"} == 0
+          expr: up{namespace="tuki",service="backend"} == 0
           for: 5m
           labels:
             severity: critical
