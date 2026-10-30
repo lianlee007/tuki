@@ -1,5 +1,5 @@
 import React from 'react';
-import { iniciales } from '../../lib/resenas';
+import { iniciales } from '../../modulos/resenas';
 
 interface AvatarProps {
   nombre: string;

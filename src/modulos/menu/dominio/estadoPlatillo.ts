@@ -6,7 +6,7 @@
  * así que aquí se traducen en un solo sitio para que el gestor de menú y el
  * editor digan exactamente lo mismo.
  */
-import { Platillo } from '../../tipos';
+import { Platillo } from '../../../tipos';
 
 export type EstadoPlatillo = 'disponible' | 'agotado' | 'oculto';
 

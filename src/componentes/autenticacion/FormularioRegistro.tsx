@@ -14,7 +14,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { FormularioDatosEnvio } from '../cuenta/FormularioDatosEnvio';
-import type { DatosEnvio } from '../../lib/datosEnvio';
+import type { DatosEnvio } from '../../modulos/cuenta';
 
 interface FormularioRegistroProps {
   cambiarModo: () => void;

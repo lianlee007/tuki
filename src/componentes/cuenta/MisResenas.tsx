@@ -11,8 +11,13 @@ import {
 } from 'lucide-react';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { ImagenInteligente } from '../sistema-diseno/ImagenInteligente';
-import { apiResenas, type ResenaConRestaurante } from '../../api/apiResenas';
-import { esPublica, fechaResena, tieneRespuesta } from '../../lib/resenas';
+import {
+  apiResenas,
+  esPublica,
+  fechaResena,
+  tieneRespuesta,
+  type ResenaConRestaurante,
+} from '../../modulos/resenas';
 import { generarSlugUnico } from '../../lib/utils';
 
 interface Props {

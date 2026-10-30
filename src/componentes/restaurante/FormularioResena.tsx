@@ -4,14 +4,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Check, ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
-import { apiResenas } from '../../api/apiResenas';
+import { apiResenas, MAX_COMENTARIO, MAX_NOMBRE, validarResena } from '../../modulos/resenas';
 import { subirImagen } from '../../lib/servicios';
 import { validarFoto } from '../../lib/imagenes';
-import {
-  MAX_COMENTARIO,
-  MAX_NOMBRE,
-  validarResena,
-} from '../../lib/resenas';
 import type { Platillo } from '../../tipos/modelos';
 import type { EstilosComunes } from './PlantillaRestaurante';
 
@@ -155,8 +150,8 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   }
 
   /**
-   * La foto se comprime y sube a Cloudinary antes de enviar la reseña. Si la
-   * subida falla, el formulario no se bloquea: se avisa y se puede publicar
+   * La foto se comprime y sube a Supabase Storage antes de enviar la reseña. Si
+   * la subida falla, el formulario no se bloquea: se avisa y se puede publicar
    * solo con texto. La URL resultante es lo único que viaja a Supabase.
    */
   const elegirFoto = async (evento: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,7 +169,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     setErrorFoto(null);
     setSubiendoFoto(true);
     try {
-      setFotoUrl(await subirImagen(archivo));
+      setFotoUrl(await subirImagen(archivo, 'resenas'));
     } catch {
       setErrorFoto(
         'No pudimos subir la foto. Puedes enviar la reseña sin ella y contarlo con palabras.'

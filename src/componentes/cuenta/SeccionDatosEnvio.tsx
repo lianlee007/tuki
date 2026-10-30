@@ -8,8 +8,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { FormularioDatosEnvio } from './FormularioDatosEnvio';
-import { formatearDireccionEnvio, type DatosEnvio } from '../../lib/datosEnvio';
-import type { EstadoDatosEnvio } from '../../hooks/useDatosEnvio';
+import { formatearDireccionEnvio, type DatosEnvio, type EstadoDatosEnvio } from '../../modulos/cuenta';
 
 interface Props {
   estado: EstadoDatosEnvio;

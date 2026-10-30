@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 import { Avatar } from '../sistema-diseno/Avatar';
 import { Estrellas } from '../sistema-diseno/Estrellas';
-import { apiResenas } from '../../api/apiResenas';
 import {
+  apiResenas,
   MAX_RESPUESTA,
   esPublica,
   fechaResena,
@@ -23,7 +23,7 @@ import {
   tieneRespuesta,
   validarRespuesta,
   type Resena,
-} from '../../lib/resenas';
+} from '../../modulos/resenas';
 import type { Platillo, Restaurante } from '../../tipos/modelos';
 import { generarSlug } from '../../lib/utils';
 

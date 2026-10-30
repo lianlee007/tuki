@@ -10,8 +10,8 @@ import {
   Truck,
   XCircle,
 } from 'lucide-react';
-import { apiPedidos } from '../../api/apiPedidos';
 import {
+  apiPedidos,
   codigoPedido,
   dinero,
   esEstadoPedido,
@@ -23,7 +23,7 @@ import {
   unidadesPedido,
   type EstadoPedido,
   type Pedido,
-} from '../../lib/pedidos';
+} from '../../modulos/pedidos';
 import type { Restaurante } from '../../tipos/modelos';
 
 type Filtro = 'activos' | 'pendientes' | 'cerrados' | 'todos';

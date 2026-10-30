@@ -5,6 +5,10 @@
  * pero desde la fase B también se guarda una copia en `pedidos` para que el
  * comensal tenga historial y el dueño una bandeja. Aquí se decide cómo se
  * etiqueta, cómo se resume y qué transiciones de estado existen.
+ *
+ * Este archivo es la capa de dominio del módulo `pedidos`: no importa nada de
+ * React, del navegador ni del cliente de Supabase. Se puede probar con Vitest
+ * sin montar la aplicación.
  */
 
 export type EstadoPedido =

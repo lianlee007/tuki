@@ -1,6 +1,6 @@
 
-import { supabase } from '../lib/supabase';
-import { Platillo } from '../tipos/modelos';
+import { supabase } from '../../../lib/supabase';
+import { Platillo } from '../../../tipos/modelos';
 
 export const apiPlatillos = {
   obtenerPorRestaurante: async (restauranteId: string) => {

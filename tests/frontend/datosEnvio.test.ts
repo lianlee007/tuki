@@ -10,7 +10,7 @@ import {
   referenciasValidas,
   soloDigitos,
   telefonoValido,
-} from '../../src/lib/datosEnvio';
+} from '../../src/modulos/cuenta';
 
 const completos = {
   telefono: '300 111 2233',

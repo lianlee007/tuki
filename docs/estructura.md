@@ -29,6 +29,7 @@ tuki/
 | Carpeta | Responsabilidad | Qué **no** debe ir aquí |
 | --- | --- | --- |
 | `src/` | Todo el código que se ejecuta en el navegador | Scripts de build, configuración de Docker |
+| `src/modulos/` | Un módulo por capacidad de negocio (`pedidos`, `menu`…) con dominio, aplicación, infraestructura y componentes | Código transversal (va en `compartido`) |
 | `src/api/` | Clientes HTTP del navegador (Supabase, gateway) | Reglas de negocio complejas |
 | `src/lib/` | Funciones puras reutilizables (color, slug, formato) | Llamadas a red |
 | `src/paginas/` | Una página por ruta | Componentes reutilizables |
@@ -82,13 +83,14 @@ del entregable; se documentan solo para que nadie las confunda con la app.
 
 | Si el archivo… | Va en |
 | --- | --- |
+| Implementa una capacidad de negocio | `src/modulos/<módulo>/` (ver `docs/arquitectura/mapa-modulos.md`) |
 | Renderiza interfaz | `src/componentes/` o `src/paginas/` |
 | Llama a una API | `src/api/` |
 | Es una función pura | `src/lib/` |
 | Es un tipo compartido | `src/tipos/` |
 | Es una prueba de la SPA | `tests/frontend/` |
 | Cambia el esquema de datos | `db/` |
-| Es del gateway | `services/ai-gateway/app/` (dominio, puertos, servicios o adaptadores) |
+| Es del gateway | `services/ai-gateway/app/` (`dominio`, `puertos`, `servicios`, `adaptadores`, `entrada`) |
 | Es un manifiesto o política | `deploy/` |
 | Es una decisión de arquitectura | `docs/adr/` |
 | Es una propuesta de producto | `docs/producto/` |

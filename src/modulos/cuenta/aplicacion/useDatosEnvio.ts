@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { apiCuenta } from '../api/apiCuenta';
+import { apiCuenta } from '../infraestructura/apiCuenta';
 import {
   datosEnvioCompletos,
   normalizarDatosEnvio,
   type DatosEnvio,
   type DatosEnvioCuenta,
-} from '../lib/datosEnvio';
+} from '../dominio/datosEnvio';
 
 export interface EstadoDatosEnvio {
   datos: DatosEnvioCuenta | null;

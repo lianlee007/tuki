@@ -9,7 +9,7 @@ import {
   tieneRespuesta,
   type Resena,
   type ResumenResenas,
-} from '../../lib/resenas';
+} from '../../modulos/resenas';
 import type { Platillo } from '../../tipos/modelos';
 import type { EstilosComunes } from './PlantillaRestaurante';
 import { FormularioResena } from './FormularioResena';
