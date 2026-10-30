@@ -15,6 +15,7 @@ resources:
   - servicemonitor-web.yaml
   - servicemonitor-gateway.yaml
   - prometheusrule.yaml
+  - slo.yaml
 
 configMapGenerator:
   - name: tuki-grafana-dashboard
