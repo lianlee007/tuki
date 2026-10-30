@@ -7,13 +7,15 @@
  * versión o reinstalar, sin abrir el agente.
  *
  * Uso:
- *   node scripts/verificar-mcp.mjs
+ *   node scripts/verificar-mcp.mjs            # resumen (recomendado)
+ *   node scripts/verificar-mcp.mjs --verbose  # lista todas las herramientas
  */
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const RAIZ = resolve(import.meta.dirname, '..');
+const VERBOSE = process.argv.includes('--verbose');
 
 const SERVIDORES = [
   { nombre: 'codegraph', args: ['scripts/mcp-codegraph.mjs'] },
@@ -64,7 +66,9 @@ function probar({ nombre, args }) {
         if (mensaje.id === 2) {
           if (Array.isArray(mensaje.result?.tools)) {
             const herramientas = mensaje.result.tools.map((t) => t.name);
-            cerrar(true, `${herramientas.length} herramientas`, herramientas);
+            const bytes = Buffer.byteLength(JSON.stringify(mensaje.result.tools), 'utf8');
+            const kb = (bytes / 1024).toFixed(1);
+            cerrar(true, `${herramientas.length} herramientas · ${kb} KB de esquema`, herramientas);
           } else {
             cerrar(false, JSON.stringify(mensaje.error ?? mensaje).slice(0, 300));
           }
@@ -117,7 +121,7 @@ for (const servidor of SERVIDORES) {
 for (const r of resultados) {
   if (r.ok) {
     console.log(`OK  ${r.nombre}: ${r.detalle}`);
-    console.log(`    ${r.herramientas.slice(0, 8).join(', ')}${r.herramientas.length > 8 ? '…' : ''}`);
+    if (VERBOSE) console.log(`    ${r.herramientas.join(', ')}`);
   } else {
     console.error(`FALLO  ${r.nombre}: ${r.detalle}`);
   }

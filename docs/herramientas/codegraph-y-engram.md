@@ -87,6 +87,19 @@ Las herramientas MCP se cargan al iniciar la sesión. Si se autoriza a mitad de
 una sesión, hay que abrir una nueva (o recargar la app) para ver
 `tools.supabase.*` dentro de `execute`.
 
+## Coste en contexto
+
+Los dos servidores exponen 42 y 23 herramientas. Medidos con `tools/list`, sus
+esquemas completos pesan 42 KB (~10.5k tokens) y 29 KB (~7.3k tokens). No viajan
+completos en cada turno: OpenCode usa Code Mode
+(`mcp.servers.*.codemode: true`) y el agente las descubre con `search()` dentro
+de `execute`. Aun así, el catálogo reducido y las instrucciones de cada servidor
+cuestan contexto; para tareas que no tocan código ni memoria, `pnpm mcp:ligero`
+los apaga y `pnpm mcp:completo` los vuelve a encender.
+
+`pnpm contexto` muestra el gasto real de la sesión y las salidas más grandes.
+Ver `docs/herramientas/ahorro-contexto.md`.
+
 ## Verificación
 
 ```bash

@@ -2,9 +2,10 @@
 /**
  * Cambia el modo de los servidores MCP del proyecto.
  *
- * Las herramientas de cada MCP viajan en el contexto de todos los turnos: con
- * CodeGraph (42) y Engram (23) el piso de tokens sube aunque no se usen. Para
- * tareas que no tocan código ni memoria conviene apagarlos.
+ * OpenCode expone cada MCP por Code Mode, así que el catálogo completo no viaja
+ * en cada turno; aun así, el catálogo reducido y las instrucciones del servidor
+ * (CodeGraph 42 herramientas, Engram 23) suman contexto. Para tareas que no
+ * tocan código ni memoria conviene apagarlos.
  *
  *   node scripts/modo-agente.mjs estado    # muestra el modo actual
  *   node scripts/modo-agente.mjs ligero    # desconecta codegraph y engram
