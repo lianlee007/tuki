@@ -6,6 +6,7 @@
   },
   "compaction": {
     "auto": true,
+    "prune": true,
     "keep": {
       "tokens": 10000
     },
@@ -19,6 +20,7 @@
           "node",
           "scripts/mcp-codegraph.mjs"
         ],
+        "codemode": true,
         "disabled": false
       },
       "engram": {
@@ -27,13 +29,28 @@
           "node",
           "scripts/mcp-engram.mjs"
         ],
+        "codemode": true,
         "disabled": false
       },
       "supabase": {
         "type": "remote",
         "url": "https://mcp.supabase.com/mcp?project_ref=eroezvbfxqfrjtojaqus&read_only=true&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching",
+        "codemode": true,
         "enabled": true
       }
+    }
+  },
+  "command": {
+    "contexto": {
+      "description": "Mide el contexto de la sesión y propone recortes",
+      "agent": "build",
+      "template": "Ejecuta `pnpm contexto` y resume el resultado en cinco líneas: contexto actual, mayor gasto, y la acción concreta de recorte. No repitas la tabla completa."
+    },
+    "explorar": {
+      "description": "Explora el repositorio en un subagente y devuelve solo lo esencial",
+      "agent": "explore",
+      "subtask": true,
+      "template": "Explora el repositorio para responder: $ARGUMENTS\n\nDevuelve solo rutas, símbolos y hallazgos necesarios; no vuelques archivos completos."
     }
   }
 }
