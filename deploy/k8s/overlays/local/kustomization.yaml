@@ -67,16 +67,6 @@ patches:
         name: tuki
 
   - target:
-      kind: HorizontalPodAutoscaler
-      name: tuki-ai-gateway
-    patch: |-
-      $patch: delete
-      apiVersion: autoscaling/v2
-      kind: HorizontalPodAutoscaler
-      metadata:
-        name: tuki-ai-gateway
-
-  - target:
       kind: PodDisruptionBudget
       name: tuki
     patch: |-
