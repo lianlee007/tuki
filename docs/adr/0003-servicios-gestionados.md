@@ -1,6 +1,6 @@
-# ADR 0003 — Supabase, Cloudinary y Groq fuera del clúster
+# ADR 0003 — Supabase, Supabase Storage y Groq fuera del clúster
 
-- **Estado:** aceptado
+- **Estado:** aceptado (parcialmente superado por el [ADR 0008](0008-imagenes-en-supabase-storage.md))
 - **Fecha:** 2026-10-25
 
 ## Contexto
@@ -9,7 +9,8 @@ El trabajo pide justificar qué servicios se containerizan y cuáles no. Tuki us
 tres servicios externos:
 
 - **Supabase:** Postgres, Auth, RLS y almacenamiento.
-- **Cloudinary:** subida, transformación y CDN de imágenes.
+- **Supabase Storage:** subida y servicio de imágenes (sustituye a Cloudinary,
+  ver ADR 0008).
 - **Groq Cloud:** inferencia de modelos de lenguaje.
 
 ## Decisión
@@ -27,13 +28,14 @@ No containerizarlos. El clúster solo ejecuta la SPA (`frontend`) y el AI Gatewa
 - La SPA sigue hablando directo con Supabase; el gateway solo valida el JWT con
   el JWKS público.
 
-### Cloudinary
+### Supabase Storage
 
-- El valor está en la CDN, las transformaciones y el almacenamiento, no en el
-  proceso.
-- La subida es *unsigned* desde el navegador; moverla al backend requeriría
-  firmar peticiones y cambiar la SPA, algo fuera del alcance autorizado.
-- Containerizar un CDN no aporta disponibilidad ni seguridad.
+- El valor está en la CDN, la cuota y el almacenamiento, no en el proceso.
+- Comparte proyecto, credenciales y RLS con la base de datos: un proveedor menos.
+- La subida la hace el navegador tras comprimir la imagen; no hay servidor que
+  containerizar.
+- **Nota:** desde el ADR 0008 Cloudinary ya no se usa. Esta sección se conserva
+  como registro de la decisión original.
 
 ### Groq
 

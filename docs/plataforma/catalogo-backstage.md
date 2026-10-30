@@ -22,7 +22,7 @@ El archivo `catalog-info.yaml` de la raíz define:
 | Componente | `Component` | `tuki-web` | SPA React/Vite servida por Nginx |
 | Componente | `Component` | `tuki-ai-gateway` | Gateway FastAPI hacia Groq |
 | Recurso | `Resource` | `supabase` | Postgres, Auth y RLS |
-| Recurso | `Resource` | `cloudinary` | Imágenes de platillos |
+| Recurso | `Resource` | `supabase-storage` | Imágenes de platillos, restaurantes y reseñas |
 | Recurso | `Resource` | `groq` | Inferencia de texto externa |
 
 Relaciones:
@@ -31,7 +31,7 @@ Relaciones:
 tuki-web ──dependsOn──► tuki-ai-gateway
    │                         │
    ├──► supabase ◄───────────┤
-   ├──► cloudinary           └──► groq
+   ├──► supabase-storage     └──► groq
 ```
 
 Anotaciones relevantes:

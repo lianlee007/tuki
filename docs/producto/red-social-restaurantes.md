@@ -11,7 +11,7 @@ volver.
 > modera y la responde desde el panel y la cabecera social permite compartir.
 > La migración `db/sql-resenas.sql` añadió `usuario_id`, `foto_url`,
 > `respuesta_dueno` y las políticas RLS, y está aplicada en Supabase. Las fotos
-> usan el mismo Cloudinary sin firmar de los platillos; no hay bucket nuevo.
+> usan el mismo Storage de Supabase que los platillos, en el bucket `resenas`.
 >
 > La cuenta del comensal ya guarda **teléfono y dirección de entrega** en
 > `public.users` (`db/sql-datos-envio.sql`). El registro los pide y ofrece
@@ -174,8 +174,8 @@ Sigue las reglas de `docs/estructura.md`:
   estados vacío/error/carga y «ver todas».
 - `FormularioResena`: estrellas, plato, nombre, comentario, foto opcional,
   validación, estado de éxito y aviso de que queda pendiente de aprobación. La
-  foto se comprime en el navegador y se sube a Cloudinary con el preset sin
-  firmar del proyecto (máximo 8 MB; JPG, PNG o WebP).
+  foto se comprime en el navegador y se sube a Supabase Storage, bucket
+  `resenas` (máximo 8 MB; JPG, PNG o WebP).
 - `ResenasPublicas`: promedio, distribución 5→1, lista con foto ampliable,
   respuesta del restaurante y estados vacío/error/carga.
 - Cabecera social de la ficha: promedio, número de reseñas, **Escribir reseña**

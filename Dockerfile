@@ -44,14 +44,10 @@ FROM deps AS build
 
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
-ARG VITE_CLOUDINARY_CLOUD_NAME
-ARG VITE_CLOUDINARY_UPLOAD_PRESET
 ARG VITE_AI_GATEWAY_URL=/api
 
 ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL} \
     VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
-    VITE_CLOUDINARY_CLOUD_NAME=${VITE_CLOUDINARY_CLOUD_NAME} \
-    VITE_CLOUDINARY_UPLOAD_PRESET=${VITE_CLOUDINARY_UPLOAD_PRESET} \
     VITE_AI_GATEWAY_URL=${VITE_AI_GATEWAY_URL}
 
 # Fallar temprano si falta configuración: un bundle sin Supabase arranca pero
@@ -61,9 +57,7 @@ RUN set -eu; \
     faltantes=""; \
     for variable in \
         VITE_SUPABASE_URL \
-        VITE_SUPABASE_ANON_KEY \
-        VITE_CLOUDINARY_CLOUD_NAME \
-        VITE_CLOUDINARY_UPLOAD_PRESET; do \
+        VITE_SUPABASE_ANON_KEY; do \
         eval "valor=\$$variable"; \
         if [ -z "$valor" ]; then faltantes="$faltantes $variable"; fi; \
     done; \

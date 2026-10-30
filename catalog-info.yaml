@@ -69,11 +69,11 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: cloudinary
-  description: Almacenamiento y transformación de imágenes de platillos. Servicio gestionado.
+  name: supabase-storage
+  description: Buckets de imágenes de platillos, restaurantes y reseñas. Servicio gestionado.
   links:
-    - url: https://cloudinary.com
-      title: Cloudinary
+    - url: https://supabase.com/docs/guides/storage
+      title: Supabase Storage
       icon: cloud
 spec:
   type: object-storage
@@ -127,7 +127,7 @@ spec:
   system: tuki
   dependsOn:
     - resource:supabase
-    - resource:cloudinary
+    - resource:supabase-storage
     - component:tuki-ai-gateway
 
 ---

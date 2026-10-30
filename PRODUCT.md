@@ -32,7 +32,7 @@ Que quien busca comida encuentre un plato en la portada en menos de un minuto y 
 - El pedido se cierra por **WhatsApp** al restaurante, con los mismos datos de entrega que el menú público reutiliza (`tuki_user_basic_<uid>` y la primera dirección guardada).
 
 ## Stack
-React 19, TypeScript 5.8, Vite, Tailwind CSS, Framer Motion, React Router 7, Zustand, Supabase, Groq (IA), Cloudinary.
+React 19, TypeScript 5.8, Vite, Tailwind CSS, Framer Motion, React Router 7, Zustand, Supabase (datos y Storage), Groq (IA).
 
 ## Restricciones de la reforma
 - Mantener **toda** la funcionalidad existente: rutas, autenticación, carrito, WhatsApp, plantillas de restaurante, IA generativa, temas de color, modo oscuro/claro.
