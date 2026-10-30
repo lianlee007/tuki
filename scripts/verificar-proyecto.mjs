@@ -48,6 +48,7 @@ const gateway = resolve(RAIZ, 'services', 'ai-gateway');
 console.log('== Frontend ==');
 correr('tipos (tsc)', pnpm, ['typecheck']);
 correr('lint (eslint)', pnpm, ['lint']);
+correr('arquitectura', pnpm, ['arquitectura']);
 correr('pruebas (vitest)', pnpm, ['test']);
 correr('build (vite)', pnpm, ['build']);
 

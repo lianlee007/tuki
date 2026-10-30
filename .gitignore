@@ -48,3 +48,8 @@ __pycache__
 *.sw?
 
 .vercel
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/

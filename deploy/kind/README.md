@@ -16,7 +16,6 @@ tres nodos, carga las imágenes locales y aplica el overlay `local`.
 - `kind` 0.20 o superior.
 - `kubectl` 1.27 o superior.
 - Al menos 4 GB de RAM libres y 10 GB de disco.
-- Las variables de build de la SPA (`VITE_SUPABASE_*`, `VITE_CLOUDINARY_*`).
 
 En Windows, ejecuta los comandos desde WSL o Git Bash.
 
@@ -51,8 +50,6 @@ directamente en los nodos de kind.
 docker build \
   --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
   --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
-  --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
-  --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   --build-arg VITE_AI_GATEWAY_URL=/api \
   -t tuki:local-0.2.0 .
 

@@ -5,7 +5,7 @@ AI Gateway en FastAPI, observabilidad, GitOps con ArgoCD y cadena de suministro
 verificable (Fases 0 y 1 del trabajo CloudForge AI).
 
 El objetivo es **no cambiar el producto**: la SPA, sus rutas, Supabase y
-Cloudinary siguen funcionando igual. El único cambio funcional autorizado es que
+Supabase Storage siguen funcionando igual. El único cambio funcional autorizado es que
 la IA del navegador llama a `/api/v1/ai/chat` en lugar de ir directo a Groq con
 una clave expuesta.
 
@@ -17,7 +17,7 @@ una clave expuesta.
 Navegador
   │  HTTPS
   ├──────────────► Supabase Auth / Postgres      (servicio gestionado)
-  ├──────────────► Cloudinary                    (servicio gestionado)
+  ├──────────────► Supabase Storage              (servicio gestionado)
   │
   ▼
 Ingress (ingress-nginx + cert-manager)
@@ -49,7 +49,7 @@ Decisiones clave:
 - **La IA pública sigue disponible.** El carrito anónimo puede corregir texto
   con una cuota por IP; los usuarios autenticados tienen una cuota mayor. Un
   token inválido devuelve `401`, nunca se degrada a anónimo.
-- **Servicios gestionados fuera del clúster.** Supabase, Cloudinary y Groq Cloud
+- **Servicios gestionados fuera del clúster.** Supabase (Postgres, Auth, Storage) y Groq Cloud
   no se containerizan (ver `docs/adr/0003-servicios-gestionados.md`).
 
 ---
@@ -107,8 +107,6 @@ catalog-info.yaml                           Catálogo mínimo de Backstage
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | Sí | URL del proyecto Supabase |
 | `VITE_SUPABASE_ANON_KEY` | Sí | Clave anónima (pública por diseño) |
-| `VITE_CLOUDINARY_CLOUD_NAME` | Sí | Subida de imágenes |
-| `VITE_CLOUDINARY_UPLOAD_PRESET` | Sí | Preset sin firmar |
 | `VITE_AI_GATEWAY_URL` | No | Prefijo del gateway; por defecto `/api` |
 
 `VITE_*` se resuelve al compilar: cambiar una exige reconstruir la imagen. El
@@ -144,7 +142,7 @@ Plantillas: `.env.example` (raíz) y `services/ai-gateway/.env.example`.
 ## 5. Docker Compose
 
 ```bash
-cp .env.example .env.local        # rellena Supabase, Cloudinary y GROQ_API_KEY
+cp .env.example .env.local        # rellena Supabase y GROQ_API_KEY
 docker compose --env-file .env.local up -d --build
 
 docker compose --env-file .env.local ps
@@ -179,8 +177,6 @@ ni si `SUPABASE_URL` conserva el placeholder `TU_PROYECTO`.
 docker build \
   --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
   --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
-  --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
-  --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   --build-arg VITE_AI_GATEWAY_URL=/api \
   -t ghcr.io/lianlee007/tuki:0.1.0 .
 ```
@@ -312,8 +308,6 @@ desactiva Ingress, HPA, PDB, NetworkPolicy y la validación JWT.
 docker build -t tuki:local-0.2.0 \
   --build-arg VITE_SUPABASE_URL="$VITE_SUPABASE_URL" \
   --build-arg VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" \
-  --build-arg VITE_CLOUDINARY_CLOUD_NAME="$VITE_CLOUDINARY_CLOUD_NAME" \
-  --build-arg VITE_CLOUDINARY_UPLOAD_PRESET="$VITE_CLOUDINARY_UPLOAD_PRESET" \
   .
 docker build -t tuki-ai-gateway:local-0.2.0 services/ai-gateway
 
@@ -570,8 +564,6 @@ Secretos de Actions necesarios:
 ```
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
-VITE_CLOUDINARY_CLOUD_NAME
-VITE_CLOUDINARY_UPLOAD_PRESET
 ```
 
 `GROQ_API_KEY` **no** se usa en el build; se inyecta en el clúster.

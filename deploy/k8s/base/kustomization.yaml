@@ -14,7 +14,6 @@ resources:
   - ai-gateway-service.yaml
   - ingress.yaml
   - hpa.yaml
-  - ai-gateway-hpa.yaml
   - pdb.yaml
   - ai-gateway-pdb.yaml
   - networkpolicy.yaml

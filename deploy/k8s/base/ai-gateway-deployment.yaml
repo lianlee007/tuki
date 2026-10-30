@@ -8,7 +8,11 @@ metadata:
     app.kubernetes.io/part-of: tuki
     backstage.io/kubernetes-id: tuki-ai-gateway
 spec:
-  replicas: 2
+  # Una sola réplica a propósito: el limitador de tasa del gateway es un token
+  # bucket en memoria y con N pods la cuota efectiva se multiplicaría por N.
+  # La cuota global vive en Cloudflare; el HPA del gateway se retiró hasta
+  # migrar el limitador a un almacén compartido (ver docs/arquitectura/rate-limit.md).
+  replicas: 1
   revisionHistoryLimit: 3
   progressDeadlineSeconds: 600
   strategy:

@@ -27,7 +27,7 @@ instaló una plataforma completa y no se implementó IA local.
 Adaptaciones conscientes:
 
 - **Servicios gestionados en lugar de estado en el clúster.** Supabase,
-  Cloudinary y Groq no se containerizan. Ver `docs/adr/0003-servicios-gestionados.md`.
+  Supabase Storage y Groq no se containerizan. Ver `docs/adr/0003-servicios-gestionados.md`.
 - **Kustomize en lugar de Helm.** El PDF admite Kustomize para variantes por
   ambiente. Se eligió por simplicidad y porque ArgoCD lo soporta de forma nativa.
 - **Catálogo Backstage, no instalación completa.** El PDF permite diseñar el
@@ -99,7 +99,7 @@ no usa la aplicación tras eliminar la integración con Gemini.
 | Configuración externa y secretos de laboratorio | Variables `VITE_*` en build; `GROQ_API_KEY` solo en runtime; plantillas `.env.example` | `deploy/README.md` §4, `.env.example`, `services/ai-gateway/.env.example` | Cubierto |
 | Doce factores | Aplicación sin estado, configuración por entorno, logs a stdout, puertos explícitos, procesos descartables | Ver tabla 3.2 | Cubierto con matices |
 | Construcción reproducible | `pnpm-lock.yaml`, `requirements.txt` con hashes, `--frozen-lockfile`, bases por digest | `pnpm-lock.yaml`, `services/ai-gateway/requirements.txt`, CI | Cubierto |
-| Docker Compose con dependencias | `frontend` + `backend`; Supabase/Cloudinary/Groq como servicios gestionados | `docker-compose.yml`, ADR 0003 | Cubierto con adaptación |
+| Docker Compose con dependencias | `frontend` + `backend`; Supabase (datos y Storage)/Groq como servicios gestionados | `docker-compose.yml`, ADR 0003 | Cubierto con adaptación |
 | Pruebas y validación | `pytest` (39 pruebas), `vitest` (36 pruebas), `tsc --noEmit`, ESLint, Ruff, build de Vite, Hadolint | CI, `services/ai-gateway/tests/`, `tests/frontend/` | Cubierto |
 | Inspección de tamaño, puertos, procesos y recursos | Límites en Compose/K8s, imágenes multi-etapa, usuario no root | `docker-compose.yml`, manifiestos, `deploy/scripts/verificar-supply-chain.sh` | Cubierto |
 | Microproyecto con README, Dockerfile, Compose, variables de ejemplo, pruebas y decisiones | Todo presente en el repositorio | `README.md`, `deploy/README.md`, `docs/adr/`, tests | Cubierto |
@@ -111,7 +111,7 @@ no usa la aplicación tras eliminar la integración con Gemini.
 | 1. Código base versionado | Repositorio Git único con frontend, gateway, despliegue y documentación |
 | 2. Dependencias declaradas | `pnpm-lock.yaml` y `requirements.txt` con hashes |
 | 3. Configuración en el entorno | `VITE_*` en build; variables del gateway en runtime; sin configuración hardcodeada de secretos |
-| 4. Servicios de respaldo | Supabase, Cloudinary y Groq se tratan como recursos externos sustituibles |
+| 4. Servicios de respaldo | Supabase (datos y Storage) y Groq se tratan como recursos externos sustituibles |
 | 5. Build, release y run separados | Imagen inmutable por tag/digest; configuración inyectada al desplegar |
 | 6. Procesos sin estado | La SPA es estática; el gateway no escribe estado local salvo el rate limit en memoria |
 | 7. Vinculación a puertos | Nginx en `8080`, gateway en `8000`, servicios en `80`/`8000` |
@@ -155,7 +155,7 @@ curl http://localhost:8080/api/healthz
 | StatefulSets, DaemonSets, Jobs y CronJobs | No se usan en la aplicación: no hay estado local ni tareas programadas | ADR 0003 | No aplica |
 | Services e Ingress | `Service` ClusterIP e Ingress con `/` y `/api`; verificado en runtime con ingress-nginx (`/healthz` y `/api/healthz` responden 200) | `deploy/k8s/base/ingress.yaml`, `deploy/k8s/overlays/local-plataforma`, `docs/laboratorio/modulo-2-runtime.md` | Cubierto |
 | ConfigMaps y Secrets | ConfigMap del gateway y secreto `tuki-ai-gateway` fuera de Git | `ai-gateway-configmap.yaml`, `ai-gateway-secret.example.yaml` | Cubierto |
-| PersistentVolumes y StorageClass | No aplica: datos en Supabase y archivos en Cloudinary | ADR 0003 | No aplica |
+| PersistentVolumes y StorageClass | No aplica: datos e imágenes en Supabase (Postgres y Storage) | ADR 0003 y 0008 | No aplica |
 | Namespaces y RBAC | Namespace `tuki`; ServiceAccount sin token; `Role`/`RoleBinding` de solo lectura (pods, logs, deployments, ingress) para el grupo de desarrolladores, sin acceso a Secretos | `namespace.yaml`, `serviceaccount.yaml`, `rbac.yaml` | Cubierto |
 | Requests, limits y probes | Límites, `liveness`/`readiness`/`startup` y recursos por contenedor | Deployments y HPA | Cubierto |
 | Autoscaling, PDB y alta disponibilidad | HPA 2–20 con métricas reales de metrics-server (escaló de 1 a 2 réplicas), PDB `minAvailable: 1`, topología y anti-affinity | `hpa.yaml`, `pdb.yaml`, Deployments, `docs/laboratorio/modulo-2-runtime.md` | Cubierto en runtime |

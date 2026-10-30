@@ -50,12 +50,14 @@ patches:
         value: 20
 
   - target:
-      kind: HorizontalPodAutoscaler
+      kind: Deployment
       name: tuki-ai-gateway
     patch: |-
+      # El limitador es por pod: 1 réplica mantiene la cuota exacta mientras no
+      # haya un almacén compartido. Ver docs/arquitectura/rate-limit.md.
       - op: replace
-        path: /spec/maxReplicas
-        value: 20
+        path: /spec/replicas
+        value: 1
 
   - target:
       kind: ConfigMap
