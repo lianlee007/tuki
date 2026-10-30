@@ -1,6 +1,6 @@
 
-import { supabase } from '../lib/supabase';
-import { Restaurante, Tema } from '../tipos/modelos';
+import { supabase } from '../../../lib/supabase';
+import { Restaurante, Tema } from '../../../tipos/modelos';
 
 /**
  * Colores del modo oscuro. Son columnas opcionales: si la base de datos todavía

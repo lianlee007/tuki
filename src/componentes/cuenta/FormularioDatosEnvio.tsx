@@ -7,7 +7,7 @@ import {
   normalizarDatosEnvio,
   soloDigitos,
   type DatosEnvio,
-} from '../../lib/datosEnvio';
+} from '../../modulos/cuenta';
 
 interface Props {
   /** Datos actuales de la cuenta; si faltan, el formulario arranca vacío. */

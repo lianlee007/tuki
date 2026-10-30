@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { LIMITES } from '../../constantes';
 import { prefiereMenosMovimiento } from '../../lib/utils';
-import { EstadoPlatillo, ESTADOS, estadoDe, camposDeEstado, definicionEstado } from './estadoPlatillo';
+import { EstadoPlatillo, ESTADOS, estadoDe, camposDeEstado, definicionEstado } from '../../modulos/menu';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 
 interface EditorPlatilloProps {

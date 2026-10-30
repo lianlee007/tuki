@@ -97,6 +97,10 @@ class RateLimiter:
         if len(self._buckets) > 20_000:
             self._buckets.clear()
 
+    async def acheck(self, kind: str, key: str) -> RateDecision:
+        """Alias asíncrono para quien prefiera `await`; hoy no se usa."""
+        return self.check(kind, key)
+
     @property
     def size(self) -> int:
         with self._lock:

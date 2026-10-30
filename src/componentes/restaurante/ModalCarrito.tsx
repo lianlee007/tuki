@@ -6,11 +6,11 @@ import {
 import { Platillo } from '../../tipos/modelos';
 import { LogoWhatsApp } from '../ui';
 import { apiWhatsApp } from '../../api/misApis';
-import { apiPedidos } from '../../api/apiPedidos';
-import { apiCuenta } from '../../api/apiCuenta';
+import { apiPedidos } from '../../modulos/pedidos';
+import { apiCuenta } from '../../modulos/cuenta';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
-import { datosEnvioCompletos, formatearDireccionEnvio } from '../../lib/datosEnvio';
+import { datosEnvioCompletos, formatearDireccionEnvio } from '../../modulos/cuenta';
 import { variablesAf } from '../../lib/color';
 import { LIMITES } from '../../constantes';
 import type { EstilosComunes } from './PlantillaRestaurante';

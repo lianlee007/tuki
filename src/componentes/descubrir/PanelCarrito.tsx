@@ -3,13 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
-import { useStoreCarrito } from '../../store/storeCarrito';
+import { apiPedidos, useStoreCarrito } from '../../modulos/pedidos';
 import { apiDescubrir } from '../../api/apiDescubrir';
 import { apiWhatsApp } from '../../api/misApis';
-import { apiPedidos } from '../../api/apiPedidos';
-import { apiCuenta } from '../../api/apiCuenta';
+import { apiCuenta } from '../../modulos/cuenta';
 import { formatearPrecio } from '../../lib/utils';
-import { datosEnvioCompletos, formatearDireccionEnvio } from '../../lib/datosEnvio';
+import { datosEnvioCompletos, formatearDireccionEnvio } from '../../modulos/cuenta';
 import { Hoja } from './Hoja';
 
 interface PanelCarritoProps {

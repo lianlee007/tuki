@@ -18,7 +18,7 @@ import { SEO } from '../componentes/sistema-diseno/SEO';
 import { MisResenas } from '../componentes/cuenta/MisResenas';
 import { MisPedidos } from '../componentes/cuenta/MisPedidos';
 import { SeccionDatosEnvio } from '../componentes/cuenta/SeccionDatosEnvio';
-import { useDatosEnvio } from '../hooks/useDatosEnvio';
+import { useDatosEnvio } from '../modulos/cuenta';
 
 type Seccion = 'resenas' | 'pedidos' | 'envio';
 

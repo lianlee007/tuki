@@ -11,7 +11,7 @@ import {
   validarRespuesta,
   validarResena,
   type Resena,
-} from '../../src/lib/resenas';
+} from '../../src/modulos/resenas';
 
 const resena = (cambios: Partial<Resena> = {}): Resena => ({
   id: 'r1',

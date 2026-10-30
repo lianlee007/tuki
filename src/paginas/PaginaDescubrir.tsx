@@ -20,7 +20,7 @@ import {
 } from '../componentes/descubrir/filtros';
 import { apiDescubrir } from '../api/apiDescubrir';
 import { useAuth } from '../contexto/ContextoAutenticacion';
-import { useStoreCarrito } from '../store/storeCarrito';
+import { useStoreCarrito } from '../modulos/pedidos';
 import { formatearPrecio } from '../lib/utils';
 import type {
   PlatoDescubierto,

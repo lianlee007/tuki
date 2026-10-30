@@ -11,7 +11,7 @@ import {
   siguienteEstado,
   unidadesPedido,
   type Pedido,
-} from '../../src/lib/pedidos';
+} from '../../src/modulos/pedidos';
 
 const pedido = (cambios: Partial<Pedido> = {}): Pedido => ({
   id: '0f8b3f7e-1c1a-4b1a-9c1a-abcdef123456',

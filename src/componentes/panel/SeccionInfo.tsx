@@ -17,7 +17,7 @@ import { SelectorCocina } from './SelectorCocina';
 interface SeccionInfoProps {
     restaurante: Restaurante;
     guardarRestaurante: (datos?: Partial<Restaurante>) => Promise<void>;
-    subirImagen: (file: File) => Promise<string>;
+    subirImagen: (file: File, destino?: 'platillos' | 'restaurantes' | 'resenas') => Promise<string>;
     sugerirIA: (prompt: string, setter: (val: string) => void) => Promise<void>;
     guardando: boolean;
     mostrarMensaje: (tipo: 'exito' | 'error', texto: string) => void;
@@ -251,7 +251,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         if (!file) return;
         setImgLoading(prev => ({ ...prev, [tipo]: true }));
         try {
-            const url = await subirImagen(file);
+            const url = await subirImagen(file, 'restaurantes');
             if (tipo === 'logo') setLogoUrl(url); else setBannerUrl(url);
         } catch (error: any) {
             mostrarMensaje('error', error?.message || 'No se pudo subir la imagen.');
