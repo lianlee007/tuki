@@ -22,7 +22,7 @@ Incluye: versión o commit, pasos para reproducir, impacto esperado y, si lo
 tienes, una propuesta de mitigación. No adjuntes secretos reales ni datos
 personales: usa valores de ejemplo.
 
-Las claves comprometidas se rotan en Supabase, Cloudinary y Groq antes de
+Las claves comprometidas se rotan en Supabase y Groq antes de
 cualquier otra acción; el procedimiento está en `docs/runbook.md`.
 
 ## Alcance
@@ -36,7 +36,7 @@ Dentro del alcance:
 
 Fuera del alcance:
 
-- Supabase, Cloudinary y Groq como servicios gestionados.
+- Supabase (Postgres, Auth y Storage) y Groq como servicios gestionados.
 - El clúster de laboratorio y sus credenciales.
 - Ataques de denegación de servicio sin una prueba de concepto acotada.
 

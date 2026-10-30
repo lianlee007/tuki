@@ -6,8 +6,8 @@ Kubernetes. No cubre la IA local porque está fuera del alcance de este trabajo.
 
 - **Fecha:** 2026-10-25
 - **Versión:** 1.0
-- **Alcance:** Tuki en Compose y Kubernetes, con Supabase, Cloudinary y Groq como
-  servicios gestionados.
+- **Alcance:** Tuki en Compose y Kubernetes, con Supabase (datos, Auth y Storage)
+  y Groq como servicios gestionados.
 - **Metodología:** STRIDE para el análisis por frontera de confianza, con
   criticidad basada en probabilidad × impacto. Se toma como referencia NIST SSDF
   y SLSA para la parte de cadena de suministro.
@@ -24,8 +24,8 @@ Supuestos:
    `restricted` y las políticas de admisión del entorno.
 2. Supabase aplica RLS en todas las tablas expuestas y el frontend solo usa la
    clave `anon`. La clave `service_role` nunca sale del backend de Supabase.
-3. Cloudinary usa un preset de subida sin firma con restricciones de formato,
-   tamaño y carpeta.
+3. Supabase Storage aplica políticas RLS por bucket: lectura pública, escritura
+   solo para usuarios autenticados y borrado reservado al propietario.
 4. Groq es un proveedor externo de confianza para el texto enviado, con sus
    propias políticas de retención.
 5. El repositorio y el registro de imágenes tienen controles de acceso y
@@ -36,7 +36,7 @@ Exclusiones:
 
 - IA local, modelos en el clúster y GPU (módulos 5 y 6).
 - Seguridad física, red del proveedor cloud y compromiso total de Supabase,
-  Cloudinary o Groq.
+  Supabase Storage o Groq.
 - Fraude de negocio, contenido ilegal subido por usuarios y moderación editorial.
 - Auditoría legal de licencias y cumplimiento normativo específico.
 
@@ -51,8 +51,8 @@ Exclusiones:
 | Clave `anon` de Supabase | Pública por diseño | Alta | Alta | Bundle de la SPA |
 | Datos de restaurantes, menús y platillos | Media | Alta | Alta | Supabase |
 | Datos de cuentas (correo, identificadores) | Alta | Alta | Media | Supabase Auth |
-| Imágenes de platillos | Baja/Media | Media | Media | Cloudinary |
-| Preset de subida de Cloudinary | Pública | Alta | Media | Bundle de la SPA |
+| Imágenes de platillos | Baja/Media | Media | Media | Supabase Storage |
+| Políticas RLS de Storage | Públicas (lectura) | Alta | Media | Supabase |
 | Imágenes de contenedor | Alta | Crítica | Alta | GHCR |
 | Manifiestos y configuración | Alta | Crítica | Alta | Git |
 | Credenciales de CI/CD | Crítica | Crítica | Alta | GitHub Actions (OIDC y secretos) |
@@ -72,7 +72,7 @@ del menú público y coste de la API de Groq.
 | Bot o atacante automatizado | Envía volumen alto, prueba payloads, busca claves | Coste, defacement, extracción |
 | Atacante de cadena de suministro | Dependencia, imagen base, acción de CI o registro | Ejecución en producción |
 | Insiders con acceso al repo o al clúster | Cambian código, manifiestos o secretos | Error o abuso |
-| Proveedor comprometido | Supabase, Cloudinary, Groq o GHCR | Fuera de control directo |
+| Proveedor comprometido | Supabase, Supabase Storage, Groq o GHCR | Fuera de control directo |
 | Operador de plataforma | Lee métricas, aplica cambios, rota secretos | Operación legítima |
 
 ---
@@ -85,7 +85,7 @@ del menú público y coste de la API de Groq.
 │  Navegador (SPA React)                                                   │
 │    │  HTTPS                          HTTPS / WSS                        │
 │    ├──────────────────────────────► Supabase Auth / Postgres (RLS)      │
-│    ├──────────────────────────────► Cloudinary (upload preset)          │
+│    ├──────────────────────────────► Supabase Storage (buckets)          │
 │    │                                                                     │
 │    ▼  HTTPS                                                              │
 │  ┌────────────────────────┐   Frontera 1: Ingress / TLS                 │
@@ -129,7 +129,7 @@ Fronteras:
 | --- | --- | --- |
 | Navegador → Nginx | HTML, JS, CSS, peticiones `/api` | TLS en Ingress, CSP y cabeceras de seguridad |
 | Navegador → Supabase | Credenciales, JWT, datos de menús | TLS, RLS, clave `anon` pública |
-| Navegador → Cloudinary | Imágenes y preset | TLS, restricciones del preset, cuota |
+| Navegador → Supabase Storage | Imágenes comprimidas a WebP | TLS, políticas RLS por bucket, límite de tamaño y cuota |
 | Navegador → Gateway | `prompt`, `system`, token opcional | Validación Pydantic, límite de cuerpo 64k, cuota |
 | Gateway → Supabase JWKS | `kid` y validación de firma | HTTPS, caché de claves |
 | Gateway → Groq | Prompt y parámetros del modelo | HTTPS, clave en servidor, timeout y reintentos |
@@ -218,7 +218,7 @@ gateway no los añade por diseño; la responsabilidad de no incluirlos en el
 | 4 | IDOR entre restaurantes por una política RLS incompleta | Media | Alto | **Alto** | RLS y revisión de políticas; auditoría pendiente |
 | 5 | Dependencia del frontend vulnerable | Alta | Medio | **Medio** | `pnpm audit`; actualización pendiente de React Router/Zod |
 | 6 | Compromiso de una acción de GitHub por tag mutable | Baja | Crítico | **Medio** | Fijar SHA; Dependabot/Renovate |
-| 7 | Abuso del preset de Cloudinary | Media | Medio | **Medio** | Restricciones del preset y cuotas; no está en el repo |
+| 7 | Abuso de la subida a Storage | Media | Medio | **Medio** | RLS por bucket, compresión en el navegador, límite de tamaño y cuota |
 | 8 | Prompt con datos personales enviado a Groq | Media | Medio | **Medio** | Minimización y política de uso; no hay filtro automático |
 | 9 | Caída de Groq | Media | Medio | **Medio** | Fallback y timeout; la SPA sigue disponible |
 | 10 | Contenedor comprometido | Baja | Crítico | **Medio** | Hardening y NetworkPolicy; falta runtime detection |
@@ -276,9 +276,9 @@ gateway no los añade por diseño; la responsabilidad de no incluirlos en el
    esquema, no en un entorno real.
 9. **Datos enviados a Groq.** El proveedor es externo. Se mitiga no enviando PII,
    pero no hay un filtro automático que lo garantice.
-10. **Cloudinary sin firma.** El preset es público por diseño. El abuso se
-    controla con restricciones del preset y cuotas del proveedor, no en este
-    repositorio.
+10. **Subida sin backend intermedio.** Cualquier usuario autenticado puede subir a
+    los buckets. El abuso se controla con políticas RLS, compresión y límite de
+    tamaño en el navegador, y la cuota del plan de Supabase.
 
 ---
 
@@ -291,7 +291,7 @@ gateway no los añade por diseño; la responsabilidad de no incluirlos en el
 | P2 | Fijar las GitHub Actions por SHA y activar Dependabot | Plataforma | Workflow con SHA y PR automáticos |
 | P2 | Añadir ESLint y `tsc --noEmit` al CI | Frontend | Pipeline en verde |
 | P2 | Evaluar Kyverno/Gatekeeper y verificación de firma en admisión | Plataforma | Imagen sin firma rechazada en un clúster de prueba |
-| P2 | Restringir el preset de Cloudinary y alertar de cuota | Producto | Configuración aplicada y alerta probada |
+| P2 | Vigilar la cuota de Storage y ajustar los límites de subida | Producto | Cuota monitorizada y límite probado |
 | P3 | Compilar Tailwind y retirar `unsafe-inline`/`unsafe-eval` | Frontend | CSP sin esas directivas y build en verde |
 | P3 | Rate limit compartido con Redis | Plataforma | Cuota global verificada con dos réplicas |
 | P3 | Política de retención de logs y SBOM | Plataforma | Retención definida y aplicada |

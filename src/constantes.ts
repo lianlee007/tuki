@@ -22,8 +22,7 @@ const getEnv = (key: string, fallback: string): string => {
 export const ENV = {
   SUPABASE_URL: getEnv("VITE_SUPABASE_URL", ""),
   SUPABASE_ANON_KEY: getEnv("VITE_SUPABASE_ANON_KEY", ""),
-  CLOUDINARY_CLOUD_NAME: getEnv("VITE_CLOUDINARY_CLOUD_NAME", ""),
-  CLOUDINARY_UPLOAD_PRESET: getEnv("VITE_CLOUDINARY_UPLOAD_PRESET", ""),
+
   // Ruta del AI Gateway. Por defecto es el mismo origen (`/api`), que Vite
   // redirige en desarrollo y Nginx/Ingress en Docker y Kubernetes. La clave de
   // Groq vive solo en el servidor.

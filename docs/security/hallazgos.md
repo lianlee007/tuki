@@ -44,7 +44,7 @@ Estados: **Resuelto**, **Mitigado**, **Aceptado**, **Abierto**, **En seguimiento
 | H-014 | Caché de imágenes por tag en Docker Desktop | Baja | Resuelto operativamente |
 | H-015 | `apk upgrade` hace que el build no sea bit a bit reproducible | Baja | Aceptado |
 | H-016 | Sin ESLint ni `tsc --noEmit` en CI | Media | Abierto |
-| H-017 | Preset de Cloudinary sin firma expuesto al navegador | Media | Abierto |
+| H-017 | Subida de imágenes sin backend intermedio (preset público) | Media | Resuelto con Storage y RLS |
 | H-018 | Posible envío de datos personales o de negocio a Groq | Media | Aceptado con política |
 | H-019 | Sin revisión automatizada de licencias | Baja | Abierto |
 | H-020 | Sin retención definida de SBOM, logs y evidencias | Baja | Abierto |
@@ -288,17 +288,18 @@ Estados: **Resuelto**, **Mitigado**, **Aceptado**, **Abierto**, **En seguimiento
   no bloquear el trabajo de frontend en curso.
 - **Riesgo residual:** medio: un error de tipos puede llegar a producción.
 
-### H-017 · Preset de Cloudinary sin firma expuesto al navegador
+### H-017 · Subida de imágenes sin backend intermedio
 
 - **Severidad:** Media
-- **Estado:** Abierto (contextual)
-- **Descripción:** el preset de subida es público por diseño. Un atacante puede
-  subir imágenes y consumir cuota o almacenamiento si el preset no está
-  restringido.
-- **Tratamiento propuesto:** limitar formatos, tamaño, carpeta y transformaciones
-  en Cloudinary; activar alertas de cuota; considerar subida firmada si el flujo
-  lo permite.
-- **Riesgo residual:** medio, fuera del repositorio.
+- **Estado:** Resuelto (ADR 0008)
+- **Descripción:** el antiguo preset de Cloudinary era público por diseño. Desde
+  el [ADR 0008](../adr/0008-imagenes-en-supabase-storage.md) las imágenes viven
+  en Supabase Storage: lectura pública, escritura solo para usuarios
+  autenticados y borrado reservado al propietario.
+- **Tratamiento aplicado:** políticas RLS por bucket, compresión WebP en el
+  navegador, límite de tamaño por archivo y cuota del plan de Supabase vigilada
+  desde el panel.
+- **Riesgo residual:** bajo; el abuso queda acotado por RLS y cuota.
 
 ### H-018 · Posible envío de datos personales o de negocio a Groq
 
@@ -390,7 +391,7 @@ Estas comprobaciones no son hallazgos, pero forman parte de la evidencia:
 | Fijar Actions por SHA | H-008 | P2 | Hecho (2026-10-27) |
 | Añadir ESLint y `tsc --noEmit` | H-016 | P2 | Hecho (2026-10-27) |
 | Evaluar admission controller | H-007 | P2 | Resuelto en el laboratorio: Kyverno 1.19 instalado y política CEL activa; falta extenderlo a producción |
-| Restringir preset de Cloudinary | H-017 | P2 | Pendiente |
+| Migrar imágenes a Storage con RLS | H-017 | P2 | Hecho (2026-10-30) |
 | Compilar Tailwind y endurecer CSP | H-009 | P3 | Pendiente |
 | Rate limit compartido | H-006 | P3 | Pendiente |
 | Retención de SBOM y logs | H-020 | P3 | Pendiente |
