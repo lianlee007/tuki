@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import {
   EstadoPlatillo, ESTADOS, estadoDe, contarEstados, DefinicionEstado,
-} from './estadoPlatillo';
+} from '../../modulos/menu';
 import { formatearPrecio, normalizarTexto, prefiereMenosMovimiento } from '../../lib/utils';
 
 interface SeccionMenuProps {

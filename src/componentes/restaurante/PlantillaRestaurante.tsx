@@ -40,11 +40,11 @@ import {
 import { ImagenInteligente, LogoWhatsApp, ThemeToggle, BotonTexto, Estrellas, Avatar } from '../ui';
 import { useTema } from '../../contexto/ContextoTema';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
-import { useStoreCarrito } from '../../store/storeCarrito';
+import { useStoreCarrito } from '../../modulos/pedidos';
 import { ModalCarrito } from './ModalCarrito';
 import { ModalDetallePlatillo } from './ModalDetallePlatillo';
 import { ResenasPublicas } from './ResenasPublicas';
-import { useResenas } from '../../hooks/useResenas';
+import { useResenas } from '../../modulos/resenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
 

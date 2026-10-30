@@ -1,5 +1,17 @@
-import { supabase } from '../lib/supabase';
-import type { EstadoPedido, ItemPedido, Pedido } from '../lib/pedidos';
+/**
+ * Repositorio de pedidos sobre Supabase.
+ *
+ * Es la capa de infraestructura del módulo `pedidos`: traduce filas de
+ * Postgres al modelo de dominio y concentra las consultas. Las reglas de
+ * negocio viven en `../dominio/pedido.ts`.
+ *
+ * El mensaje de WhatsApp sigue siendo la fuente de verdad para el restaurante;
+ * esta tabla es la copia que permite historial y bandeja. Si el guardado falla,
+ * el pedido ya salió por WhatsApp y no se bloquea nada: el llamador ignora el
+ * error a propósito.
+ */
+import { supabase } from '../../../lib/supabase';
+import type { EstadoPedido, ItemPedido, Pedido } from '../dominio/pedido';
 
 const CAMPOS = `
   id, restaurante_id, usuario_id, nombre_cliente, telefono_cliente,
@@ -14,14 +26,6 @@ const normalizar = (fila: any): Pedido => ({
   total: Number(fila.total),
 });
 
-/**
- * Pedidos guardados.
- *
- * El mensaje de WhatsApp sigue siendo la fuente de verdad para el restaurante;
- * esta tabla es la copia que permite historial y bandeja. Si el guardado falla,
- * el pedido ya salió por WhatsApp y no se bloquea nada: el llamador ignora el
- * error a propósito.
- */
 export const apiPedidos = {
   crear: async (entrada: {
     restauranteId: string;

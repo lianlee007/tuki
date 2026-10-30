@@ -12,8 +12,8 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ImagenInteligente } from '../sistema-diseno/ImagenInteligente';
-import { apiPedidos } from '../../api/apiPedidos';
 import {
+  apiPedidos,
   codigoPedido,
   dinero,
   esEstadoPedido,
@@ -24,7 +24,7 @@ import {
   unidadesPedido,
   type EstadoPedido,
   type Pedido,
-} from '../../lib/pedidos';
+} from '../../modulos/pedidos';
 import { generarSlugUnico } from '../../lib/utils';
 
 interface Props {

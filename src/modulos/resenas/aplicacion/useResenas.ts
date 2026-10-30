@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { apiResenas } from '../api/apiResenas';
+import { apiResenas } from '../infraestructura/apiResenas';
 import {
   resenasPublicas,
   resumenRestaurante,
   type Resena,
-} from '../lib/resenas';
+} from '../dominio/resenas';
 
 /**
  * Las reseñas de una ficha, una sola vez.

@@ -4,7 +4,7 @@ import { MAX_FOTO_MB, validarFoto } from '../../src/lib/imagenes';
 const archivo = (type: string, size = 1024): { type: string; size: number } => ({ type, size });
 
 describe('validarFoto', () => {
-  it('acepta los formatos que entiende Cloudinary', () => {
+  it('acepta los formatos que entiende Supabase Storage', () => {
     expect(validarFoto(archivo('image/jpeg'))).toBeNull();
     expect(validarFoto(archivo('image/png'))).toBeNull();
     expect(validarFoto(archivo('image/webp'))).toBeNull();

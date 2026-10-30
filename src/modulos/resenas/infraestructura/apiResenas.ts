@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import type { Resena } from '../lib/resenas';
+import { supabase } from '../../../lib/supabase';
+import type { Resena } from '../dominio/resenas';
 
 const CAMPOS =
   'id, calificacion, comentario, created_at, nombre_cliente, platillo_id, aprobado, visible, foto_url, respuesta_dueno';

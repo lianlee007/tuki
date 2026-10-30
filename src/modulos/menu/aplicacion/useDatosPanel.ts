@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
-import { Restaurante, Tema, Categoria, Platillo } from '../tipos';
-import { apiRestaurante } from '../api/apiRestaurante';
-import { apiPlatillos } from '../api/apiPlatillos';
+import { Restaurante, Tema, Categoria, Platillo } from '../../../tipos';
+import { apiRestaurante } from '../infraestructura/apiRestaurante';
+import { apiPlatillos } from '../infraestructura/apiPlatillos';
 
 export const useDatosPanel = (user: User | null) => {
   const [cargando, setCargando] = useState(true);

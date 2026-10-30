@@ -20,10 +20,13 @@ import { SeccionMenu } from '../componentes/panel/SeccionMenu';
 import { SeccionResenas } from '../componentes/panel/SeccionResenas';
 import { SeccionPedidos } from '../componentes/panel/SeccionPedidos';
 import { EditorPlatillo } from '../componentes/panel/EditorPlatillo';
-import { useDatosPanel } from '../hooks/useDatosPanel';
-import { apiRestaurante } from '../api/apiRestaurante';
-import { apiPlatillos } from '../api/apiPlatillos';
-import { EstadoPlatillo, camposDeEstado } from '../componentes/panel/estadoPlatillo';
+import {
+  apiPlatillos,
+  apiRestaurante,
+  camposDeEstado,
+  useDatosPanel,
+  type EstadoPlatillo,
+} from '../modulos/menu';
 import { Contenedor, RobotIA } from '../componentes/ui';
 
 export const formatError = (e: any): string => {
@@ -135,13 +138,13 @@ export default function PanelControl() {
     } finally { setGuardando(false); }
   };
 
-  // Sube la imagen del platillo al CDN y vuelca la URL en el formulario.
+  // Sube la imagen del platillo a Storage y vuelca la URL en el formulario.
   // El guardado real ocurre al pulsar "Crear / Guardar" en el editor.
   const handleImagenUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !editandoPlatillo) return;
     try {
-      const url = await subirImagen(file);
+      const url = await subirImagen(file, 'platillos');
       setEditandoPlatillo({ ...editandoPlatillo, imagen_url: url });
     } catch (error: any) { mostrarMensaje('error', formatError(error)); }
   };

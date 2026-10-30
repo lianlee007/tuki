@@ -1,9 +1,9 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import {
   normalizarDatosEnvio,
   type DatosEnvio,
   type DatosEnvioCuenta,
-} from '../lib/datosEnvio';
+} from '../dominio/datosEnvio';
 
 const CAMPOS =
   'telefono, direccion, barrio, referencias, datos_envio_actualizado_en, datos_envio_omitidos_en';

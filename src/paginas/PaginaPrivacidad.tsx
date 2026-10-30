@@ -196,10 +196,8 @@ const CLAUSULAS: Clausula[] = [
         </p>
         <ul>
           <li>
-            <strong>Supabase</strong>, que aloja la base de datos y gestiona el inicio de sesión.
-          </li>
-          <li>
-            <strong>Cloudinary</strong>, que almacena y sirve las imágenes de los menús.
+            <strong>Supabase</strong>, que aloja la base de datos, las imágenes de los menús
+            (Storage) y gestiona el inicio de sesión.
           </li>
           <li>
             <strong>Groq</strong>, que procesa los textos cuando usas la ayuda de inteligencia

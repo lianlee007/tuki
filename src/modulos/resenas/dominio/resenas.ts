@@ -16,7 +16,7 @@ export interface Resena {
   platillo_id: string | null;
   aprobado: boolean | null;
   visible: boolean | null;
-  /** Foto de la reseña ya optimizada por Cloudinary. */
+  /** Foto de la reseña ya comprimida y alojada en Supabase Storage. */
   foto_url?: string | null;
   /** Respuesta pública del dueño; `null` mientras no conteste. */
   respuesta_dueno?: string | null;

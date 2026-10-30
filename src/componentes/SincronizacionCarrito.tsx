@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '../contexto/ContextoAutenticacion';
-import { useStoreCarrito } from '../store/storeCarrito';
+import { useStoreCarrito } from '../modulos/pedidos';
 
 /**
  * El carrito de un comensal sobrevive a la recarga y no se mezcla entre
