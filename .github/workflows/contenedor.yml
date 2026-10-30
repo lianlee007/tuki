@@ -56,8 +56,6 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_ANON_KEY: ci-placeholder
-          VITE_CLOUDINARY_CLOUD_NAME: ci-placeholder
-          VITE_CLOUDINARY_UPLOAD_PRESET: ci-placeholder
           VITE_AI_GATEWAY_URL: /api
         run: pnpm build
 
@@ -302,8 +300,6 @@ jobs:
           build-args: |
             VITE_SUPABASE_URL=${{ github.event_name == 'pull_request' && 'https://placeholder.supabase.co' || secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_SUPABASE_ANON_KEY }}
-            VITE_CLOUDINARY_CLOUD_NAME=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_CLOUDINARY_CLOUD_NAME }}
-            VITE_CLOUDINARY_UPLOAD_PRESET=${{ github.event_name == 'pull_request' && 'ci-placeholder' || secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}
             VITE_AI_GATEWAY_URL=/api
             VERSION=${{ github.ref_name }}
             REVISION=${{ github.sha }}

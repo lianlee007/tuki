@@ -16,15 +16,15 @@ name: tuki
 
 services:
   # Frontend: compila la SPA y la sirve con Nginx en el puerto 8080.
+  # `container_name` fija el nombre visible en Docker Desktop > Containers.
   frontend:
+    container_name: tuki-frontend
     build:
       context: .
       dockerfile: Dockerfile
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Define VITE_SUPABASE_URL en el archivo de entorno}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?Define VITE_SUPABASE_ANON_KEY en el archivo de entorno}
-        VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:?Define VITE_CLOUDINARY_CLOUD_NAME en el archivo de entorno}
-        VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET:?Define VITE_CLOUDINARY_UPLOAD_PRESET en el archivo de entorno}
         VITE_AI_GATEWAY_URL: ${VITE_AI_GATEWAY_URL:-/api}
         VERSION: ${TUKI_VERSION:-local}
         REVISION: ${TUKI_REVISION:-local}
@@ -75,6 +75,7 @@ services:
 
   # Backend: AI Gateway de FastAPI. Nginx lo alcanza como `backend:8000`.
   backend:
+    container_name: tuki-backend
     build:
       context: ./services/ai-gateway
       dockerfile: Dockerfile

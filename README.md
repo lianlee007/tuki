@@ -131,7 +131,7 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
 | Interfaz | React 19, TypeScript 5.8, React Router 7, Framer Motion 11, Zustand 5, React Hook Form 7, Zod 4, Lucide |
 | Estilos | Tailwind CSS (CDN) y sistema de tokens propio en `public/styles/apple-tokens.css` |
 | Datos y auth | Supabase (PostgreSQL, Auth, RLS) |
-| Imágenes | Cloudinary, con preset sin firmar y optimización `q_auto,f_auto` |
+| Imágenes | Supabase Storage, compresión WebP en el navegador y buckets públicos por caso de uso |
 | IA | FastAPI, Groq, Prometheus, OpenTelemetry |
 | Pruebas | Vitest, pytest, Ruff, ESLint, TypeScript |
 | Plataforma | Docker, Nginx, Kubernetes, Kustomize, ArgoCD, Kyverno |
@@ -143,7 +143,7 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
 - pnpm 9 o superior (recomendado).
 - Python 3.11 o superior para el AI Gateway.
 - Docker y Docker Compose para el stack completo.
-- Cuentas de Supabase, Cloudinary y Groq.
+- Cuentas de Supabase y Groq.
 
 ## Puesta en marcha
 
@@ -211,9 +211,7 @@ Variables de `.env.local`:
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 
-# Cloudinary
-VITE_CLOUDINARY_CLOUD_NAME=
-VITE_CLOUDINARY_UPLOAD_PRESET=
+# Imágenes: Supabase Storage (sin variables extra)
 
 # AI Gateway
 VITE_AI_GATEWAY_URL=/api
@@ -224,8 +222,6 @@ GROQ_API_KEY=
 | --- | --- | --- | --- |
 | `VITE_SUPABASE_URL` | Navegador | Sí | URL del proyecto Supabase |
 | `VITE_SUPABASE_ANON_KEY` | Navegador | Sí | Clave publicable de Supabase |
-| `VITE_CLOUDINARY_CLOUD_NAME` | Navegador | Sí | Cuenta de Cloudinary |
-| `VITE_CLOUDINARY_UPLOAD_PRESET` | Navegador | Sí | Preset sin firmar para subir imágenes |
 | `VITE_AI_GATEWAY_URL` | Navegador | No | Prefijo del gateway; por defecto `/api` |
 | `GROQ_API_KEY` | Servidor | Sí para IA | Clave de Groq, solo en el gateway |
 | `AI_AUTH_MODE` | Servidor | No | `disabled` en local, `supabase` en producción |
@@ -240,9 +236,9 @@ el bundle. `GROQ_API_KEY` no debe llevar ese prefijo ni aparecer en `dist/`.
 **Supabase.** Crea el proyecto, entra en *Settings > API* y copia la URL y la
 clave publicable.
 
-**Cloudinary.** Copia el *Cloud Name* del dashboard y crea un upload preset sin
-firmar. El preset se usa tanto para las imágenes del menú como para las fotos
-de las reseñas.
+**Storage.** Aplica `db/migraciones/2026-10-29-storage-imagenes.sql` en el SQL
+Editor. Crea los buckets `platillos`, `restaurantes` y `resenas`; no hacen
+falta credenciales adicionales (ver `docs/arquitectura/almacenamiento-imagenes.md`).
 
 **Groq.** Genera una API Key en la consola y guárdala solo en `GROQ_API_KEY`.
 
@@ -337,7 +333,9 @@ está en [docs/estructura.md](docs/estructura.md).
 | `pnpm typecheck` | Verifica los tipos con `tsc --noEmit` |
 | `pnpm lint` | ESLint sobre el frontend |
 | `pnpm test` | Pruebas unitarias con Vitest |
+| `pnpm arquitectura` | Comprueba la dirección de dependencias entre módulos y capas |
 | `pnpm verificar` | Puerta completa de los módulos 1–3 |
+| `pnpm contexto` | Mide el contexto de la sesión y propone recortes |
 | `pnpm mcp:verificar` | Comprueba el handshake de CodeGraph y Engram |
 | `pnpm mcp:estado` | Muestra el estado de los servidores MCP |
 | `pnpm mcp:ligero` | Apaga los MCP para ahorrar contexto |
@@ -357,7 +355,7 @@ ruff check app tests
 `pnpm verificar` ejecuta la puerta completa: tipos, lint, pruebas y build del
 frontend; lint y pruebas del gateway; validación de los manifiestos Kustomize,
 del catálogo de Backstage y de las políticas. En la última ejecución aprobaron
-los 11 pasos y las 67 pruebas del frontend.
+los 12 pasos y las 79 pruebas del frontend.
 
 | Control | Comando |
 | --- | --- |
@@ -432,6 +430,8 @@ pnpm mcp:verificar
 
 Guía de uso y criterios de privacidad:
 [docs/herramientas/codegraph-y-engram.md](docs/herramientas/codegraph-y-engram.md).
+Métodos de ahorro de contexto y medición:
+[docs/herramientas/ahorro-contexto.md](docs/herramientas/ahorro-contexto.md).
 Las convenciones para agentes están en [AGENTS.md](AGENTS.md).
 
 ## Documentación

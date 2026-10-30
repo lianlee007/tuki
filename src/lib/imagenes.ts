@@ -1,17 +1,16 @@
 /**
  * Reglas de las fotos que sube un comensal.
  *
- * La foto no viaja a Supabase ni a un bucket de Storage: se comprime en el
- * navegador y se publica en Cloudinary con el preset sin firmar del proyecto,
- * el mismo que ya usan los platillos y el banner. La base de datos solo guarda
- * la URL resultante (`valoraciones.foto_url`), así que las reglas de tamaño y
- * de tipo viven aquí para poder probarlas sin tocar la red.
+ * La foto se comprime en el navegador y se publica en Supabase Storage, en el
+ * bucket `resenas`. La base de datos solo guarda la URL resultante
+ * (`valoraciones.foto_url`), así que las reglas de tamaño y de tipo viven aquí
+ * para poder probarlas sin tocar la red.
  */
 
 /** Tope de subida: por encima de esto la espera en un móvil no compensa. */
 export const MAX_FOTO_MB = 8;
 
-/** Tipos que acepta el preset de Cloudinary para `image/upload`. */
+/** Tipos de imagen que acepta el bucket `resenas`. */
 const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 export interface ArchivoDeImagen {
