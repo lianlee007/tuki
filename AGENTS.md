@@ -20,8 +20,10 @@ pnpm dev              # SPA en http://localhost:3000
 pnpm build            # build de producción
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # ESLint (máximo 20 avisos)
-pnpm test             # Vitest (36 pruebas)
+pnpm test             # Vitest (79 pruebas)
+pnpm arquitectura     # reglas de dependencia entre módulos y capas
 pnpm verificar        # puerta completa de los módulos 1–3
+pnpm contexto         # mide el contexto de la sesión y propone recortes
 pnpm mcp:verificar    # handshake de CodeGraph y Engram
 pnpm mcp:ligero       # apaga los MCP para ahorrar contexto
 pnpm mcp:completo     # los vuelve a encender
@@ -45,20 +47,35 @@ bash deploy/scripts/demo-plataforma.sh verificar
 
 ## Economía de contexto
 
-Cada paso reenvía todo el contexto: el costo crece con el tamaño de la
-conversación multiplicado por el número de pasos.
+Cada paso reenvía todo el historial: el coste crece con el tamaño de la
+conversación multiplicado por el número de pasos. El piso fijo (sistema +
+AGENTS.md + catálogo MCP) ronda 6–8k tokens; el resto lo pone el historial.
 
+- Mide antes de optimizar: `pnpm contexto`. Devuelve el contexto de la última
+  petición, las salidas más grandes y el recorte concreto.
 - Nunca vuelques archivos o logs completos. Filtra (`grep -m`, `-First`, `-Tail`)
-  y lee con `limit`/`offset`.
-- Agrupa en una sola tanda las llamadas independientes.
-- Para búsquedas amplias, delega en el subagente `explore`.
-- Compacta (`/compact`) al cerrar un bloque de trabajo, antes de llegar al
-  límite del modelo.
+  y lee con `limit`/`offset`. Una salida de más de 16 KB se resume o se guarda
+  en un archivo.
+- Agrupa en una sola tanda las llamadas independientes y no releas lo que ya
+  está en el historial. No repitas en el chat archivos completos ni tablas ya
+  emitidas: enlaza la ruta.
+- Para búsquedas amplias, delega en el subagente `explore` (`/explorar …`):
+  trabaja en su propio contexto y devuelve solo lo esencial.
+- Compacta (`/compact`) al cerrar un bloque; antes guarda en Engram la decisión
+  y su porqué. `compaction.prune` descarta las salidas viejas automáticamente.
+- Si la tarea no toca código ni memoria, usa `pnpm mcp:ligero` y vuelve con
+  `pnpm mcp:completo`.
+- Presupuesto: no pases de ~60k tokens de contexto sin una razón; a partir de
+  80k, compacta.
+
+Detalle, mediciones y fuentes: `docs/herramientas/ahorro-contexto.md`.
 
 ## Herramientas MCP
 
-Este repo registra dos servidores MCP locales en `opencode.json`. Úsalos antes
-de recurrir a `grep` o a leer archivos a ciegas.
+`opencode.json` registra CodeGraph, Engram y Supabase. OpenCode los expone por
+Code Mode (`execute` + `search()`): el catálogo completo no viaja en cada turno,
+solo lo que se descubre. Búscalas por nombre dentro de `execute`; no pidas
+volcar el catálogo. Úsalas antes de recurrir a `grep` o a leer a ciegas.
 
 ### CodeGraph — estructura del código
 
