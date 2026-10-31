@@ -147,6 +147,26 @@ const Acciones: React.FC<AccionesProps> = ({
   <div className="flex items-center gap-1.5">
     <ThemeToggle />
 
+    {/* El carrito vive siempre en la barra superior: el detalle solo se abre
+        al hacer clic aquí, nunca como un letrero fijo en la parte de abajo. */}
+    <button
+      type="button"
+      onClick={onCarrito}
+      aria-label={
+        cantidadCarrito > 0
+          ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
+          : 'Abrir el carrito'
+      }
+      className="af-pulsar relative rounded-full bg-af-surface p-2.5 text-af-ink transition-colors hover:text-af-accent-text"
+    >
+      <ShoppingBag size={18} aria-hidden="true" />
+      {cantidadCarrito > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-af-accent-solid px-1 text-[10px] font-bold tabular-nums text-white">
+          {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
+        </span>
+      )}
+    </button>
+
     {hayUsuario && cargandoRol ? null : !hayUsuario ? (
       <Link
         to="/entrar"
@@ -160,26 +180,6 @@ const Acciones: React.FC<AccionesProps> = ({
       </Link>
     ) : (
       <>
-        {rol === 'cliente' && (
-          <button
-            type="button"
-            onClick={onCarrito}
-            aria-label={
-              cantidadCarrito > 0
-                ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
-                : 'Abrir el carrito'
-            }
-            className="af-pulsar relative rounded-full bg-af-surface p-2.5 text-af-ink transition-colors hover:text-af-accent-text"
-          >
-            <ShoppingBag size={18} aria-hidden="true" />
-            {cantidadCarrito > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-af-accent-solid px-1 text-[10px] font-bold tabular-nums text-white">
-                {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
-              </span>
-            )}
-          </button>
-        )}
-
         {rol === 'restaurante' && (
           <Link
             to="/panel"
