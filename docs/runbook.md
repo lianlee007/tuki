@@ -4,6 +4,10 @@ Guía de operación para la SPA y el AI Gateway. Los enlaces de las alertas de
 `deploy/observability/prometheusrule.yaml` apuntan a las secciones de este
 documento.
 
+> El despliegue real en el VPS compartido no corre en Kubernetes: vive en
+> Dokploy. Su topología, variables, dominio y diagnóstico están en
+> [`plataforma/despliegue-dokploy.md`](plataforma/despliegue-dokploy.md).
+
 ## Índice
 
 - [SPA caída](#spa-caida)
