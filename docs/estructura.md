@@ -94,5 +94,6 @@ del entregable; se documentan solo para que nadie las confunda con la app.
 | Es un manifiesto o política | `deploy/` |
 | Es una decisión de arquitectura | `docs/adr/` |
 | Es una propuesta de producto | `docs/producto/` |
+| Documenta cómo se opera o despliega la plataforma | `docs/plataforma/` |
 | Es una regla de marca o un activo del logo | `docs/marca/` |
 | Automatiza algo del repo | `scripts/` |
