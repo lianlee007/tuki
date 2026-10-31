@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, SlidersHorizontal, UtensilsCrossed, X } from 'lucide-react';
+import { ArrowRight, SlidersHorizontal, UtensilsCrossed, X } from 'lucide-react';
 import { SEO } from '../componentes/ui';
 import { BarraDescubrir } from '../componentes/descubrir/BarraDescubrir';
 import { CarrilCocinas } from '../componentes/descubrir/CarrilCocinas';
@@ -21,7 +21,6 @@ import {
 import { apiDescubrir } from '../api/apiDescubrir';
 import { useAuth } from '../contexto/ContextoAutenticacion';
 import { useStoreCarrito } from '../modulos/pedidos';
-import { formatearPrecio } from '../lib/utils';
 import type {
   PlatoDescubierto,
   Platillo,
@@ -71,10 +70,6 @@ const PaginaDescubrir = () => {
 
   const carrito = useStoreCarrito((estado) => estado.carrito);
   const cantidadCarrito = carrito.reduce((suma, item) => suma + item.cantidad, 0);
-  const totalCarrito = carrito.reduce(
-    (suma, item) => suma + item.platillo.precio * item.cantidad,
-    0
-  );
 
   const consulta = params.get('q') ?? '';
   const cocina = params.get('cocina') ?? '';
@@ -291,7 +286,7 @@ const PaginaDescubrir = () => {
         cantidadCarrito={cantidadCarrito}
       />
 
-      <main className="mx-auto max-w-6xl px-5 pb-32 pt-8">
+      <main className="mx-auto max-w-6xl px-5 pb-20 pt-8">
         <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-tight text-af-ink">
           ¿Qué se te antoja?
         </h1>
@@ -450,25 +445,6 @@ const PaginaDescubrir = () => {
           </Link>
         </footer>
       </main>
-
-      {/* La barra del pedido solo existe para un comensal con algo en el carrito. */}
-      {rol === 'cliente' && carrito.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={() => setCarritoAbierto(true)}
-            className="af-pulsar mx-auto flex w-full max-w-md items-center justify-between gap-3 rounded-full bg-af-ink px-5 py-3.5 text-af-ground transition-opacity hover:opacity-90"
-          >
-            <span className="inline-flex items-center gap-2 text-[14px] font-semibold">
-              <ShoppingBag size={17} aria-hidden="true" />
-              {cantidadCarrito} {cantidadCarrito === 1 ? 'producto' : 'productos'}
-              <span aria-hidden="true">·</span>
-              <span className="tabular-nums">{formatearPrecio(totalCarrito)}</span>
-            </span>
-            <span className="text-[13px] font-semibold">Ver carrito</span>
-          </button>
-        </div>
-      )}
 
       <PanelFiltros
         abierto={filtrosAbiertos}
