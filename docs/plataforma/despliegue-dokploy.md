@@ -6,7 +6,7 @@ otra persona pueda repetir el despliegue o diagnosticarlo.
 
 - **Estado:** desplegado y funcionando (frontend y gateway `healthy`).
 - **Última actualización:** 2026-10-31.
-- **Commit desplegado:** `9341870` — `fix(ia): validar la sesión HS256 y aclarar el tipo de cuenta`.
+- **Commits desplegados:** `9341870` (fix de la IA y del acceso) y `71a336e` (esta documentación).
 - **URL pública:** <http://tuki-tuki-169-58-151-195.sslip.io>
 - **Acceso directo por IP y puerto:** <http://169.58.151.195:8080>
 
@@ -49,10 +49,16 @@ VPS 169.58.151.195
 | Webhook de despliegue | `http://169.58.151.195:3000/api/deploy/compose/AgzcW0jqC_2Pq3fg_7mBZ` |
 | Clave SSH de Dokploy | `tuki-deploy` (ED25519, solo lectura) |
 
-El webhook permite redesplegar sin abrir el panel:
+El webhook permite redesplegar sin abrir el panel. No basta un `POST` vacío:
+Dokploy lo trata como aviso de GitHub y necesita la cabecera `X-GitHub-Event`
+y el `ref` de la rama; si falta, responde `301 Branch Not Match`.
 
 ```bash
-curl -X POST 'http://169.58.151.195:3000/api/deploy/compose/AgzcW0jqC_2Pq3fg_7mBZ'
+curl -X POST 'http://169.58.151.195:3000/api/deploy/compose/AgzcW0jqC_2Pq3fg_7mBZ' \
+  -H 'Content-Type: application/json' \
+  -H 'X-GitHub-Event: push' \
+  -d '{"ref":"refs/heads/main"}'
+# -> {"message":"Compose deployed successfully"}
 ```
 
 ## 4. Acceso al repositorio
@@ -206,6 +212,7 @@ Cómo funciona ahora (`services/ai-gateway/app/adaptadores/supabase.py`):
 | El navegador dice "No seguro" | No hay TLS en `sslip.io` | Usar `http://` o configurar un dominio propio |
 | `git push` falla con "Could not connect to server" | Proxy `ALL_PROXY` roto en la sesión | Limpiar `ALL_PROXY`, `HTTP_PROXY` y `HTTPS_PROXY` |
 | Varias peticiones seguidas al panel dan `429` | Límite de intentos del login de Dokploy | Esperar unos minutos antes de reintentar |
+| El webhook responde `301 Branch Not Match` | Falta `X-GitHub-Event: push` o el `ref` de la rama | Enviar la cabecera y `{"ref":"refs/heads/main"}` (§3) |
 
 ## 11. Rollback y mantenimiento
 
