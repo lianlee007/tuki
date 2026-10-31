@@ -134,7 +134,7 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
    | --- | --- | --- |
    | `upstream_error` | Groq devolvió error no reintentable | Revisar estado de Groq y el modelo |
    | `upstream_timeout` | Se agotó el presupuesto total | Ver [Timeouts](#timeouts) |
-   | `auth_unavailable` | JWKS de Supabase inaccesible | Revisar egreso 443 y Supabase |
+   | `auth_unavailable` | Supabase inaccesible (JWKS o GoTrue) | Revisar egreso 443, Supabase y `SUPABASE_ANON_KEY` |
    | `internal_error` | Excepción no controlada | Abrir issue con `request_id` |
    | `invalid_response` | Groq devolvió JSON inesperado | Revisar modelo/versión |
 
@@ -276,8 +276,13 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
 ## Rotación de secretos de Supabase
 
 - La `anon key` es pública por diseño y viaja en el bundle. Rotarla exige
-  reconstruir y republicar la imagen web.
-- El gateway no usa la `anon key`: valida JWT con el JWKS público del proyecto.
+  reconstruir y republicar la imagen web y actualizar `SUPABASE_ANON_KEY` en el
+  gateway.
+- El gateway valida los JWT con el JWKS público del proyecto. En proyectos
+  antiguos, que firman con HS256, ese JWKS está vacío: el token se comprueba
+  contra `GET /auth/v1/user` de Supabase con la `anon key` y se cachea 60 s
+  (`AI_LEGACY_TOKEN_CACHE_SECONDS`). Si falta `SUPABASE_ANON_KEY`, el gateway
+  responde `503 auth_unavailable` en vez de aceptar el token sin comprobarlo.
 - Si cambia la URL o el proyecto, actualiza `SUPABASE_URL` en el ConfigMap de
   producción y reinicia el gateway.
 - Si Supabase rota sus claves de firma, el gateway las descubre por JWKS; puede

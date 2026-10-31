@@ -84,7 +84,7 @@ export default function PaginaParaRestaurantes() {
                 onClick={() => navigate('/auth')}
                 className="hidden !px-3 sm:inline-flex"
               >
-                Iniciar sesión
+                Entrar a mi panel
               </BotonTexto>
               <BotonCTA
                 onClick={() => navigate('/auth?mode=register')}
@@ -123,7 +123,7 @@ export default function PaginaParaRestaurantes() {
             <div className="mt-3 flex flex-col gap-3 border-t border-af/40 pt-5">
               <BotonTexto onClick={() => navigate('/auth')} className="w-full">
                 <LogIn size={18} />
-                Iniciar sesión
+                Entrar a mi panel
               </BotonTexto>
               <BotonCTA anchoCompleto onClick={() => navigate('/auth?mode=register')}>
                 Empezar gratis
