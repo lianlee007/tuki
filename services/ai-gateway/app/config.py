@@ -40,9 +40,18 @@ class Settings(BaseSettings):
     supabase_jwks_url: str = ""
     supabase_audience: str = "authenticated"
     supabase_issuer: str = ""
-    jwt_algorithms: str = "RS256,ES256,EdDSA"
+    jwt_algorithms: str = "RS256,ES256,EdDSA,HS256"
     jwks_cache_seconds: int = 600
     trust_proxy_headers: bool = True
+    # Los proyectos antiguos de Supabase firman los JWT con HS256 y su endpoint
+    # JWKS no publica claves, así que la firma no se puede comprobar en local.
+    # En ese caso el token se valida contra GoTrue con la clave pública `anon`.
+    supabase_anon_key: SecretStr = Field(
+        default=SecretStr(""),
+        validation_alias=AliasChoices("SUPABASE_ANON_KEY", "AI_SUPABASE_ANON_KEY"),
+    )
+    supabase_userinfo_url: str = ""
+    legacy_token_cache_seconds: int = 60
 
     # --- Groq --------------------------------------------------------------
     groq_api_key: SecretStr = Field(
@@ -87,6 +96,8 @@ class Settings(BaseSettings):
             self.supabase_jwks_url = (
                 f"{self.supabase_url}/auth/v1/.well-known/jwks.json"
             )
+        if self.supabase_url and not self.supabase_userinfo_url:
+            self.supabase_userinfo_url = f"{self.supabase_url}/auth/v1/user"
         if self.supabase_url and not self.supabase_issuer:
             self.supabase_issuer = f"{self.supabase_url}/auth/v1"
         return self
@@ -106,6 +117,10 @@ class Settings(BaseSettings):
     @property
     def groq_key_configured(self) -> bool:
         return bool(self.groq_api_key.get_secret_value().strip())
+
+    @property
+    def supabase_anon_configured(self) -> bool:
+        return bool(self.supabase_anon_key.get_secret_value().strip())
 
     def validate_or_raise(self) -> None:
         """Falla rápido ante errores que no se pueden corregir en caliente."""

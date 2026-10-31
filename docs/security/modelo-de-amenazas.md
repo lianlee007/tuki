@@ -150,7 +150,7 @@ gateway no los añade por diseño; la responsabilidad de no incluirlos en el
 
 | ID | Amenaza | Impacto | Controles | Riesgo residual |
 | --- | --- | --- | --- | --- |
-| S1 | JWT forjado o expirado para consumir cuota autenticada | Alto | Firma JWKS, `aud=authenticated`, `iss`, `exp`/`iat`; token inválido → 401; JWKS caído → 503 | Bajo |
+| S1 | JWT forjado o expirado para consumir cuota autenticada | Alto | Firma JWKS o, en proyectos HS256, comprobación del token en GoTrue con la `anon key`; `aud=authenticated`, `iss`, `exp`/`iat`; token inválido → 401; Supabase caído → 503 | Bajo |
 | S2 | `X-Forwarded-For` falsificado para saltarse el rate limit por IP | Medio | Nginx sobrescribe `X-Real-IP`; el gateway prioriza esa cabecera; en producción el tráfico entra por Ingress | Bajo |
 | S3 | Suplantación de GitHub Actions para publicar una imagen | Crítico | OIDC keyless, identidad verificada por Cosign, permisos mínimos del workflow | Medio (depende de la configuración del repo) |
 | S4 | Suplantación de un restaurante para editar su menú | Alto | Supabase Auth + RLS por `usuario_id` | Bajo, si RLS está completo |

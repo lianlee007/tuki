@@ -124,3 +124,171 @@ async def test_health_no_exige_token(settings_factory):
     async with make_client(settings) as client:
         response = await client.get("/healthz")
     assert response.status_code == 200
+
+
+# --- Proyectos antiguos de Supabase (JWT HS256 y JWKS vacío) ---------------
+
+
+class _RespuestaFalsa:
+    def __init__(self, status_code: int, payload):
+        self.status_code = status_code
+        self._payload = payload
+
+    def json(self):
+        if isinstance(self._payload, Exception):
+            raise self._payload
+        return self._payload
+
+
+class _ClienteFalso:
+    llamadas: list[dict] = []
+
+    def __init__(self, respuesta):
+        self._respuesta = respuesta
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def get(self, url, headers=None):
+        _ClienteFalso.llamadas.append({"url": url, "headers": headers or {}})
+        if isinstance(self._respuesta, Exception):
+            raise self._respuesta
+        return self._respuesta
+
+
+def token_hs256(sub: str = "usuario-123") -> str:
+    import jwt as pyjwt
+
+    return pyjwt.encode(
+        {
+            "sub": sub,
+            "role": "authenticated",
+            "aud": "authenticated",
+            "iat": 1_700_000_000,
+            "exp": 1_900_000_000,
+        },
+        "secreto-de-pruebas-con-mas-de-32-bytes",
+        algorithm="HS256",
+        headers={"kid": "legacy"},
+    )
+
+
+def settings_hs256(settings_factory, **overrides):
+    return supabase_settings(
+        settings_factory,
+        supabase_anon_key="anon-publica",
+        **overrides,
+    )
+
+
+def usar_respuesta(monkeypatch, respuesta) -> None:
+    import app.adaptadores.supabase as modulo
+
+    _ClienteFalso.llamadas = []
+    monkeypatch.setattr(modulo.httpx, "Client", lambda timeout=None: _ClienteFalso(respuesta))
+    modulo.clear_legacy_cache()
+
+
+def test_hs256_se_valida_contra_gotrue(settings_factory, monkeypatch):
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = settings_hs256(settings_factory)
+    usar_respuesta(
+        monkeypatch,
+        _RespuestaFalsa(200, {"id": "usuario-123", "role": "authenticated", "email": "a@b.co"}),
+    )
+
+    identity = resolve_identity(make_request(), f"Bearer {token_hs256()}", settings)
+
+    assert identity.kind == "user"
+    assert identity.key == "user:usuario-123"
+    assert identity.email == "a@b.co"
+    llamada = _ClienteFalso.llamadas[0]
+    assert llamada["url"] == "https://proyecto.supabase.co/auth/v1/user"
+    assert llamada["headers"]["apikey"] == "anon-publica"
+
+
+def test_hs256_cachea_el_token_valido(settings_factory, monkeypatch):
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = settings_hs256(settings_factory)
+    usar_respuesta(
+        monkeypatch,
+        _RespuestaFalsa(200, {"id": "usuario-123", "role": "authenticated"}),
+    )
+    token = token_hs256()
+
+    for _ in range(3):
+        resolve_identity(make_request(), f"Bearer {token}", settings)
+
+    assert len(_ClienteFalso.llamadas) == 1
+
+
+def test_hs256_token_rechazado_por_gotrue(settings_factory, monkeypatch):
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = settings_hs256(settings_factory)
+    usar_respuesta(monkeypatch, _RespuestaFalsa(401, {"message": "invalid"}))
+
+    with pytest.raises(AuthError) as exc:
+        resolve_identity(make_request(), f"Bearer {token_hs256()}", settings)
+    assert exc.value.status_code == 401
+    assert exc.value.code == "invalid_token"
+
+
+def test_hs256_caida_de_gotrue_es_503(settings_factory, monkeypatch):
+    import httpx
+
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = settings_hs256(settings_factory)
+    usar_respuesta(monkeypatch, httpx.ConnectError("sin red"))
+
+    with pytest.raises(AuthError) as exc:
+        resolve_identity(make_request(), f"Bearer {token_hs256()}", settings)
+    assert exc.value.status_code == 503
+    assert exc.value.code == "auth_unavailable"
+
+
+def test_hs256_sin_clave_anon_no_inventa_identidad(settings_factory, monkeypatch):
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = supabase_settings(settings_factory)
+    usar_respuesta(
+        monkeypatch,
+        _RespuestaFalsa(200, {"id": "usuario-123", "role": "authenticated"}),
+    )
+
+    with pytest.raises(AuthError) as exc:
+        resolve_identity(make_request(), f"Bearer {token_hs256()}", settings)
+    assert exc.value.code == "auth_unavailable"
+    assert _ClienteFalso.llamadas == []
+
+
+def test_jwks_vacio_no_rompe_con_500(settings_factory, monkeypatch):
+    import jwt as pyjwt
+
+    import app.adaptadores.supabase as modulo
+    from app.adaptadores.supabase import resolve_identity
+
+    settings = supabase_settings(settings_factory)
+    token = pyjwt.encode(
+        {"sub": "x", "role": "authenticated"},
+        "clave-de-pruebas-con-mas-de-32-bytes",
+        algorithm="HS256",
+    )
+
+    def sin_claves(_settings):
+        raise pyjwt.exceptions.PyJWKSetError("The JWK Set did not contain any keys")
+
+    monkeypatch.setattr(modulo, "_token_algorithm", lambda token: "RS256")
+    monkeypatch.setattr(modulo, "get_jwk_client", sin_claves)
+
+    with pytest.raises(AuthError) as exc:
+        resolve_identity(make_request(), f"Bearer {token}", settings)
+    assert exc.value.status_code == 503
+    assert exc.value.code == "auth_unavailable"
+

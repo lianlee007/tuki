@@ -6,11 +6,15 @@ import { ShieldCheck, AlertTriangle, Mail, Check } from 'lucide-react';
 interface FormularioLoginProps {
   cambiarModo: () => void;
   textoBoton?: string;
+  /** Decide el texto del enlace de alta: no es lo mismo crear cuenta de
+   *  comensal que de restaurante, y el usuario debe saberlo antes de pulsar. */
+  rol?: 'cliente' | 'restaurante';
 }
 
 export const FormularioLogin: React.FC<FormularioLoginProps> = ({
   cambiarModo,
   textoBoton = 'Ingresar al Panel',
+  rol = 'restaurante',
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,10 +56,17 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     } catch (error: any) {
-      if (error.message?.includes('Invalid login credentials')) {
-        setError("Correo o contraseña incorrectos.");
+      const mensaje = String(error?.message || '');
+      if (mensaje.includes('Invalid login credentials')) {
+        setError('Correo o contraseña incorrectos. Revísalos e inténtalo de nuevo.');
+      } else if (mensaje.includes('Email not confirmed')) {
+        setError(
+          'Tu correo aún no está confirmado. Abre el enlace que te enviamos y vuelve a entrar.'
+        );
+      } else if (mensaje.toLowerCase().includes('rate limit')) {
+        setError('Demasiados intentos seguidos. Espera un minuto e inténtalo otra vez.');
       } else {
-        setError(error.message || "Ocurrió un error inesperado.");
+        setError(mensaje || 'No pudimos iniciar sesión. Inténtalo de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -125,13 +136,15 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
 
       <div className="mt-6 text-center">
         <p className="text-sm text-af-ink-secondary relative z-10">
-          ¿No tienes una cuenta?
+          {rol === 'restaurante'
+            ? '¿Todavía no tienes cuenta de restaurante?'
+            : '¿Aún no tienes cuenta de comensal?'}
           <button
             type="button"
             onClick={cambiarModo}
             className="text-af-accent font-bold hover:opacity-80 transition-colors ml-1"
           >
-            Regístrate gratis
+            {rol === 'restaurante' ? 'Crear cuenta de restaurante' : 'Crear cuenta de comensal'}
           </button>
         </p>
       </div>

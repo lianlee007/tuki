@@ -15,9 +15,12 @@ sacar ``GROQ_API_KEY`` del navegador y poder limitar el abuso por IP.
 
 from __future__ import annotations
 
+import hashlib
 import ipaddress
 import threading
+import time
 
+import httpx
 import jwt
 from fastapi import Request
 from jwt import PyJWKClient
@@ -27,6 +30,12 @@ from app.dominio.modelos import Identity
 
 _JWK_CLIENTS: dict[str, PyJWKClient] = {}
 _JWK_LOCK = threading.Lock()
+
+# Caché de tokens HS256 ya validados contra GoTrue. Evita una llamada de red por
+# cada petición de la SPA sin guardar el token en claro: la clave es su hash.
+_LEGACY_CACHE: dict[str, tuple[dict, float]] = {}
+_LEGACY_LOCK = threading.Lock()
+_LEGACY_CACHE_MAX = 512
 
 
 class AuthError(Exception):
@@ -66,7 +75,137 @@ def clear_jwk_cache() -> None:
         _JWK_CLIENTS.clear()
 
 
+def clear_legacy_cache() -> None:
+    """Solo para pruebas: vacía la caché de tokens HS256."""
+    with _LEGACY_LOCK:
+        _LEGACY_CACHE.clear()
+
+
+def _token_algorithm(token: str) -> str:
+    try:
+        header = jwt.get_unverified_header(token)
+    except jwt.InvalidTokenError as exc:
+        raise AuthError(
+            "La sesión no es válida. Vuelve a iniciar sesión.",
+            reason="invalid",
+        ) from exc
+    return str(header.get("alg", ""))
+
+
+def _legacy_cache_key(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _legacy_cache_get(key: str) -> dict | None:
+    now = time.monotonic()
+    with _LEGACY_LOCK:
+        entry = _LEGACY_CACHE.get(key)
+        if entry is None:
+            return None
+        claims, expires_at = entry
+        if expires_at <= now:
+            _LEGACY_CACHE.pop(key, None)
+            return None
+        return claims
+
+
+def _legacy_cache_put(key: str, claims: dict, ttl: float) -> None:
+    if ttl <= 0:
+        return
+    with _LEGACY_LOCK:
+        if len(_LEGACY_CACHE) >= _LEGACY_CACHE_MAX:
+            # Descarte barato: la memoria no debe crecer con cada token visto.
+            _LEGACY_CACHE.clear()
+        _LEGACY_CACHE[key] = (claims, time.monotonic() + ttl)
+
+
+def verify_legacy_token(token: str, settings: Settings) -> dict:
+    """Valida un JWT HS256 contra GoTrue.
+
+    Los proyectos de Supabase creados antes de las claves asimétricas firman con
+    HS256 y su JWKS queda vacío. En lugar de repartir el secreto del proyecto,
+    se pregunta a Supabase por el usuario del token con la clave pública `anon`:
+    el propio GoTrue comprueba la firma y la caducidad.
+    """
+    key = _legacy_cache_key(token)
+    cached = _legacy_cache_get(key)
+    if cached is not None:
+        return cached
+
+    anon_key = settings.supabase_anon_key.get_secret_value().strip()
+    if not anon_key or not settings.supabase_userinfo_url:
+        raise AuthError(
+            "No se pudo validar la sesión en este momento. Inténtalo de nuevo.",
+            code="auth_unavailable",
+            status_code=503,
+            reason="legacy_unavailable",
+        )
+
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.get(
+                settings.supabase_userinfo_url,
+                headers={
+                    "apikey": anon_key,
+                    "Authorization": f"Bearer {token}",
+                },
+            )
+    except httpx.HTTPError as exc:
+        raise AuthError(
+            "No se pudo validar la sesión en este momento. Inténtalo de nuevo.",
+            code="auth_unavailable",
+            status_code=503,
+            reason="gotrue_unavailable",
+        ) from exc
+
+    if response.status_code in (401, 403):
+        raise AuthError(
+            "La sesión no es válida. Vuelve a iniciar sesión.",
+            reason="invalid",
+        )
+    if response.status_code >= 500:
+        raise AuthError(
+            "No se pudo validar la sesión en este momento. Inténtalo de nuevo.",
+            code="auth_unavailable",
+            status_code=503,
+            reason="gotrue_unavailable",
+        )
+    if response.status_code != 200:
+        raise AuthError(
+            "La sesión no es válida. Vuelve a iniciar sesión.",
+            reason="invalid",
+        )
+
+    try:
+        user = response.json()
+    except ValueError as exc:
+        raise AuthError(
+            "No se pudo validar la sesión en este momento. Inténtalo de nuevo.",
+            code="auth_unavailable",
+            status_code=503,
+            reason="gotrue_bad_response",
+        ) from exc
+
+    subject = str(user.get("id") or "").strip()
+    if not subject:
+        raise AuthError(
+            "La sesión no es válida. Vuelve a iniciar sesión.",
+            reason="invalid",
+        )
+
+    claims = {
+        "sub": subject,
+        "role": str(user.get("role") or "authenticated"),
+        "email": user.get("email"),
+        "aud": user.get("aud"),
+    }
+    _legacy_cache_put(key, claims, float(settings.legacy_token_cache_seconds))
+    return claims
+
+
 def verify_supabase_jwt(token: str, settings: Settings) -> dict:
+    if _token_algorithm(token).startswith("HS"):
+        return verify_legacy_token(token, settings)
     try:
         signing_key = get_jwk_client(settings).get_signing_key_from_jwt(token)
     except jwt.InvalidTokenError as exc:
@@ -75,7 +214,7 @@ def verify_supabase_jwt(token: str, settings: Settings) -> dict:
             "La sesión no es válida. Vuelve a iniciar sesión.",
             reason="invalid",
         ) from exc
-    except jwt.PyJWKClientError as exc:
+    except (jwt.PyJWKClientError, jwt.exceptions.PyJWKSetError) as exc:
         raise AuthError(
             "No se pudo validar la sesión en este momento. Inténtalo de nuevo.",
             code="auth_unavailable",
