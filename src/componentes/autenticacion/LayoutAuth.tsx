@@ -10,6 +10,10 @@ interface LayoutAuthProps {
   subtitulo: string;
   /** A dónde lleva la flecha: la portada para comensales, la landing para restaurantes. */
   volverA?: string;
+  /** Deja visible de un vistazo si la cuenta es de comensal o de restaurante. */
+  etiqueta?: string;
+  /** Lo que gana quien crea ese tipo de cuenta. Refuerza el papel elegido. */
+  puntos?: string[];
 }
 
 export const LayoutAuth: React.FC<LayoutAuthProps> = ({
@@ -17,6 +21,8 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   titulo,
   subtitulo,
   volverA = '/para-restaurantes',
+  etiqueta,
+  puntos,
 }) => {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-af-ground p-4 pt-20 md:p-8">
@@ -44,12 +50,33 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
             <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-af-accent-solid text-white md:mx-0">
               <Logo size={40} />
             </div>
+            {etiqueta && (
+              <p className="mb-4 inline-flex items-center rounded-full bg-af-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-af-accent-text">
+                {etiqueta}
+              </p>
+            )}
             <h1 className="mb-4 font-title text-3xl font-bold leading-tight text-af-ink md:text-4xl">
               {titulo}
             </h1>
             <p className="text-lg leading-relaxed text-af-ink-secondary">
               {subtitulo}
             </p>
+            {puntos && puntos.length > 0 && (
+              <ul className="mt-6 space-y-2 text-left">
+                {puntos.map((punto) => (
+                  <li
+                    key={punto}
+                    className="flex items-start gap-2 text-sm font-medium text-af-ink-secondary"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-af-accent-solid"
+                    />
+                    {punto}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 

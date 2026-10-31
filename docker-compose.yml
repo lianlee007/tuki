@@ -99,6 +99,8 @@ services:
       AI_LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
       GROQ_API_KEY: ${GROQ_API_KEY:?Define GROQ_API_KEY en el archivo de entorno}
       SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+      # Clave pública: solo se usa para validar los JWT HS256 contra GoTrue.
+      SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
       AI_GROQ_MODELS: ${AI_GROQ_MODELS:-openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b}
       AI_GROQ_TIMEOUT_SECONDS: ${AI_GROQ_TIMEOUT_SECONDS:-25}
       AI_GROQ_TOTAL_TIMEOUT_SECONDS: ${AI_GROQ_TOTAL_TIMEOUT_SECONDS:-40}

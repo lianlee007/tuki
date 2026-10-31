@@ -86,6 +86,14 @@ spec:
                 secretKeyRef:
                   name: tuki-ai-gateway
                   key: GROQ_API_KEY
+            # Clave pública de Supabase: valida los JWT HS256 contra GoTrue.
+            # Opcional para no romper clústeres que aún no la tienen cargada.
+            - name: SUPABASE_ANON_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tuki-ai-gateway
+                  key: SUPABASE_ANON_KEY
+                  optional: true
 
           securityContext:
             allowPrivilegeEscalation: false

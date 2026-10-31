@@ -37,6 +37,8 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
+  /** Confirmación en pantalla: una alerta del navegador se pierde y no dice qué sigue. */
+  const [exito, setExito] = useState<{ mensaje: string; confirmarCorreo: boolean } | null>(null);
   /** El comensal elige sus datos de entrega antes de crear la cuenta. */
   const [paso, setPaso] = useState<'cuenta' | 'envio'>('cuenta');
 
@@ -50,6 +52,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
     setError(null);
     setEmailTouched(false);
     setPaso('cuenta');
+    setExito(null);
   }, []);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -96,27 +99,33 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
       if (error) throw error;
 
       if (!data.session) {
-        alert(
-          'Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.'
-        );
-        cambiarModo();
+        setExito({
+          mensaje: `Cuenta de ${rol === 'restaurante' ? 'restaurante' : 'comensal'} creada. Te enviamos un correo a ${email}: ábrelo para confirmarla y luego inicia sesión.`,
+          confirmarCorreo: true,
+        });
         return;
       }
 
       if (rol === 'restaurante') {
-        alert('Registro exitoso. Ya puedes administrar tu restaurante.');
-        cambiarModo();
+        setExito({
+          mensaje: 'Tu cuenta de restaurante está lista. Te llevamos a tu panel…',
+          confirmarCorreo: false,
+        });
       }
       // Con sesión activa, `RutaAuth` lleva al comensal a la portada. No se
       // navega aquí para no competir con ese guardia de ruta.
     } catch (error: any) {
-      if (
-        error.message?.includes('already registered') ||
-        error.message?.includes('already exists')
-      ) {
-        setError('Este correo electrónico ya está registrado. Intenta iniciar sesión.');
+      const mensaje = String(error?.message || '');
+      if (mensaje.includes('already registered') || mensaje.includes('already exists')) {
+        setError(
+          'Ese correo ya tiene una cuenta. Inicia sesión o usa otro correo electrónico.'
+        );
+      } else if (mensaje.includes('Password should be')) {
+        setError('La contraseña no cumple los requisitos de seguridad.');
+      } else if (mensaje.toLowerCase().includes('rate limit')) {
+        setError('Demasiados intentos seguidos. Espera un minuto e inténtalo otra vez.');
       } else {
-        setError(error.message || 'Ocurrió un error inesperado.');
+        setError(mensaje || 'No pudimos crear la cuenta. Inténtalo de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -142,6 +151,29 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
     if (!active) return <div className="w-4 h-4 border border-af-border/50 rounded-full" />;
     return valid ? <Check size={16} className="text-af-success" /> : <XCircle size={16} className="text-af-danger" />;
   };
+
+  if (exito) {
+    return (
+      <div className="relative z-10 w-full space-y-5 text-center">
+        <div className="rounded-2xl border border-af-success/30 bg-af-success/10 p-6">
+          <Check className="mx-auto mb-3 text-af-success" size={32} aria-hidden="true" />
+          <p className="text-sm font-medium leading-relaxed text-af-ink">{exito.mensaje}</p>
+        </div>
+
+        {exito.confirmarCorreo && (
+          <Boton type="button" className="w-full" onClick={cambiarModo}>
+            Ya confirmé mi correo, iniciar sesión
+          </Boton>
+        )}
+
+        <p className="text-xs leading-relaxed text-af-ink-secondary">
+          {rol === 'restaurante'
+            ? 'Con tu cuenta de restaurante administras el menú, el tema y los pedidos.'
+            : 'Con tu cuenta de comensal guardas tus direcciones y sigues tus pedidos.'}
+        </p>
+      </div>
+    );
+  }
 
   if (paso === 'envio') {
     return (
@@ -311,7 +343,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
 
       <div className="mt-6 text-center">
         <p className="text-sm text-af-ink-secondary relative z-10">
-          ¿Ya tienes cuenta?
+          {rol === 'restaurante' ? '¿Ya tienes cuenta de restaurante?' : '¿Ya tienes cuenta?'}
           <button
             type="button"
             onClick={cambiarModo}
