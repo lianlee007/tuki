@@ -77,7 +77,10 @@ export const SeccionPortafolio: React.FC = () => {
     <Seccion padding="mediano">
       <Contenedor maxAncho="grande">
         <Revelar>
-          <h2 className="mx-auto max-w-2xl text-center font-title text-2xl font-bold tracking-tight text-af-ink sm:text-3xl">
+          <p className="text-center text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+            Ya están en línea
+          </p>
+          <h2 className="mx-auto mt-3 max-w-2xl text-center font-jakarta text-2xl font-extrabold tracking-[-0.03em] text-af-ink sm:text-3xl">
             Restaurantes que ya reciben pedidos con Tuki
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-base text-af-ink-secondary">
@@ -90,7 +93,7 @@ export const SeccionPortafolio: React.FC = () => {
             <Revelar key={rest.id} retraso={i * 60}>
               <Link
                 to={`/restaurante/${generarSlugUnico(rest.nombre, rest.id)}`}
-                className="af-pulsar group flex h-full flex-col overflow-hidden rounded-3xl bg-af-surface transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_-28px_rgba(28,25,23,0.5)]"
+                className="af-pulsar group flex h-full flex-col overflow-hidden rounded-3xl bg-hearth-card ring-1 ring-hearth-line/70 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-warm-lg dark:bg-hearth-night-card dark:ring-hearth-night-line/80 dark:hover:shadow-warm-dark"
               >
                 <div className="af-zoom relative aspect-[16/10] overflow-hidden">
                   <ImagenInteligente
