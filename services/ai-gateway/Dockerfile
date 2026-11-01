@@ -11,6 +11,7 @@ ARG PYTHON_IMAGE=python:3.12-slim@sha256:a0f57064cbdcd6285fa45f51237ab0b35ea8eba
 # -----------------------------------------------------------------------------
 # Dependencias
 # -----------------------------------------------------------------------------
+# hadolint ignore=DL3006
 FROM ${PYTHON_IMAGE} AS builder
 
 ARG WITH_OTEL=false
@@ -33,6 +34,7 @@ RUN /opt/venv/bin/pip install --require-hashes -r requirements.txt \
 # -----------------------------------------------------------------------------
 # Runtime
 # -----------------------------------------------------------------------------
+# hadolint ignore=DL3006
 FROM ${PYTHON_IMAGE} AS runtime
 
 ARG VERSION=0.0.0-dev

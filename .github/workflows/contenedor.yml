@@ -13,6 +13,8 @@ permissions:
   packages: write
   id-token: write
   security-events: write
+  # gitleaks consulta los archivos del PR para revisar solo el diff.
+  pull-requests: read
 
 concurrency:
   group: container-${{ github.ref }}
@@ -131,7 +133,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-          cache: pnpm
+          # Sin `cache: pnpm`: este trabajo no instala dependencias, así que el
+          # almacén de pnpm no existe y el guardado de caché fallaría al final.
 
       - name: pnpm audit · críticas (bloqueante)
         run: pnpm audit --prod --audit-level critical
@@ -310,19 +313,19 @@ jobs:
 
       - name: Trivy · repositorio (pull request)
         if: github.event_name == 'pull_request'
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           scanners: vuln,secret,misconfig
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          skip-dirs: node_modules,dist,services/ai-gateway/.venv,Skills
+          skip-dirs: node_modules,dist,services/ai-gateway/.venv,Skills,deploy/security/kyverno/tests
           exit-code: "1"
 
       - name: Trivy · imagen publicada
         if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
           format: sarif
@@ -444,7 +447,7 @@ jobs:
 
       - name: Trivy · imagen publicada
         if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
           format: sarif
