@@ -32,8 +32,11 @@ export const SeccionHero: React.FC<Props> = ({ scrollToSection }) => {
         <div className="grid items-center gap-16 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8">
           {/* Argumento */}
           <div className="text-center lg:text-left">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+              Para restaurantes
+            </p>
             <h1
-              className="af-subir text-[2.45rem] font-bold leading-[1.06] tracking-tight text-af-ink sm:text-[3.4rem] lg:text-[4rem]"
+              className="af-subir mt-3 text-[2.45rem] font-extrabold leading-[1.06] tracking-[-0.035em] text-af-ink sm:text-[3.4rem] lg:text-[4rem]"
               style={TRAMO(0)}
             >
               Tu restaurante con web propia,
@@ -76,9 +79,15 @@ export const SeccionHero: React.FC<Props> = ({ scrollToSection }) => {
 
           {/* Producto, a la vista antes de cualquier explicación */}
           <div className="af-subir" style={TRAMO(140)}>
-            <MarcoTelefono>
-              <MenuDemo nombre="El Fogón de Marta" dispositivo="movil" conEstado />
-            </MarcoTelefono>
+            {/* La maqueta es una imagen del producto: su menú es de mentira y
+                no debe entrar en el árbol de accesibilidad (un lector leería
+                cuatro platos que nadie puede pedir). Lo que explica la
+                sección es el texto de al lado. */}
+            <div aria-hidden="true">
+              <MarcoTelefono>
+                <MenuDemo nombre="El Fogón de Marta" dispositivo="movil" conEstado />
+              </MarcoTelefono>
+            </div>
             <p className="mt-8 text-center text-sm text-af-ink-secondary">
               Así lo ven tus clientes al escanear el código QR de la mesa.
             </p>

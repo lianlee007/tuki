@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RestauranteDescubierto } from '../../tipos/modelos';
 import { TarjetaRestaurante } from './TarjetaRestaurante';
+import { ETIQUETA } from './estilos';
 
 interface CarrilRestaurantesProps {
   restaurantes: RestauranteDescubierto[];
@@ -11,12 +12,11 @@ interface CarrilRestaurantesProps {
 }
 
 /**
- * El carril de restaurantes.
+ * Los restaurantes aliados.
  *
- * Va debajo de las cocinas y por encima del feed: responde al mismo buscador y
- * a la misma cocina, pero es una puerta distinta —entrar a un menú— y por eso
- * no compite con la retícula de platos. En móvil se recorre con el pulgar; en
- * escritorio cabe casi entero y lo que sobra se arrastra.
+ * Van antes del feed de platos porque son una puerta distinta —entrar al menú
+ * completo— y conviene decidirla con la foto del local, no con un plato suelto.
+ * En móvil se apilan; desde tablet se leen en parejas, como una carta física.
  */
 export const CarrilRestaurantes: React.FC<CarrilRestaurantesProps> = ({
   restaurantes,
@@ -27,46 +27,61 @@ export const CarrilRestaurantes: React.FC<CarrilRestaurantesProps> = ({
   if (!cargando && restaurantes.length === 0) return null;
 
   return (
-    <section className="mt-7" aria-labelledby="titulo-restaurantes">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2
-          id="titulo-restaurantes"
-          className="text-[15px] font-semibold tracking-tight text-af-ink"
-        >
-          Restaurantes
-        </h2>
-        {!cargando && (
-          <p aria-live="polite" className="text-[12px] text-af-ink-secondary">
-            {total === 1 ? '1 restaurante' : `${total.toLocaleString('es-CO')} restaurantes`}
-          </p>
-        )}
+    <section aria-labelledby="titulo-restaurantes">
+      <div className="flex items-end justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-hearth-terracotta shadow-warm dark:bg-hearth-night-terracotta" />
+          <div>
+            <h2
+              id="titulo-restaurantes"
+              className={`${ETIQUETA} text-hearth-espresso dark:text-hearth-night-ink`}
+            >
+              Restaurantes aliados
+            </h2>
+            <p className="mt-0.5 text-[12px] text-hearth-pebble dark:text-hearth-night-pebble">
+              {cargando
+                ? 'Buscando cocinas cerca de ti…'
+                : total === 1
+                  ? '1 cocina para entrar'
+                  : `${total.toLocaleString('es-CO')} cocinas para entrar`}
+            </p>
+          </div>
+        </div>
+
+        <span className="hidden text-[12px] font-semibold text-hearth-pebble sm:block dark:text-hearth-night-pebble">
+          Precios de carta, sin recargos
+        </span>
       </div>
 
-      <ul
-        className="-mx-5 mt-3 flex snap-x gap-4 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      <div
+        className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2"
         aria-busy={cargando}
       >
         {cargando && restaurantes.length === 0
-          ? Array.from({ length: 3 }).map((_, indice) => (
-              <li
+          ? Array.from({ length: 2 }).map((_, indice) => (
+              <div
                 key={`esqueleto-${indice}`}
-                className="w-[232px] shrink-0"
                 aria-hidden="true"
+                className="overflow-hidden rounded-3xl bg-hearth-card ring-1 ring-hearth-line/60 dark:bg-hearth-night-card dark:ring-white/5"
               >
-                <div className="aspect-[16/10] rounded-[18px] bg-af-surface" />
-                <div className="mt-3 h-4 w-2/3 rounded-full bg-af-surface" />
-                <div className="mt-2 h-3 w-1/2 rounded-full bg-af-surface" />
-              </li>
+                <div className="aspect-[16/10] animate-pulse bg-hearth-oat dark:bg-hearth-night-oat" />
+                <div className="flex items-center justify-between gap-3 p-4">
+                  <div className="w-2/3 space-y-2">
+                    <div className="h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+                    <div className="h-2.5 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+                  </div>
+                  <div className="h-8 w-20 rounded-xl bg-hearth-oat dark:bg-hearth-night-oat" />
+                </div>
+              </div>
             ))
           : restaurantes.map((restaurante) => (
-              <li key={restaurante.id} className="w-[232px] shrink-0 snap-start">
-                <TarjetaRestaurante
-                  restaurante={restaurante}
-                  cocinaCoincidente={cocinaCoincidente}
-                />
-              </li>
+              <TarjetaRestaurante
+                key={restaurante.id}
+                restaurante={restaurante}
+                cocinaCoincidente={cocinaCoincidente}
+              />
             ))}
-      </ul>
+      </div>
     </section>
   );
 };

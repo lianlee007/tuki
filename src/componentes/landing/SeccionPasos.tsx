@@ -34,7 +34,10 @@ export const SeccionPasos: React.FC = () => (
     <Contenedor maxAncho="grande">
       <Revelar>
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-5xl">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+            Tres pasos
+          </p>
+          <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-af-ink md:text-5xl">
             Publicar tu menú es lo más fácil del día
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
