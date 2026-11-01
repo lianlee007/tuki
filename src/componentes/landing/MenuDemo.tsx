@@ -170,7 +170,7 @@ export const MenuDemo: React.FC<{
                   draggable={false}
                 />
                 <div className="min-w-0 flex-1">
-                  <h4 className="truncate text-[11px] font-semibold">{p.nombre}</h4>
+                  <p className="truncate text-[11px] font-semibold">{p.nombre}</p>
                   <p className="mt-0.5 line-clamp-2 text-[9.5px] leading-snug text-af-ink-secondary">
                     {p.desc}
                   </p>
@@ -197,7 +197,7 @@ export const MenuDemo: React.FC<{
                 </div>
                 <div className="flex flex-1 items-start gap-2 p-2.5">
                   <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-[11px] font-semibold">{p.nombre}</h4>
+                    <p className="truncate text-[11px] font-semibold">{p.nombre}</p>
                     <p className="mt-0.5 line-clamp-2 text-[9.5px] leading-snug text-af-ink-secondary">
                       {p.desc}
                     </p>

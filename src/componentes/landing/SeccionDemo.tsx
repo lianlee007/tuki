@@ -49,7 +49,10 @@ export const SeccionDemo: React.FC = () => {
     <Seccion id="ejemplos" padding="grande" fondo="claro">
       <Contenedor maxAncho="grande">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-5xl">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+            Así se ve
+          </p>
+          <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-af-ink md:text-5xl">
             Míralo en la pantalla de tus clientes
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
@@ -73,7 +76,7 @@ export const SeccionDemo: React.FC = () => {
             onChange={(e) => setNombre(e.target.value)}
           />
 
-          <div className="hidden items-center gap-1 rounded-xl bg-af-surface p-1 lg:flex">
+          <div className="hidden items-center gap-1 rounded-xl bg-hearth-oat/80 p-1 ring-1 ring-hearth-line/60 lg:flex dark:bg-hearth-night-oat dark:ring-hearth-night-line/70">
             {APARATOS.map(({ id, etiqueta, icono: Icono }) => {
               const activo = dispositivo === id;
               return (
@@ -85,7 +88,7 @@ export const SeccionDemo: React.FC = () => {
                   title={etiqueta}
                   className={`af-pulsar flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
                     activo
-                      ? 'bg-af-ground text-af-ink shadow-sm'
+                      ? 'bg-hearth-card text-hearth-espresso shadow-warm dark:bg-hearth-night-card dark:text-hearth-night-ink'
                       : 'text-af-ink-secondary hover:text-af-ink'
                   }`}
                 >
@@ -101,7 +104,7 @@ export const SeccionDemo: React.FC = () => {
             corto. El marco cambia de tamaño en el acto —es un objeto, no un
             contenedor que se estira— y el fundido tapa el salto. */}
         <div className="mt-14 flex min-h-[600px] items-start justify-center">
-          <div key={dispositivo} className="af-entrada-velo">
+          <div key={dispositivo} className="af-entrada-velo" aria-hidden="true">
             {dispositivo === 'movil' && (
               <MarcoTelefono>
                 <MenuDemo nombre={nombre} dispositivo="movil" conEstado />
