@@ -150,6 +150,26 @@ const Acciones: React.FC<AccionesProps> = ({
   <div className="flex items-center gap-1.5">
     <ThemeToggle />
 
+    {/* El carrito vive siempre en la barra superior: el detalle solo se abre
+        al hacer clic aquí, nunca como un letrero fijo en la parte de abajo. */}
+    <button
+      type="button"
+      onClick={onCarrito}
+      aria-label={
+        cantidadCarrito > 0
+          ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
+          : 'Abrir el carrito'
+      }
+      className={`af-pulsar relative flex h-10 w-10 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
+    >
+      <ShoppingBag size={18} aria-hidden="true" />
+      {cantidadCarrito > 0 && (
+        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
+          {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
+        </span>
+      )}
+    </button>
+
     {hayUsuario && cargandoRol ? null : !hayUsuario ? (
       <Link
         to="/entrar"
@@ -163,26 +183,6 @@ const Acciones: React.FC<AccionesProps> = ({
       </Link>
     ) : (
       <>
-        {rol === 'cliente' && (
-          <button
-            type="button"
-            onClick={onCarrito}
-            aria-label={
-              cantidadCarrito > 0
-                ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
-                : 'Abrir el carrito'
-            }
-            className={`af-pulsar relative flex h-10 w-10 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
-          >
-            <ShoppingBag size={18} aria-hidden="true" />
-            {cantidadCarrito > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
-                {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
-              </span>
-            )}
-          </button>
-        )}
-
         {rol === 'restaurante' && (
           <Link
             to="/panel"
