@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Check, ImagePlus, Loader2, Send, X } from 'lucide-react';
@@ -26,8 +26,9 @@ interface FormularioResenaProps {
  * escritorio obliga a un salto de foco. Al vivir en la sección de reseñas, el
  * comensal ve la lista mientras escribe y el dueño conserva el mismo contexto.
  *
- * La reseña entra con `aprobado: false`: el mensaje de éxito dice exactamente
- * eso, sin prometer que ya se publicó.
+ * La reseña se publica al enviarla: no hay paso de aprobación del restaurante.
+ * Un comensal puede reseñar tantas veces como quiera, el mismo plato o la misma
+ * categoría incluidas. El mensaje de éxito lo dice sin ambigüedad.
  */
 export const FormularioResena: React.FC<FormularioResenaProps> = ({
   restauranteId,
@@ -47,9 +48,30 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     .trim();
 
   // Un plato agotado u oculto no debería aparecer en el selector de reseña.
-  const platosResenables = platillos.filter(
-    (platillo) => platillo.disponible !== false && platillo.visible !== false
+  const platosResenables = useMemo(
+    () =>
+      platillos.filter(
+        (platillo) => platillo.disponible !== false && platillo.visible !== false
+      ),
+    [platillos]
   );
+
+  // El selector se agrupa por categoría para que el comensal encuentre el plato
+  // sin recorrer una lista plana. La reseña se puede repetir en cualquier
+  // categoría, sin límite.
+  const platosPorCategoria = useMemo(() => {
+    const grupos = new Map<string, Platillo[]>();
+    platosResenables.forEach((platillo) => {
+      const categoria = platillo.categoria?.trim() || 'Otros';
+      const lista = grupos.get(categoria) ?? [];
+      lista.push(platillo);
+      grupos.set(categoria, lista);
+    });
+
+    return [...grupos.entries()].sort(([a], [b]) =>
+      a.localeCompare(b, 'es')
+    );
+  }, [platosResenables]);
 
   const inicialValido =
     platilloInicialId &&
@@ -67,6 +89,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviada, setEnviada] = useState(false);
+  const [publicada, setPublicada] = useState(true);
   const selectorFoto = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,6 +151,16 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   }
 
   if (enviada) {
+    const escribirOtra = () => {
+      setEnviada(false);
+      setCalificacion(0);
+      setPlatilloId('');
+      setComentario('');
+      setFotoUrl(null);
+      setError(null);
+      setErrorFoto(null);
+    };
+
     return (
       <div className="rounded-[22px] bg-af-surface p-6 sm:p-8 text-center">
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-af-success/15 text-af-success">
@@ -135,16 +168,26 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
         </span>
         <h3 className="mt-4 text-lg font-bold text-af-ink">Gracias por contarlo</h3>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-af-ink-secondary">
-          Tu reseña queda pendiente de aprobación. El restaurante la revisa y,
-          cuando la publique, aparecerá aquí con tu nombre.
+          {publicada
+            ? 'Tu reseña ya se publicó. Aparece aquí mismo con tu nombre, junto a las de los demás comensales. Puedes escribir otra cuando quieras: no hay límite por plato ni por categoría.'
+            : 'Tu reseña se guardó, pero la base de datos todavía exige aprobación. Aplica la migración de publicación directa para que aparezca en la ficha.'}
         </p>
-        <button
-          type="button"
-          onClick={onCancelar}
-          className="mt-5 rounded-xl bg-af-ink px-5 py-2.5 text-sm font-semibold text-af-ground af-pulsar"
-        >
-          Cerrar
-        </button>
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={onCancelar}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold text-af-ink-secondary transition-colors hover:text-af-ink af-pulsar"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            onClick={escribirOtra}
+            className="rounded-xl bg-af-ink px-5 py-2.5 text-sm font-semibold text-af-ground af-pulsar"
+          >
+            Escribir otra reseña
+          </button>
+        </div>
       </div>
     );
   }
@@ -190,7 +233,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     setError(null);
     setEnviando(true);
     try {
-      const { error: errorApi } = await apiResenas.crear({
+      const { error: errorApi, publicada: quedoPublica } = await apiResenas.crear({
         restauranteId,
         platilloId: platilloId || null,
         calificacion,
@@ -201,17 +244,14 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
       });
 
       if (errorApi) throw errorApi;
+      setPublicada(quedoPublica);
       setEnviada(true);
       onEnviada();
     } catch (e: any) {
-      if (e?.code === '23505') {
-        setError('Ya dejaste una reseña para este plato. Gracias por volver.');
-      } else {
-        setError(
-          e?.message ||
-            'No pudimos guardar tu reseña. Inténtalo otra vez en un momento.'
-        );
-      }
+      setError(
+        e?.message ||
+          'No pudimos guardar tu reseña. Inténtalo otra vez en un momento.'
+      );
     } finally {
       setEnviando(false);
     }
@@ -271,10 +311,14 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
               className="mt-1.5 w-full rounded-xl border border-af/30 bg-af-ground px-3 py-2.5 text-sm text-af-ink outline-none focus:border-af-accent-text focus:ring-2 focus:ring-af-accent/25"
             >
               <option value="">El restaurante en general</option>
-              {platosResenables.map((platillo) => (
-                <option key={platillo.id} value={platillo.id}>
-                  {platillo.nombre}
-                </option>
+              {platosPorCategoria.map(([categoria, platos]) => (
+                <optgroup key={categoria} label={categoria}>
+                  {platos.map((platillo) => (
+                    <option key={platillo.id} value={platillo.id}>
+                      {platillo.nombre}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -365,7 +409,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
 
           <p className="mt-2 flex items-center gap-1.5 text-xs text-af-ink-secondary">
             <Camera size={13} /> Se optimiza al subir. Tu foto se publica junto
-            con la reseña cuando el restaurante la apruebe.
+            con la reseña de inmediato.
           </p>
 
           {errorFoto && (
@@ -401,8 +445,8 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
         </div>
 
         <p className="text-xs leading-relaxed text-af-ink-secondary">
-          Tu reseña se publica después de que el restaurante la revise. Tu correo
-          no se muestra.
+          Tu reseña se publica en cuanto la envías. Puedes escribir todas las
+          que quieras del mismo plato o categoría. Tu correo no se muestra.
         </p>
       </div>
     </form>
