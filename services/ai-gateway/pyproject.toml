@@ -10,6 +10,9 @@ requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# pytest no añade la raíz del proyecto al path: sin esto, `import app` falla en
+# CI, donde el paquete no se instala en el entorno.
+pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-q"
