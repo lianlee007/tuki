@@ -41,7 +41,10 @@ export const SeccionBeneficios: React.FC = () => (
     <Contenedor maxAncho="grande">
       <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
         <Revelar>
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-5xl">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+            Sin comisiones
+          </p>
+          <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-af-ink md:text-5xl">
             Vende directo, sin comisiones.
           </h2>
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-af-ink-secondary">
@@ -65,7 +68,7 @@ export const SeccionBeneficios: React.FC = () => (
 
         <Revelar retraso={90}>
           <div className="mx-auto w-full max-w-sm" aria-hidden="true">
-            <div className="rounded-[28px] bg-af-ground p-6 shadow-[0_35px_70px_-35px_rgba(28,25,23,0.45)]">
+            <div className="rounded-3xl bg-hearth-card p-6 ring-1 ring-hearth-line/80 shadow-warm-lg dark:bg-hearth-night-card dark:ring-hearth-night-line/80 dark:shadow-warm-dark">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-sm font-semibold text-af-ink">
                   <span className="h-2 w-2 rounded-full bg-af-accent" />
