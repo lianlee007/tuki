@@ -49,7 +49,7 @@ export default function PaginaParaRestaurantes() {
   };
 
   return (
-    <div className="af-landing min-h-screen overflow-x-hidden bg-af-ground font-system text-af-ink">
+    <div className="af-landing min-h-screen overflow-x-hidden bg-af-ground font-jakarta text-af-ink">
       <SEO
         titulo="Tuki — La web de tu restaurante, lista hoy"
         descripcion="Menú digital, código QR para las mesas y pedidos que llegan directo a tu WhatsApp. Sin comisiones y sin saber programar."
@@ -145,18 +145,24 @@ export default function PaginaParaRestaurantes() {
         <SeccionPasos />
         <SeccionPrecios />
 
-        <Seccion padding="mediano" fondo="oscuro">
+        <Seccion padding="mediano" fondo="ninguno" className="bg-hearth-espresso dark:bg-hearth-night-oat">
           <Contenedor maxAncho="mediano">
             <div className="text-center">
-              <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-4xl">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-hearth-terracotta-soft dark:text-hearth-night-terracotta-ink">
+                Empieza hoy
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-hearth-cream md:text-4xl dark:text-hearth-night-ink">
                 Empieza gratis y publica hoy mismo
               </h2>
-              <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-af-ink-secondary">
+              <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-hearth-cream/75 dark:text-hearth-night-pebble">
                 Creas tu cuenta, subes tus platos y compartes tu enlace. Sin tarjeta y sin
                 compromiso.
               </p>
               <div className="mt-9 flex justify-center">
-                <BotonCTA onClick={() => navigate('/auth?mode=register')}>
+                <BotonCTA
+                  className="!bg-hearth-cream !text-hearth-terracotta-ink hover:!bg-white"
+                  onClick={() => navigate('/auth?mode=register')}
+                >
                   Crear mi restaurante
                 </BotonCTA>
               </div>
@@ -197,7 +203,7 @@ export default function PaginaParaRestaurantes() {
             </nav>
           </div>
 
-          <p className="mt-12 text-xs text-af-ink-secondary/70">
+          <p className="mt-12 text-xs text-af-ink-secondary">
             © {new Date().getFullYear()} Tuki Inc. Todos los derechos reservados.
           </p>
         </Contenedor>
