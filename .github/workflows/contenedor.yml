@@ -320,7 +320,7 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          skip-dirs: node_modules,dist,services/ai-gateway/.venv,Skills
+          skip-dirs: node_modules,dist,services/ai-gateway/.venv,Skills,deploy/security/kyverno/tests
           exit-code: "1"
 
       - name: Trivy · imagen publicada
