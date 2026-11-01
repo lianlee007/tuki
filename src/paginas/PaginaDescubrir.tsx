@@ -11,7 +11,6 @@ import {
 import { SEO } from '../componentes/ui';
 import { BarraDescubrir } from '../componentes/descubrir/BarraDescubrir';
 import { BarraMovil } from '../componentes/descubrir/BarraMovil';
-import { HeroDescubrir } from '../componentes/descubrir/HeroDescubrir';
 import { CarrilCocinas } from '../componentes/descubrir/CarrilCocinas';
 import { CarrilRestaurantes } from '../componentes/descubrir/CarrilRestaurantes';
 import { PanelFiltros } from '../componentes/descubrir/PanelFiltros';
@@ -354,6 +353,12 @@ const PaginaDescubrir = () => {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const irARestaurantes = () => {
+    document
+      .getElementById('restaurantes')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const platosVisibles = useMemo(
     () => (soloFavoritos ? platos.filter((plato) => esFavorito(plato.id)) : platos),
     [platos, soloFavoritos, esFavorito]
@@ -397,24 +402,13 @@ const PaginaDescubrir = () => {
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-16">
         <div className="grid grid-cols-1 gap-7 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-8">
           <div className="flex min-w-0 flex-col gap-7">
-            <HeroDescubrir
-              totalPlatos={total}
-              totalRestaurantes={totalRestaurantes}
-              totalCocinas={cocinas.length}
-              cocinaActiva={cocinaElegida?.nombre ?? null}
-            />
-
             <CarrilCocinas
               cocinas={cocinas}
               activa={cocina}
               onElegir={(slug) => actualizar({ cocina: slug })}
-            />
-
-            <CarrilRestaurantes
-              restaurantes={restaurantes}
-              total={totalRestaurantes}
-              cargando={cargandoRestaurantes}
-              cocinaCoincidente={cocinaElegida?.nombre ?? null}
+              totalPlatos={total}
+              totalRestaurantes={totalRestaurantes}
+              onVerRestaurantes={irARestaurantes}
             />
 
             <section id="catalogo-platos" aria-labelledby="titulo-platos" className="scroll-mt-28">
@@ -592,6 +586,15 @@ const PaginaDescubrir = () => {
                 </>
               )}
             </section>
+
+            <div id="restaurantes" className="scroll-mt-28">
+              <CarrilRestaurantes
+                restaurantes={restaurantes}
+                total={totalRestaurantes}
+                cargando={cargandoRestaurantes}
+                cocinaCoincidente={cocinaElegida?.nombre ?? null}
+              />
+            </div>
 
             <footer className={`${TARJETA} flex flex-col items-center gap-2 p-6 text-center`}>
               <p className="text-[13px] text-hearth-pebble dark:text-hearth-night-pebble">
