@@ -10,6 +10,7 @@ import { apiCuenta } from '../../modulos/cuenta';
 import { formatearPrecio } from '../../lib/utils';
 import { datosEnvioCompletos, formatearDireccionEnvio } from '../../modulos/cuenta';
 import { Hoja } from './Hoja';
+import { ETIQUETA, FOCO } from './estilos';
 
 interface PanelCarritoProps {
   abierto: boolean;
@@ -42,6 +43,8 @@ const formatearDireccion = (direccion: DireccionGuardada) =>
   ]
     .filter((parte) => Boolean(parte && String(parte).trim()))
     .join(' ');
+
+const CAMPO = `h-11 w-full rounded-xl bg-hearth-oat px-3.5 text-[14px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/40 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40`;
 
 /**
  * El carrito de Descubrir.
@@ -226,12 +229,18 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
   return (
     <Hoja abierto={abierto} onCerrar={onCerrar} tituloId="titulo-carrito" ancho="lg">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 id="titulo-carrito" className="text-[20px] font-semibold tracking-tight text-af-ink">
+        <div className="min-w-0">
+          <p className={`${ETIQUETA} text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
+            Un pedido, un restaurante
+          </p>
+          <h2
+            id="titulo-carrito"
+            className="mt-1 font-jakarta text-xl font-extrabold tracking-[-0.02em] text-hearth-espresso dark:text-hearth-night-ink"
+          >
             Tu pedido
           </h2>
           {!vacio && (
-            <p className="mt-1 text-[13px] text-af-ink-secondary">
+            <p className="mt-1 truncate text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble">
               Para {contacto?.nombre ?? restauranteNombre ?? 'el restaurante'}
             </p>
           )}
@@ -240,32 +249,34 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
           type="button"
           onClick={onCerrar}
           aria-label="Cerrar el carrito"
-          className="af-pulsar -mr-1 rounded-full bg-af-surface p-2 text-af-ink-secondary transition-colors hover:text-af-ink"
+          className={`af-pulsar -mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-hearth-oat text-hearth-pebble transition-colors hover:text-hearth-espresso dark:bg-hearth-night-oat dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink ${FOCO}`}
         >
-          <X size={18} />
+          <X size={18} aria-hidden="true" />
         </button>
       </div>
 
       {vacio ? (
         <div className="flex flex-col items-center py-12 text-center">
-          <span className="rounded-2xl bg-af-surface p-3 text-af-ink-secondary">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-hearth-oat text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-terracotta-ink">
             <ShoppingBag size={22} aria-hidden="true" />
           </span>
-          <p className="mt-3 text-[16px] font-semibold text-af-ink">Tu carrito está vacío</p>
-          <p className="mt-1 max-w-[26ch] text-[14px] leading-relaxed text-af-ink-secondary">
-            Agrega un plato con el botón + de la portada.
+          <p className="mt-3 text-[15px] font-extrabold text-hearth-espresso dark:text-hearth-night-ink">
+            Tu canasta está lista para cocinar
+          </p>
+          <p className="mt-1 max-w-[28ch] text-[13px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
+            Agrega un plato con el botón + de la portada y llénala de sabor.
           </p>
           <button
             type="button"
             onClick={onCerrar}
-            className="af-pulsar mt-5 rounded-full bg-af-ink px-5 py-2.5 text-[14px] font-semibold text-af-ground transition-opacity hover:opacity-90"
+            className={`af-pulsar mt-5 rounded-xl bg-hearth-terracotta-deep px-5 py-2.5 text-[13px] font-extrabold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
           >
             Ver platos
           </button>
         </div>
       ) : (
         <>
-          <ul className="mt-4">
+          <ul className="mt-4 divide-y divide-hearth-line/60 dark:divide-hearth-night-line">
             {carrito.map((item) => (
               <li key={item.platillo.id} className="flex items-center gap-3 py-3">
                 {item.platillo.imagen_url ? (
@@ -277,38 +288,38 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                     className="h-14 w-14 shrink-0 rounded-xl object-cover"
                   />
                 ) : (
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-af-surface text-af-ink-secondary">
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-hearth-oat text-hearth-pebble dark:bg-hearth-night-oat dark:text-hearth-night-pebble">
                     <ShoppingBag size={18} aria-hidden="true" />
                   </span>
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-semibold text-af-ink">
+                  <p className="truncate text-[13.5px] font-bold text-hearth-espresso dark:text-hearth-night-ink">
                     {item.platillo.nombre}
                   </p>
-                  <p className="mt-0.5 text-[12px] tabular-nums text-af-ink-secondary">
-                    {formatearPrecio(item.platillo.precio)}
+                  <p className="mt-0.5 text-[12px] tabular-nums text-hearth-pebble dark:text-hearth-night-pebble">
+                    {formatearPrecio(item.platillo.precio)} c/u
                   </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1.5">
+                <div className="flex shrink-0 items-center gap-1 rounded-xl bg-hearth-oat p-0.5 ring-1 ring-hearth-line/70 dark:bg-hearth-night-oat dark:ring-hearth-night-line">
                   <button
                     type="button"
                     onClick={() => actualizarCantidad(item.platillo.id, -1)}
                     aria-label={`Quitar uno de ${item.platillo.nombre}`}
                     disabled={item.cantidad <= 1}
-                    className="af-pulsar flex h-7 w-7 items-center justify-center rounded-full bg-af-surface text-af-ink transition-opacity hover:opacity-70 disabled:opacity-40"
+                    className={`af-pulsar flex h-7 w-7 items-center justify-center rounded-lg text-hearth-espresso transition-colors hover:bg-hearth-card disabled:opacity-40 dark:text-hearth-night-ink dark:hover:bg-hearth-night-card ${FOCO}`}
                   >
                     <Minus size={14} aria-hidden="true" />
                   </button>
-                  <span className="w-4 text-center text-[13px] font-semibold tabular-nums text-af-ink">
+                  <span className="w-4 text-center text-[12px] font-extrabold tabular-nums text-hearth-espresso dark:text-hearth-night-ink">
                     {item.cantidad}
                   </span>
                   <button
                     type="button"
                     onClick={() => actualizarCantidad(item.platillo.id, 1)}
                     aria-label={`Agregar uno de ${item.platillo.nombre}`}
-                    className="af-pulsar flex h-7 w-7 items-center justify-center rounded-full bg-af-surface text-af-ink transition-opacity hover:opacity-70"
+                    className={`af-pulsar flex h-7 w-7 items-center justify-center rounded-lg text-hearth-espresso transition-colors hover:bg-hearth-card dark:text-hearth-night-ink dark:hover:bg-hearth-night-card ${FOCO}`}
                   >
                     <Plus size={14} aria-hidden="true" />
                   </button>
@@ -318,7 +329,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                   type="button"
                   onClick={() => eliminarItem(item.platillo.id)}
                   aria-label={`Quitar ${item.platillo.nombre} del carrito`}
-                  className="af-pulsar shrink-0 rounded-full p-1.5 text-af-ink-secondary transition-colors hover:text-af-danger"
+                  className={`af-pulsar shrink-0 rounded-lg p-1.5 text-hearth-pebble transition-colors hover:text-[#A3231C] dark:text-hearth-night-pebble dark:hover:text-[#FF9B91] ${FOCO}`}
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
@@ -326,15 +337,43 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
             ))}
           </ul>
 
-          <div className="mt-2 flex items-baseline justify-between gap-3">
-            <span className="text-[15px] font-semibold text-af-ink">Total</span>
-            <span className="text-[19px] font-semibold tabular-nums text-af-ink">
-              {formatearPrecio(total)}
+          <div className="mt-3 rounded-2xl bg-hearth-oat/70 p-3.5 ring-1 ring-hearth-line/60 dark:bg-hearth-night-oat/70 dark:ring-hearth-night-line/60">
+            <div className="flex items-center justify-between text-[12.5px] font-medium text-hearth-pebble dark:text-hearth-night-pebble">
+              <span>Subtotal platos</span>
+              <span className="font-bold tabular-nums text-hearth-espresso dark:text-hearth-night-ink">
+                {formatearPrecio(total)}
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between text-[12.5px] font-medium text-hearth-pebble dark:text-hearth-night-pebble">
+              <span>Entrega</span>
+              <span className="font-bold text-hearth-espresso dark:text-hearth-night-ink">
+                Acordada con el local
+              </span>
+            </div>
+            <div className="mt-2 flex items-baseline justify-between border-t border-hearth-line/70 pt-2 dark:border-hearth-night-line">
+              <span className="text-[13px] font-extrabold text-hearth-espresso dark:text-hearth-night-ink">
+                Total a pagar
+              </span>
+              <span className="font-jakarta text-lg font-extrabold tabular-nums text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+                {formatearPrecio(total)}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center gap-3 rounded-2xl bg-hearth-honey-soft p-3 ring-1 ring-hearth-honey/25 dark:bg-hearth-night-honey-soft dark:ring-hearth-night-honey-ink/20">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-hearth-card/70 text-hearth-honey-ink dark:bg-hearth-night-card/60 dark:text-hearth-night-honey-ink">
+              <ShoppingBag size={18} aria-hidden="true" />
             </span>
+            <p className="text-[11.5px] leading-snug text-hearth-honey-ink dark:text-hearth-night-honey-ink">
+              <span className="block font-extrabold">Pedido por WhatsApp</span>
+              El local confirma disponibilidad y forma de pago al recibir el mensaje.
+            </p>
           </div>
 
           <div className="mt-6 space-y-3">
-            <p className="text-[13px] font-semibold text-af-ink-secondary">Datos de entrega</p>
+            <p className={`${ETIQUETA} text-[10px] text-hearth-pebble dark:text-hearth-night-pebble`}>
+              Datos de entrega
+            </p>
 
             <label className="block">
               <span className="sr-only">Nombre</span>
@@ -344,7 +383,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                 onChange={(evento) => setNombre(evento.target.value)}
                 placeholder="Nombre"
                 autoComplete="name"
-                className="h-11 w-full rounded-xl bg-af-surface px-3.5 text-[15px] text-af-ink outline-none placeholder:text-af-ink-secondary focus:ring-2 focus:ring-af-accent/40"
+                className={CAMPO}
               />
             </label>
 
@@ -357,7 +396,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                 placeholder="Teléfono"
                 inputMode="tel"
                 autoComplete="tel"
-                className="h-11 w-full rounded-xl bg-af-surface px-3.5 text-[15px] text-af-ink outline-none placeholder:text-af-ink-secondary focus:ring-2 focus:ring-af-accent/40"
+                className={CAMPO}
               />
             </label>
 
@@ -369,19 +408,19 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
                 placeholder="Dirección de entrega"
                 rows={2}
                 autoComplete="street-address"
-                className="w-full resize-none rounded-xl bg-af-surface px-3.5 py-3 text-[15px] leading-relaxed text-af-ink outline-none placeholder:text-af-ink-secondary focus:ring-2 focus:ring-af-accent/40"
+                className="w-full resize-none rounded-xl bg-hearth-oat px-3.5 py-3 text-[14px] leading-relaxed text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/40 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40"
               />
             </label>
 
             {user && (
-              <p className="text-[12px] leading-relaxed text-af-ink-secondary">
+              <p className="text-[11.5px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
                 {tieneDatosGuardados
                   ? '¿Cambiaste de dirección?'
                   : '¿Quieres pedir más rápido la próxima vez?'}{' '}
                 <Link
                   to="/mi-cuenta?seccion=envio"
                   onClick={onCerrar}
-                  className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
+                  className="font-bold text-hearth-terracotta-ink transition-opacity hover:opacity-80 dark:text-hearth-night-terracotta-ink"
                 >
                   {tieneDatosGuardados
                     ? 'Actualiza tus datos de envío'
@@ -391,12 +430,12 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
             )}
 
             {errorContacto && (
-              <p role="alert" className="text-[13px] font-medium text-af-danger">
+              <p role="alert" className="text-[12.5px] font-semibold text-[#A3231C] dark:text-[#FF9B91]">
                 {errorContacto}
               </p>
             )}
             {error && (
-              <p role="alert" className="text-[13px] font-medium text-af-danger">
+              <p role="alert" className="text-[12.5px] font-semibold text-[#A3231C] dark:text-[#FF9B91]">
                 {error}
               </p>
             )}
@@ -405,7 +444,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
               type="button"
               onClick={pedir}
               disabled={cargandoContacto}
-              className="af-pulsar w-full rounded-full bg-af-ink px-5 py-3.5 text-[15px] font-semibold text-af-ground transition-opacity hover:opacity-90 disabled:opacity-60"
+              className={`af-pulsar w-full rounded-xl bg-hearth-terracotta-deep px-5 py-3.5 text-[14px] font-extrabold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink disabled:cursor-not-allowed disabled:opacity-60 dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
             >
               {cargandoContacto ? 'Cargando…' : 'Pedir por WhatsApp'}
             </button>

@@ -1,13 +1,24 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, SlidersHorizontal, UtensilsCrossed, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Heart,
+  SlidersHorizontal,
+  UtensilsCrossed,
+  X,
+} from 'lucide-react';
 import { SEO } from '../componentes/ui';
 import { BarraDescubrir } from '../componentes/descubrir/BarraDescubrir';
+import { BarraMovil } from '../componentes/descubrir/BarraMovil';
 import { CarrilCocinas } from '../componentes/descubrir/CarrilCocinas';
 import { CarrilRestaurantes } from '../componentes/descubrir/CarrilRestaurantes';
 import { PanelFiltros } from '../componentes/descubrir/PanelFiltros';
+import { FiltrosRapidos } from '../componentes/descubrir/FiltrosRapidos';
 import { PanelCarrito } from '../componentes/descubrir/PanelCarrito';
+import { ResumenCarrito } from '../componentes/descubrir/ResumenCarrito';
+import { Inspiracion } from '../componentes/descubrir/Inspiracion';
+import { ModalPlato } from '../componentes/descubrir/ModalPlato';
 import { AvisoCuenta, AvisoOtroRestaurante } from '../componentes/descubrir/AvisosDescubrir';
 import { TarjetaPlato } from '../componentes/descubrir/TarjetaPlato';
 import {
@@ -18,10 +29,17 @@ import {
   type ClaveDieta,
   type ClavePrecio,
 } from '../componentes/descubrir/filtros';
+import {
+  BOTON_FANTASMA,
+  BOTON_PRIMARIO,
+  ETIQUETA,
+  FOCO,
+  TARJETA,
+} from '../componentes/descubrir/estilos';
 import { apiDescubrir } from '../api/apiDescubrir';
 import { useAuth } from '../contexto/ContextoAutenticacion';
+import { useFavoritos } from '../hooks/useFavoritos';
 import { useStoreCarrito } from '../modulos/pedidos';
-import { formatearPrecio } from '../lib/utils';
 import type {
   PlatoDescubierto,
   Platillo,
@@ -52,12 +70,16 @@ const aPlatillo = (plato: PlatoDescubierto): Platillo => ({
 
 /** Esqueletos del primer pintado: estáticos, sin pulso que distraiga. */
 const Esqueletos: React.FC = () => (
-  <div className="mt-6 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
-    {Array.from({ length: 6 }).map((_, indice) => (
-      <div key={indice}>
-        <div className="aspect-[4/3] rounded-[22px] bg-af-surface" />
-        <div className="mt-3 h-4 w-3/4 rounded-full bg-af-surface" />
-        <div className="mt-2 h-3 w-1/2 rounded-full bg-af-surface" />
+  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2" aria-hidden="true">
+    {Array.from({ length: 4 }).map((_, indice) => (
+      <div key={indice} className={`${TARJETA} p-3.5`}>
+        <div className="aspect-[4/3] rounded-2xl bg-hearth-oat dark:bg-hearth-night-oat" />
+        <div className="mt-3.5 h-4 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+        <div className="mt-2 h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="h-6 w-24 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+          <div className="h-9 w-32 rounded-xl bg-hearth-oat dark:bg-hearth-night-oat" />
+        </div>
       </div>
     ))}
   </div>
@@ -103,6 +125,21 @@ const PaginaDescubrir = () => {
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const [conflicto, setConflicto] = useState<PlatoDescubierto | null>(null);
 
+  const { favoritos, esFavorito, alternar } = useFavoritos();
+  const [soloFavoritos, setSoloFavoritos] = useState(false);
+  const [detalle, setDetalle] = useState<PlatoDescubierto | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const refBuscador = useRef<HTMLInputElement>(null);
+
+  /* Un aviso vive lo justo para leerse; no se apila. */
+  useEffect(() => {
+    if (!aviso) return;
+    const temporizador = setTimeout(() => setAviso(null), 2800);
+    return () => clearTimeout(temporizador);
+  }, [aviso]);
+
+  const avisar = (mensaje: string) => setAviso(mensaje);
+
   /* La URL manda: atrás y adelante del navegador devuelven el mismo feed. */
   const actualizar = (cambios: Record<string, string | null>) => {
     setParams(
@@ -133,8 +170,8 @@ const PaginaDescubrir = () => {
 
   useEffect(() => {
     let vigente = true;
-    apiDescubrir.cocinas().then(({ cocinas }) => {
-      if (vigente) setCocinas(cocinas);
+    apiDescubrir.cocinas().then(({ cocinas: encontradas }) => {
+      if (vigente) setCocinas(encontradas);
     });
     return () => {
       vigente = false;
@@ -182,15 +219,15 @@ const PaginaDescubrir = () => {
   }, [clave, reintento]);
 
   /*
-   * El carril de restaurantes responde al texto y a la cocina, no al precio ni
-   * a la dieta: esos filtros son del plato que se va a comer, no del local.
+   * Los restaurantes responden al texto y a la cocina, no al precio ni a la
+   * dieta: esos filtros son del plato que se va a comer, no del local.
    */
   useEffect(() => {
     let vigente = true;
     setCargandoRestaurantes(true);
 
     apiDescubrir
-      .restaurantes({ q: consulta, cocina, limite: 12 })
+      .restaurantes({ q: consulta, cocina, limite: 8 })
       .then(({ restaurantes: encontrados, error: fallo }) => {
         if (!vigente) return;
         if (fallo) {
@@ -222,19 +259,21 @@ const PaginaDescubrir = () => {
       limite: LIMITE,
       desde: platos.length,
     });
+
     if (!fallo) setPlatos((previos) => [...previos, ...siguientes]);
     setCargandoMas(false);
   };
 
   const alternarDieta = (dieta: ClaveDieta) => {
     const siguientes = dietas.includes(dieta)
-      ? dietas.filter((actual) => actual !== dieta)
+      ? dietas.filter((claveDieta) => claveDieta !== dieta)
       : [...dietas, dieta];
     actualizar({ dietas: siguientes.join(',') || null });
   };
 
   const limpiar = () => {
     setTexto('');
+    setSoloFavoritos(false);
     setParams(new URLSearchParams(), { replace: true });
   };
 
@@ -254,7 +293,12 @@ const PaginaDescubrir = () => {
       .getState()
       .agregarItem(aPlatillo(plato), plato.restaurante_nombre);
 
-    if (resultado === 'otro-restaurante') setConflicto(plato);
+    if (resultado === 'otro-restaurante') {
+      setConflicto(plato);
+      return;
+    }
+
+    avisar(`«${plato.nombre}» se sumó a tu pedido`);
   };
 
   const confirmarCambioDeRestaurante = () => {
@@ -263,6 +307,7 @@ const PaginaDescubrir = () => {
       .getState()
       .reemplazarCarrito(aPlatillo(conflicto), conflicto.restaurante_nombre);
     setConflicto(null);
+    avisar(`Empezaste un pedido en ${conflicto.restaurante_nombre}`);
   };
 
   const cambiarACuentaCliente = async () => {
@@ -271,14 +316,76 @@ const PaginaDescubrir = () => {
     navigate('/entrar');
   };
 
+  const alternarFavorito = (plato: PlatoDescubierto) => {
+    const yaEra = esFavorito(plato.id);
+    alternar(plato.id);
+    avisar(yaEra ? 'Quitado de tus favoritos' : `Guardado en favoritos: ${plato.nombre}`);
+  };
+
+  const sorprender = () => {
+    if (platos.length === 0) return;
+    const elegido = platos[Math.floor(Math.random() * platos.length)];
+    setDetalle(elegido);
+  };
+
+  const irAInicio = () => {
+    setSoloFavoritos(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const enfocarBuscador = () => {
+    refBuscador.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const verFavoritos = () => {
+    const siguiente = !soloFavoritos;
+    setSoloFavoritos(siguiente);
+    avisar(
+      siguiente
+        ? favoritos.length > 0
+          ? 'Mostrando solo tus favoritos'
+          : 'Todavía no has guardado favoritos'
+        : 'Mostrando todos los platos'
+    );
+    document
+      .getElementById('catalogo-platos')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const irARestaurantes = () => {
+    document
+      .getElementById('restaurantes')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const platosVisibles = useMemo(
+    () => (soloFavoritos ? platos.filter((plato) => esFavorito(plato.id)) : platos),
+    [platos, soloFavoritos, esFavorito]
+  );
+
   const filtrosActivos = (cocina ? 1 : 0) + (precio ? 1 : 0) + dietas.length;
-  const cocinaElegida = cocinas.find((c) => c.slug === cocina);
+  const cocinaElegida = cocinas.find((tipo) => tipo.slug === cocina);
   const hayFiltros = filtrosActivos > 0 || consulta.trim().length > 0;
   const primerPintado = cargando && platos.length === 0;
   const volver = `${location.pathname}${location.search}`;
+  const rutaCuenta = user ? '/mi-cuenta' : '/entrar';
+
+  const totalMostrado = soloFavoritos ? platosVisibles.length : total;
+  const etiquetaTotal = primerPintado
+    ? 'Buscando platos…'
+    : error
+      ? 'Sin resultados'
+      : soloFavoritos
+        ? totalMostrado === 1
+          ? '1 favorito en esta búsqueda'
+          : `${totalMostrado} favoritos en esta búsqueda`
+        : totalMostrado === 1
+          ? '1 plato'
+          : `${totalMostrado.toLocaleString('es-CO')} platos`;
 
   return (
-    <div className="min-h-screen bg-af-ground text-af-ink">
+    <div className="min-h-screen bg-hearth-cream font-jakarta text-hearth-espresso transition-colors dark:bg-hearth-night dark:text-hearth-night-ink">
       <SEO
         titulo="Tuki — Descubre platos de restaurantes"
         descripcion="Busca platos por cocina, precio y preferencias. Encuentra qué comer y pide directo al restaurante."
@@ -289,186 +396,255 @@ const PaginaDescubrir = () => {
         onConsulta={setTexto}
         onCarrito={() => setCarritoAbierto(true)}
         cantidadCarrito={cantidadCarrito}
+        inputRef={refBuscador}
       />
 
-      <main className="mx-auto max-w-6xl px-5 pb-32 pt-8">
-        <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.1] tracking-tight text-af-ink">
-          ¿Qué se te antoja?
-        </h1>
+      <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-16">
+        <div className="grid grid-cols-1 gap-7 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-8">
+          <div className="flex min-w-0 flex-col gap-7">
+            <CarrilCocinas
+              cocinas={cocinas}
+              activa={cocina}
+              onElegir={(slug) => actualizar({ cocina: slug })}
+              totalPlatos={total}
+              totalRestaurantes={totalRestaurantes}
+              onVerRestaurantes={irARestaurantes}
+            />
 
-        <div className="mt-5">
-          <CarrilCocinas
-            cocinas={cocinas}
-            activa={cocina}
-            onElegir={(slug) => actualizar({ cocina: slug })}
-          />
-        </div>
+            <section id="catalogo-platos" aria-labelledby="titulo-platos" className="scroll-mt-28">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className={`${ETIQUETA} text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
+                    El feed de hoy
+                  </p>
+                  <h2
+                    id="titulo-platos"
+                    className="mt-1 font-jakarta text-[clamp(1.35rem,3vw,1.7rem)] font-extrabold tracking-[-0.025em] text-hearth-espresso dark:text-hearth-night-ink"
+                  >
+                    Platos en tendencia
+                  </h2>
+                  <p aria-live="polite" className="mt-0.5 text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble">
+                    {etiquetaTotal}
+                  </p>
+                </div>
 
-        <CarrilRestaurantes
-          restaurantes={restaurantes}
-          total={totalRestaurantes}
-          cargando={cargandoRestaurantes}
-          cocinaCoincidente={cocinaElegida?.nombre ?? null}
-        />
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={verFavoritos}
+                    aria-pressed={soloFavoritos}
+                    className={`af-pulsar inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-colors ${FOCO} ${
+                      soloFavoritos
+                        ? 'bg-hearth-terracotta-deep text-white shadow-warm dark:bg-hearth-night-terracotta dark:text-hearth-night'
+                        : 'bg-hearth-card text-hearth-pebble ring-1 ring-hearth-line/70 hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line'
+                    }`}
+                  >
+                    <Heart
+                      size={14}
+                      aria-hidden="true"
+                      className={soloFavoritos ? 'fill-current' : undefined}
+                    />
+                    Favoritos
+                    {favoritos.length > 0 && (
+                      <span className="rounded-full bg-hearth-honey/25 px-1.5 text-[10px] font-extrabold tabular-nums">
+                        {favoritos.length}
+                      </span>
+                    )}
+                  </button>
 
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <p aria-live="polite" className="text-[13px] text-af-ink-secondary">
-            {primerPintado
-              ? 'Buscando…'
-              : error
-                ? 'Sin resultados'
-                : total === 1
-                  ? '1 plato'
-                  : `${total.toLocaleString('es-CO')} platos`}
-          </p>
+                  <button
+                    type="button"
+                    onClick={() => setFiltrosAbiertos(true)}
+                    className={`af-pulsar inline-flex items-center gap-1.5 rounded-xl bg-hearth-card px-3.5 py-2.5 text-[12px] font-bold text-hearth-pebble ring-1 ring-hearth-line/70 transition-colors hover:text-hearth-espresso lg:hidden dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line dark:hover:text-hearth-night-ink ${FOCO}`}
+                  >
+                    <SlidersHorizontal size={14} aria-hidden="true" />
+                    Filtros
+                    {filtrosActivos > 0 && (
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
+                        {filtrosActivos}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
 
-          <button
-            type="button"
-            onClick={() => setFiltrosAbiertos(true)}
-            className="af-pulsar flex shrink-0 items-center gap-2 rounded-full bg-af-surface px-4 py-2 text-[13px] font-semibold text-af-ink transition-colors hover:text-af-accent-text"
-          >
-            <SlidersHorizontal size={15} aria-hidden="true" />
-            Filtros
-            {filtrosActivos > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-af-ink px-1.5 text-[11px] font-bold text-af-ground">
-                {filtrosActivos}
-              </span>
-            )}
-          </button>
-        </div>
+              {hayFiltros && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {cocinaElegida && (
+                    <PastillaActiva
+                      etiqueta={cocinaElegida.nombre}
+                      onQuitar={() => actualizar({ cocina: null })}
+                    />
+                  )}
+                  {precio && (
+                    <PastillaActiva
+                      etiqueta={RANGOS_PRECIO[precio].etiqueta}
+                      onQuitar={() => actualizar({ precio: null })}
+                    />
+                  )}
+                  {dietas.map((dieta) => (
+                    <PastillaActiva
+                      key={dieta}
+                      etiqueta={
+                        DIETAS.find((opcion) => opcion.clave === dieta)?.etiqueta ?? dieta
+                      }
+                      onQuitar={() => alternarDieta(dieta)}
+                    />
+                  ))}
+                  {consulta.trim() && (
+                    <PastillaActiva
+                      etiqueta={`«${consulta.trim()}»`}
+                      onQuitar={() => {
+                        setTexto('');
+                        actualizar({ q: null });
+                      }}
+                    />
+                  )}
+                </div>
+              )}
 
-        {hayFiltros && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {cocinaElegida && (
-              <PastillaActiva
-                etiqueta={cocinaElegida.nombre}
-                onQuitar={() => actualizar({ cocina: null })}
-              />
-            )}
-            {precio && (
-              <PastillaActiva
-                etiqueta={RANGOS_PRECIO[precio].etiqueta}
-                onQuitar={() => actualizar({ precio: null })}
-              />
-            )}
-            {dietas.map((dieta) => (
-              <PastillaActiva
-                key={dieta}
-                etiqueta={DIETAS.find((opcion) => opcion.clave === dieta)?.etiqueta ?? dieta}
-                onQuitar={() => alternarDieta(dieta)}
-              />
-            ))}
-            {consulta.trim() && (
-              <PastillaActiva
-                etiqueta={`«${consulta.trim()}»`}
-                onQuitar={() => {
-                  setTexto('');
-                  actualizar({ q: null });
-                }}
-              />
-            )}
-          </div>
-        )}
-
-        {primerPintado ? (
-          <Esqueletos />
-        ) : error ? (
-          <Estado
-            titulo="Algo se quemó en la cocina"
-            texto={error}
-            accion={
-              <button
-                type="button"
-                onClick={() => setReintento((valor) => valor + 1)}
-                className="af-pulsar rounded-full bg-af-ink px-5 py-2.5 text-[14px] font-semibold text-af-ground"
-              >
-                Reintentar
-              </button>
-            }
-          />
-        ) : platos.length === 0 ? (
-          <Estado
-            titulo={hayFiltros ? 'Nada por aquí' : 'Todavía no hay platos'}
-            texto={
-              hayFiltros
-                ? 'Prueba con otra palabra o quita algún filtro.'
-                : 'Cuando los restaurantes publiquen su carta, sus platos aparecerán aquí.'
-            }
-            accion={
-              hayFiltros ? (
-                <button
-                  type="button"
-                  onClick={limpiar}
-                  className="af-pulsar rounded-full bg-af-ink px-5 py-2.5 text-[14px] font-semibold text-af-ground"
-                >
-                  Quitar los filtros
-                </button>
-              ) : undefined
-            }
-          />
-        ) : (
-          <>
-            <div
-              className={`mt-6 grid gap-x-5 gap-y-8 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3 ${
-                cargando ? 'opacity-60' : 'opacity-100'
-              }`}
-              aria-busy={cargando}
-            >
-              {platos.map((plato, indice) => (
-                <TarjetaPlato
-                  key={plato.id}
-                  plato={plato}
-                  destacado={indice === 0 && !hayFiltros}
-                  onAgregar={agregarAlCarrito}
+              {primerPintado ? (
+                <Esqueletos />
+              ) : error ? (
+                <Estado
+                  titulo="Algo se quemó en la cocina"
+                  texto={error}
+                  accion={
+                    <button
+                      type="button"
+                      onClick={() => setReintento((valor) => valor + 1)}
+                      className={BOTON_PRIMARIO}
+                    >
+                      Reintentar
+                    </button>
+                  }
                 />
-              ))}
+              ) : platos.length === 0 ? (
+                <Estado
+                  titulo={hayFiltros ? 'Nada por aquí' : 'Todavía no hay platos'}
+                  texto={
+                    hayFiltros
+                      ? 'Prueba con otra palabra o quita algún filtro.'
+                      : 'Cuando los restaurantes publiquen su carta, sus platos aparecerán aquí.'
+                  }
+                  accion={
+                    hayFiltros ? (
+                      <button type="button" onClick={limpiar} className={BOTON_PRIMARIO}>
+                        Quitar los filtros
+                      </button>
+                    ) : undefined
+                  }
+                />
+              ) : soloFavoritos && platosVisibles.length === 0 ? (
+                <Estado
+                  titulo="Todavía no has guardado favoritos"
+                  texto="Toca el corazón de un plato y lo encontrarás aquí la próxima vez."
+                  accion={
+                    <button
+                      type="button"
+                      onClick={() => setSoloFavoritos(false)}
+                      className={BOTON_PRIMARIO}
+                    >
+                      Ver todos los platos
+                    </button>
+                  }
+                />
+              ) : (
+                <>
+                  <div
+                    className={`mt-5 grid grid-cols-1 gap-4 transition-opacity duration-200 sm:grid-cols-2 ${
+                      cargando ? 'opacity-60' : 'opacity-100'
+                    }`}
+                    aria-busy={cargando}
+                  >
+                    {platosVisibles.map((plato, indice) => (
+                      <TarjetaPlato
+                        key={plato.id}
+                        plato={plato}
+                        destacado={indice === 0 && !hayFiltros && !soloFavoritos}
+                        esFavorito={esFavorito(plato.id)}
+                        onFavorito={alternarFavorito}
+                        onVerDetalle={setDetalle}
+                        onAgregar={agregarAlCarrito}
+                      />
+                    ))}
+                  </div>
+
+                  {!soloFavoritos && platos.length < total && (
+                    <div className="mt-8 flex justify-center">
+                      <button
+                        type="button"
+                        onClick={cargarMas}
+                        disabled={cargandoMas}
+                        className={BOTON_FANTASMA}
+                      >
+                        {cargandoMas ? 'Cargando…' : 'Ver más platos'}
+                        {!cargandoMas && <ArrowRight size={16} aria-hidden="true" />}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+
+            <div id="restaurantes" className="scroll-mt-28">
+              <CarrilRestaurantes
+                restaurantes={restaurantes}
+                total={totalRestaurantes}
+                cargando={cargandoRestaurantes}
+                cocinaCoincidente={cocinaElegida?.nombre ?? null}
+              />
             </div>
 
-            {platos.length < total && (
-              <div className="mt-10 flex justify-center">
-                <button
-                  type="button"
-                  onClick={cargarMas}
-                  disabled={cargandoMas}
-                  className="af-pulsar rounded-full bg-af-surface px-6 py-3 text-[14px] font-semibold text-af-ink transition-opacity hover:opacity-80 disabled:opacity-60"
-                >
-                  {cargandoMas ? 'Cargando…' : 'Ver más platos'}
-                </button>
-              </div>
-            )}
-          </>
-        )}
+            <footer className={`${TARJETA} flex flex-col items-center gap-2 p-6 text-center`}>
+              <p className="text-[13px] text-hearth-pebble dark:text-hearth-night-pebble">
+                ¿Tienes un restaurante?
+              </p>
+              <Link
+                to="/para-restaurantes"
+                className="af-pulsar inline-flex items-center gap-1.5 font-jakarta text-[15px] font-extrabold text-hearth-terracotta-ink transition-colors hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta"
+              >
+                Crea tu menú con Tuki
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </footer>
+          </div>
 
-        <footer className="mt-16 flex flex-col items-center gap-2 pt-8 text-center">
-          <p className="text-[14px] text-af-ink-secondary">¿Tienes un restaurante?</p>
-          <Link
-            to="/para-restaurantes"
-            className="af-pulsar inline-flex items-center gap-1.5 text-[15px] font-semibold text-af-ink transition-colors hover:text-af-accent-text"
+          <aside
+            className="af-sin-scrollbar hidden flex-col gap-5 [&>*]:shrink-0 xl:sticky xl:top-24 xl:flex xl:max-h-[calc(100vh-7rem)] xl:self-start xl:overflow-y-auto"
+            aria-label="Atajos y tu pedido"
           >
-            Crea tu menú con Tuki
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </footer>
+            <Inspiracion cantidadPlatos={platos.length} onSorprender={sorprender} />
+
+            <ResumenCarrito
+              carrito={carrito}
+              cantidad={cantidadCarrito}
+              total={totalCarrito}
+              onAbrir={() => setCarritoAbierto(true)}
+            />
+
+            <FiltrosRapidos
+              precio={precio}
+              dietas={dietas}
+              onPrecio={(nuevo) => actualizar({ precio: nuevo || null })}
+              onDieta={alternarDieta}
+              onLimpiar={limpiar}
+            />
+          </aside>
+        </div>
       </main>
 
-      {/* La barra del pedido solo existe para un comensal con algo en el carrito. */}
-      {rol === 'cliente' && carrito.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={() => setCarritoAbierto(true)}
-            className="af-pulsar mx-auto flex w-full max-w-md items-center justify-between gap-3 rounded-full bg-af-ink px-5 py-3.5 text-af-ground transition-opacity hover:opacity-90"
-          >
-            <span className="inline-flex items-center gap-2 text-[14px] font-semibold">
-              <ShoppingBag size={17} aria-hidden="true" />
-              {cantidadCarrito} {cantidadCarrito === 1 ? 'producto' : 'productos'}
-              <span aria-hidden="true">·</span>
-              <span className="tabular-nums">{formatearPrecio(totalCarrito)}</span>
-            </span>
-            <span className="text-[13px] font-semibold">Ver carrito</span>
-          </button>
-        </div>
-      )}
+      <BarraMovil
+        cantidadCarrito={cantidadCarrito}
+        totalCarrito={totalCarrito}
+        favoritosActivos={soloFavoritos}
+        mostrarCarrito={rol === 'cliente'}
+        rutaCuenta={rutaCuenta}
+        onInicio={irAInicio}
+        onBuscar={enfocarBuscador}
+        onFavoritos={verFavoritos}
+        onCarrito={() => setCarritoAbierto(true)}
+      />
 
       <PanelFiltros
         abierto={filtrosAbiertos}
@@ -482,6 +658,14 @@ const PaginaDescubrir = () => {
       />
 
       <PanelCarrito abierto={carritoAbierto} onCerrar={() => setCarritoAbierto(false)} />
+
+      <ModalPlato
+        plato={detalle}
+        onCerrar={() => setDetalle(null)}
+        esFavorito={detalle ? esFavorito(detalle.id) : false}
+        onFavorito={alternarFavorito}
+        onAgregar={agregarAlCarrito}
+      />
 
       <AvisoCuenta
         abierto={cuentaAbierta}
@@ -498,6 +682,23 @@ const PaginaDescubrir = () => {
         onConfirmar={confirmarCambioDeRestaurante}
         onCerrar={() => setConflicto(null)}
       />
+
+      {/* Aviso breve: confirma sin tapar el feed ni mover el pulgar. */}
+      <div
+        aria-live="polite"
+        className={`pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4 transition-all duration-300 ${
+          aviso
+            ? 'bottom-[calc(8.5rem+env(safe-area-inset-bottom))] opacity-100 lg:bottom-8'
+            : 'bottom-[calc(7.5rem+env(safe-area-inset-bottom))] translate-y-2 opacity-0 lg:bottom-6'
+        }`}
+      >
+        <div className="flex max-w-sm items-center gap-2.5 rounded-2xl bg-hearth-espresso px-4 py-3 text-[12px] font-bold text-hearth-cream shadow-warm-xl dark:bg-hearth-night-card dark:text-hearth-night-ink dark:ring-1 dark:ring-white/10">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-hearth-terracotta text-[11px] text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
+            ✓
+          </span>
+          <span className="min-w-0">{aviso}</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -509,7 +710,7 @@ const PastillaActiva: React.FC<{ etiqueta: string; onQuitar: () => void }> = ({
   <button
     type="button"
     onClick={onQuitar}
-    className="af-pulsar inline-flex items-center gap-1.5 rounded-full bg-af-surface px-3 py-1.5 text-[12px] font-semibold text-af-ink transition-opacity hover:opacity-80"
+    className={`af-pulsar inline-flex items-center gap-1.5 rounded-full bg-hearth-terracotta-soft px-3 py-1.5 text-[11.5px] font-bold text-hearth-terracotta-ink ring-1 ring-hearth-terracotta/20 transition-colors hover:bg-[#FBE2D9] dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink dark:ring-white/10 dark:hover:bg-[#4A2D24] ${FOCO}`}
     aria-label={`Quitar el filtro ${etiqueta}`}
   >
     {etiqueta}
@@ -522,12 +723,16 @@ const Estado: React.FC<{
   texto: string;
   accion?: React.ReactNode;
 }> = ({ titulo, texto, accion }) => (
-  <div className="flex flex-col items-center gap-3 py-24 text-center">
-    <span className="rounded-2xl bg-af-surface p-3 text-af-ink-secondary">
+  <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-hearth-oat text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-terracotta-ink">
       <UtensilsCrossed size={22} aria-hidden="true" />
     </span>
-    <h2 className="text-[19px] font-semibold tracking-tight text-af-ink">{titulo}</h2>
-    <p className="max-w-sm text-[14px] leading-relaxed text-af-ink-secondary">{texto}</p>
+    <h3 className="font-jakarta text-[17px] font-extrabold tracking-[-0.01em] text-hearth-espresso dark:text-hearth-night-ink">
+      {titulo}
+    </h3>
+    <p className="max-w-sm text-[13px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
+      {texto}
+    </p>
     {accion && <div className="mt-2">{accion}</div>}
   </div>
 );
