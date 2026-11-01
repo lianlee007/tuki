@@ -635,15 +635,11 @@ const PaginaDescubrir = () => {
       </main>
 
       <BarraMovil
-        cantidadCarrito={cantidadCarrito}
-        totalCarrito={totalCarrito}
         favoritosActivos={soloFavoritos}
-        mostrarCarrito={rol === 'cliente'}
         rutaCuenta={rutaCuenta}
         onInicio={irAInicio}
         onBuscar={enfocarBuscador}
         onFavoritos={verFavoritos}
-        onCarrito={() => setCarritoAbierto(true)}
       />
 
       <PanelFiltros
