@@ -79,7 +79,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$rama"
-          git add deploy/k8s/overlays/$AMBIENTE/kustomization.yaml
+          git add "deploy/k8s/overlays/$AMBIENTE/kustomization.yaml"
           git commit -m "chore(despliegue): promueve ${TAG} a ${AMBIENTE}"
           git push -u origin "$rama"
 
