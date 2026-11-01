@@ -106,9 +106,9 @@
               sage: '#5F8D64',
               'sage-soft': '#EDF4EE',
               'sage-ink': '#2F5D36',
-              night: '#171110',
-              'night-soft': '#1F1715',
-              'night-card': '#261D1A',
+              night: '#131110',
+              'night-soft': '#1F1C1A',
+              'night-card': '#1F1C1A',
               'night-oat': '#2E2420',
               'night-line': '#3D302B',
               'night-ink': '#F6EBE6',
@@ -165,9 +165,11 @@
     }
 
     .dark {
-      /* MODO OSCURO: NEUMORFISMO PROFUNDO 3D (Deep Neumorphism) */
-      --bg-color: #1A1D21;
-      --surface-color: #1A1D21;
+      /* MODO OSCURO: fondo tostado del sistema «Warm Culinary Hearth».
+         #131110 para el lienzo y #1F1C1A para las superficies: el marrón
+         profundo conserva la calidez del modo claro y evita el negro frío. */
+      --bg-color: #131110;
+      --surface-color: #1F1C1A;
       --text-main: #F3F4F6;
       --text-muted: #9CA3AF;
 
@@ -340,7 +342,7 @@
     }
 
     .dark ::-webkit-scrollbar-thumb {
-      background-color: #333;
+      background-color: #3D302B;
       border: 3px solid var(--bg-color);
     }
 
