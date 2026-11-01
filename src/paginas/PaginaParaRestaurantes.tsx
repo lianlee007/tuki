@@ -58,21 +58,45 @@ export default function PaginaParaRestaurantes() {
       <nav className="nav-af fixed top-0 z-50 w-full">
         <Contenedor maxAncho="grande">
           <div className="flex h-16 items-center justify-between sm:h-20 md:h-24">
-            <button
-              type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="af-pulsar flex shrink-0 items-center gap-2.5 sm:gap-3"
-            >
-              <MarcaTuki tamano={22} />
-            </button>
+            <div className="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="af-pulsar flex shrink-0 items-center gap-2.5 sm:gap-3"
+              >
+                <MarcaTuki tamano={22} />
+              </button>
 
-            <div className="hidden items-center gap-8 text-sm font-medium text-af-ink-secondary lg:flex">
+              {/* Las dos portadas del producto. Es el mismo par que ofrece la
+                  barra de Descubrir, para que el cambio se lea igual en los dos
+                  sentidos y no haya que adivinar dónde está cada cosa. */}
+              <nav
+                aria-label="Páginas principales"
+                className="hidden items-center gap-1 rounded-xl bg-af-surface/80 p-1 ring-1 ring-af-border/70 lg:flex dark:ring-white/10"
+              >
+                <Link
+                  to="/"
+                  className="af-pulsar rounded-lg px-3 py-1.5 text-[12.5px] font-bold text-af-ink-secondary transition-colors hover:text-af-ink"
+                >
+                  Explorar
+                </Link>
+                <Link
+                  to="/para-restaurantes"
+                  aria-current="page"
+                  className="af-pulsar rounded-lg bg-hearth-card px-3 py-1.5 text-[12.5px] font-bold text-af-accent-text shadow-warm dark:bg-hearth-night-card dark:text-hearth-night-terracotta-ink"
+                >
+                  Para restaurantes
+                </Link>
+              </nav>
+            </div>
+
+            <div className="hidden items-center gap-8 text-sm font-medium text-af-ink-secondary xl:flex">
               {ENLACES.map((enlace) => (
                 <a
                   key={enlace.id}
                   href={`#${enlace.id}`}
                   onClick={(e) => irA(e, enlace.id)}
-                  className="py-2 transition-colors hover:text-af-accent-text"
+                  className="whitespace-nowrap py-2 transition-colors hover:text-af-accent-text"
                 >
                   {enlace.texto}
                 </a>
@@ -82,7 +106,7 @@ export default function PaginaParaRestaurantes() {
             <div className="ml-auto flex items-center gap-2 sm:gap-3 lg:ml-0">
               <BotonTexto
                 onClick={() => navigate('/auth')}
-                className="hidden !px-3 sm:inline-flex"
+                className="hidden whitespace-nowrap !px-3 sm:inline-flex"
               >
                 Entrar a mi panel
               </BotonTexto>
@@ -97,7 +121,7 @@ export default function PaginaParaRestaurantes() {
               </div>
               <button
                 type="button"
-                className="af-pulsar -mr-1 p-2 text-af-ink-secondary lg:hidden"
+                className="af-pulsar -mr-1 p-2 text-af-ink-secondary xl:hidden"
                 onClick={() => setMenuAbierto((v) => !v)}
                 aria-expanded={menuAbierto}
                 aria-label={menuAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
@@ -109,7 +133,25 @@ export default function PaginaParaRestaurantes() {
         </Contenedor>
 
         {menuAbierto && (
-          <div className="af-entrada-velo absolute left-0 top-full flex w-full flex-col gap-1 border-b border-af/40 bg-af-ground p-5 shadow-xl lg:hidden">
+          <div className="af-entrada-velo absolute left-0 top-full flex w-full flex-col gap-1 border-b border-af/40 bg-af-ground p-5 shadow-xl xl:hidden">
+            <div className="mb-2 grid grid-cols-2 gap-1 rounded-xl bg-af-surface/80 p-1 ring-1 ring-af-border/70 dark:ring-white/10">
+              <Link
+                to="/"
+                onClick={() => setMenuAbierto(false)}
+                className="af-pulsar rounded-lg px-3 py-2 text-center text-sm font-bold text-af-ink-secondary transition-colors hover:text-af-ink"
+              >
+                Explorar
+              </Link>
+              <Link
+                to="/para-restaurantes"
+                aria-current="page"
+                onClick={() => setMenuAbierto(false)}
+                className="af-pulsar rounded-lg bg-hearth-card px-3 py-2 text-center text-sm font-bold text-af-accent-text shadow-warm dark:bg-hearth-night-card dark:text-hearth-night-terracotta-ink"
+              >
+                Para restaurantes
+              </Link>
+            </div>
+
             {ENLACES.map((enlace) => (
               <a
                 key={enlace.id}
