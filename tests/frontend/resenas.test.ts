@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  esPublica,
   fechaResena,
   iniciales,
   nombreCliente,
-  resenasPublicas,
   resumenDe,
   resumenRestaurante,
   tieneRespuesta,
@@ -23,31 +21,6 @@ const resena = (cambios: Partial<Resena> = {}): Resena => ({
   aprobado: true,
   visible: true,
   ...cambios,
-});
-
-describe('esPublica', () => {
-  it('oculta solo cuando alguien la rechazó o la escondió', () => {
-    expect(esPublica(resena())).toBe(true);
-    expect(esPublica(resena({ aprobado: false }))).toBe(false);
-    expect(esPublica(resena({ visible: false }))).toBe(false);
-  });
-
-  it('trata los nulos heredados como pendientes', () => {
-    expect(esPublica(resena({ aprobado: null, visible: null }))).toBe(false);
-  });
-});
-
-describe('resenasPublicas', () => {
-  it('conserva las aprobadas y descarta las pendientes', () => {
-    const lista = [
-      resena({ id: 'a' }),
-      resena({ id: 'b', aprobado: false }),
-      resena({ id: 'c', visible: false }),
-      resena({ id: 'd', aprobado: null, visible: null }),
-    ];
-
-    expect(resenasPublicas(lista).map((r) => r.id)).toEqual(['a']);
-  });
 });
 
 describe('resumenDe', () => {

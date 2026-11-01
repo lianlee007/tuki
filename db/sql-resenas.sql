@@ -19,15 +19,20 @@ alter table public.valoraciones
 alter table public.valoraciones
   alter column usuario_id set default auth.uid();
 
--- Una reseña por persona y plato (o una por restaurante si el plato es nulo).
--- El índice parcial evita duplicados sin bloquear reseñas de platos distintos.
-create unique index if not exists valoraciones_usuario_plato_unico
-  on public.valoraciones (usuario_id, restaurante_id, platillo_id)
-  where usuario_id is not null and platillo_id is not null;
+-- La reseña se publica al enviarse: no espera aprobación del restaurante.
+alter table public.valoraciones
+  alter column aprobado set default true,
+  alter column visible set default true;
 
-create unique index if not exists valoraciones_usuario_local_unico
-  on public.valoraciones (usuario_id, restaurante_id)
-  where usuario_id is not null and platillo_id is null;
+-- El comensal puede reseñar sin límite: el mismo plato, la misma categoría o
+-- el restaurante en general, tantas veces como quiera. No hay índice único que
+-- bloquee una segunda reseña.
+drop index if exists public.valoraciones_usuario_plato_unico;
+drop index if exists public.valoraciones_usuario_local_unico;
+
+create index if not exists valoraciones_usuario_fecha
+  on public.valoraciones (usuario_id, created_at desc)
+  where usuario_id is not null;
 
 create index if not exists valoraciones_restaurante_fecha
   on public.valoraciones (restaurante_id, created_at desc);
@@ -40,25 +45,13 @@ alter table public.valoraciones enable row level security;
 drop policy if exists "valoraciones_lectura_publica" on public.valoraciones;
 create policy "valoraciones_lectura_publica"
   on public.valoraciones for select
-  using (
-    (aprobado is true and coalesce(visible, true))
-    or usuario_id = auth.uid()
-    or exists (
-      select 1
-      from public.restaurantes r
-      where r.id = valoraciones.restaurante_id
-        and r.usuario_id = auth.uid()
-    )
-  );
+  using (true);
 
 drop policy if exists "valoraciones_insercion_propia" on public.valoraciones;
 create policy "valoraciones_insercion_propia"
   on public.valoraciones for insert
   to authenticated
-  with check (
-    usuario_id = auth.uid()
-    and aprobado is false
-  );
+  with check (usuario_id = auth.uid());
 
 drop policy if exists "valoraciones_moderacion_dueno" on public.valoraciones;
 create policy "valoraciones_moderacion_dueno"
@@ -85,6 +78,11 @@ create policy "valoraciones_moderacion_dueno"
 -- Las consultas de la aplicación piden columnas explícitas; esta revocación
 -- cierra la puerta a un `select *` desde el navegador.
 revoke select (email_cliente) on public.valoraciones from anon, authenticated;
+
+-- El dueño solo puede actualizar su respuesta. Aprobar u ocultar queda fuera
+-- de su alcance, incluso llamando directamente a la API.
+revoke update on public.valoraciones from anon, authenticated;
+grant update (respuesta_dueno) on public.valoraciones to authenticated;
 
 comment on column public.valoraciones.usuario_id is
   'Cuenta que escribió la reseña. Se rellena con auth.uid() al insertar.';

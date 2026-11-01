@@ -9,7 +9,7 @@ módulo se convierte en servicio.
 | Zona | Qué contiene hoy | Deuda |
 | --- | --- | --- |
 | `src/modulos/pedidos/` | Dominio del pedido y del carrito, repositorio Supabase, store de Zustand y `index.ts` | Ninguna; es el patrón a seguir |
-| `src/modulos/resenas/` | Dominio de moderación y resumen, repositorio Supabase, hook y `index.ts` | Mover sus componentes en la fase 2 |
+| `src/modulos/resenas/` | Dominio de resumen, repositorio Supabase, hook y `index.ts` | Mover sus componentes en la fase 2 |
 | `src/modulos/cuenta/` | Reglas de datos de envío, repositorio de `users`, hook y `index.ts` | Mover sus componentes en la fase 2 |
 | `src/modulos/menu/` | Estado del platillo, repositorios de platillos/restaurante/temas, hook del panel y `index.ts` | Mover sus componentes en la fase 2 |
 | `src/lib/` | Utilidades transversales (color, imágenes, slugs, Supabase, gateway) | Ninguna: ya no guarda reglas de negocio de un módulo |
@@ -24,7 +24,7 @@ módulo se convierte en servicio.
 | --- | --- | --- |
 | `pedidos` | Carrito, enlace de WhatsApp, estados e historial | `pedidos`, carrito local |
 | `menu` | Platillos, categorías, etiquetas y editor | `platillos`, `categorias` |
-| `resenas` | Reseñas públicas, respuestas y moderación | `resenas` |
+| `resenas` | Reseñas públicas y respuestas del restaurante | `resenas` |
 | `cuenta` | Autenticación, perfil y datos de envío | `perfiles`, `datos_envio` |
 | `descubrir` | Búsqueda y filtros para comensales | Lectura de `restaurantes`, `platillos` |
 | `restaurante` | Sitio público, horarios, QR y saludo | `restaurantes`, `temas` |

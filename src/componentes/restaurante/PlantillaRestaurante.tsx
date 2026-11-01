@@ -181,7 +181,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   const [avisoPedido, setAvisoPedido] = useState(false);
 
   const {
-    publicas: resenasPublicas,
+    resenas,
     resumen: resumenResenas,
     cargando: cargandoResenas,
     error: errorResenas,
@@ -783,7 +783,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
       <ResenasPublicas
         restauranteId={restaurante.id}
         platillos={platillos}
-        resenas={resenasPublicas}
+        resenas={resenas}
         resumen={resumenResenas}
         cargando={cargandoResenas}
         error={errorResenas}

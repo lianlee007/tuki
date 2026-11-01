@@ -13,7 +13,6 @@ import { Estrellas } from '../sistema-diseno/Estrellas';
 import { ImagenInteligente } from '../sistema-diseno/ImagenInteligente';
 import {
   apiResenas,
-  esPublica,
   fechaResena,
   tieneRespuesta,
   type ResenaConRestaurante,
@@ -30,9 +29,8 @@ const CTA_BOTON =
 /**
  * Historial de reseñas del comensal.
  *
- * La política de lectura deja ver las propias aunque sigan pendientes, así que
- * aquí se muestra el estado real: «Pendiente» o «Publicada». El comensal puede
- * borrar su reseña; el dueño solo la modera, nunca la borra.
+ * La reseña se publica al enviarla y permanece visible: el restaurante no
+ * puede ocultarla. El comensal puede borrar su propia reseña cuando quiera.
  */
 export const MisResenas: React.FC<Props> = ({ usuarioId }) => {
   const [resenas, setResenas] = useState<ResenaConRestaurante[]>([]);
@@ -130,7 +128,6 @@ export const MisResenas: React.FC<Props> = ({ usuarioId }) => {
 
       <ul className="space-y-3">
         {resenas.map((resena) => {
-          const publica = esPublica(resena);
           const restaurante = resena.restaurante;
           const enlace = restaurante
             ? `/restaurante/${generarSlugUnico(restaurante.nombre, restaurante.id)}#resenas`
@@ -166,15 +163,6 @@ export const MisResenas: React.FC<Props> = ({ usuarioId }) => {
                   tamano={14}
                   className="shrink-0 text-af-accent-text"
                 />
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    publica
-                      ? 'bg-af-success/15 text-af-success'
-                      : 'bg-af-accent/10 text-af-accent-text'
-                  }`}
-                >
-                  {publica ? 'Publicada' : 'Pendiente'}
-                </span>
               </div>
 
               <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-af-ink">
