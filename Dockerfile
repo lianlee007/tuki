@@ -18,6 +18,9 @@ ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.31.7-alpine@sha256:b5047b9b76845ea
 # -----------------------------------------------------------------------------
 # Dependencias
 # -----------------------------------------------------------------------------
+# La imagen base viene de un ARG con la etiqueta y el digest fijados arriba;
+# hadolint no puede verificarlo y avisa con DL3006.
+# hadolint ignore=DL3006
 FROM ${NODE_IMAGE} AS base
 
 ARG PNPM_VERSION
@@ -74,6 +77,7 @@ RUN pnpm build
 # -----------------------------------------------------------------------------
 # Runtime
 # -----------------------------------------------------------------------------
+# hadolint ignore=DL3006
 FROM ${NGINX_IMAGE} AS runtime
 
 ARG VERSION=0.0.0-dev
