@@ -69,9 +69,9 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
     return () => window.removeEventListener('keydown', cerrar);
   }, [fotoAmpliada]);
 
-  const nombresPlatos = useMemo(() => {
-    const mapa = new Map<string, string>();
-    platillos.forEach((platillo) => mapa.set(platillo.id, platillo.nombre));
+  const platosPorId = useMemo(() => {
+    const mapa = new Map<string, Platillo>();
+    platillos.forEach((platillo) => mapa.set(platillo.id, platillo));
     return mapa;
   }, [platillos]);
 
@@ -244,7 +244,7 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
               {visibles.map((resena) => {
                 const autor = nombreCliente(resena);
                 const plato = resena.platillo_id
-                  ? nombresPlatos.get(resena.platillo_id)
+                  ? platosPorId.get(resena.platillo_id)
                   : null;
 
                 return (
@@ -298,8 +298,13 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-af-ground px-2.5 py-1 text-[11px] font-semibold text-af-ink-secondary">
-                        {plato ? `Sobre ${plato}` : 'Sobre el restaurante'}
+                        {plato ? `Sobre ${plato.nombre}` : 'Sobre el restaurante'}
                       </span>
+                      {plato?.categoria?.trim() && (
+                        <span className="rounded-full bg-af-ground px-2.5 py-1 text-[11px] font-semibold text-af-ink-secondary">
+                          {plato.categoria}
+                        </span>
+                      )}
                       {resena.foto_url && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-af-ground px-2.5 py-1 text-[11px] font-semibold text-af-ink-secondary">
                           <ImageIcon size={12} /> Con foto

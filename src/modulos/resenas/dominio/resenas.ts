@@ -36,17 +36,11 @@ export const MAX_COMENTARIO = 600;
 export const MAX_NOMBRE = 60;
 export const MAX_RESPUESTA = 400;
 
-/**
- * Una reseña es pública solo si el dueño la aprobó explícitamente y nadie la
- * ocultó. `null` es «pendiente», no «aprobada»: es el mismo criterio que usan
- * las funciones SQL de promedio (`coalesce(aprobado, false)`), así que la nota
- * de la portada y la lista no pueden contar cosas distintas.
+/*
+ * Todas las reseñas son públicas en cuanto el comensal las envía. No existe
+ * aprobación ni ocultamiento por parte del restaurante, así que la ficha y el
+ * panel trabajan con la misma lista completa.
  */
-export const esPublica = (resena: Resena): boolean =>
-  resena.aprobado === true && resena.visible !== false;
-
-export const resenasPublicas = (resenas: Resena[]): Resena[] =>
-  resenas.filter(esPublica);
 
 /** Calcula promedio, cantidad y distribución de un conjunto de reseñas. */
 export const resumenDe = (resenas: Resena[]): ResumenResenas => {

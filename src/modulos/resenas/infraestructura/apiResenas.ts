@@ -17,9 +17,8 @@ export type ResenaConRestaurante = Resena & {
 /**
  * Reseñas de un restaurante.
  *
- * La consulta trae también las pendientes porque el panel del dueño las
- * necesita; la ficha pública filtra con `resenasPublicas`. Así una sola
- * consulta sirve a los dos públicos y no hay dos criterios que se separen.
+ * Todas las reseñas son públicas al enviarse, así que la ficha y el panel usan
+ * exactamente la misma lista. El dueño no puede ocultarlas ni aprobarlas.
  */
 export const apiResenas = {
   listar: async (restauranteId: string) => {
@@ -41,8 +40,8 @@ export const apiResenas = {
 
   /**
    * Las reseñas de la cuenta que tiene la sesión, con el restaurante al que
-   * pertenecen. La política de lectura ya deja ver las propias aunque sigan
-   * pendientes, así que «Mi cuenta» puede mostrar el estado real.
+   * pertenecen. La política de lectura ya deja ver las propias aunque el dueño
+   * las haya ocultado, así que «Mi cuenta» puede mostrar el estado real.
    */
   mias: async (usuarioId: string) => {
     const { data, error } = await supabase
@@ -72,7 +71,7 @@ export const apiResenas = {
     email?: string | null;
     fotoUrl?: string | null;
   }) => {
-    const { error } = await supabase.from('valoraciones').insert({
+    const fila = {
       restaurante_id: entrada.restauranteId,
       platillo_id: entrada.platilloId || null,
       calificacion: entrada.calificacion,
@@ -80,21 +79,40 @@ export const apiResenas = {
       nombre_cliente: entrada.nombre.trim() || 'Comensal',
       email_cliente: entrada.email || null,
       foto_url: entrada.fotoUrl || null,
-      // Toda reseña nace pendiente: el dueño decide qué se publica.
-      aprobado: false,
-      visible: true,
-    });
+    };
 
-    return { error };
-  },
+    // `aprobado` no se envía: lo decide el valor por defecto de la base de
+    // datos. Tras la migración de publicación directa el valor es `true`.
+    const insertar = (extra: Record<string, unknown> = {}) =>
+      supabase
+        .from('valoraciones')
+        .insert({ ...fila, ...extra })
+        .select('aprobado, visible')
+        .single();
 
-  moderar: async (id: string, aprobada: boolean) => {
-    const { error } = await supabase
-      .from('valoraciones')
-      .update({ aprobado: aprobada, visible: aprobada })
-      .eq('id', id);
+    let { data, error } = await insertar();
 
-    return { error };
+    // Compatibilidad con una base de datos que todavía tenga la política
+    // antigua (`aprobado is false`): la reseña se guarda, aunque quede
+    // pendiente hasta aplicar la migración. Nunca se pierde lo que escribió
+    // el comensal por un error de RLS.
+    const esRls =
+      error &&
+      (error.code === '42501' ||
+        /row-level security|seguridad a nivel de fila/i.test(error.message));
+
+    if (esRls) {
+      const reintento = await insertar({ aprobado: false, visible: true });
+      data = reintento.data;
+      error = reintento.error;
+    }
+
+    return {
+      error,
+      publicada: Boolean(
+        data && data.aprobado !== false && data.visible !== false
+      ),
+    };
   },
 
   /** Respuesta pública del dueño. `null` la borra. */
