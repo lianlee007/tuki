@@ -7,8 +7,9 @@ pedidos por WhatsApp. La capa social es la puerta de entrada y la razón para
 volver.
 
 > Estado: **fase A implementada en la SPA**. La ficha ya muestra reseñas, el
-> comensal puede escribir una con foto (entra como pendiente), el dueño la
-> modera y la responde desde el panel y la cabecera social permite compartir.
+> comensal puede escribir una con foto (se publica al instante y puede repetir
+> sin límite por plato o categoría), el dueño puede
+> responderla desde el panel y la cabecera social permite compartir.
 > La migración `db/sql-resenas.sql` añadió `usuario_id`, `foto_url`,
 > `respuesta_dueno` y las políticas RLS, y está aplicada en Supabase. Las fotos
 > usan el mismo Storage de Supabase que los platillos, en el bucket `resenas`.
@@ -173,29 +174,36 @@ Sigue las reglas de `docs/estructura.md`:
 - Sección pública `ResenasPublicas`: promedio, número de reseñas, lista,
   estados vacío/error/carga y «ver todas».
 - `FormularioResena`: estrellas, plato, nombre, comentario, foto opcional,
-  validación, estado de éxito y aviso de que queda pendiente de aprobación. La
-  foto se comprime en el navegador y se sube a Supabase Storage, bucket
-  `resenas` (máximo 8 MB; JPG, PNG o WebP).
+  validación, estado de éxito y aviso de que ya se publicó. La foto se comprime
+  en el navegador y se sube a Supabase Storage, bucket `resenas` (máximo 8 MB;
+  JPG, PNG o WebP).
 - `ResenasPublicas`: promedio, distribución 5→1, lista con foto ampliable,
   respuesta del restaurante y estados vacío/error/carga.
 - Cabecera social de la ficha: promedio, número de reseñas, **Escribir reseña**
   y **Compartir** (hoja nativa o portapapeles).
 - Aviso posterior al pedido: «Pedido enviado. ¿Nos cuentas cómo estuvo?».
-- Pestaña **Reseñas** en el panel: pendientes, publicadas, todas, aprobar,
-  ocultar, responder y quitar la respuesta. La reseña nunca se borra.
+- Pestaña **Reseñas** en el panel: lista completa, responder y quitar la
+  respuesta. El restaurante no puede ocultar ni borrar la reseña.
 - Migración `db/sql-resenas.sql` **aplicada** el 2026-10-27 como
   `resenas_fase_a` (versión `20261027220739`): columnas `usuario_id`,
   `foto_url`, `respuesta_dueno`, índices únicos y tres políticas RLS.
+- Migración `resenas_publicacion_directa` **aplicada** el 2026-11-01: las
+  reseñas se publican al insertarse.
+- Migración `resenas_sin_ocultar` **aplicada** el 2026-11-01: el restaurante ya
+  no puede ocultar reseñas; solo responderlas.
+- Migración `resenas_ilimitadas` **aplicada** el 2026-11-01: se eliminaron los
+  índices únicos; un comensal puede reseñar el mismo plato, la misma categoría o
+  el restaurante en general cuantas veces quiera.
 - Persistencia verificada con el MCP en una transacción con `set local role`:
-  el autor inserta y ve su reseña pendiente; `anon` no la ve; el dueño la
-  aprueba; `anon` la ve publicada. La transacción se revirtió, así que no dejó
-  filas de prueba.
+  el autor inserta y `anon` ve la reseña publicada de inmediato; el dueño puede
+  responderla, pero no cambiar su visibilidad. La transacción se revirtió, así
+  que no dejó filas de prueba.
 - 21 pruebas nuevas de las reglas de reseña y de las fotos (57 en total).
 
 **Pendiente para cerrar la fase A en producción**
 
-- Editar la propia reseña (el índice único ya bloquea duplicados y hoy se
-  muestra un aviso).
+- Editar la propia reseña (hoy se puede volver a reseñar sin límite, pero no
+  editar la anterior).
 - Notificaciones de «reseña aprobada» y «nueva reseña» (fase C).
 
 ## 10. Cuenta del comensal y pedidos (2026-10-27)
@@ -205,9 +213,8 @@ Sigue las reglas de `docs/estructura.md`:
 - Ruta `/mi-cuenta`, protegida para cualquier cuenta con sesión. Cabecera de
   perfil con nombre, correo, rol y fecha de alta; aviso de qué se publica y qué
   no.
-- Pestaña **Mis reseñas**: estado real (pendiente o publicada), foto, respuesta
-  del restaurante, enlace a la ficha y borrado propio con confirmación en dos
-  pasos.
+- Pestaña **Mis reseñas**: reseña pública, foto, respuesta del restaurante,
+  enlace a la ficha y borrado propio con confirmación en dos pasos.
 - Pestaña **Mis pedidos**: pedidos en curso e historial, con código corto,
   estado, detalle, total y enlace al menú del restaurante.
 - Menú de cuenta en `BarraDescubrir` (avatar → Mi cuenta, Mi panel, Cerrar

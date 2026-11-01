@@ -47,8 +47,9 @@ La aplicación está operativa en local y en el clúster de demostración:
 - SPA con buscador de platos, ficha pública, carrito y pedido por WhatsApp.
 - Panel con información del restaurante, menú, pedidos, reseñas, apariencia y
   difusión (QR y enlaces).
-- Reseñas con estrellas, comentario y foto. Toda reseña entra pendiente; el
-  dueño la publica, la oculta o la responde.
+- Reseñas con estrellas, comentario y foto. Toda reseña se publica al instante;
+  el comensal puede escribir todas las que quiera del mismo plato o categoría y
+  el dueño solo puede leerlas y responderlas.
 - Cuenta del comensal con datos de envío, sus reseñas y su historial de pedidos.
 - Pedidos guardados en Supabase además del mensaje de WhatsApp, con bandeja y
   cambio de estado para el restaurante.
@@ -77,7 +78,7 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
   vitrina, mosaico, díptico y compacta.
 - Menú por categorías con disponibilidad, etiquetas dietéticas y detalle del
   plato.
-- Reseñas publicadas con promedio, distribución de 5 a 1, foto ampliable y
+- Reseñas públicas con promedio, distribución de 5 a 1, foto ampliable y
   respuesta del restaurante.
 - Acciones para compartir la ficha y escribir una reseña.
 
@@ -90,7 +91,9 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
   completarlos más tarde.
 - El carrito rellena nombre, teléfono y dirección con los datos de la cuenta;
   ya no depende solo de `localStorage`.
-- Estado real de cada reseña: pendiente de moderación o publicada.
+- Todas las reseñas quedan públicas al enviarse y no se pueden ocultar.
+- Reseñas ilimitadas: el comensal puede repetir sobre el mismo plato o categoría
+  las veces que quiera.
 - Borrado de la propia reseña con confirmación.
 - Pedidos en curso e historial, con detalle, total y enlace al menú.
 
@@ -100,8 +103,7 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
 - Gestión del menú: creación, edición, disponibilidad, visibilidad y borrado.
 - Pedidos: filtros por estado, ventas del día, detalle del cliente, enlace a su
   WhatsApp y avance de estado.
-- Reseñas: pendientes, publicadas y todas; aprobar, ocultar, responder, editar
-  la respuesta o quitarla.
+- Reseñas: lista completa; responder, editar la respuesta o quitarla.
 - Diseño: colores, tipografías y plantilla, con vista previa en tiempo real.
 - Difusión: enlace público, código QR y piezas para compartir.
 - Asistente de IA para redactar descripciones y textos de marketing.
@@ -254,7 +256,7 @@ falta credenciales adicionales (ver `docs/arquitectura/almacenamiento-imagenes.m
 Reglas que aplican los scripts:
 
 - RLS activo en todas las tablas de negocio.
-- Una reseña nace con `aprobado = false` y solo el dueño la publica.
+- Una reseña se publica al enviarse y el restaurante no puede ocultarla.
 - El autor puede leer y borrar su propia reseña.
 - Un pedido solo lo leen el comensal que lo hizo y el restaurante que lo recibe.
 - Solo el restaurante cambia el estado de un pedido.

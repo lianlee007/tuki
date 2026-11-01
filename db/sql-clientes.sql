@@ -188,7 +188,6 @@ as $$
         from public.valoraciones v
         where v.restaurante_id = r.id
           and v.platillo_id is null
-          and coalesce(v.aprobado, false)
           and coalesce(v.visible, true)
       ), 0)::numeric as rating,
       (
@@ -196,7 +195,6 @@ as $$
         from public.valoraciones v
         where v.restaurante_id = r.id
           and v.platillo_id is null
-          and coalesce(v.aprobado, false)
           and coalesce(v.visible, true)
       ) as rating_cantidad,
       (
@@ -341,7 +339,6 @@ as $$
         from public.valoraciones v
         where v.restaurante_id = r.id
           and v.platillo_id is null
-          and coalesce(v.aprobado, false)
           and coalesce(v.visible, true)
       ), 0)::numeric as rating,
       (
@@ -349,7 +346,6 @@ as $$
         from public.valoraciones v
         where v.restaurante_id = r.id
           and v.platillo_id is null
-          and coalesce(v.aprobado, false)
           and coalesce(v.visible, true)
       ) as rating_cantidad
     from public.platillos p
