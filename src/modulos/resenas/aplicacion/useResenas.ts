@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiResenas } from '../infraestructura/apiResenas';
-import {
-  resenasPublicas,
-  resumenRestaurante,
-  type Resena,
-} from '../dominio/resenas';
+import { resumenRestaurante, type Resena } from '../dominio/resenas';
 
 /**
  * Las reseñas de una ficha, una sola vez.
  *
- * La ficha pública y el panel comparten la consulta, pero no el filtro: el
- * panel necesita las pendientes y la ficha solo las públicas. `resumen` se
- * calcula sobre las públicas para que el número de la portada sea el mismo que
- * ve el visitante en la lista.
+ * La ficha pública y el panel comparten la consulta y la lista: todas las
+ * reseñas son públicas al enviarse. `resumen` se calcula sobre esa misma lista
+ * para que el número de la portada coincida con el de la ficha.
  */
 export const useResenas = (restauranteId?: string) => {
   const [resenas, setResenas] = useState<Resena[]>([]);
@@ -55,8 +50,7 @@ export const useResenas = (restauranteId?: string) => {
     };
   }, [restauranteId, version]);
 
-  const publicas = useMemo(() => resenasPublicas(resenas), [resenas]);
-  const resumen = useMemo(() => resumenRestaurante(publicas), [publicas]);
+  const resumen = useMemo(() => resumenRestaurante(resenas), [resenas]);
 
-  return { resenas, publicas, resumen, cargando, error, recargar };
+  return { resenas, resumen, cargando, error, recargar };
 };
