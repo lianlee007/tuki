@@ -73,9 +73,9 @@ const PLANES: Plan[] = [
  */
 const PlanCard: React.FC<{ plan: Plan; onElegir: (plan: Plan) => void }> = ({ plan, onElegir }) => (
   <div
-    className={`flex h-full flex-col rounded-[28px] bg-af-surface p-8 ${
+    className={`flex h-full flex-col rounded-[28px] bg-hearth-card p-8 ring-1 ring-hearth-line/70 dark:bg-hearth-night-card dark:ring-hearth-night-line/80 ${
       plan.destacado
-        ? 'shadow-[0_35px_70px_-35px_rgba(28,25,23,0.45)]'
+        ? 'shadow-warm-xl dark:shadow-warm-dark'
         : ''
     }`}
   >
@@ -91,7 +91,7 @@ const PlanCard: React.FC<{ plan: Plan; onElegir: (plan: Plan) => void }> = ({ pl
       </h3>
       <p className="mt-3 flex items-baseline gap-1.5">
         <span className="text-4xl font-bold tracking-tight text-af-ink">{plan.precio}</span>
-        <span className="text-sm font-medium text-af-ink-secondary">/ mes</span>
+        <span className="shrink-0 whitespace-nowrap text-sm font-medium text-af-ink-secondary">/ mes</span>
       </p>
       <p className="mt-3 text-sm leading-relaxed text-af-ink-secondary">{plan.resumen}</p>
     </div>
@@ -142,7 +142,10 @@ export const SeccionPrecios: React.FC = () => {
       <Contenedor maxAncho="grande">
         <Revelar>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold leading-tight tracking-tight text-af-ink md:text-5xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
+              Planes
+            </p>
+            <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-af-ink md:text-5xl">
               Un precio claro, sin sorpresas
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
