@@ -630,11 +630,10 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
         />
       </section>
 
-      {/* Guardar: pegado abajo para que no haya que buscarlo.
-          La banda `after` tapa el hueco que deja el relleno inferior del panel
-          (el elemento pegajoso se detiene antes del borde visible), así que el
-          fondo del formulario se ve continuo y no aparece una franja nítida. */}
-      <div className="sticky bottom-0 z-20 mt-8 flex items-center gap-2 bg-af-ground/85 px-4 py-3 backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-40 after:bg-af-ground/85 after:backdrop-blur-xl after:content-[''] sm:gap-3 sm:px-6 sm:py-4">
+      {/* Guardar: pegado abajo para que no haya que buscarlo. Sin relleno
+          inferior en los ancestros, la barra se ancla al borde mismo de la
+          pantalla al llegar al final del formulario. */}
+      <div className="sticky bottom-0 z-20 mt-8 flex items-center gap-2 bg-af-ground/85 px-4 py-3 backdrop-blur-xl sm:gap-3 sm:px-6 sm:py-4">
         {intentoEnvio && Object.keys(errors).length > 0 && (
           <p className="mr-auto hidden text-xs font-medium text-af-danger-text lg:block">
             Revisa los campos marcados en rojo.
