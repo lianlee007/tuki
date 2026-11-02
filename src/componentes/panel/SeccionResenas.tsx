@@ -275,7 +275,7 @@ export const SeccionResenas: React.FC<Props> = ({
             return (
               <li key={resena.id} className="rounded-[20px] bg-af-surface p-5">
                 <div className="flex flex-wrap items-start gap-3">
-                  <Avatar nombre={autor} tamano={40} />
+                  <Avatar nombre={autor} tamano={40} src={resena.foto_autor_url} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-af-ink">
                       {autor}

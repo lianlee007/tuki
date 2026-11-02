@@ -21,6 +21,7 @@ begin;
 /*  Columnas de entrega                                                      */
 /* -------------------------------------------------------------------------- */
 alter table public.users
+  add column if not exists avatar_url text,
   add column if not exists telefono text,
   add column if not exists direccion text,
   add column if not exists barrio text,
@@ -28,6 +29,8 @@ alter table public.users
   add column if not exists datos_envio_actualizado_en timestamptz,
   add column if not exists datos_envio_omitidos_en timestamptz;
 
+comment on column public.users.avatar_url is
+  'Foto de perfil pública del comensal; se copia a sus reseñas.';
 comment on column public.users.telefono is
   'Teléfono de contacto para pedidos. Solo lo lee la propia cuenta.';
 comment on column public.users.direccion is

@@ -5,6 +5,7 @@ import {
   nombreCliente,
   resumenDe,
   resumenRestaurante,
+  textoUtiles,
   tieneRespuesta,
   validarRespuesta,
   validarResena,
@@ -140,5 +141,17 @@ describe('tieneRespuesta', () => {
     expect(tieneRespuesta(resena())).toBe(false);
     expect(tieneRespuesta(resena({ respuesta_dueno: '   ' }))).toBe(false);
     expect(tieneRespuesta(resena({ respuesta_dueno: 'Gracias' }))).toBe(true);
+  });
+});
+
+describe('textoUtiles', () => {
+  it('invita a votar cuando nadie lo ha marcado', () => {
+    expect(textoUtiles(0)).toBe('Es útil');
+    expect(textoUtiles(-3)).toBe('Es útil');
+  });
+
+  it('cuenta en singular y en plural', () => {
+    expect(textoUtiles(1)).toBe('1 persona lo encontró útil');
+    expect(textoUtiles(4)).toBe('4 personas lo encontraron útil');
   });
 });
