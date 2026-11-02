@@ -466,6 +466,7 @@ export type Database = {
       users: {
         Row: {
           apellido: string
+          avatar_url: string | null
           barrio: string | null
           created_at: string | null
           datos_envio_actualizado_en: string | null
@@ -480,6 +481,7 @@ export type Database = {
         }
         Insert: {
           apellido: string
+          avatar_url?: string | null
           barrio?: string | null
           created_at?: string | null
           datos_envio_actualizado_en?: string | null
@@ -494,6 +496,7 @@ export type Database = {
         }
         Update: {
           apellido?: string
+          avatar_url?: string | null
           barrio?: string | null
           created_at?: string | null
           datos_envio_actualizado_en?: string | null
@@ -508,6 +511,32 @@ export type Database = {
         }
         Relationships: []
       }
+      resenas_utiles: {
+        Row: {
+          created_at: string
+          resena_id: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          resena_id: string
+          usuario_id?: string
+        }
+        Update: {
+          created_at?: string
+          resena_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resenas_utiles_resena_id_fkey"
+            columns: ["resena_id"]
+            isOneToOne: false
+            referencedRelation: "valoraciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       valoraciones: {
         Row: {
           aprobado: boolean | null
@@ -515,6 +544,7 @@ export type Database = {
           comentario: string | null
           created_at: string | null
           email_cliente: string | null
+          foto_autor_url: string | null
           foto_url: string | null
           id: string
           nombre_cliente: string
@@ -530,6 +560,7 @@ export type Database = {
           comentario?: string | null
           created_at?: string | null
           email_cliente?: string | null
+          foto_autor_url?: string | null
           foto_url?: string | null
           id?: string
           nombre_cliente: string
@@ -545,6 +576,7 @@ export type Database = {
           comentario?: string | null
           created_at?: string | null
           email_cliente?: string | null
+          foto_autor_url?: string | null
           foto_url?: string | null
           id?: string
           nombre_cliente?: string

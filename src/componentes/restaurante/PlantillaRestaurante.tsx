@@ -792,6 +792,8 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
         onAbrirFormulario={() => abrirResena()}
         onCerrarFormulario={() => setResenaAbierta(false)}
         platilloInicialId={platilloResena}
+        onAgregarAlCarrito={handleAgregarAlCarrito}
+        localAbierto={estadoLocal.abierto}
         estilos={estilos}
       />
 
