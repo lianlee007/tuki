@@ -334,8 +334,21 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Subir resultados de Trivy
-        if: always() && github.event_name != 'pull_request'
+      - name: Publicar el SARIF de Trivy como artefacto
+        if: always() && github.event_name != 'pull_request' && hashFiles('trivy-web.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: trivy-web.sarif
+          path: trivy-web.sarif
+          retention-days: 7
+
+      # El repositorio es privado y no tiene GitHub Advanced Security, así que
+      # la API de code scanning responde "Resource not accessible by
+      # integration". El gate real es el `exit-code` de Trivy; este paso solo
+      # funciona si el repositorio tiene code scanning habilitado.
+      - name: Subir resultados a code scanning (opcional)
+        if: always() && github.event_name != 'pull_request' && hashFiles('trivy-web.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
         with:
           sarif_file: trivy-web.sarif
@@ -456,8 +469,18 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Subir resultados de Trivy
-        if: always() && github.event_name != 'pull_request'
+      - name: Publicar el SARIF de Trivy como artefacto (gateway)
+        if: always() && github.event_name != 'pull_request' && hashFiles('trivy-gateway.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: trivy-gateway.sarif
+          path: trivy-gateway.sarif
+          retention-days: 7
+
+      # Mismo caso que en la imagen web: sin GHAS no hay code scanning.
+      - name: Subir resultados a code scanning (opcional, gateway)
+        if: always() && github.event_name != 'pull_request' && hashFiles('trivy-gateway.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
         with:
           sarif_file: trivy-gateway.sarif
