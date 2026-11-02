@@ -116,11 +116,29 @@ html, body {
    se vuelve desplazable y la cabecera "fija" del menú se va con el scroll
    (justo lo que no puede pasar). `100dvh` es el alto realmente visible; el
    `100vh` de arriba queda como respaldo para navegadores que aún no lo leen.
+
+   Además va `position: fixed`: aunque algo (una barra del navegador, un
+   teclado, un gesto de rebote) hiciera scroll del documento, el panel no se
+   mueve y la cabecera con el menú y «Vista previa» sigue siempre a la vista.
+   El scroll real vive sólo en `[data-panel-scroll]`.
    ------------------------------------------------------------------------- */
 .af-pantalla {
+  position: fixed;
+  inset: 0;
+  width: 100%;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Mientras el panel está montado el documento no se desplaza: no hay una
+   página de fondo que arrastrar ni una cabecera que se escape hacia arriba. */
+html.panel-bloqueado,
+body.panel-bloqueado {
+  height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 /* -------------------------------------------------------------------------

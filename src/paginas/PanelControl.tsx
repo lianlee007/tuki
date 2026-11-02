@@ -107,18 +107,30 @@ export default function PanelControl() {
   }, [menuMovilAbierto]);
 
   /**
-   * Con el cajón abierto, la página de detrás no se desplaza. Sin esto, un
-   * gesto que empezaba sobre el menú movía el contenido del panel, la barra
-   * del navegador cambiaba de alto y el cajón aparecía cortado.
+   * El panel es una aplicación de pantalla completa: el documento de detrás no
+   * debe desplazarse nunca. Sin esto, en móvil el `body` (con `min-height:
+   * 100vh`) era más alto que el alto visible mientras la barra del navegador
+   * estaba a la vista, así que un gesto que empezaba en la cabecera —donde
+   * están el menú y «Vista previa»— arrastraba toda la página y se llevaba esos
+   * botones hacia arriba, sin forma cómoda de recuperarlos. Con el documento
+   * bloqueado y `.af-pantalla` fija, la cabecera no se mueve jamás.
    */
   useEffect(() => {
-    if (!menuMovilAbierto) return;
-    const overflowPrevio = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const html = document.documentElement;
+    const body = document.body;
+    const overflowHtml = html.style.overflow;
+    const overflowBody = body.style.overflow;
+    html.classList.add('panel-bloqueado');
+    body.classList.add('panel-bloqueado');
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = overflowPrevio;
+      html.classList.remove('panel-bloqueado');
+      body.classList.remove('panel-bloqueado');
+      html.style.overflow = overflowHtml;
+      body.style.overflow = overflowBody;
     };
-  }, [menuMovilAbierto]);
+  }, []);
 
   const abrirVistaPrevia = () => {
     // En móvil el cajón tapa la vista previa: se cierra antes de mostrarla.
@@ -278,7 +290,7 @@ export default function PanelControl() {
           </div>
         )}
 
-        <header className="nav-af h-16 md:h-20 shrink-0 z-10">
+        <header className="nav-af sticky top-0 h-16 md:h-20 shrink-0 z-10">
           {/* `h-full` en el contenedor es lo que centra la fila: sin él el
               contenedor medía lo que medía su contenido, así que el
               `items-center` no tenía contra qué centrar y el título, el chip de
@@ -338,7 +350,7 @@ export default function PanelControl() {
 
         {/* Vista Previa a Pantalla Completa */}
         {vistaPreviaAbierta && restaurante && tema && (
-          <div className="fixed inset-0 z-[100] bg-af-ground overflow-y-auto fade-in-af">
+          <div className="fixed inset-0 z-[100] bg-af-ground overflow-y-auto overscroll-contain fade-in-af">
             <PlantillaRestaurante restaurante={restaurante} tema={tema} platillos={platillos.filter(p => p.disponible && p.visible)} modoPreview={true} onClosePreview={() => setVistaPreviaAbierta(false)} />
           </div>
         )}
