@@ -12,6 +12,7 @@
 alter table public.valoraciones
   add column if not exists usuario_id uuid references auth.users (id) on delete set null,
   add column if not exists foto_url text,
+  add column if not exists foto_autor_url text,
   add column if not exists respuesta_dueno text,
   add column if not exists nombre_cliente text;
 
@@ -88,5 +89,42 @@ comment on column public.valoraciones.usuario_id is
   'Cuenta que escribió la reseña. Se rellena con auth.uid() al insertar.';
 comment on column public.valoraciones.foto_url is
   'Foto opcional de la reseña. Requiere un bucket de Storage con políticas.';
+comment on column public.valoraciones.foto_autor_url is
+  'Copia de users.avatar_url al publicar: el avatar viaja con la reseña pública.';
 comment on column public.valoraciones.respuesta_dueno is
   'Respuesta pública del dueño del restaurante.';
+
+-- ----------------------------------------------------------------------------
+-- «Es útil»: un voto por cuenta y reseña
+-- ----------------------------------------------------------------------------
+create table if not exists public.resenas_utiles (
+  resena_id uuid not null references public.valoraciones (id) on delete cascade,
+  usuario_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (resena_id, usuario_id)
+);
+
+create index if not exists resenas_utiles_resena
+  on public.resenas_utiles (resena_id);
+
+alter table public.resenas_utiles enable row level security;
+
+drop policy if exists "resenas_utiles_lectura_publica" on public.resenas_utiles;
+create policy "resenas_utiles_lectura_publica"
+  on public.resenas_utiles for select
+  using (true);
+
+drop policy if exists "resenas_utiles_insercion_propia" on public.resenas_utiles;
+create policy "resenas_utiles_insercion_propia"
+  on public.resenas_utiles for insert
+  to authenticated
+  with check (usuario_id = auth.uid());
+
+drop policy if exists "resenas_utiles_borrado_propio" on public.resenas_utiles;
+create policy "resenas_utiles_borrado_propio"
+  on public.resenas_utiles for delete
+  to authenticated
+  using (usuario_id = auth.uid());
+
+grant select on public.resenas_utiles to anon, authenticated;
+grant insert, delete on public.resenas_utiles to authenticated;

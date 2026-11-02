@@ -1,11 +1,26 @@
-import React, { useMemo, useState } from 'react';
-import { Image as ImageIcon, MessageSquare, PenLine, RefreshCw, Store, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+// @ts-ignore — react-router-dom no publica tipos en este proyecto.
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  Heart,
+  Image as ImageIcon,
+  Loader2,
+  MessageSquare,
+  PenLine,
+  RefreshCw,
+  ShoppingCart,
+  Store,
+  X,
+} from 'lucide-react';
 import { Avatar } from '../sistema-diseno/Avatar';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { ImagenInteligente } from '../sistema-diseno/ImagenInteligente';
+import { useAuth } from '../../contexto/ContextoAutenticacion';
 import {
+  apiResenas,
   fechaResena,
   nombreCliente,
+  textoUtiles,
   tieneRespuesta,
   type Resena,
   type ResumenResenas,
@@ -26,6 +41,10 @@ interface ResenasPublicasProps {
   onAbrirFormulario: () => void;
   onCerrarFormulario: () => void;
   platilloInicialId?: string | null;
+  /** Añade al carrito el plato que reseñó el comensal. */
+  onAgregarAlCarrito?: (platillo: Platillo) => void;
+  /** El carrito solo se llena si el local está abierto. */
+  localAbierto?: boolean;
   estilos: EstilosComunes;
 }
 
@@ -50,10 +69,114 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
   onAbrirFormulario,
   onCerrarFormulario,
   platilloInicialId,
+  onAgregarAlCarrito,
+  localAbierto = true,
   estilos,
 }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [verTodas, setVerTodas] = useState(false);
   const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null);
+  /** Conteo visible de «Es útil». Arranca con el que trajo la consulta. */
+  const [conteos, setConteos] = useState<Record<string, number>>({});
+  /** Reseñas que esta cuenta ya marcó. */
+  const [misUtiles, setMisUtiles] = useState<Set<string>>(new Set());
+  const [votando, setVotando] = useState<string | null>(null);
+  const [errorUtil, setErrorUtil] = useState<string | null>(null);
+
+  /**
+   * El conteo se siembra con cada carga de la lista y se actualiza de forma
+   * optimista al votar: el número responde al instante y se corrige si la
+   * petición falla.
+   */
+  useEffect(() => {
+    const iniciales: Record<string, number> = {};
+    resenas.forEach((resena) => {
+      iniciales[resena.id] = resena.utiles ?? 0;
+    });
+    setConteos(iniciales);
+  }, [resenas]);
+
+  /** Qué reseñas votó ya esta cuenta. Sin sesión no hay nada que pedir. */
+  useEffect(() => {
+    let vigente = true;
+
+    if (!user || resenas.length === 0) {
+      setMisUtiles(new Set());
+      return;
+    }
+
+    apiResenas
+      .utilesDe(resenas.map((resena) => resena.id), user.id)
+      .then(({ ids }) => {
+        if (vigente) setMisUtiles(new Set(ids));
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [user, resenas]);
+
+  /**
+   * Un «Es útil» por cuenta. Sin sesión, el botón lleva a entrar y volver a la
+   * ficha en el mismo punto.
+   */
+  const marcarUtil = async (resena: Resena) => {
+    if (!user) {
+      navigate(
+        `/entrar?volver=${encodeURIComponent(
+          location.pathname + location.search + '#resenas'
+        )}`
+      );
+      return;
+    }
+
+    if (votando) return;
+
+    const ya = misUtiles.has(resena.id);
+    const actual = conteos[resena.id] ?? resena.utiles ?? 0;
+    const siguiente = Math.max(0, actual + (ya ? -1 : 1));
+
+    setErrorUtil(null);
+    setVotando(resena.id);
+    setConteos((prev) => ({ ...prev, [resena.id]: siguiente }));
+    setMisUtiles((prev) => {
+      const copia = new Set(prev);
+      if (ya) copia.delete(resena.id);
+      else copia.add(resena.id);
+      return copia;
+    });
+
+    const { error, activo } = await apiResenas.alternarUtil(
+      resena.id,
+      user.id,
+      ya
+    );
+
+    setVotando(null);
+
+    if (error) {
+      setConteos((prev) => ({ ...prev, [resena.id]: actual }));
+      setMisUtiles((prev) => {
+        const copia = new Set(prev);
+        if (ya) copia.add(resena.id);
+        else copia.delete(resena.id);
+        return copia;
+      });
+      setErrorUtil('No pudimos guardar tu voto. Inténtalo otra vez.');
+      return;
+    }
+
+    // Si el voto ya existía, el servidor lo confirma y el estado no cambia.
+    setMisUtiles((prev) => {
+      const copia = new Set(prev);
+      if (activo) copia.add(resena.id);
+      else copia.delete(resena.id);
+      return copia;
+    });
+  };
 
   /**
    * El visor de fotos se cierra con Escape: en escritorio el usuario no
@@ -250,7 +373,7 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
                 return (
                   <li key={resena.id} className="rounded-[22px] bg-af-surface p-5 sm:p-6">
                     <div className="flex items-start gap-3">
-                      <Avatar nombre={autor} tamano={40} />
+                      <Avatar nombre={autor} tamano={40} src={resena.foto_autor_url} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-af-ink">
                           {autor}
@@ -311,10 +434,64 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
                         </span>
                       )}
                     </div>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-af/10 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => marcarUtil(resena)}
+                        disabled={votando === resena.id}
+                        aria-pressed={misUtiles.has(resena.id)}
+                        aria-label={`${textoUtiles(
+                          conteos[resena.id] ?? resena.utiles ?? 0
+                        )}: ${autor}`}
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 af-pulsar ${
+                          misUtiles.has(resena.id)
+                            ? 'bg-af-accent/15 text-af-accent-text'
+                            : 'bg-af-ground text-af-ink-secondary hover:text-af-ink'
+                        }`}
+                      >
+                        {votando === resena.id ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Heart
+                            size={15}
+                            className={misUtiles.has(resena.id) ? 'fill-current' : ''}
+                          />
+                        )}
+                        {textoUtiles(conteos[resena.id] ?? resena.utiles ?? 0)}
+                      </button>
+
+                      {plato && onAgregarAlCarrito && (
+                        <button
+                          type="button"
+                          onClick={() => onAgregarAlCarrito(plato)}
+                          disabled={!localAbierto}
+                          title={
+                            localAbierto
+                              ? `Añadir ${plato.nombre} al carrito`
+                              : 'El restaurante está cerrado ahora'
+                          }
+                          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 af-pulsar"
+                          style={{
+                            backgroundColor: estilos.primary,
+                            color: estilos.onPrimary,
+                          }}
+                        >
+                          <ShoppingCart size={15} />
+                          Añadir al carrito
+                        </button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
             </ul>
+
+            {errorUtil && (
+              <p role="alert" className="mt-3 text-xs font-medium text-af-danger-text">
+                {errorUtil}
+              </p>
+            )}
 
             {resenas.length > 6 && (
               <div className="mt-7 text-center">
