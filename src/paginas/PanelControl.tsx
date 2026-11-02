@@ -106,6 +106,20 @@ export default function PanelControl() {
     return () => window.removeEventListener('keydown', alPulsar);
   }, [menuMovilAbierto]);
 
+  /**
+   * Con el cajón abierto, la página de detrás no se desplaza. Sin esto, un
+   * gesto que empezaba sobre el menú movía el contenido del panel, la barra
+   * del navegador cambiaba de alto y el cajón aparecía cortado.
+   */
+  useEffect(() => {
+    if (!menuMovilAbierto) return;
+    const overflowPrevio = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflowPrevio;
+    };
+  }, [menuMovilAbierto]);
+
   const abrirVistaPrevia = () => {
     // En móvil el cajón tapa la vista previa: se cierra antes de mostrarla.
     setMenuMovilAbierto(false);
@@ -295,7 +309,7 @@ export default function PanelControl() {
           </Contenedor>
         </header>
 
-        <div data-panel-scroll className={`flex-1 overflow-y-auto overscroll-contain px-4 pb-0 md:px-8 md:pb-0 scroll-smooth ${esMenu ? 'pt-0' : 'pt-4 md:pt-8'}`}>
+        <div data-panel-scroll className={`flex-1 overscroll-contain px-4 pb-0 md:px-8 md:pb-0 scroll-smooth ${menuMovilAbierto ? 'overflow-hidden' : 'overflow-y-auto'} ${esMenu ? 'pt-0' : 'pt-4 md:pt-8'}`}>
           {/* El aire inferior va en el contenido, no en el contenedor que
               desplaza: un `padding-bottom` aquí pertenece al área de scroll y
               las barras `sticky bottom-0` se anclaban por encima del borde

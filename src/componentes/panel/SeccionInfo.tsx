@@ -35,6 +35,8 @@ const DIAS_UI = [
 
 const SISTEMA_IA =
     'Eres un copywriter gastronómico profesional. Escribes en español neutro, breve y atractivo. ' +
+    'Cuando se te indique un tipo de cocina, el texto debe sonar propio de esa cocina ' +
+    '(ingredientes, platos y tradición), no una frase genérica que valdría para cualquier restaurante. ' +
     'Nunca usas comillas ni markdown: respondes solo con el texto pedido.';
 
 /** Campos que deben estar completos para publicar el sitio. */
@@ -58,7 +60,11 @@ const CAMPOS_OBLIGATORIOS: { k: string; l: string }[] = [
 
 /** Campos que validamos con zod (tienen un control en el formulario). */
 
-const RE_DIRECCION = /^(\w+)\s+([A-Za-z0-9]+)\s+#\s+([A-Za-z0-9]+)\s+-\s+([A-Za-z0-9]+)(?:,\s*(.+))?$/;
+/* Acepta letras en todas las partes de la dirección: "Calle 10A # 20B - 30C",
+   "Vereda El Prado", "Kilómetro 5 # 2 - 10". Antes los números sólo admitían
+   dígitos (y una única letra al final), así que una dirección real con
+   "Bis", "A" o un punto kilométrico no se podía escribir. */
+const RE_DIRECCION = /^([A-Za-zÁÉÍÓÚÜÑáéíóúüñ.\s]+?)\s+([A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ-]+)\s*#\s*([A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ-]+)\s*[-–]\s*([A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ-]+)(?:,\s*(.+))?$/;
 
 const DIAS_VACIOS = {
     lunes: false, martes: false, miercoles: false,
@@ -127,12 +133,16 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const [ordenScroll, setOrdenScroll] = useState(0);
 
     // Las cocinas viven en su propio componente (consultan su catálogo), pero
-    // ahora se guardan con el mismo "Finalizar" que el resto del formulario.
+    // ahora se guardan con el mismo "Finalizar y guardar" que el resto.
     const cocinaRef = useRef<SelectorCocinaRef>(null);
     const [cocinasCambiadas, setCocinasCambiadas] = useState(false);
+    /* Nombres de las cocinas elegidas (principal + secundarias). La IA los usa
+       como contexto para que el eslogan y la descripción hablen de la cocina
+       real del restaurante y no de gastronomía en abstracto. */
+    const [cocinasElegidas, setCocinasElegidas] = useState<string[]>([]);
 
     // Las imágenes se suben al CDN al instante, pero solo se enlazan al
-    // restaurante cuando se pulsa "Finalizar" (igual que el resto de campos).
+    // restaurante al pulsar "Finalizar y guardar" (igual que el resto de campos).
     const [logoUrl, setLogoUrl] = useState(restaurante.imagen_logo_url || '');
     const [bannerUrl, setBannerUrl] = useState(restaurante.imagen_banner_url || '');
 
@@ -224,7 +234,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         const conError = Object.keys(errores);
         // Orden del formulario, no orden en que zod encontró el fallo: así el
         // primer scroll lleva al campo más arriba, que es lo que espera quien
-        // acaba de pulsar Finalizar.
+        // acaba de pulsar "Finalizar y guardar".
         const primero = CAMPOS_OBLIGATORIOS
             .map(c => c.k)
             .find(k => conError.includes(k) || esFaltante(k, valoresForm))
@@ -268,7 +278,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
             await cocinaRef.current?.guardar();
             reset(valoresIniciales({ ...restaurante, ...datosCompletos }));
             setMostrarErrores(false);
-            mostrarMensaje('exito', '¡Listo! Tu restaurante quedó guardado.');
+            mostrarMensaje('exito', 'Restaurante guardado. Tus cambios ya se ven en tu sitio.');
         } catch (e: any) {
             mostrarMensaje('error', e?.message || 'No se pudo guardar. Revisa tu conexión.');
         }
@@ -297,8 +307,11 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     };
 
     const handleDireccionChange = (field: 'tipo' | 'n1' | 'n2' | 'n3' | 'barrio', value: string) => {
-        if ((field === 'n1' || field === 'n2' || field === 'n3') && !/^\d{0,4}[a-zA-Z]?$/.test(value)) return;
-        const finalValue = field === 'barrio' ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+        // Los números de vía pueden llevar letras: 10A, 20 Bis, 30-32.
+        if ((field === 'n1' || field === 'n2' || field === 'n3') && !/^[A-Za-z0-9 .-]{0,10}$/.test(value)) return;
+        const finalValue = field === 'barrio' || field === 'tipo'
+            ? value.charAt(0).toUpperCase() + value.slice(1)
+            : value;
         const newParts = { ...direccionParts, [field]: finalValue };
         setDireccionParts(newParts);
         const barrioSuffix = newParts.barrio ? `, ${newParts.barrio}` : '';
@@ -334,29 +347,57 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         try { await logic(); } finally { setLoadingAction(null); }
     };
 
-    /** Genera eslogan + descripción de una sola vez. */
+    /** Tipo de cocina en texto, tal como se lo pasamos a la IA. */
+    const tipoCocina = cocinasElegidas.join(' y ');
+
+    /** Los textos con IA necesitan nombre y cocina: sin cocina salen genéricos. */
+    const puedeGenerarIA = nombreActual.length >= 2 && Boolean(tipoCocina);
+
+    /** Nombre + cocina del restaurante, el contexto de todos los textos. */
+    const contextoIA = () => ({
+        nombre: String(watch('nombre') ?? '').trim(),
+        cocina: tipoCocina,
+        detalle: tipoCocina
+            ? `Especialidad: cocina ${tipoCocina}.`
+            : 'Todavía no eligió un tipo de cocina.',
+    });
+
+    /**
+     * Genera eslogan + descripción de una sola vez, a partir del nombre y del
+     * tipo de cocina. Sin cocina el resultado sería genérico, así que se pide
+     * elegirla primero (el formulario ya va en ese orden).
+     */
     const autocompletarConIA = async () => {
-        const nombre = (watch('nombre') || '').trim();
+        const { nombre, cocina, detalle } = contextoIA();
         if (nombre.length < 2) {
             irA('nombre');
             mostrarMensaje('error', 'Primero escribe el nombre de tu restaurante.');
+            return;
+        }
+        if (!cocina) {
+            irA('cocina');
+            mostrarMensaje('error', 'Elige el tipo de cocina para que los textos hablen de tu comida.');
             return;
         }
         setGenerandoIA(true);
         try {
             const [eslogan, descripcion] = await Promise.all([
                 generarContenidoGroq(
-                    `Crea un eslogan corto y memorable (máximo 6 palabras) para el restaurante "${nombre}". Devuelve solo el eslogan.`,
+                    `Crea un eslogan corto y memorable (máximo 6 palabras) para el restaurante "${nombre}". ` +
+                    `${detalle} El eslogan debe evocar esa cocina concreta y no valer para cualquier negocio. ` +
+                    'Devuelve solo el eslogan.',
                     SISTEMA_IA
                 ),
                 generarContenidoGroq(
-                    `Escribe una descripción breve y apetitosa (máximo 280 caracteres) para el restaurante "${nombre}". Devuelve solo la descripción.`,
+                    `Escribe una descripción breve y apetitosa (máximo 280 caracteres) para el restaurante "${nombre}". ` +
+                    `${detalle} Menciona el estilo de cocina y dos o tres platos o ingredientes típicos. ` +
+                    'Tono cálido, en segunda persona, sin exageraciones. Devuelve solo la descripción.',
                     SISTEMA_IA
                 ),
             ]);
             if (eslogan) setValue('eslogan', eslogan, { shouldDirty: true, shouldValidate: true });
             if (descripcion) setValue('descripcion', descripcion, { shouldDirty: true, shouldValidate: true });
-            mostrarMensaje('exito', 'Texto generado. Revísalo y pulsa Finalizar.');
+            mostrarMensaje('exito', 'Texto generado. Revísalo y pulsa Finalizar y guardar.');
         } catch (e: any) {
             mostrarMensaje('error', `IA: ${e?.message || 'no se pudo generar el texto.'}`);
         } finally {
@@ -370,12 +411,14 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     ));
 
     const sugerirEslogan = () => runIA('eslogan', () => sugerirIA(
-        `Eslogan corto, memorable y elegante para "${watch('nombre')}". Máximo 6 palabras. Devuelve solo el eslogan.`,
+        `Eslogan corto, memorable y elegante para "${watch('nombre')}", restaurante de cocina ${tipoCocina || 'de autor'}. ` +
+        'Máximo 6 palabras, con sabor a esa cocina. Devuelve solo el eslogan.',
         (val) => setValue('eslogan', val, { shouldDirty: true, shouldValidate: true })
     ));
 
     const sugerirDescripcion = () => runIA('descripcion', () => sugerirIA(
-        `Descripción acogedora y apetitosa para "${watch('nombre')}". Máximo 300 caracteres. Devuelve solo la descripción.`,
+        `Descripción acogedora y apetitosa para "${watch('nombre')}", restaurante de cocina ${tipoCocina || 'de autor'}. ` +
+        'Máximo 300 caracteres; nombra platos o ingredientes típicos de esa cocina. Devuelve solo la descripción.',
         (val) => setValue('descripcion', val, { shouldDirty: true, shouldValidate: true })
     ));
 
@@ -447,21 +490,6 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                 </div>
             </section>
 
-            {/* ---------- Asistente de IA ---------- */}
-            <AsistenteIA
-                titulo="Asistente de IA"
-                descripcion="Con el nombre de tu restaurante, la IA redacta el eslogan y la descripción. Después corriges lo que quieras."
-                principal={{
-                    etiqueta: generandoIA ? 'Generando…' : 'Generar eslogan y descripción',
-                    onClick: autocompletarConIA,
-                    cargando: generandoIA,
-                    disabled: generandoIA || guardando,
-                }}
-                nota={nombreActual.length < 2
-                    ? 'Escribe primero el nombre de tu restaurante para activarlo.'
-                    : undefined}
-            />
-
             {/* ---------- Errores de validación ---------- */}
             {erroresVisibles.length > 0 && (
                 <section className="rounded-[24px] bg-af-danger/10 p-5">
@@ -492,62 +520,106 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 
             <form onSubmit={handleSubmit(handleFinalizar, manejarInvalido)} noValidate>
 
-                {/* ---------- Información básica ---------- */}
+                {/* ---------- Nombre ---------- */}
                 <section>
                     <TituloSeccion icono={<Store size={17} />}>Información básica</TituloSeccion>
-                    <Tarjeta enlace={false} className="space-y-6">
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <div id="campo-nombre">
-                                <div className="mb-2 flex items-center justify-between gap-3">
-                                    <label htmlFor="rest-nombre" className="text-sm font-medium text-af-ink">
-                                        Nombre <span className="text-af-danger">*</span>
-                                    </label>
-                                    <BotonIA
-                                        onClick={iaOrtografiaNombre}
-                                        cargando={loadingAction === 'ortografia_nombre'}
-                                        disabled={loadingAction !== null || guardando || nombreActual.length < 2}
-                                        icono={<SpellCheck size={13} />}
-                                    >
-                                        Corregir
-                                    </BotonIA>
-                                </div>
-                                <Input
-                                    id="rest-nombre"
-                                    {...register('nombre')}
-                                    placeholder="Ej. La Sazón de la Abuela"
-                                    maxLength={LIMITES.REST_NOMBRE}
-                                    className={claseError('nombre')}
-                                />
-                                {tieneError('nombre')
-                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.nombre?.message as string) || 'Escribe el nombre de tu restaurante.'}</p>
-                                    : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Aparece como título de tu menú.</p>}
+                    <Tarjeta enlace={false}>
+                        <div id="campo-nombre" className="max-w-xl">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                                <label htmlFor="rest-nombre" className="text-sm font-medium text-af-ink">
+                                    Nombre <span className="text-af-danger">*</span>
+                                </label>
+                                <BotonIA
+                                    onClick={iaOrtografiaNombre}
+                                    cargando={loadingAction === 'ortografia_nombre'}
+                                    disabled={loadingAction !== null || guardando || nombreActual.length < 2}
+                                    icono={<SpellCheck size={13} />}
+                                >
+                                    Corregir
+                                </BotonIA>
                             </div>
+                            <Input
+                                id="rest-nombre"
+                                {...register('nombre')}
+                                placeholder="Ej. La Sazón de la Abuela"
+                                maxLength={LIMITES.REST_NOMBRE}
+                                className={claseError('nombre')}
+                            />
+                            {tieneError('nombre')
+                                ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.nombre?.message as string) || 'Escribe el nombre de tu restaurante.'}</p>
+                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Aparece como título de tu menú.</p>}
+                        </div>
+                    </Tarjeta>
+                </section>
 
-                            <div id="campo-eslogan">
-                                <div className="mb-2 flex items-center justify-between gap-3">
-                                    <label htmlFor="rest-eslogan" className="text-sm font-medium text-af-ink">
-                                        Eslogan <span className="text-af-danger">*</span>
-                                    </label>
-                                    <BotonIA
-                                        onClick={sugerirEslogan}
-                                        cargando={loadingAction === 'eslogan'}
-                                        disabled={loadingAction !== null || guardando || nombreActual.length < 2}
-                                        icono={<Wand2 size={13} />}
-                                    >
-                                        Sugerir
-                                    </BotonIA>
-                                </div>
-                                <Input
-                                    id="rest-eslogan"
-                                    {...register('eslogan')}
-                                    placeholder="Ej. Tradición en cada bocado"
-                                    maxLength={LIMITES.REST_ESLOGAN}
-                                    className={claseError('eslogan')}
-                                />
-                                {tieneError('eslogan')
-                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.eslogan?.message as string) || 'Añade un eslogan.'}</p>
-                                    : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Una frase corta que resume tu cocina.</p>}
+                {/* ---------- Tipo de cocina (Descubrir) ----------
+                    Va justo después del nombre: es el contexto con el que la IA
+                    redacta el eslogan y la descripción. */}
+                <section className="mt-10">
+                    <TituloSeccion icono={<UtensilsCrossed size={17} />}>Tipo de cocina</TituloSeccion>
+                    <Tarjeta enlace={false}>
+                        <SelectorCocina
+                            ref={cocinaRef}
+                            restauranteId={restaurante.id}
+                            onCambios={setCocinasCambiadas}
+                            onSeleccion={setCocinasElegidas}
+                        />
+                    </Tarjeta>
+                </section>
+
+                {/* ---------- Eslogan y descripción ---------- */}
+                <section className="mt-10">
+                    <TituloSeccion icono={<Wand2 size={17} />}>Eslogan y descripción</TituloSeccion>
+
+                    <AsistenteIA
+                        titulo="Textos con IA"
+                        descripcion={
+                            tipoCocina
+                                ? `La IA redacta el eslogan y la descripción pensando en tu cocina ${tipoCocina}. Después corriges lo que quieras.`
+                                : 'La IA redacta el eslogan y la descripción a partir de tu nombre y tu tipo de cocina.'
+                        }
+                        principal={{
+                            etiqueta: generandoIA ? 'Generando…' : 'Generar eslogan y descripción',
+                            onClick: autocompletarConIA,
+                            cargando: generandoIA,
+                            disabled: generandoIA || guardando || !puedeGenerarIA,
+                        }}
+                        nota={
+                            nombreActual.length < 2
+                                ? 'Escribe primero el nombre de tu restaurante para activarlo.'
+                                : !tipoCocina
+                                    ? 'Elige arriba el tipo de cocina para que los textos hablen de tu comida.'
+                                    : undefined
+                        }
+                    />
+
+                    <Tarjeta enlace={false} className="mt-5 space-y-6">
+                        <div id="campo-eslogan">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                                <label htmlFor="rest-eslogan" className="text-sm font-medium text-af-ink">
+                                    Eslogan <span className="text-af-danger">*</span>
+                                </label>
+                                <BotonIA
+                                    onClick={sugerirEslogan}
+                                    cargando={loadingAction === 'eslogan'}
+                                    disabled={loadingAction !== null || guardando || !puedeGenerarIA}
+                                    icono={<Wand2 size={13} />}
+                                >
+                                    Sugerir
+                                </BotonIA>
                             </div>
+                            <Input
+                                id="rest-eslogan"
+                                {...register('eslogan')}
+                                placeholder="Ej. Tradición en cada bocado"
+                                maxLength={LIMITES.REST_ESLOGAN}
+                                className={claseError('eslogan')}
+                            />
+                            {tieneError('eslogan')
+                                ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.eslogan?.message as string) || 'Añade un eslogan.'}</p>
+                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">
+                                    Una frase corta que resume tu cocina{tipoCocina ? ` (${tipoCocina})` : ''}.
+                                </p>}
                         </div>
 
                         <div id="campo-descripcion">
@@ -558,7 +630,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 <BotonIA
                                     onClick={sugerirDescripcion}
                                     cargando={loadingAction === 'descripcion'}
-                                    disabled={loadingAction !== null || guardando || nombreActual.length < 2}
+                                    disabled={loadingAction !== null || guardando || !puedeGenerarIA}
                                     icono={<Wand2 size={13} />}
                                 >
                                     Sugerir
@@ -573,20 +645,10 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                             />
                             {tieneError('descripcion')
                                 ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.descripcion?.message as string) || 'Añade una descripción.'}</p>
-                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Se muestra en la cabecera de tu menú.</p>}
+                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">
+                                    Se muestra en la cabecera de tu menú. La IA la escribe según tu tipo de cocina.
+                                </p>}
                         </div>
-                    </Tarjeta>
-                </section>
-
-                {/* ---------- Tipo de cocina (Descubrir) ---------- */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<UtensilsCrossed size={17} />}>Tipo de cocina</TituloSeccion>
-                    <Tarjeta enlace={false}>
-                        <SelectorCocina
-                            ref={cocinaRef}
-                            restauranteId={restaurante.id}
-                            onCambios={setCocinasCambiadas}
-                        />
                     </Tarjeta>
                 </section>
 
@@ -718,26 +780,26 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     aria-label="Tipo de vía"
                                     className="cursor-pointer rounded-xl bg-transparent px-3 py-2.5 text-sm font-medium text-af-ink outline-none"
                                 >
-                                    {['Calle', 'Carrera', 'Avenida', 'Transversal'].map(t => (
+                                    {['Calle', 'Carrera', 'Avenida', 'Transversal', 'Diagonal', 'Circular', 'Kilómetro', 'Vereda', 'Manzana'].map(t => (
                                         <option key={t} className="bg-af-surface text-af-ink" value={t}>{t}</option>
                                     ))}
                                 </select>
                                 <input
-                                    type="text" inputMode="numeric" value={direccionParts.n1}
+                                    type="text" inputMode="text" value={direccionParts.n1}
                                     onChange={(e) => handleDireccionChange('n1', e.target.value)}
                                     placeholder="Nº" aria-label="Número principal" maxLength={LIMITES.ADDR_NUM}
                                     className="w-16 rounded-xl bg-af-surface px-2 py-2.5 text-center text-sm font-medium text-af-ink outline-none"
                                 />
                                 <span className="px-0.5 font-semibold text-af-ink-secondary">#</span>
                                 <input
-                                    type="text" inputMode="numeric" value={direccionParts.n2}
+                                    type="text" inputMode="text" value={direccionParts.n2}
                                     onChange={(e) => handleDireccionChange('n2', e.target.value)}
                                     placeholder="Nº" aria-label="Número secundario" maxLength={LIMITES.ADDR_NUM}
                                     className="w-16 rounded-xl bg-af-surface px-2 py-2.5 text-center text-sm font-medium text-af-ink outline-none"
                                 />
                                 <span className="px-0.5 font-semibold text-af-ink-secondary">-</span>
                                 <input
-                                    type="text" inputMode="numeric" value={direccionParts.n3}
+                                    type="text" inputMode="text" value={direccionParts.n3}
                                     onChange={(e) => handleDireccionChange('n3', e.target.value)}
                                     placeholder="Nº" aria-label="Número terciario" maxLength={LIMITES.ADDR_NUM}
                                     className="w-16 rounded-xl bg-af-surface px-2 py-2.5 text-center text-sm font-medium text-af-ink outline-none"
@@ -918,11 +980,11 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                         <BotonCTA
                             type="submit"
                             cargando={guardando}
-                            disabled={guardando}
-                            iconoDerecho={<Save size={17} />}
+                            disabled={guardando || !hayCambios}
+                            iconoDerecho={hayCambios ? <Save size={17} /> : <CheckCircle2 size={17} />}
                             className="flex-1 sm:flex-none"
                         >
-                            Finalizar
+                            {hayCambios ? 'Finalizar y guardar' : 'Todo guardado'}
                         </BotonCTA>
                     </div>
                 </div>

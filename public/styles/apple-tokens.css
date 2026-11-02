@@ -123,6 +123,91 @@ html, body {
   overflow: hidden;
 }
 
+/* -------------------------------------------------------------------------
+   Cajón del menú en móvil.
+   El cajón es una capa fija que ocupa el alto visible y NO se desplaza. Antes
+   tenía `overflow-y-auto`: al arrastrar desde el menú, el gesto se encadenaba
+   a la página de detrás, la barra del navegador cambiaba de tamaño y el cajón
+   parecía cortarse o desaparecer. Con `touch-action: none` y el scroll del
+   documento bloqueado, el menú se queda quieto y todos los apartados caben
+   (el reparto compacto de abajo lo garantiza también en pantallas bajas).
+   ------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .cajon-panel {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+
+  .cajon-panel .cajon-cabecera {
+    height: 3.5rem;
+  }
+
+  .cajon-panel .cajon-cuenta {
+    padding-top: 0.75rem;
+  }
+
+  /* El correo es lo menos útil del cajón: se oculta para ganar alto. */
+  .cajon-panel .cajon-cuenta-detalle,
+  .cajon-panel .cajon-etiqueta {
+    display: none;
+  }
+
+  .cajon-panel .cajon-nav {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 0.125rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .cajon-panel .cajon-fila {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .cajon-panel .cajon-acciones {
+    padding-top: 0.75rem;
+  }
+}
+
+/* Pantallas muy bajas (móvil en horizontal o con el teclado abierto): se
+   aprieta todavía más para que ningún apartado quede fuera. */
+@media (max-width: 767px) and (max-height: 560px) {
+  .cajon-panel .cajon-cabecera {
+    height: 3rem;
+  }
+
+  .cajon-panel .cajon-cuenta {
+    padding-top: 0.5rem;
+  }
+
+  .cajon-panel .cajon-cuenta .h-10 {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .cajon-panel .cajon-nav {
+    gap: 0;
+  }
+
+  .cajon-panel .cajon-fila {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .cajon-panel .cajon-acciones {
+    padding-top: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 /* Tipografía sistema (Apple) */
 .font-system,
 .font-sans {
