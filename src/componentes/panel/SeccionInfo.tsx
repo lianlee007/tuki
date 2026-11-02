@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Restaurante } from '../../tipos';
 import { RestauranteSchema, RestauranteFormValues } from '../../tipos/esquemas';
@@ -57,12 +57,40 @@ const CAMPOS_OBLIGATORIOS: { k: string; l: string }[] = [
 ];
 
 /** Campos que validamos con zod (tienen un control en el formulario). */
-const CAMPOS_FORM = [
-    'nombre', 'eslogan', 'descripcion', 'telefono', 'email', 'direccion',
-    'departamento', 'municipio', 'ciudad', 'whatsapp', 'horario_apertura', 'horario_cierre', 'dias_abierto',
-];
 
 const RE_DIRECCION = /^(\w+)\s+([A-Za-z0-9]+)\s+#\s+([A-Za-z0-9]+)\s+-\s+([A-Za-z0-9]+)(?:,\s*(.+))?$/;
+
+const DIAS_VACIOS = {
+    lunes: false, martes: false, miercoles: false,
+    jueves: false, viernes: false, sabado: false, domingo: false,
+};
+
+/**
+ * La base devuelve `null` en las columnas de texto que aún no se llenaron, pero
+ * los controles del formulario esperan cadenas. Se normaliza aquí, en el único
+ * punto de entrada, para que ningún `input` reciba `null` y para que la
+ * validación no confunda "vacío" con "dato roto".
+ */
+const valoresIniciales = (restaurante: Restaurante): RestauranteFormValues => ({
+    ...restaurante,
+    nombre: restaurante.nombre ?? '',
+    eslogan: restaurante.eslogan ?? '',
+    descripcion: restaurante.descripcion ?? '',
+    telefono: restaurante.telefono ?? '',
+    email: restaurante.email ?? '',
+    direccion: restaurante.direccion ?? '',
+    departamento: restaurante.departamento ?? '',
+    municipio: restaurante.municipio ?? '',
+    ciudad: restaurante.ciudad ?? '',
+    whatsapp: restaurante.whatsapp ?? '',
+    facebook: restaurante.facebook ?? '',
+    instagram: restaurante.instagram ?? '',
+    horario_apertura: restaurante.horario_apertura ?? '',
+    horario_cierre: restaurante.horario_cierre ?? '',
+    imagen_logo_url: restaurante.imagen_logo_url ?? '',
+    imagen_banner_url: restaurante.imagen_banner_url ?? '',
+    dias_abierto: restaurante.dias_abierto ?? DIAS_VACIOS,
+});
 
 /**
  * Título de grupo del formulario. Un icono pequeño con el tinte de marca
@@ -83,11 +111,10 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 }) => {
     const {
         register, handleSubmit, setValue, watch, reset,
-        getFieldState,
         formState: { errors, isDirty },
     } = useForm<RestauranteFormValues>({
         resolver: zodResolver(RestauranteSchema),
-        defaultValues: restaurante,
+        defaultValues: valoresIniciales(restaurante),
         mode: 'onBlur',
     });
 
@@ -143,6 +170,17 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const completos = totalCampos - faltantes.length;
     const nombreActual = String(valoresForm?.nombre ?? '').trim();
 
+    /** Fallos que el usuario puede ver ahora mismo, con su etiqueta legible. */
+    const erroresVisibles = mostrarErrores
+        ? CAMPOS_OBLIGATORIOS
+            .filter(c => Boolean((errors as any)[c.k]) || esFaltante(c.k, valoresForm))
+            .map(c => ({
+                k: c.k,
+                l: c.l,
+                mensaje: String((errors as any)[c.k]?.message || 'Falta completar este campo.'),
+            }))
+        : [];
+
     /* Ubicación encadenada: el municipio depende del departamento elegido, así
        que no hay forma de escribir un par imposible. Al cambiar de departamento
        se limpia el municipio (y la ciudad, que se rellena con él). */
@@ -182,12 +220,29 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         }, 400);
     }, [ordenScroll]);
 
-    const manejarInvalido = () => {
+    const manejarInvalido = (errores: FieldErrors<RestauranteFormValues>) => {
+        const conError = Object.keys(errores);
+        // Orden del formulario, no orden en que zod encontró el fallo: así el
+        // primer scroll lleva al campo más arriba, que es lo que espera quien
+        // acaba de pulsar Finalizar.
         const primero = CAMPOS_OBLIGATORIOS
             .map(c => c.k)
-            .find(k => CAMPOS_FORM.includes(k) && getFieldState(k as any).invalid);
-        irA(primero || faltantes[0]?.k || 'nombre');
-        mostrarMensaje('error', 'Revisa los campos marcados en rojo.');
+            .find(k => conError.includes(k) || esFaltante(k, valoresForm))
+            || conError[0]
+            || 'nombre';
+        irA(primero);
+        const etiqueta = CAMPOS_OBLIGATORIOS.find(c => c.k === primero)?.l || 'el formulario';
+        const detalle = (errores as any)[primero]?.message;
+        const pendientes = CAMPOS_OBLIGATORIOS.filter(
+            c => conError.includes(c.k) || esFaltante(c.k, valoresForm)
+        ).length;
+        const restantes = pendientes > 1 ? ` Quedan ${pendientes} campos por revisar.` : '';
+        mostrarMensaje(
+            'error',
+            detalle
+                ? `${etiqueta}: ${detalle}.${restantes}`
+                : `${etiqueta}: falta completarlo o tiene un dato inválido.${restantes}`
+        );
     };
 
     const handleFinalizar = async (data: RestauranteFormValues) => {
@@ -203,11 +258,15 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
             return;
         }
 
-        const datosCompletos = { ...data, imagen_logo_url: logoUrl, imagen_banner_url: bannerUrl };
+        const datosCompletos = {
+            ...data,
+            imagen_logo_url: logoUrl,
+            imagen_banner_url: bannerUrl,
+        };
         try {
             await guardarRestaurante(datosCompletos);
             await cocinaRef.current?.guardar();
-            reset(datosCompletos);
+            reset(valoresIniciales({ ...restaurante, ...datosCompletos }));
             setMostrarErrores(false);
             mostrarMensaje('exito', '¡Listo! Tu restaurante quedó guardado.');
         } catch (e: any) {
@@ -216,7 +275,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     };
 
     const descartarCambios = () => {
-        reset(restaurante);
+        reset(valoresIniciales(restaurante));
         setLogoUrl(restaurante.imagen_logo_url || '');
         setBannerUrl(restaurante.imagen_banner_url || '');
         cocinaRef.current?.descartar();
@@ -404,14 +463,27 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
             />
 
             {/* ---------- Errores de validación ---------- */}
-            {mostrarErrores && Object.keys(errors).length > 0 && (
+            {erroresVisibles.length > 0 && (
                 <section className="rounded-[24px] bg-af-danger/10 p-5">
                     <div className="flex items-start gap-3">
                         <AlertTriangle className="mt-0.5 shrink-0 text-af-danger-text" size={20} />
                         <div className="min-w-0">
                             <h3 className="font-bold text-af-ink">Revisa estos campos</h3>
-                            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-af-ink-secondary">
-                                {Object.values(errors).map((e: any, i) => <li key={i}>{e.message}</li>)}
+                            <p className="mt-1 text-sm text-af-ink-secondary">
+                                Toca uno para ir directo a corregirlo.
+                            </p>
+                            <ul className="mt-2 space-y-1 text-sm text-af-ink-secondary">
+                                {erroresVisibles.map((e) => (
+                                    <li key={e.k}>
+                                        <button
+                                            type="button"
+                                            onClick={() => irA(e.k)}
+                                            className="text-left underline decoration-af-danger/40 underline-offset-2 hover:text-af-ink"
+                                        >
+                                            <span className="font-semibold text-af-ink">{e.l}:</span> {e.mensaje}
+                                        </button>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     </div>
@@ -447,7 +519,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     className={claseError('nombre')}
                                 />
                                 {tieneError('nombre')
-                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">Escribe el nombre de tu restaurante.</p>
+                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.nombre?.message as string) || 'Escribe el nombre de tu restaurante.'}</p>
                                     : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Aparece como título de tu menú.</p>}
                             </div>
 
@@ -473,7 +545,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     className={claseError('eslogan')}
                                 />
                                 {tieneError('eslogan')
-                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">Añade un eslogan.</p>
+                                    ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.eslogan?.message as string) || 'Añade un eslogan.'}</p>
                                     : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Una frase corta que resume tu cocina.</p>}
                             </div>
                         </div>
@@ -500,7 +572,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 className={claseError('descripcion')}
                             />
                             {tieneError('descripcion')
-                                ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">Añade una descripción.</p>
+                                ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.descripcion?.message as string) || 'Añade una descripción.'}</p>
                                 : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Se muestra en la cabecera de tu menú.</p>}
                         </div>
                     </Tarjeta>
@@ -609,7 +681,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     maxLength={LIMITES.REST_TELEFONO}
                                     className={claseError('telefono')}
                                     error={tieneError('telefono')}
-                                    helper={tieneError('telefono') ? 'Debe tener 10 dígitos.' : undefined}
+                                    helper={tieneError('telefono') ? ((errors.telefono?.message as string) || 'Debe tener 10 dígitos.') : undefined}
                                 />
                             </div>
                             <div id="campo-email">
@@ -677,7 +749,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     className="min-w-[120px] flex-1 rounded-xl bg-af-surface px-3 py-2.5 text-sm text-af-ink outline-none"
                                 />
                             </div>
-                            {tieneError('direccion') && <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">Completa la dirección: tipo de vía, números y barrio.</p>}
+                            {tieneError('direccion') && <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.direccion?.message as string) || 'Completa la dirección: tipo de vía, números y barrio.'}</p>}
                         </div>
 
                         <div className="grid gap-6 md:grid-cols-2">
@@ -745,7 +817,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     maxLength={LIMITES.REST_TELEFONO}
                                     className={claseError('whatsapp')}
                                     error={tieneError('whatsapp')}
-                                    helper={tieneError('whatsapp') ? 'Debe tener 10 dígitos.' : undefined}
+                                    helper={tieneError('whatsapp') ? ((errors.whatsapp?.message as string) || 'Debe tener 10 dígitos.') : undefined}
                                 />
                             </div>
                         </div>

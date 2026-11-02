@@ -15,7 +15,8 @@ export const useDatosPanel = (user: User | null) => {
 
   const mostrarMensaje = (tipo: 'exito' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje(null), 3000);
+    // Los errores necesitan más tiempo: hay que leerlos y corregir el campo.
+    setTimeout(() => setMensaje(null), tipo === 'error' ? 6000 : 3000);
   };
 
   const cargarDatos = async () => {
