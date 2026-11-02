@@ -17,8 +17,11 @@ test.describe('descubrir → menú → WhatsApp', () => {
     await buscador.fill('bandeja');
 
     // Hay dos restaurantes con "Bandeja paisa": elegimos uno concreto para no
-    // depender del orden del feed.
-    const plato = page.getByRole('link', { name: 'Bandeja paisa, de Donde Lian' });
+    // depender del orden del feed. La tarjeta actual nombra el enlace de la
+    // imagen como "Ver el menú de <restaurante>".
+    const plato = page
+      .getByRole('link', { name: 'Ver el menú de Donde Lian' })
+      .first();
     await expect(plato).toBeVisible();
     await plato.click();
 
