@@ -16,6 +16,7 @@ import { SincronizacionCarrito } from './componentes/SincronizacionCarrito';
 
 // --- LAZY LOADING (Carga Diferida) ---
 const PaginaDescubrir = lazy(() => import('./paginas/PaginaDescubrir'));
+const PaginaInspiracion = lazy(() => import('./paginas/PaginaInspiracion'));
 const PaginaParaRestaurantes = lazy(() => import('./paginas/PaginaParaRestaurantes'));
 const PaginaAutenticacion = lazy(() => import('./paginas/PaginaAutenticacion'));
 const PaginaEntrar = lazy(() => import('./paginas/PaginaEntrar'));
@@ -52,6 +53,7 @@ const ContenidoAnimado = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
           <Route path="/explorar" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
+          <Route path="/inspiracion" element={<TransicionPagina><PaginaInspiracion /></TransicionPagina>} />
           <Route path="/para-restaurantes" element={<TransicionPagina><PaginaParaRestaurantes /></TransicionPagina>} />
           <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
           <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
