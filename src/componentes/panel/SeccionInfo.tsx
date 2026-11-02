@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Restaurante } from '../../tipos';
@@ -12,7 +12,7 @@ import { LIMITES } from '../../constantes';
 import { DEPARTAMENTOS, municipiosDe } from '../../lib/colombia';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
-import { SelectorCocina } from './SelectorCocina';
+import { SelectorCocina, type SelectorCocinaRef } from './SelectorCocina';
 
 interface SeccionInfoProps {
     restaurante: Restaurante;
@@ -99,6 +99,11 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const [campoScroll, setCampoScroll] = useState<string | null>(null);
     const [ordenScroll, setOrdenScroll] = useState(0);
 
+    // Las cocinas viven en su propio componente (consultan su catálogo), pero
+    // ahora se guardan con el mismo "Finalizar" que el resto del formulario.
+    const cocinaRef = useRef<SelectorCocinaRef>(null);
+    const [cocinasCambiadas, setCocinasCambiadas] = useState(false);
+
     // Las imágenes se suben al CDN al instante, pero solo se enlazan al
     // restaurante cuando se pulsa "Finalizar" (igual que el resto de campos).
     const [logoUrl, setLogoUrl] = useState(restaurante.imagen_logo_url || '');
@@ -148,7 +153,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         logoUrl !== (restaurante.imagen_logo_url || '') ||
         bannerUrl !== (restaurante.imagen_banner_url || '');
 
-    const hayCambios = isDirty || imagenCambiada;
+    const hayCambios = isDirty || imagenCambiada || cocinasCambiadas;
 
     const tieneError = (campo: string): boolean =>
         mostrarErrores && (Boolean((errors as any)[campo]) || esFaltante(campo, valoresForm));
@@ -201,6 +206,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         const datosCompletos = { ...data, imagen_logo_url: logoUrl, imagen_banner_url: bannerUrl };
         try {
             await guardarRestaurante(datosCompletos);
+            await cocinaRef.current?.guardar();
             reset(datosCompletos);
             setMostrarErrores(false);
             mostrarMensaje('exito', '¡Listo! Tu restaurante quedó guardado.');
@@ -213,6 +219,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         reset(restaurante);
         setLogoUrl(restaurante.imagen_logo_url || '');
         setBannerUrl(restaurante.imagen_banner_url || '');
+        cocinaRef.current?.descartar();
         setMostrarErrores(false);
         if (restaurante.direccion) {
             const parts = restaurante.direccion.match(RE_DIRECCION);
@@ -503,7 +510,11 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                 <section className="mt-10">
                     <TituloSeccion icono={<UtensilsCrossed size={17} />}>Tipo de cocina</TituloSeccion>
                     <Tarjeta enlace={false}>
-                        <SelectorCocina restauranteId={restaurante.id} />
+                        <SelectorCocina
+                            ref={cocinaRef}
+                            restauranteId={restaurante.id}
+                            onCambios={setCocinasCambiadas}
+                        />
                     </Tarjeta>
                 </section>
 
