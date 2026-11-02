@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
+  Camera,
+  Loader2,
   LogOut,
   MapPin,
   MessageSquare,
@@ -19,6 +21,8 @@ import { MisResenas } from '../componentes/cuenta/MisResenas';
 import { MisPedidos } from '../componentes/cuenta/MisPedidos';
 import { SeccionDatosEnvio } from '../componentes/cuenta/SeccionDatosEnvio';
 import { useDatosEnvio } from '../modulos/cuenta';
+import { subirImagen } from '../lib/servicios';
+import { validarFoto } from '../lib/imagenes';
 
 type Seccion = 'resenas' | 'pedidos' | 'envio';
 
@@ -40,7 +44,7 @@ const fechaAlta = (iso?: string): string => {
  * El dueño de un restaurante entra igual, con un atajo a su panel.
  */
 export default function PaginaMiCuenta() {
-  const { user, rol, cerrarSesion } = useAuth();
+  const { user, rol, cerrarSesion, avatarUrl, guardarAvatar } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const seccionPedida = params.get('seccion');
@@ -48,10 +52,13 @@ export default function PaginaMiCuenta() {
     seccionPedida === 'envio' || seccionPedida === 'pedidos' ? seccionPedida : 'resenas'
   );
   const envio = useDatosEnvio(user?.id);
+  const selectorAvatar = useRef<HTMLInputElement>(null);
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
+  const [errorAvatar, setErrorAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (seccionPedida === 'envio' || seccionPedida === 'pedidos' || seccionPedida === 'resenas') {
-      setSeccion(seccionPedida);
+      setSeccion(seccionPedida as Seccion);
     }
   }, [seccionPedida]);
 
@@ -70,6 +77,34 @@ export default function PaginaMiCuenta() {
   const salir = async () => {
     await cerrarSesion();
     navigate('/');
+  };
+
+  /**
+   * Foto de perfil del comensal. Se guarda en `users.avatar_url` y viaja con
+   * cada reseña que publique, para que los demás vean quién la escribió.
+   */
+  const elegirAvatar = async (evento: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!archivo) return;
+
+    const fallo = validarFoto(archivo);
+    if (fallo) {
+      setErrorAvatar(fallo);
+      return;
+    }
+
+    setErrorAvatar(null);
+    setSubiendoAvatar(true);
+    try {
+      const url = await subirImagen(archivo, 'resenas');
+      const errorGuardado = await guardarAvatar(url);
+      if (errorGuardado) setErrorAvatar(errorGuardado);
+    } catch {
+      setErrorAvatar('No pudimos subir la foto. Inténtalo otra vez.');
+    } finally {
+      setSubiendoAvatar(false);
+    }
   };
 
   const cambiarSeccion = (nueva: Seccion) => {
@@ -114,7 +149,38 @@ export default function PaginaMiCuenta() {
         <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10">
           <section className="rounded-[26px] bg-af-surface p-6 sm:p-8">
             <div className="flex flex-wrap items-center gap-5">
-              <Avatar nombre={nombre} tamano={64} />
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => selectorAvatar.current?.click()}
+                  disabled={subiendoAvatar}
+                  title={avatarUrl ? 'Cambiar mi foto de perfil' : 'Añadir una foto de perfil'}
+                  aria-label={avatarUrl ? 'Cambiar mi foto de perfil' : 'Añadir una foto de perfil'}
+                  className="group relative rounded-full af-pulsar"
+                >
+                  <Avatar nombre={nombre} tamano={64} src={avatarUrl} />
+                  <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-af-surface bg-af-ink text-af-ground">
+                    {subiendoAvatar ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Camera size={14} />
+                    )}
+                  </span>
+                </button>
+
+                <input
+                  ref={selectorAvatar}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={elegirAvatar}
+                  className="sr-only"
+                  tabIndex={-1}
+                />
+
+                <span className="text-[11px] font-semibold text-af-ink-secondary">
+                  {subiendoAvatar ? 'Subiendo…' : avatarUrl ? 'Cambiar foto' : 'Añadir foto'}
+                </span>
+              </div>
 
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wider text-af-ink-secondary">
@@ -154,6 +220,15 @@ export default function PaginaMiCuenta() {
                 </button>
               </div>
             </div>
+
+            {errorAvatar && (
+              <p
+                role="alert"
+                className="mt-4 rounded-xl bg-af-danger/10 px-3.5 py-2.5 text-xs font-medium text-af-danger-text"
+              >
+                {errorAvatar}
+              </p>
+            )}
 
             <p className="mt-5 rounded-xl bg-af-ground px-3.5 py-3 text-xs leading-relaxed text-af-ink-secondary">
               Tu correo nunca se muestra en una reseña. Solo se publica el nombre

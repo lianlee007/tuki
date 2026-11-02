@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Check, ImagePlus, Loader2, Send, X } from 'lucide-react';
+import { Avatar } from '../sistema-diseno/Avatar';
 import { Estrellas } from '../sistema-diseno/Estrellas';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { apiResenas, MAX_COMENTARIO, MAX_NOMBRE, validarResena } from '../../modulos/resenas';
@@ -38,7 +39,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   onEnviada,
   onCancelar,
 }) => {
-  const { user, rol, cargandoRol, cerrarSesion } = useAuth();
+  const { user, rol, cargandoRol, cerrarSesion, avatarUrl, guardarAvatar } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,7 +91,10 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [enviada, setEnviada] = useState(false);
   const [publicada, setPublicada] = useState(true);
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
+  const [errorAvatar, setErrorAvatar] = useState<string | null>(null);
   const selectorFoto = useRef<HTMLInputElement>(null);
+  const selectorAvatar = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (nombreInicial && !nombre) setNombre(nombreInicial);
@@ -222,6 +226,37 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
     }
   };
 
+  /**
+   * La foto de perfil se sube al mismo bucket que las fotos de reseña y se
+   * guarda en la cuenta. A partir de ahí acompaña a todas las reseñas que
+   * publique el comensal, no solo a esta.
+   */
+  const elegirAvatar = async (evento: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = '';
+    if (!archivo) return;
+
+    const fallo = validarFoto(archivo);
+    if (fallo) {
+      setErrorAvatar(fallo);
+      return;
+    }
+
+    setErrorAvatar(null);
+    setSubiendoAvatar(true);
+    try {
+      const url = await subirImagen(archivo, 'resenas');
+      const errorGuardado = await guardarAvatar(url);
+      if (errorGuardado) setErrorAvatar(errorGuardado);
+    } catch {
+      setErrorAvatar(
+        'No pudimos subir la foto de perfil. Puedes reseñar sin ella.'
+      );
+    } finally {
+      setSubiendoAvatar(false);
+    }
+  };
+
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
     const fallo = validarResena({ calificacion, comentario, nombre });
@@ -241,6 +276,7 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
         nombre,
         email: user.email ?? null,
         fotoUrl,
+        fotoAutorUrl: avatarUrl,
       });
 
       if (errorApi) throw errorApi;
@@ -283,6 +319,50 @@ export const FormularioResena: React.FC<FormularioResenaProps> = ({
       </div>
 
       <div className="mt-6 grid gap-5">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-af/20 bg-af-ground px-3.5 py-3">
+          <Avatar nombre={nombre} tamano={44} src={avatarUrl} />
+
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
+              Tu foto de perfil
+            </p>
+            <p className="mt-0.5 text-xs leading-relaxed text-af-ink-secondary">
+              {avatarUrl
+                ? 'Se mostrará junto a tu nombre en todas tus reseñas.'
+                : 'Si la añades, aparecerá junto a tu nombre en la reseña.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => selectorAvatar.current?.click()}
+            disabled={subiendoAvatar}
+            className="inline-flex items-center gap-2 rounded-full border border-af/30 px-3.5 py-1.5 text-xs font-semibold text-af-ink transition-colors hover:border-af-accent-text hover:text-af-accent-text disabled:opacity-60 af-pulsar"
+          >
+            {subiendoAvatar ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Camera size={15} />
+            )}
+            {subiendoAvatar ? 'Subiendo…' : avatarUrl ? 'Cambiar foto' : 'Añadir foto'}
+          </button>
+
+          <input
+            ref={selectorAvatar}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={elegirAvatar}
+            className="sr-only"
+            tabIndex={-1}
+          />
+        </div>
+
+        {errorAvatar && (
+          <p role="alert" className="text-xs font-medium text-af-danger-text">
+            {errorAvatar}
+          </p>
+        )}
+
         <div>
           <span className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
             Tu calificación

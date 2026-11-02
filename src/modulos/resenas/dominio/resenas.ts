@@ -18,6 +18,14 @@ export interface Resena {
   visible: boolean | null;
   /** Foto de la reseña ya comprimida y alojada en Supabase Storage. */
   foto_url?: string | null;
+  /**
+   * Foto de perfil del autor, copiada desde `users.avatar_url` al publicar.
+   * La fila de `users` es privada; la reseña es pública, así que la imagen
+   * viaja con ella.
+   */
+  foto_autor_url?: string | null;
+  /** Cuántas cuentas marcaron la reseña como útil. */
+  utiles?: number;
   /** Respuesta pública del dueño; `null` mientras no conteste. */
   respuesta_dueno?: string | null;
 }
@@ -147,3 +155,13 @@ export const validarRespuesta = (texto: string): string | null => {
 /** `true` cuando la reseña ya trae la contestación del restaurante. */
 export const tieneRespuesta = (resena: Resena): boolean =>
   Boolean(resena.respuesta_dueno?.trim());
+
+/**
+ * Texto del botón «Es útil». El conteo es público y se lee tal cual: una
+ * reseña con un voto dice «1 persona lo encontró útil»; con más, en plural.
+ */
+export const textoUtiles = (utiles: number): string => {
+  const total = Number.isFinite(utiles) && utiles > 0 ? Math.round(utiles) : 0;
+  if (total === 0) return 'Es útil';
+  return total === 1 ? '1 persona lo encontró útil' : `${total} personas lo encontraron útil`;
+};
