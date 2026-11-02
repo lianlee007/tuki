@@ -8,7 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { ProveedorAutenticacion } from './contexto/ContextoAutenticacion';
 import { ProveedorTema } from './contexto/ContextoTema';
-import { RutaPanel, RutaAuth, RutaCuenta } from './componentes/rutas/RutasProtegidas';
+import { RutaPanel, RutaAuth, RutaConSesion } from './componentes/rutas/RutasProtegidas';
 import { Logo } from './componentes/ui';
 import { TransicionPagina } from './componentes/sistema-diseno/TransicionPagina';
 import { ErrorBoundary } from './componentes/sistema-diseno/ErrorBoundary';
@@ -53,12 +53,12 @@ const ContenidoAnimado = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
           <Route path="/explorar" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
-          <Route path="/inspiracion" element={<TransicionPagina><PaginaInspiracion /></TransicionPagina>} />
+          <Route path="/inspiracion" element={<RutaConSesion><TransicionPagina><PaginaInspiracion /></TransicionPagina></RutaConSesion>} />
           <Route path="/para-restaurantes" element={<TransicionPagina><PaginaParaRestaurantes /></TransicionPagina>} />
           <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
           <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
           <Route path="/panel" element={<RutaPanel><TransicionPagina><PanelControl /></TransicionPagina></RutaPanel>} />
-          <Route path="/mi-cuenta" element={<RutaCuenta><TransicionPagina><PaginaMiCuenta /></TransicionPagina></RutaCuenta>} />
+          <Route path="/mi-cuenta" element={<RutaConSesion><TransicionPagina><PaginaMiCuenta /></TransicionPagina></RutaConSesion>} />
           <Route path="/restaurante/:slug" element={<TransicionPagina><VistaPublica /></TransicionPagina>} />
           <Route path="/terminos" element={<TransicionPagina><PaginaTerminos /></TransicionPagina>} />
           <Route path="/privacidad" element={<TransicionPagina><PaginaPrivacidad /></TransicionPagina>} />
