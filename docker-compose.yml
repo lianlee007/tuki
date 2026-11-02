@@ -26,6 +26,7 @@ services:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Define VITE_SUPABASE_URL en el archivo de entorno}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?Define VITE_SUPABASE_ANON_KEY en el archivo de entorno}
         VITE_AI_GATEWAY_URL: ${VITE_AI_GATEWAY_URL:-/api}
+        VITE_PUBLIC_APP_URL: ${VITE_PUBLIC_APP_URL:-}
         VERSION: ${TUKI_VERSION:-local}
         REVISION: ${TUKI_REVISION:-local}
 
