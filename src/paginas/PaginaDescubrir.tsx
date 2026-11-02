@@ -323,9 +323,7 @@ const PaginaDescubrir = () => {
   };
 
   const sorprender = () => {
-    if (platos.length === 0) return;
-    const elegido = platos[Math.floor(Math.random() * platos.length)];
-    setDetalle(elegido);
+    navigate('/inspiracion');
   };
 
   const irAInicio = () => {
@@ -586,6 +584,12 @@ const PaginaDescubrir = () => {
                 </>
               )}
             </section>
+
+            {/* En móvil y tableta la columna lateral no existe: el atajo a la
+                baraja va al final del feed, después de los platos recomendados. */}
+            <div className="xl:hidden">
+              <Inspiracion cantidadPlatos={platos.length} onSorprender={sorprender} />
+            </div>
 
             <div id="restaurantes" className="scroll-mt-28">
               <CarrilRestaurantes
