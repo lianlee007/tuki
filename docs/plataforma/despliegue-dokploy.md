@@ -98,6 +98,7 @@ no se documentan aquí** (claves de Supabase y Groq); viven en el panel y en
 | `AI_ENVIRONMENT` | `production` | validaciones del gateway |
 | `AI_AUTH_MODE` | `supabase` | validación de sesión en el gateway |
 | `AI_ALLOW_ANON` | `true` | permite carrito y corrección de barrio sin sesión |
+| `VITE_PUBLIC_APP_URL` | Origen de los enlaces compartidos y del QR. Mientras no haya HTTPS: `http://tuki-tuki-169-58-151-195.sslip.io:8080` | build del frontend |
 
 Reglas que no se deben romper:
 
@@ -126,11 +127,60 @@ haga falta comprar un dominio.
 Consecuencias:
 
 - `tuki-tuki.sslip.io` **no resuelve**: sslip.io exige la IP en el nombre.
-- No hay certificado TLS para `sslip.io`, así que el sitio queda en **HTTP** y
-  el navegador muestra "No seguro". No se puede eliminar con ese host.
-- Para tener HTTPS hace falta un dominio propio con un registro `A` hacia
-  `169.58.151.195`, activar *HTTPS* en el dominio de Dokploy y esperar a
-  Let's Encrypt.
+- Sin HTTPS en Dokploy el sitio queda en **HTTP** y el navegador muestra
+  "No seguro".
+- En `sslip.io` **sí se puede** emitir un certificado con Let's Encrypt: cada
+  subdominio es su propio nombre público y el reto HTTP-01 funciona. Basta
+  activar *HTTPS* en el dominio de Dokploy y esperar a la emisión.
+
+### 6.1 Por qué el móvil muestra `404 page not found`
+
+Síntoma: en computadora `http://tuki-tuki-169-58-151-195.sslip.io` carga, pero
+en el móvil sale un `404 page not found` (texto plano, sin el diseño de Tuki).
+
+Causa: los navegadores móviles (Chrome en Android y muchos navegadores dentro
+de apps como WhatsApp o Instagram) intentan **HTTPS primero** por su cuenta. El
+puerto 443 del VPS está abierto y lo atiende el Traefik de Dokploy, pero como
+el dominio no tiene HTTPS configurado **no existe un router para ese host** y
+Traefik responde su 404 por defecto:
+
+```text
+$ curl -sk http://tuki-tuki-169-58-151-195.sslip.io/ -o /dev/null -w '%{http_code}\n'
+200
+$ curl -sk https://tuki-tuki-169-58-151-195.sslip.io/ -o /dev/null -w '%{http_code}\n'
+404
+```
+
+El `404` **no viene de Nginx ni de React Router**: la petición nunca llega al
+contenedor. En computadora funciona porque el enlace se abre como `http://`.
+
+Mientras se habilita HTTPS, el enlace que **sí** funciona en el móvil es el que
+lleva el puerto explícito, porque los navegadores no lo actualizan a HTTPS:
+
+- <http://tuki-tuki-169-58-151-195.sslip.io:8080>
+- <http://169.58.151.195:8080>
+
+Para que el QR y los enlaces compartidos usen siempre ese origen, define
+`VITE_PUBLIC_APP_URL` (§5) y reconstruye el frontend: las variables `VITE_*` se
+incrustan en el build, no basta reiniciar el contenedor.
+
+Solución definitiva (en el panel, no en el código):
+
+1. Dokploy → servicio Compose `tuki` → pestaña *Domains* → editar el dominio
+   `tuki-tuki-169-58-151-195.sslip.io`.
+2. Activar **HTTPS** (Let's Encrypt) y guardar. El reto HTTP-01 se resuelve por
+   el puerto 80, que ya está publicado.
+3. Activar **Redirect to HTTPS** para que el enlace `http://` también termine en
+   el sitio correcto.
+4. Verificar que el 404 desapareció:
+
+   ```bash
+   curl -sI https://tuki-tuki-169-58-151-195.sslip.io/ | head -1   # HTTP/2 200
+   curl -s  https://tuki-tuki-169-58-151-195.sslip.io/healthz      # ok
+   ```
+
+Sin paso 2 y 3, cualquier enlace compartido por WhatsApp, Instagram o un QR
+seguirá abriéndose en HTTPS y devolviendo el 404 de Traefik.
 
 ## 7. Flujo de despliegue
 
@@ -157,6 +207,10 @@ curl -s -o /dev/null -w '%{http_code}\n' http://tuki-tuki-169-58-151-195.sslip.i
 curl -s http://tuki-tuki-169-58-151-195.sslip.io/healthz
 curl -s http://tuki-tuki-169-58-151-195.sslip.io/api/healthz
 curl -s http://tuki-tuki-169-58-151-195.sslip.io/api/readyz
+
+# Con HTTPS activo (necesario para móviles, ver §6.1)
+curl -s -o /dev/null -w '%{http_code}\n' https://tuki-tuki-169-58-151-195.sslip.io/
+curl -s https://tuki-tuki-169-58-151-195.sslip.io/api/readyz
 ```
 
 Resultados esperados:
@@ -209,7 +263,8 @@ Cómo funciona ahora (`services/ai-gateway/app/adaptadores/supabase.py`):
 | `503 auth_unavailable` | Falta `SUPABASE_ANON_KEY` o Supabase no responde | Revisar la variable y el egreso 443 |
 | El contenedor `backend` reinicia con `Configuración inválida` | `AI_AUTH_MODE=disabled` en producción | Usar `AI_AUTH_MODE=supabase` |
 | `tuki-tuki.sslip.io` no carga | sslip.io necesita la IP en el nombre | Usar `tuki-tuki-169-58-151-195.sslip.io` |
-| El navegador dice "No seguro" | No hay TLS en `sslip.io` | Usar `http://` o configurar un dominio propio |
+| El navegador dice "No seguro" | No hay TLS configurado en el dominio | Activar HTTPS (Let's Encrypt) en Dokploy (§6.1) |
+| En el móvil sale `404 page not found` y en computadora carga | El móvil fuerza HTTPS y Traefik no tiene router en 443 | Activar HTTPS y la redirección en Dokploy (§6.1) |
 | `git push` falla con "Could not connect to server" | Proxy `ALL_PROXY` roto en la sesión | Limpiar `ALL_PROXY`, `HTTP_PROXY` y `HTTPS_PROXY` |
 | Varias peticiones seguidas al panel dan `429` | Límite de intentos del login de Dokploy | Esperar unos minutos antes de reintentar |
 | El webhook responde `301 Branch Not Match` | Falta `X-GitHub-Event: push` o el `ref` de la rama | Enviar la cabecera y `{"ref":"refs/heads/main"}` (§3) |

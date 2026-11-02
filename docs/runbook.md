@@ -19,6 +19,7 @@ documento.
 - [Nginx](#nginx)
 - [Rotación de la clave de Groq](#rotacion-de-la-clave-de-groq)
 - [Rotación de secretos de Supabase](#rotacion-de-secretos-de-supabase)
+- [CI en rojo](#ci-en-rojo)
 - [Rollback](#rollback)
 - [ArgoCD fuera de sync](#argocd-fuera-de-sync)
 - [Checklist de incidente](#checklist-de-incidente)
@@ -291,6 +292,28 @@ La SPA sigue sirviendo; solo fallan las funciones de IA.
   producción y reinicia el gateway.
 - Si Supabase rota sus claves de firma, el gateway las descubre por JWKS; puede
   tardar hasta `AI_JWKS_CACHE_SECONDS` (600 s por defecto).
+
+## CI en rojo
+
+Los tres workflows viven en `.github/workflows/`. Antes de tocar código, mira
+**qué job** falló: casi siempre el problema está en la configuración del
+repositorio, no en la aplicación.
+
+```bash
+gh run list --limit 10
+gh run view <run-id> --log-failed
+```
+
+| Síntoma | Causa | Solución |
+| --- | --- | --- |
+| `Web · imagen…` falla en `Construir y publicar` con `ERROR: faltan variables de compilación: VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY` | Faltan los secretos de Actions; el Dockerfile falla a propósito para no publicar un bundle sin Supabase | `gh secret set VITE_SUPABASE_URL` y `gh secret set VITE_SUPABASE_ANON_KEY` (valores de `.env.local`); volver a lanzar el workflow |
+| `E2E · flujo del comensal` falla con `getByRole('link', { name: 'Bandeja paisa…' })` y `element(s) not found` | El build de E2E quedó sin Supabase por los mismos secretos ausentes, así que la búsqueda no devuelve platos | Mismo arreglo que la fila anterior |
+| `Subir resultados a code scanning` responde `Resource not accessible by integration` | El repositorio es privado y no tiene GitHub Advanced Security | Ya no bloquea: el SARIF se publica como artefacto y el gate real es el `exit-code` de Trivy. Si algún día se habilita GHAS, el paso vuelve a funcionar solo |
+| `Trivy · imagen publicada` termina con `exit code 1` sin tabla de hallazgos | El formato `sarif` no imprime la tabla; hay una vulnerabilidad `HIGH`/`CRITICAL` corregible en la base o en una dependencia (o un falso positivo temporal de la base de datos) | Ver el artefacto `trivy-*.sarif` del run, actualizar la imagen base o la dependencia y relanzar. Si es un falso positivo, esperar la actualización de la base de Trivy |
+| `actionlint` o `shellcheck` fallan sin tocar la app | Workflow o script inválido | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest` y `koalaman/shellcheck:stable deploy/scripts/*.sh` en local |
+
+Antes de hacer push, la misma puerta corre en local con `pnpm verificar`
+(tipos, lint, pruebas, build, gateway y manifiestos).
 
 ## Rollback
 
