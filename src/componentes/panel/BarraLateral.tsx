@@ -75,24 +75,24 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
   const centrar = contraido ? 'md:justify-center md:px-0' : '';
   const etiqueta = contraido ? 'md:hidden' : '';
   const etiquetaFija = contraido ? 'md:opacity-0' : '';
-  const fila = `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm outline-none transition-colors duration-200 ${centrar}`;
+  const fila = `cajon-fila flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm outline-none transition-colors duration-200 ${centrar}`;
 
   return (
     <aside
       ref={cajonRef}
       id="panel-menu-movil"
       aria-label="Menú del panel"
-      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] w-[85vw] flex-col overflow-y-auto overflow-x-hidden overscroll-contain border-r border-af/20 bg-af-surface shadow-xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-40 md:h-auto md:max-h-none md:translate-x-0 md:overflow-visible md:shadow-none md:visible ${
+      className={`cajon-panel fixed left-0 top-0 z-50 flex w-[85vw] max-w-xs flex-col border-r border-af/20 bg-af-surface shadow-xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-40 md:h-auto md:max-h-none md:w-72 md:max-w-none md:translate-x-0 md:overflow-visible md:shadow-none md:visible ${
         contraido ? 'md:w-[76px]' : 'md:w-72'
       } ${
         movilAbierto ? 'visible translate-x-0' : 'invisible -translate-x-full'
       }`}
     >
-      {/* Cabecera: marca + plegar/desplegar. Pegada arriba para que, si el
-          contenido del cajón no cabe (barra del navegador, letra grande), la
-          X siga siempre a mano mientras se desplaza. */}
+      {/* Cabecera: marca + plegar/desplegar. En móvil el cajón no se desplaza
+          (ver `.cajon-panel`), así que la X y todos los apartados están siempre
+          a la vista: el gesto de scroll no arrastra la página de detrás. */}
       <div
-        className={`sticky top-0 z-10 flex h-20 shrink-0 items-center justify-between border-b border-af/30 bg-af-surface px-6 ${
+        className={`cajon-cabecera sticky top-0 z-10 flex h-20 shrink-0 items-center justify-between border-b border-af/30 bg-af-surface px-6 ${
           contraido ? 'md:justify-center md:px-2' : ''
         }`}
       >
@@ -146,27 +146,27 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
       </div>
 
       {/* Cuenta */}
-      <div className={`shrink-0 px-6 pt-6 ${contraido ? 'md:px-2' : ''}`}>
+      <div className={`cajon-cuenta shrink-0 px-6 pt-6 ${contraido ? 'md:px-2' : ''}`}>
         <div className={`flex items-center gap-3 ${contraido ? 'md:justify-center' : ''}`}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-af-accent/10 text-sm font-bold text-af-accent-text">
             {inicial}
           </div>
           <div className={`min-w-0 overflow-hidden ${etiqueta}`}>
             <p className="truncate text-sm font-semibold text-af-ink">{nombreUsuario}</p>
-            <p className="truncate text-xs text-af-ink-secondary">{user?.email}</p>
+            <p className="cajon-cuenta-detalle truncate text-xs text-af-ink-secondary">{user?.email}</p>
           </div>
         </div>
 
-        <p className={`mb-3 mt-6 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
+        <p className={`cajon-etiqueta mb-3 mt-6 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
           Panel
         </p>
       </div>
 
-      {/* En móvil el cajón entero se desplaza: si la barra del navegador reduce
-          el alto visible, las acciones de abajo se alcanzan con scroll en vez
-          de quedar recortadas. En escritorio la navegación sigue empujando los
-          ajustes al fondo. */}
-      <nav className={`shrink-0 space-y-1 pb-2 md:min-h-0 md:flex-1 md:overflow-y-auto ${contraido ? 'md:px-2' : 'px-4'}`}>
+      {/* Navegación. En móvil ocupa el alto libre y reparte los apartados de
+          forma uniforme: no hay scroll propio ni la página de detrás se mueve,
+          así que el menú nunca se va de la pantalla. En escritorio sigue
+          empujando los ajustes al fondo y desplazándose si hace falta. */}
+      <nav className={`cajon-nav shrink-0 space-y-1 pb-2 md:min-h-0 md:flex-1 md:overflow-y-auto ${contraido ? 'md:px-2' : 'px-4'}`}>
         {navItems.map((item) => {
           const isActive = tabActiva === item.id;
           return (
@@ -190,8 +190,8 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
       </nav>
 
       {/* Acciones */}
-      <div className={`shrink-0 border-t border-af/30 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 ${contraido ? 'md:px-2 md:pb-6' : ''}`}>
-        <p className={`mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
+      <div className={`cajon-acciones shrink-0 border-t border-af/30 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 ${contraido ? 'md:px-2 md:pb-6' : ''}`}>
+        <p className={`cajon-etiqueta mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
           Ajustes
         </p>
 

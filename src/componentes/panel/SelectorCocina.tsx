@@ -13,10 +13,12 @@ interface SelectorCocinaProps {
   restauranteId: string;
   /** Avisa al formulario si hay cocinas sin guardar, para el indicador de cambios. */
   onCambios?: (hayCambios: boolean) => void;
+  /** Nombres de las cocinas elegidas, para que la IA escriba con ese contexto. */
+  onSeleccion?: (nombres: string[]) => void;
 }
 
 export interface SelectorCocinaRef {
-  /** Guarda las cocinas elegidas. Lo llama el botón "Finalizar" del formulario. */
+  /** Guarda las cocinas elegidas. Lo llama el botón "Finalizar y guardar" del formulario. */
   guardar: () => Promise<void>;
   /** Vuelve a lo último guardado, junto con el resto de "Descartar". */
   descartar: () => void;
@@ -29,11 +31,11 @@ const MAX_SECUNDARIAS = 2;
  *
  * Es lo que hace que el negocio aparezca cuando alguien filtra por cafetería o
  * por comida china. No tiene botón propio: se guarda junto con el resto del
- * formulario al pulsar "Finalizar", para que el dueño tenga un solo punto de
+ * formulario al pulsar "Finalizar y guardar", para que el dueño tenga un solo punto de
  * guardado y no se le queden datos a medias.
  */
 export const SelectorCocina = forwardRef<SelectorCocinaRef, SelectorCocinaProps>(
-  ({ restauranteId, onCambios }, ref) => {
+  ({ restauranteId, onCambios, onSeleccion }, ref) => {
     const [cocinas, setCocinas] = useState<TipoCocina[]>([]);
     const [principal, setPrincipal] = useState('');
     const [secundarias, setSecundarias] = useState<string[]>([]);
@@ -91,6 +93,16 @@ export const SelectorCocina = forwardRef<SelectorCocinaRef, SelectorCocinaProps>
       onCambios?.(sucio);
     }, [sucio, onCambios]);
 
+    /* Comparte los nombres (no los slugs) de lo elegido: el formulario los usa
+       para redactar el eslogan y la descripción con la cocina correcta. */
+    useEffect(() => {
+      if (!cocinas.length) return;
+      const nombres = [principal, ...secundarias]
+        .map((slug) => cocinas.find((cocina) => cocina.slug === slug)?.nombre)
+        .filter((nombre): nombre is string => Boolean(nombre));
+      onSeleccion?.(nombres);
+    }, [principal, secundarias, cocinas, onSeleccion]);
+
     const alternarSecundaria = (slug: string) => {
       setSecundarias((previas) => {
         if (previas.includes(slug)) return previas.filter((actual) => actual !== slug);
@@ -131,7 +143,7 @@ export const SelectorCocina = forwardRef<SelectorCocinaRef, SelectorCocinaProps>
 
     return (
       <div className="space-y-5">
-        <div>
+        <div id="campo-cocina">
           <label htmlFor="cocina-principal" className="mb-2 block text-sm font-medium text-af-ink">
             Cocina principal <span className="text-af-danger">*</span>
           </label>
@@ -153,7 +165,7 @@ export const SelectorCocina = forwardRef<SelectorCocinaRef, SelectorCocinaProps>
           </select>
           <p className="mt-2 text-xs text-af-ink-secondary">
             Es la que aparece en tu tarjeta y con la que te encuentran al filtrar. Se guarda con
-            «Finalizar».
+            «Finalizar y guardar».
           </p>
         </div>
 
