@@ -2,9 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, QrCode, ExternalLink } from 'lucide-react';
 import { ThemeToggle, BotonTexto, Logo, Contenedor, Seccion, Tarjeta } from '../componentes/ui';
+import { origenPublico } from '../lib/urlPublica';
 
 export default function PaginaQR() {
-  const appUrl = window.location.origin;
+  const appUrl = origenPublico();
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(appUrl)}&color=C2410C&bgcolor=FFFFFF`;
 

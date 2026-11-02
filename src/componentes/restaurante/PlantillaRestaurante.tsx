@@ -47,6 +47,7 @@ import { ResenasPublicas } from './ResenasPublicas';
 import { useResenas } from '../../modulos/resenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
+import { urlPublica } from '../../lib/urlPublica';
 
 // Estructuras del menú. Todas comparten `PlantillaMenuProps`, así que el menú
 // se monta desde una tabla: ninguna puede quedarse sin `refs` (seguimiento de
@@ -381,7 +382,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
    * enlace. Nunca se comparte el carrito ni datos del comensal.
    */
   const compartir = async () => {
-    const url = window.location.href;
+    const url = urlPublica(`${window.location.pathname}${window.location.search}`);
     const datos = {
       title: restaurante.nombre,
       text: `Mira el menú de ${restaurante.nombre} en Tuki`,
