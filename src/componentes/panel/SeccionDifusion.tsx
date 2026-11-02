@@ -4,6 +4,7 @@ import { Boton, Input, LogoWhatsApp } from '../ui';
 import { Copy, Check, Download, Printer, ExternalLink, Link2 } from 'lucide-react';
 import { apiQR } from '../../api/misApis';
 import { generarSlugUnico } from '../../lib/utils';
+import { urlPublica } from '../../lib/urlPublica';
 
 /* -------------------------------------------------------------------------
    Difusión: llevar el menú a la mesa y a las redes.
@@ -185,7 +186,7 @@ interface SeccionDifusionProps {
 
 export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, mostrarMensaje }) => {
   const slug = generarSlugUnico(restaurante.nombre, restaurante.id);
-  const publicUrl = `${window.location.origin}/restaurante/${slug}`;
+  const publicUrl = urlPublica(`/restaurante/${slug}`);
   const qrServicio = apiQR.generarCodigoQR(publicUrl, TINTA_QR, TARJETA.codigo).imagen_url;
 
   const [copiado, setCopiado] = useState<'enlace' | 'instagram' | null>(null);
