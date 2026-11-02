@@ -98,6 +98,7 @@ no se documentan aquí** (claves de Supabase y Groq); viven en el panel y en
 | `AI_ENVIRONMENT` | `production` | validaciones del gateway |
 | `AI_AUTH_MODE` | `supabase` | validación de sesión en el gateway |
 | `AI_ALLOW_ANON` | `true` | permite carrito y corrección de barrio sin sesión |
+| `VITE_PUBLIC_APP_URL` | Origen de los enlaces compartidos y del QR. Mientras no haya HTTPS: `http://tuki-tuki-169-58-151-195.sslip.io:8080` | build del frontend |
 
 Reglas que no se deben romper:
 
@@ -153,7 +154,17 @@ $ curl -sk https://tuki-tuki-169-58-151-195.sslip.io/ -o /dev/null -w '%{http_co
 El `404` **no viene de Nginx ni de React Router**: la petición nunca llega al
 contenedor. En computadora funciona porque el enlace se abre como `http://`.
 
-Solución (en el panel, no en el código):
+Mientras se habilita HTTPS, el enlace que **sí** funciona en el móvil es el que
+lleva el puerto explícito, porque los navegadores no lo actualizan a HTTPS:
+
+- <http://tuki-tuki-169-58-151-195.sslip.io:8080>
+- <http://169.58.151.195:8080>
+
+Para que el QR y los enlaces compartidos usen siempre ese origen, define
+`VITE_PUBLIC_APP_URL` (§5) y reconstruye el frontend: las variables `VITE_*` se
+incrustan en el build, no basta reiniciar el contenedor.
+
+Solución definitiva (en el panel, no en el código):
 
 1. Dokploy → servicio Compose `tuki` → pestaña *Domains* → editar el dominio
    `tuki-tuki-169-58-151-195.sslip.io`.
