@@ -1,7 +1,7 @@
 import React from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Heart, Home, Search, UserRound } from 'lucide-react';
+import { ArrowUpRight, Heart, Home, Layers, Search, UserRound } from 'lucide-react';
 import { FOCO } from './estilos';
 
 interface BarraMovilProps {
@@ -15,9 +15,10 @@ interface BarraMovilProps {
 /**
  * Barra de navegación del pulgar.
  *
- * Las cinco acciones que de verdad se usan en el teléfono —volver al inicio,
- * buscar, favoritos, cocinas y cuenta— siempre visibles. El carrito no se
- * repite aquí: vive en la barra superior, que es su único punto de entrada.
+ * Las acciones que de verdad se usan en el teléfono —volver al inicio, buscar,
+ * entrar a la baraja de Inspiración, favoritos, cocinas y cuenta— siempre
+ * visibles. El carrito no se repite aquí: vive en la barra superior, que es su
+ * único punto de entrada.
  */
 export const BarraMovil: React.FC<BarraMovilProps> = ({
   favoritosActivos,
@@ -52,6 +53,14 @@ export const BarraMovil: React.FC<BarraMovilProps> = ({
             <Search size={19} aria-hidden="true" />
             Buscar
           </button>
+
+          <Link
+            to="/inspiracion"
+            className={`${item} text-hearth-terracotta-ink hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta`}
+          >
+            <Layers size={19} aria-hidden="true" />
+            Swipe
+          </Link>
 
           <button
             type="button"
