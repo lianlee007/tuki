@@ -51,13 +51,13 @@ export const ImagenInteligente: React.FC<ImagenInteligenteProps> = ({
   else if (aspectRatio === 'video') ratioClass = 'aspect-video';
 
   return (
-    <div className={`relative overflow-hidden bg-af-surface ${ratioClass} ${className}`}>
+    <div className={`relative overflow-hidden bg-af-ink/[0.06] ${ratioClass} ${className}`}>
       {/* Skeleton Loader / Error State */}
       <div
-        className={`absolute inset-0 z-10 flex items-center justify-center bg-af-surface transition-opacity duration-500 ${estado === 'completo' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`absolute inset-0 z-10 flex items-center justify-center bg-af-ink/[0.06] transition-opacity duration-500 ${estado === 'completo' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
         {estado === 'cargando' && (
-           <div className="w-full h-full animate-pulse bg-af-border/40 flex items-center justify-center">
+           <div className="w-full h-full animate-pulse bg-af-ink/[0.08] flex items-center justify-center">
               <Loader2 className="w-8 h-8 text-af-ink-secondary animate-spin opacity-30" />
            </div>
         )}
