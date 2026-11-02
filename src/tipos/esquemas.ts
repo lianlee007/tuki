@@ -53,6 +53,12 @@ export const limpiarNombre = sanitizador(CLASE_NOMBRE);
 export const limpiarDescripcion = sanitizador(CLASE_DESC);
 export const limpiarIngrediente = sanitizador(CLASE_INGREDIENTE);
 
+/* Las columnas de texto de `restaurantes` son nullable en la base. Un `null`
+   no es lo mismo que un campo vacío: si el esquema sólo acepta `undefined`
+   (`.optional()`), guardar un restaurante recién creado revienta con
+   "invalid input: expected string, received null" aunque el dueño haya
+   llenado todo lo visible. Por eso los opcionales aceptan `null` (`.nullish()`). */
+
 export const RestauranteSchema = z.object({
   nombre: z.string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
@@ -60,31 +66,31 @@ export const RestauranteSchema = z.object({
     
   eslogan: z.string()
     .max(LIMITES.REST_ESLOGAN, `Máximo ${LIMITES.REST_ESLOGAN} caracteres`)
-    .optional(),
+    .nullish(),
     
   descripcion: z.string()
     .max(LIMITES.REST_DESC, `Máximo ${LIMITES.REST_DESC} caracteres`)
-    .optional(),
+    .nullish(),
     
   telefono: z.string()
     .regex(/^\d{10}$/, "Debe ser un número válido de 10 dígitos")
     .max(LIMITES.REST_TELEFONO, "Número demasiado largo")
-    .optional().or(z.literal('')),
+    .nullish().or(z.literal('')),
     
   email: z.string()
     .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Correo electrónico inválido")
     .max(LIMITES.REST_EMAIL, "Email demasiado largo")
-    .optional().or(z.literal('')),
+    .nullish().or(z.literal('')),
     
   direccion: z.string()
     .max(LIMITES.REST_DIRECCION, `Máximo ${LIMITES.REST_DIRECCION} caracteres`)
     .refine((v) => !v || v.trim().length >= 5, "Dirección muy corta")
-    .optional(),
+    .nullish(),
     
   ciudad: z.string()
     .max(LIMITES.REST_CIUDAD, `Máximo ${LIMITES.REST_CIUDAD} caracteres`)
     .refine((v) => !v || v.trim().length >= 2, "Ciudad inválida")
-    .optional(),
+    .nullish(),
 
   /* Ubicación por divisiones de Colombia. El formulario las pide como
      obligatorias (ver `CAMPOS_OBLIGATORIOS` en la sección de configuración),
@@ -101,20 +107,20 @@ export const RestauranteSchema = z.object({
   whatsapp: z.string()
     .regex(/^\d{10}$/, "Debe ser un número de 10 dígitos para WhatsApp")
     .max(LIMITES.REST_TELEFONO, "Número demasiado largo")
-    .optional().or(z.literal('')),
+    .nullish().or(z.literal('')),
     
   facebook: z.string()
     .url("URL inválida")
     .max(LIMITES.REST_URL, "URL demasiado larga")
-    .optional().or(z.literal('')),
+    .nullish().or(z.literal('')),
     
   instagram: z.string()
     .url("URL inválida")
     .max(LIMITES.REST_URL, "URL demasiado larga")
-    .optional().or(z.literal('')),
+    .nullish().or(z.literal('')),
     
-  horario_apertura: z.string().optional(),
-  horario_cierre: z.string().optional(),
+  horario_apertura: z.string().nullish(),
+  horario_cierre: z.string().nullish(),
   dias_abierto: z.object({
     lunes: z.boolean(),
     martes: z.boolean(),
@@ -123,9 +129,9 @@ export const RestauranteSchema = z.object({
     viernes: z.boolean(),
     sabado: z.boolean(),
     domingo: z.boolean(),
-  }).optional(),
-  imagen_logo_url: z.string().optional(),
-  imagen_banner_url: z.string().optional(),
+  }).nullish(),
+  imagen_logo_url: z.string().nullish(),
+  imagen_banner_url: z.string().nullish(),
 });
 
 export const PlatilloSchema = z.object({

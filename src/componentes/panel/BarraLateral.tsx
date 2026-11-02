@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Store, UtensilsCrossed, Eye, ExternalLink, LogOut, Share2,
   PanelLeftClose, ChevronRight, X, MessageSquare, ReceiptText,
@@ -37,6 +37,13 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
 }) => {
   const { user, cerrarSesion } = useAuth();
   const navigate = useNavigate();
+  const cajonRef = useRef<HTMLElement>(null);
+
+  /* Al reabrir, el cajón vuelve arriba. Sin esto conservaba el scroll de la
+     vez anterior y parecía que le faltaban apartados (o que estaba "cortado"). */
+  useEffect(() => {
+    if (movilAbierto) cajonRef.current?.scrollTo({ top: 0 });
+  }, [movilAbierto]);
 
   const handleLogout = async () => {
     await cerrarSesion();
@@ -72,17 +79,20 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
 
   return (
     <aside
+      ref={cajonRef}
       id="panel-menu-movil"
       aria-label="Menú del panel"
-      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] w-[85vw] flex-col overflow-hidden border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-40 md:h-auto md:max-h-none md:overflow-visible md:shadow-none ${
+      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] w-[85vw] flex-col overflow-y-auto overflow-x-hidden overscroll-contain border-r border-af/20 bg-af-surface shadow-xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-40 md:h-auto md:max-h-none md:translate-x-0 md:overflow-visible md:shadow-none md:visible ${
         contraido ? 'md:w-[76px]' : 'md:w-72'
       } ${
         movilAbierto ? 'visible translate-x-0' : 'invisible -translate-x-full'
-      } md:visible md:translate-x-0`}
+      }`}
     >
-      {/* Cabecera: marca + plegar/desplegar */}
+      {/* Cabecera: marca + plegar/desplegar. Pegada arriba para que, si el
+          contenido del cajón no cabe (barra del navegador, letra grande), la
+          X siga siempre a mano mientras se desplaza. */}
       <div
-        className={`flex h-20 shrink-0 items-center justify-between border-b border-af/30 px-6 ${
+        className={`sticky top-0 z-10 flex h-20 shrink-0 items-center justify-between border-b border-af/30 bg-af-surface px-6 ${
           contraido ? 'md:justify-center md:px-2' : ''
         }`}
       >
@@ -152,7 +162,11 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
         </p>
       </div>
 
-      <nav className={`min-h-0 flex-1 space-y-1 overflow-y-auto pb-2 ${contraido ? 'md:px-2' : 'px-4'}`}>
+      {/* En móvil el cajón entero se desplaza: si la barra del navegador reduce
+          el alto visible, las acciones de abajo se alcanzan con scroll en vez
+          de quedar recortadas. En escritorio la navegación sigue empujando los
+          ajustes al fondo. */}
+      <nav className={`shrink-0 space-y-1 pb-2 md:min-h-0 md:flex-1 md:overflow-y-auto ${contraido ? 'md:px-2' : 'px-4'}`}>
         {navItems.map((item) => {
           const isActive = tabActiva === item.id;
           return (
