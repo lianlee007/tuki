@@ -40,11 +40,11 @@ export function RutaPanel({ children }: PropsWithChildren) {
 }
 
 /**
- * «Mi cuenta» es de cualquier persona con sesión: el comensal ve sus reseñas y
- * sus pedidos, y el dueño puede entrar a la suya sin perder el panel. Sin
- * sesión se vuelve al acceso con la ruta de origen para no perder el hilo.
+ * Páginas que necesitan una cuenta para tener sentido. «Mi cuenta» y la baraja
+ * de Inspiración comparten la misma regla: sin sesión se vuelve al acceso con la
+ * ruta de origen, para que al entrar se retome donde estaba.
  */
-export function RutaCuenta({ children }: PropsWithChildren) {
+export function RutaConSesion({ children }: PropsWithChildren) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -56,6 +56,9 @@ export function RutaCuenta({ children }: PropsWithChildren) {
 
   return <>{children}</>;
 }
+
+/** «Mi cuenta» es de cualquier persona con sesión. */
+export const RutaCuenta = RutaConSesion;
 
 /**
  * Páginas de acceso. Si ya hay sesión no se muestra el formulario: cada papel
