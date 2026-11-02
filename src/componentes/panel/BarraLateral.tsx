@@ -74,7 +74,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
     <aside
       id="panel-menu-movil"
       aria-label="Menú del panel"
-      className={`fixed inset-y-0 left-0 z-40 flex w-[85vw] flex-col border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:shadow-none ${
+      className={`fixed left-0 top-0 z-50 flex h-[100dvh] max-h-[100dvh] w-[85vw] flex-col overflow-hidden border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:z-40 md:h-auto md:max-h-none md:overflow-visible md:shadow-none ${
         contraido ? 'md:w-[76px]' : 'md:w-72'
       } ${
         movilAbierto ? 'visible translate-x-0' : 'invisible -translate-x-full'
@@ -136,7 +136,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
       </div>
 
       {/* Cuenta */}
-      <div className={`px-6 pt-6 ${contraido ? 'md:px-2' : ''}`}>
+      <div className={`shrink-0 px-6 pt-6 ${contraido ? 'md:px-2' : ''}`}>
         <div className={`flex items-center gap-3 ${contraido ? 'md:justify-center' : ''}`}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-af-accent/10 text-sm font-bold text-af-accent-text">
             {inicial}
@@ -152,7 +152,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
         </p>
       </div>
 
-      <nav className={`flex-1 space-y-1 overflow-y-auto pb-2 ${contraido ? 'md:px-2' : 'px-4'}`}>
+      <nav className={`min-h-0 flex-1 space-y-1 overflow-y-auto pb-2 ${contraido ? 'md:px-2' : 'px-4'}`}>
         {navItems.map((item) => {
           const isActive = tabActiva === item.id;
           return (
@@ -176,7 +176,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
       </nav>
 
       {/* Acciones */}
-      <div className={`border-t border-af/30 px-4 pb-6 pt-5 ${contraido ? 'md:px-2' : ''}`}>
+      <div className={`shrink-0 border-t border-af/30 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 ${contraido ? 'md:px-2 md:pb-6' : ''}`}>
         <p className={`mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-af-ink-secondary/70 ${etiquetaFija}`}>
           Ajustes
         </p>

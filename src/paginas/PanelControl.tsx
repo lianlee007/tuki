@@ -232,7 +232,7 @@ export default function PanelControl() {
   return (
     <div style={estiloMarca} className="af-pantalla flex bg-af-ground text-af-ink font-system transition-colors duration-300">
       {/* Overlay Móvil */}
-      {menuMovilAbierto && <div className="fixed inset-0 bg-black/40 z-30 md:hidden backdrop-blur-sm" onClick={() => setMenuMovilAbierto(false)} />}
+      {menuMovilAbierto && <div className="fixed inset-0 z-40 bg-black/40 md:hidden backdrop-blur-sm" onClick={() => setMenuMovilAbierto(false)} />}
 
       {/* Sidebar de Navegación */}
       <BarraLateral
@@ -271,18 +271,18 @@ export default function PanelControl() {
               la IA y el botón de salir quedaban pegados al borde de arriba. */}
           <Contenedor maxAncho="grande" className="h-full">
             <div className="flex justify-between items-center h-full">
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2 md:gap-3">
                 <button
                   type="button"
                   onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
                   aria-label={menuMovilAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
                   aria-expanded={menuMovilAbierto}
                   aria-controls="panel-menu-movil"
-                  className="md:hidden p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"
+                  className="md:hidden shrink-0 p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"
                 ><Menu size={24} /></button>
-                <div><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
+                <div className="min-w-0"><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3">
                 <div className="hidden items-center gap-2 rounded-full bg-af-accent/10 px-3 py-1.5 text-xs font-semibold text-af-accent-text md:flex" title="La IA puede redactar textos y completar platillos">
                   <RobotIA size={14} /> Asistente IA
                 </div>
