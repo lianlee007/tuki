@@ -332,7 +332,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     /* ------------------------------------------------------------------ */
 
     return (
-        <div className="space-y-10 pb-10">
+        <div className="space-y-10">
 
             {/* ---------- Estado de publicación ---------- */}
             <section className="rounded-[28px] bg-af-surface p-5 sm:p-6">
@@ -808,8 +808,9 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                 {/* ---------- Finalizar ----------
                     La misma banda que el editor de platillos: pegada abajo y
                     difuminada, para que guardar esté siempre a la vista sin
-                    tapar el formulario. */}
-                <div className="sticky bottom-0 z-20 mt-10 flex items-center gap-2 bg-af-ground/85 px-4 py-3 backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-40 after:bg-af-ground/85 after:backdrop-blur-xl after:content-[''] sm:gap-3 sm:px-6 sm:py-4">
+                    tapar el formulario. Sin relleno inferior en los ancestros
+                    se ancla al borde mismo de la pantalla al llegar al final. */}
+                <div className="sticky bottom-0 z-20 mt-10 flex items-center gap-2 bg-af-ground/85 px-4 py-3 backdrop-blur-xl sm:gap-3 sm:px-6 sm:py-4">
                     <p className="mr-auto hidden items-center gap-2 text-sm text-af-ink-secondary sm:flex">
                         {hayCambios ? (
                             <>

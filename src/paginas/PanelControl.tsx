@@ -93,6 +93,26 @@ export default function PanelControl() {
   const [idEliminar, setIdEliminar] = useState<string | null>(null);
 
   /**
+   * El cajón móvil se cierra con Escape y devuelve el foco al botón que lo
+   * abrió: sin esto, quien navega con teclado se quedaba dentro de un menú
+   * invisible o tenía que buscar el fondo para salir.
+   */
+  useEffect(() => {
+    if (!menuMovilAbierto) return;
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuMovilAbierto(false);
+    };
+    window.addEventListener('keydown', alPulsar);
+    return () => window.removeEventListener('keydown', alPulsar);
+  }, [menuMovilAbierto]);
+
+  const abrirVistaPrevia = () => {
+    // En móvil el cajón tapa la vista previa: se cierra antes de mostrarla.
+    setMenuMovilAbierto(false);
+    setVistaPreviaAbierta(true);
+  };
+
+  /**
    * La barra lateral se pliega a un raíl de iconos en escritorio. Se recuerda
    * entre sesiones: quien trabaja con el panel a diario no quiere volver a
    * plegarla cada vez que entra.
@@ -206,6 +226,9 @@ export default function PanelControl() {
    */
   const esMenu = tabActiva === 'menu' && !editandoPlatillo;
 
+  /** Las pestañas con barra de acción pegada abajo necesitan el borde libre. */
+  const tieneBarraInferior = tabActiva === 'info' || Boolean(editandoPlatillo);
+
   return (
     <div style={estiloMarca} className="af-pantalla flex bg-af-ground text-af-ink font-system transition-colors duration-300">
       {/* Overlay Móvil */}
@@ -216,7 +239,7 @@ export default function PanelControl() {
         tabActiva={tabActiva}
         setTabActiva={(tab) => { setTabActiva(tab); setEditandoPlatillo(null); setMenuMovilAbierto(false); }}
         restaurante={restaurante}
-        setVistaPreviaAbierta={setVistaPreviaAbierta}
+        setVistaPreviaAbierta={abrirVistaPrevia}
         movilAbierto={menuMovilAbierto}
         contraido={barraContraida}
         onAlternarContraido={() => setBarraContraida((v) => !v)}
@@ -249,7 +272,14 @@ export default function PanelControl() {
           <Contenedor maxAncho="grande" className="h-full">
             <div className="flex justify-between items-center h-full">
               <div className="flex items-center gap-3">
-                <button onClick={() => setMenuMovilAbierto(!menuMovilAbierto)} className="md:hidden p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"><Menu size={24} /></button>
+                <button
+                  type="button"
+                  onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
+                  aria-label={menuMovilAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
+                  aria-expanded={menuMovilAbierto}
+                  aria-controls="panel-menu-movil"
+                  className="md:hidden p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"
+                ><Menu size={24} /></button>
                 <div><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
               </div>
               <div className="flex items-center gap-3">
@@ -259,14 +289,20 @@ export default function PanelControl() {
                 <button onClick={handleLogout} className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-af-danger hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-af-danger/20 transition-all" title="Cerrar sesión">
                   <LogOut size={16} /> Salir
                 </button>
-                <button onClick={() => setVistaPreviaAbierta(true)} className="md:hidden px-3 py-1.5 text-xs font-bold bg-af-surface border border-af/30 rounded-xl shadow-sm text-af-ink-secondary">Vista Previa</button>
+                <button onClick={abrirVistaPrevia} className="md:hidden px-3 py-1.5 text-xs font-bold bg-af-surface border border-af/30 rounded-xl shadow-sm text-af-ink-secondary">Vista Previa</button>
               </div>
             </div>
           </Contenedor>
         </header>
 
-        <div data-panel-scroll className={`flex-1 overflow-y-auto overscroll-contain px-4 pb-24 md:px-8 md:pb-20 scroll-smooth ${esMenu ? 'pt-0' : 'pt-4 md:pt-8'}`}>
-          <div className="max-w-6xl mx-auto space-y-8">
+        <div data-panel-scroll className={`flex-1 overflow-y-auto overscroll-contain px-4 pb-0 md:px-8 md:pb-0 scroll-smooth ${esMenu ? 'pt-0' : 'pt-4 md:pt-8'}`}>
+          {/* El aire inferior va en el contenido, no en el contenedor que
+              desplaza: un `padding-bottom` aquí pertenece al área de scroll y
+              las barras `sticky bottom-0` se anclaban por encima del borde
+              real de la pantalla. En las pestañas con barra inferior el aire se
+              quita del todo para que la barra quede pegada al borde; en el
+              resto se conserva para que la última tarjeta no toque el final. */}
+          <div className={`max-w-6xl mx-auto space-y-8 ${tieneBarraInferior ? 'pb-0' : 'pb-24 md:pb-20'}`}>
             {tabActiva === 'menu' && editandoPlatillo && restaurante ? <EditorPlatillo platillo={editandoPlatillo} setPlatillo={setEditandoPlatillo} guardar={guardarPlatillo} cancelar={() => setEditandoPlatillo(null)} sugerirIA={sugerirIA} handleImagenUpload={handleImagenUpload} guardando={guardando} restauranteNombre={restaurante.nombre} /> : null}
             {/* SeccionInfo se mantiene montada para no perder los cambios sin guardar al cambiar de pestaña.
                 Se oculta con el ATRIBUTO `hidden`, no con la clase: las utilidades `space-y-*` de

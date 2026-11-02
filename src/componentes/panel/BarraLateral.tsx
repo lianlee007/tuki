@@ -72,9 +72,13 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-[85vw] flex-col border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:shadow-none ${
+      id="panel-menu-movil"
+      aria-label="Menú del panel"
+      className={`fixed inset-y-0 left-0 z-40 flex w-[85vw] flex-col border-r border-af/20 bg-af-surface shadow-xl transition-[transform,width,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:relative md:shadow-none ${
         contraido ? 'md:w-[76px]' : 'md:w-72'
-      } ${movilAbierto ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+      } ${
+        movilAbierto ? 'visible translate-x-0' : 'invisible -translate-x-full'
+      } md:visible md:translate-x-0`}
     >
       {/* Cabecera: marca + plegar/desplegar */}
       <div
@@ -184,7 +188,10 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
 
         <button
           type="button"
-          onClick={() => setVistaPreviaAbierta(true)}
+          onClick={() => {
+            setVistaPreviaAbierta(true);
+            onCerrarMovil?.();
+          }}
           title="Vista previa"
           className={`${fila} text-af-ink-secondary hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/[0.08]`}
         >
@@ -198,6 +205,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
             target="_blank"
             rel="noreferrer"
             title="Ir al sitio"
+            onClick={() => onCerrarMovil?.()}
             className={`${fila} text-af-ink-secondary hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/[0.08]`}
           >
             <ExternalLink size={18} className="shrink-0" />
