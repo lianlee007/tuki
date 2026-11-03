@@ -20,7 +20,7 @@ pnpm dev              # SPA en http://localhost:3000
 pnpm build            # build de producción
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # ESLint (máximo 20 avisos)
-pnpm test             # Vitest (85 pruebas)
+pnpm test             # Vitest (87 pruebas)
 pnpm arquitectura     # reglas de dependencia entre módulos y capas
 pnpm verificar        # puerta completa de los módulos 1–3
 pnpm contexto         # mide el contexto de la sesión y propone recortes

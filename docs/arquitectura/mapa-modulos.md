@@ -148,7 +148,7 @@ ADR, no se extrae.
 ```bash
 pnpm arquitectura     # reglas de dependencia
 pnpm typecheck        # tipos
-pnpm test             # 79 pruebas
+pnpm test             # 87 pruebas
 pnpm contexto         # coste real de la sesión
 ```
 
