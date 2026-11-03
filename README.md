@@ -357,7 +357,7 @@ ruff check app tests
 `pnpm verificar` ejecuta la puerta completa: tipos, lint, pruebas y build del
 frontend; lint y pruebas del gateway; validación de los manifiestos Kustomize,
 del catálogo de Backstage y de las políticas. En la última ejecución aprobaron
-los 12 pasos y las 79 pruebas del frontend.
+los 12 pasos y las 87 pruebas del frontend.
 
 | Control | Comando |
 | --- | --- |
