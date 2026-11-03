@@ -124,7 +124,7 @@ Esto es lo que más credibilidad te da. Dilo tú antes de que lo pregunte.
 - SPA completa: descubrir, menú público, panel, cuenta, carrito, reseñas, temas.
 - Puerta local: `pnpm verificar` (typecheck, lint, pruebas, arquitectura,
   manifiestos).
-- **79 pruebas** de frontend, **41** del gateway, **4** de extremo a extremo
+- **87 pruebas** de frontend, **41** del gateway, **4** de extremo a extremo
   (Escritorio y móvil), **53** archivos revisados por el verificador de
   arquitectura con 0 violaciones.
 - `kubectl kustomize` válido en los seis overlays.
