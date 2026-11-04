@@ -8,6 +8,10 @@
 # Cuándo corre: al empujar un tag `vX.Y.Z` o a mano (workflow_dispatch con el
 # tag ya publicado). El CI debe haber construido antes ese tag en GHCR.
 #
+# Requisito del repositorio (una sola vez): Settings -> Actions -> General ->
+# "Allow GitHub Actions to create and approve pull requests". Sin eso, el paso
+# "Abrir PR de promoción" falla con 403 aunque el resto esté en verde.
+#
 # Qué revisar:
 #   1. Si falla en "Esperar a que el CI publique y firme el tag": en 30 minutos
 #      el tag no apareció firmado en GHCR. Revisa el CI del tag.
