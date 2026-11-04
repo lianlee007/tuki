@@ -27,10 +27,10 @@ images:
   # El primer release (`v0.1.0`) llega por el PR que abre `promover.yml`.
   - name: ghcr.io/lianlee007/tuki
     newName: ghcr.io/lianlee007/tuki
-    newTag: "sha-379e41d"
+    newTag: "v0.1.0"
   - name: ghcr.io/lianlee007/tuki-ai-gateway
     newName: ghcr.io/lianlee007/tuki-ai-gateway
-    newTag: "sha-379e41d"
+    newTag: "v0.1.0"
 
 patches:
   - target:
