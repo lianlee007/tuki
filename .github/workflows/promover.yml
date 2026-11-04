@@ -60,6 +60,15 @@ jobs:
       - name: Instalar Cosign
         uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
 
+      # Las imágenes viven en un paquete privado de GHCR: sin login, Cosign
+      # consulta como anónimo y recibe 403 aunque el tag exista y esté firmado.
+      - name: Autenticarse en GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       # El tag dispara CI y CD a la vez: la imagen tarda unos minutos en
       # publicarse y firmarse. Esperamos a que exista en vez de fallar.
       - name: Esperar a que el CI publique y firme el tag
