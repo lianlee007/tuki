@@ -1,3 +1,20 @@
+# CI · imágenes y cadena de suministro
+#
+# Qué hace: valida la SPA, el gateway, las dependencias, los secretos y los
+# manifiestos; después construye las dos imágenes multi-arquitectura, las
+# publica en GHCR, las escanea con Trivy, genera el SBOM con Syft, las firma
+# con Cosign (keyless, identidad OIDC de GitHub) y verifica firma y atestación.
+#
+# Cuándo corre: push a main, PR a main, tag vX.Y.Z y manual.
+#   - Push a main  -> tags `latest`, `main` y `sha-<corto>`.
+#   - Tag vX.Y.Z   -> tags `X.Y.Z`, `X.Y` y `vX.Y.Z`. El CD verifica `vX.Y.Z`.
+#
+# Qué revisar si falla:
+#   1. `validar-web` / `validar-gateway`: tipos, lint o pruebas.
+#   2. `auditoria-dependencias`: vulnerabilidad crítica o licencia no permitida.
+#   3. `validar-manifiestos`: kustomize, kubeconform, kube-linter o conftest.
+#   4. `imagen-*`: el paso dice si falló el build, Trivy, Syft, Cosign o la
+#      verificación. Los artefactos `*.spdx.json` y `*.sarif` quedan en el run.
 name: CI/CD · imágenes y supply chain
 
 on:
@@ -283,6 +300,8 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
+            # El CD verifica el tag tal como se escribe en Git (`v1.2.3`).
+            type=semver,pattern=v{{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
@@ -439,6 +458,8 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
+            # El CD verifica el tag tal como se escribe en Git (`v1.2.3`).
+            type=semver,pattern=v{{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}

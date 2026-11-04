@@ -1,25 +1,36 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Overlay de producción. Antes de aplicarlo:
-#   1. Reemplaza `ghcr.io/lianlee007/...` por tus imágenes reales.
-#   2. Define el tag que quieres desplegar.
-#   3. Cambia `tuki.app` por tu dominio en el patch del Ingress.
-#   4. Ajusta el ClusterIssuer de cert-manager si usas otro nombre.
-#   5. Reemplaza `SUPABASE_URL` por la URL real del proyecto.
-#   6. Crea el secreto `tuki-ai-gateway` (ver deploy/k8s/base/ai-gateway-secret.example.yaml).
+# Overlay de producción: la ÚNICA fuente de verdad de lo que corre en el clúster.
+#
+# Qué hace: fija el namespace, el tag de las dos imágenes y los parches de
+# Ingress. ArgoCD vigila este archivo; al cambiar el `newTag` y hacer merge,
+# sincroniza y el clúster converge. Nadie aplica `kubectl` a mano.
+#
+# Cómo se promueve:
+#   1. Se publica un tag `vX.Y.Z`, el CI construye y firma `vX.Y.Z` en GHCR.
+#   2. El workflow `promover.yml` verifica la firma y abre un PR que cambia
+#      estos `newTag`.
+#   3. Al mergear el PR, ArgoCD sincroniza. Revisa el diff antes de aprobar.
+#
+# Qué revisar antes de mergear:
+#   - Que `newTag` exista en GHCR y esté firmado (lo verifica el workflow).
+#   - Que el Ingress apunte al host real y al ClusterIssuer correcto.
+#   - Que el secreto `tuki-ai-gateway` exista en el namespace.
 namespace: tuki
 
 resources:
   - ../../base
 
 images:
+  # `sha-379e41d` es la última imagen firmada y verificada (CI del 2026-11-03).
+  # El primer release (`v0.1.0`) llega por el PR que abre `promover.yml`.
   - name: ghcr.io/lianlee007/tuki
     newName: ghcr.io/lianlee007/tuki
-    newTag: "0.1.0"
+    newTag: "sha-379e41d"
   - name: ghcr.io/lianlee007/tuki-ai-gateway
     newName: ghcr.io/lianlee007/tuki-ai-gateway
-    newTag: "0.1.0"
+    newTag: "sha-379e41d"
 
 patches:
   - target:
