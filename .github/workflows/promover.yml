@@ -1,9 +1,20 @@
-name: CD · promoción GitOps
-
-# Cierra el bucle: CI publica y firma la imagen; este workflow verifica la
-# firma, actualiza el tag en Git y abre un PR. ArgoCD hace el resto.
+# CD · promoción GitOps
 #
+# Qué hace: cierra el bucle. Verifica con Cosign que las dos imágenes del tag
+# estén firmadas por este repositorio, actualiza el `newTag` del overlay de
+# producción y abre un PR. Al mergear, ArgoCD sincroniza el clúster.
 # Nunca aplica nada con kubectl: el clúster solo se toca desde Git.
+#
+# Cuándo corre: al empujar un tag `vX.Y.Z` o a mano (workflow_dispatch con el
+# tag ya publicado). El CI debe haber construido antes ese tag en GHCR.
+#
+# Qué revisar:
+#   1. Si falla en "Verificar firma": el tag no existe en GHCR o no lo firmó
+#      `contenedor.yml`. Revisa que el CI del tag haya terminado en verde.
+#   2. Si dice "nada que promover": el overlay ya apunta a ese tag.
+#   3. En el PR: que el diff sea solo `deploy/k8s/overlays/production`.
+#   4. Tras el merge: estado `Synced/Healthy` en ArgoCD.
+name: CD · promoción GitOps
 
 on:
   push:
