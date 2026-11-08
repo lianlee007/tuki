@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tuki-config
+  namespace: tuki
+data:
+  NODE_ENV: production
+  JWT_EMISOR: tuki-identidad
+  JWT_AUDIENCIA: tuki
+  CORS_ORIGENES: >-
+    https://tuki.example.com,https://panel.tuki.example.com,https://admin.tuki.example.com
+  RESTAURANTES_URL: http://restaurantes-service:3002
+  S3_ENDPOINT: http://minio:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: tuki-media
+  S3_PUBLIC_URL: https://media.tuki.example.com/tuki-media

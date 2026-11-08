@@ -1,0 +1,96 @@
+# Política base: niega todo el ingreso y abre solo lo necesario.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: denegar-ingreso
+  namespace: tuki
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+---
+# El controlador de Ingress puede entrar a frontends y servicios.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: permitir-ingress-nginx
+  namespace: tuki
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+---
+# Los servicios pueden hablar con PostgreSQL, Redis y MinIO.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: permitir-dependencias
+  namespace: tuki
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: ["postgres", "redis", "minio"]
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: NotIn
+                values: ["postgres", "redis", "minio"]
+---
+# Salida controlada: DNS, dependencias y el servicio de restaurantes.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: permitir-egress
+  namespace: tuki
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: Exists
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: minio
+      ports:
+        - protocol: TCP
+          port: 9000
+    - to:
+        - podSelector:
+            matchLabels:
+              app: restaurantes-service
+      ports:
+        - protocol: TCP
+          port: 3002

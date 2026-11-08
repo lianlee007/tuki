@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tuki-v2
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lianlee007/Tuki.git
+    targetRevision: main
+    path: v2/infra/k8s/overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tuki
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

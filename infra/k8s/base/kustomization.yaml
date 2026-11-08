@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tuki
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.example.yaml
+  - postgres.yaml
+  - redis.yaml
+  - minio.yaml
+  - identidad.yaml
+  - restaurantes.yaml
+  - media.yaml
+  - pedidos.yaml
+  - resenas.yaml
+  - web-comensal.yaml
+  - panel-restaurante.yaml
+  - admin-plataforma.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - networkpolicy.yaml
+configMapGenerator:
+  - name: postgres-init
+    files:
+      - postgres-init.sql
+generatorOptions:
+  disableNameSuffixHash: true
