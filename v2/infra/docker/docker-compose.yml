@@ -126,6 +126,38 @@ services:
       - "traefik.http.services.restaurantes.loadbalancer.server.port=3002"
     restart: unless-stopped
 
+  media-service:
+    build:
+      context: ../..
+      dockerfile: services/media-service/Dockerfile
+    container_name: tuki-v2-media
+    environment:
+      NODE_ENV: development
+      PUERTO: "3003"
+      DATABASE_URL: postgres://tuki_media:tuki_media_dev@postgres:5432/tuki_media
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      CORS_ORIGENES: http://localhost:5173,http://localhost:5174,http://localhost:5175
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: tuki-media
+      S3_ACCESS_KEY: tuki_minio
+      S3_SECRET_KEY: tuki_minio_dev
+      S3_PUBLIC_URL: http://localhost:9000/tuki-media
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.media.rule=Host(`media.tuki.local`)"
+      - "traefik.http.services.media.loadbalancer.server.port=3003"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
