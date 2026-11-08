@@ -1,0 +1,88 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tuki
+  namespace: tuki
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - tuki.example.com
+        - panel.tuki.example.com
+        - admin.tuki.example.com
+        - api.tuki.example.com
+      secretName: tuki-tls
+  rules:
+    - host: tuki.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-comensal
+                port:
+                  name: http
+    - host: panel.tuki.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: panel-restaurante
+                port:
+                  name: http
+    - host: admin.tuki.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-plataforma
+                port:
+                  name: http
+    - host: api.tuki.example.com
+      http:
+        paths:
+          - path: /v1/identidad
+            pathType: Prefix
+            backend:
+              service:
+                name: identidad-service
+                port:
+                  name: http
+          - path: /v1/restaurantes
+            pathType: Prefix
+            backend:
+              service:
+                name: restaurantes-service
+                port:
+                  name: http
+          - path: /v1/media
+            pathType: Prefix
+            backend:
+              service:
+                name: media-service
+                port:
+                  name: http
+          - path: /v1/pedidos
+            pathType: Prefix
+            backend:
+              service:
+                name: pedidos-service
+                port:
+                  name: http
+          - path: /v1/resenas
+            pathType: Prefix
+            backend:
+              service:
+                name: resenas-service
+                port:
+                  name: http

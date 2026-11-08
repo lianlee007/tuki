@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-comensal
+  namespace: tuki
+  labels:
+    app: web-comensal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-comensal
+  template:
+    metadata:
+      labels:
+        app: web-comensal
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/lianlee007/tuki-v2-web-comensal:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /salud
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /salud
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 150m
+              memory: 96Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-comensal
+  namespace: tuki
+  labels:
+    app: web-comensal
+spec:
+  selector:
+    app: web-comensal
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

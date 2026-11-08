@@ -6,7 +6,7 @@
   "description": "Pedidos, ítems y estados de Tuki.",
   "scripts": {
     "dev": "tsx watch src/servidor.ts",
-    "build": "tsup src/servidor.ts --format esm --target node22 --out-dir dist --clean",
+    "build": "tsup src/servidor.ts src/db/migrar.ts --format esm --target node22 --out-dir dist --clean",
     "start": "node dist/servidor.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
