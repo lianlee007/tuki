@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - services/*
+  - packages/*
+
+# Dependencias nativas que sí necesitan ejecutar su script de instalación.
+allowBuilds:
+  argon2: true
+  esbuild: true

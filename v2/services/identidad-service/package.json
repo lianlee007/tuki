@@ -1,0 +1,35 @@
+{
+  "name": "identidad-service",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Cuentas, credenciales y roles de Tuki.",
+  "scripts": {
+    "dev": "tsx watch src/servidor.ts",
+    "build": "tsup src/servidor.ts --format esm --target node22 --out-dir dist --clean",
+    "start": "node dist/servidor.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrar": "tsx src/db/migrar.ts",
+    "db:superadmin": "tsx src/scripts/crear-superadmin.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/helmet": "^13.0.1",
+    "@fastify/rate-limit": "^10.3.0",
+    "argon2": "^0.44.0",
+    "dotenv": "^17.2.1",
+    "fastify": "^5.4.0",
+    "fastify-plugin": "^5.0.1",
+    "jose": "^6.0.11",
+    "postgres": "^3.4.7",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
