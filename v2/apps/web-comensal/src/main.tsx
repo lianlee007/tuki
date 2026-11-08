@@ -5,12 +5,15 @@ import { ProveedorAuth } from '@tuki/auth-react';
 import '@tuki/ui-kit/estilos.css';
 import { apis } from './apis';
 import { App } from './App';
+import { ProveedorCarrito } from './carrito/contexto';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <ProveedorAuth apis={apis}>
-        <App />
+        <ProveedorCarrito>
+          <App />
+        </ProveedorCarrito>
       </ProveedorAuth>
     </BrowserRouter>
   </React.StrictMode>,

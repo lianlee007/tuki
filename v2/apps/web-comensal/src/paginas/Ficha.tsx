@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { RestaurantePublico } from '@tuki/dominio';
 import { mensajeDeError } from '@tuki/api-cliente';
-import { Cabecera, Cargando, Etiqueta, MensajeError, Tarjeta } from '@tuki/ui-kit';
+import { Boton, Cabecera, Cargando, Etiqueta, MensajeError, Tarjeta } from '@tuki/ui-kit';
 import { apis } from '../apis';
+import { useCarrito } from '../carrito/contexto';
+import { CarritoPanel } from '../componentes/CarritoPanel';
 
 interface Resumen {
   promedio: number;
@@ -12,6 +14,7 @@ interface Resumen {
 
 export const Ficha = () => {
   const { slug = '' } = useParams();
+  const { agregar } = useCarrito();
   const [ficha, setFicha] = useState<RestaurantePublico | null>(null);
   const [resumen, setResumen] = useState<Resumen | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -112,13 +115,31 @@ export const Ficha = () => {
                 <span className="tuki-precio">
                   ${platillo.precio.toLocaleString('es-CO')}
                 </span>
-                {platillo.vegetariano ? <Etiqueta>Vegetariano</Etiqueta> : null}
+                <Boton
+                  type="button"
+                  onClick={() =>
+                    agregar({
+                      platilloId: platillo.id,
+                      nombre: platillo.nombre,
+                      precio: platillo.precio,
+                    })
+                  }
+                >
+                  Agregar
+                </Boton>
               </div>
             </Tarjeta>
           ))}
         </div>
 
         {platillos.length === 0 ? <p>Este restaurante aún no publicó platos.</p> : null}
+
+        <div style={{ marginTop: 24 }}>
+          <CarritoPanel
+            restauranteId={restaurante.id}
+            restauranteNombre={restaurante.nombre}
+          />
+        </div>
       </main>
     </>
   );
