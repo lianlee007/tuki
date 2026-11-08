@@ -8,9 +8,9 @@ frontends independientes y backend propio sobre PostgreSQL.
 | Fase | Estado |
 |---|---|
 | F0. Preparación y convenciones | En curso |
-| F1. Plataforma base | En curso |
-| F2. Identidad y roles | En curso |
-| F3. Restaurantes, menú y medios | Pendiente |
+| F1. Plataforma base | Completada |
+| F2. Identidad y roles | API lista; frontends pendientes |
+| F3. Restaurantes, menú y medios | En curso |
 | F4. Pedidos y reseñas | Pendiente |
 | F5. Administración | Pendiente |
 | F6. Cierre de frontends | Pendiente |
