@@ -13,6 +13,7 @@ import type {
   FilaPlatillo,
   FilaRestaurante,
   FilaTema,
+  MenuPublico,
   PlatoDescubierto,
   RestauranteDescubierto,
   RestaurantePublico,
@@ -42,8 +43,7 @@ const textoBusqueda = (valor?: string) => {
 };
 
 /** Ficha pública completa: restaurante, tema, cocinas, categorías y platos. */
-export const obtenerPublico = async (slug: string): Promise<RestaurantePublico | null> => {
-  const [restaurante] = await sql<FilaRestaurante[]>`
+export const obtenerPublico = async (slug: string): Promise<RestaurantePublico | null> => {  const [restaurante] = await sql<FilaRestaurante[]>`
     select * from restaurantes where slug = ${slug} and activo limit 1
   `;
   if (!restaurante) return null;
@@ -203,5 +203,35 @@ export const buscarPlatos = async (
       cocina: fila.cocina,
     })),
     total: Number(filas[0]?.total ?? 0),
+  };
+};
+
+/** Menú público por id; lo usa el carrito y el servicio de pedidos. */
+export const obtenerMenuPublico = async (
+  restauranteId: string,
+): Promise<MenuPublico | null> => {
+  const [restaurante] = await sql<{
+    id: string;
+    nombre: string;
+    slug: string;
+    whatsapp: string | null;
+    telefono: string | null;
+  }[]>`
+    select id, nombre, slug, whatsapp, telefono
+    from restaurantes
+    where id = ${restauranteId} and activo
+    limit 1
+  `;
+  if (!restaurante) return null;
+
+  const platillos = await sql<FilaPlatillo[]>`
+    select * from platillos
+    where restaurante_id = ${restauranteId} and activo and disponible
+    order by orden, nombre
+  `;
+
+  return {
+    restaurante,
+    platillos: platillos.map(aPlatillo),
   };
 };

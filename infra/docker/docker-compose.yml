@@ -158,6 +158,33 @@ services:
       - "traefik.http.services.media.loadbalancer.server.port=3003"
     restart: unless-stopped
 
+  pedidos-service:
+    build:
+      context: ../..
+      dockerfile: services/pedidos-service/Dockerfile
+    container_name: tuki-v2-pedidos
+    environment:
+      NODE_ENV: development
+      PUERTO: "3004"
+      DATABASE_URL: postgres://tuki_pedidos:tuki_pedidos_dev@postgres:5432/tuki_pedidos
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      RESTAURANTES_URL: http://restaurantes-service:3002
+      CORS_ORIGENES: http://localhost:5173,http://localhost:5174,http://localhost:5175
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      restaurantes-service:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pedidos.rule=Host(`pedidos.tuki.local`)"
+      - "traefik.http.services.pedidos.loadbalancer.server.port=3004"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
