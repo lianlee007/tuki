@@ -6,6 +6,13 @@
   "packageManager": "pnpm@12.14.0",
   "scripts": {
     "dev:identidad": "pnpm --filter identidad-service dev",
+    "dev:restaurantes": "pnpm --filter restaurantes-service dev",
+    "dev:media": "pnpm --filter media-service dev",
+    "dev:pedidos": "pnpm --filter pedidos-service dev",
+    "dev:resenas": "pnpm --filter resenas-service dev",
+    "dev:comensal": "pnpm --filter web-comensal dev",
+    "dev:panel": "pnpm --filter panel-restaurante dev",
+    "dev:admin": "pnpm --filter admin-plataforma dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
