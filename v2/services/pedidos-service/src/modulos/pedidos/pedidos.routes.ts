@@ -1,0 +1,15 @@
+import type { FastifyInstance } from 'fastify';
+import { exigirRol } from '../../plugins/autenticacion.js';
+import * as controlador from './pedidos.controller.js';
+
+/** Rutas de pedidos; todas requieren sesión. */
+export const registrarRutasPedidos = async (app: FastifyInstance): Promise<void> => {
+  const sesion = { preHandler: [app.autenticar] };
+  const soloDueno = { preHandler: [app.autenticar, exigirRol('dueno', 'superadmin')] };
+
+  app.post('/v1/pedidos', sesion, controlador.crear);
+  app.get('/v1/pedidos/mios', sesion, controlador.mios);
+  app.get('/v1/pedidos/restaurante/:restauranteId', soloDueno, controlador.porRestaurante);
+  app.get('/v1/pedidos/:id', sesion, controlador.obtener);
+  app.patch('/v1/pedidos/:id/estado', soloDueno, controlador.cambiarEstado);
+};

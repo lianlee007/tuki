@@ -43,6 +43,18 @@ export interface PlatoDescubierto extends Platillo {
   cocina: string | null;
 }
 
+/** Menú público que consume el carrito y el servicio de pedidos. */
+export interface MenuPublico {
+  restaurante: {
+    id: string;
+    nombre: string;
+    slug: string;
+    whatsapp: string | null;
+    telefono: string | null;
+  };
+  platillos: Platillo[];
+}
+
 /** Fila cruda de restaurante. */
 export interface FilaRestaurante {
   id: string;

@@ -128,3 +128,9 @@ export const fichaPublica = async (slug: string): Promise<RestaurantePublico> =>
 export const listar = publico.listarRestaurantes;
 export const buscarPlatos = publico.buscarPlatos;
 export const listarCocinas = repo.listarCocinas;
+
+export const menuPublico = async (restauranteId: string) => {
+  const menu = await publico.obtenerMenuPublico(restauranteId);
+  if (!menu) throw errorNoEncontrado('No encontramos ese restaurante.');
+  return menu;
+};
