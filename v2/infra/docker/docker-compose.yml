@@ -185,6 +185,33 @@ services:
       - "traefik.http.services.pedidos.loadbalancer.server.port=3004"
     restart: unless-stopped
 
+  resenas-service:
+    build:
+      context: ../..
+      dockerfile: services/resenas-service/Dockerfile
+    container_name: tuki-v2-resenas
+    environment:
+      NODE_ENV: development
+      PUERTO: "3005"
+      DATABASE_URL: postgres://tuki_resenas:tuki_resenas_dev@postgres:5432/tuki_resenas
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      RESTAURANTES_URL: http://restaurantes-service:3002
+      CORS_ORIGENES: http://localhost:5173,http://localhost:5174,http://localhost:5175
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      restaurantes-service:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resenas.rule=Host(`resenas.tuki.local`)"
+      - "traefik.http.services.resenas.loadbalancer.server.port=3005"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
