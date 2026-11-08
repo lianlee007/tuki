@@ -35,3 +35,8 @@ export const buscarPlatos = async (request: FastifyRequest, reply: FastifyReply)
 export const cocinas = async (_request: FastifyRequest, reply: FastifyReply) => {
   return reply.code(200).send({ cocinas: await servicio.listarCocinas() });
 };
+
+export const menuPublico = async (request: FastifyRequest, reply: FastifyReply) => {
+  const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
+  return reply.code(200).send(await servicio.menuPublico(id));
+};
