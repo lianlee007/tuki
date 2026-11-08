@@ -10,6 +10,16 @@ RUN pnpm install --filter web-comensal... --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY apps/web-comensal apps/web-comensal
+ARG VITE_IDENTIDAD_URL=http://localhost:3001
+ARG VITE_RESTAURANTES_URL=http://localhost:3002
+ARG VITE_MEDIA_URL=http://localhost:3003
+ARG VITE_PEDIDOS_URL=http://localhost:3004
+ARG VITE_RESENAS_URL=http://localhost:3005
+ENV VITE_IDENTIDAD_URL=$VITE_IDENTIDAD_URL \
+    VITE_RESTAURANTES_URL=$VITE_RESTAURANTES_URL \
+    VITE_MEDIA_URL=$VITE_MEDIA_URL \
+    VITE_PEDIDOS_URL=$VITE_PEDIDOS_URL \
+    VITE_RESENAS_URL=$VITE_RESENAS_URL
 RUN pnpm --filter web-comensal build
 
 FROM nginx:1.27-alpine

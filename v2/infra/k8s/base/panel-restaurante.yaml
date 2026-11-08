@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: panel-restaurante
+  namespace: tuki
+  labels:
+    app: panel-restaurante
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: panel-restaurante
+  template:
+    metadata:
+      labels:
+        app: panel-restaurante
+    spec:
+      containers:
+        - name: panel
+          image: ghcr.io/lianlee007/tuki-v2-panel:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /salud
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /salud
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 150m
+              memory: 96Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: panel-restaurante
+  namespace: tuki
+  labels:
+    app: panel-restaurante
+spec:
+  selector:
+    app: panel-restaurante
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
