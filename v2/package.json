@@ -1,0 +1,21 @@
+{
+  "name": "tuki-v2",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tuki en microservicios: tres frontends y backend propio sobre PostgreSQL.",
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "dev:identidad": "pnpm --filter identidad-service dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "infra:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "infra:logs": "docker compose -f infra/docker/docker-compose.yml logs -f"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
