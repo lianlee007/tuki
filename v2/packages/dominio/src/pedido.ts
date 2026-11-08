@@ -32,6 +32,11 @@ export interface Pedido {
   creadoEn: string;
 }
 
+/** Pedido recién creado con el enlace de WhatsApp para el comensal. */
+export interface PedidoCreado extends Pedido {
+  whatsappUrl: string;
+}
+
 /** Regla de transición; vive en el dominio para probarla sin HTTP. */
 export const siguienteEstado = (estado: EstadoPedido): EstadoPedido | null => {
   const camino: Partial<Record<EstadoPedido, EstadoPedido>> = {
