@@ -102,6 +102,30 @@ services:
       - "traefik.http.services.identidad.loadbalancer.server.port=3001"
     restart: unless-stopped
 
+  restaurantes-service:
+    build:
+      context: ../..
+      dockerfile: services/restaurantes-service/Dockerfile
+    container_name: tuki-v2-restaurantes
+    environment:
+      NODE_ENV: development
+      PUERTO: "3002"
+      DATABASE_URL: postgres://tuki_restaurantes:tuki_restaurantes_dev@postgres:5432/tuki_restaurantes
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      CORS_ORIGENES: http://localhost:5173,http://localhost:5174,http://localhost:5175
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.restaurantes.rule=Host(`restaurantes.tuki.local`)"
+      - "traefik.http.services.restaurantes.loadbalancer.server.port=3002"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
