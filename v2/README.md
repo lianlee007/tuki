@@ -9,9 +9,9 @@ frontends independientes y backend propio sobre PostgreSQL.
 |---|---|
 | F0. Preparación y convenciones | En curso |
 | F1. Plataforma base | Completada |
-| F2. Identidad y roles | API lista; frontends pendientes |
-| F3. Restaurantes, menú y medios | En curso |
-| F4. Pedidos y reseñas | Pendiente |
+| F2. Identidad y roles | Backend listo; frontends pendientes |
+| F3. Restaurantes, menú y medios | Backend listo; frontends pendientes |
+| F4. Pedidos y reseñas | Backend listo; frontends pendientes |
 | F5. Administración | Pendiente |
 | F6. Cierre de frontends | Pendiente |
 | F7. Kubernetes, GitOps y observabilidad | Pendiente |
