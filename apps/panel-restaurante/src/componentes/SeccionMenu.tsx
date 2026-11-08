@@ -1,9 +1,13 @@
 import type React from 'react';
 import type { PanelRestaurante } from '@tuki/dominio';
 import { Etiqueta, Tarjeta } from '@tuki/ui-kit';
+import { NuevoPlatillo } from './NuevoPlatillo';
 
 /** Resumen del menú agrupado por categoría. */
-export const SeccionMenu: React.FC<{ panel: PanelRestaurante }> = ({ panel }) => {
+export const SeccionMenu: React.FC<{
+  panel: PanelRestaurante;
+  alCrear: () => void;
+}> = ({ panel, alCrear }) => {
   const nombreCategoria = (id: string | null) =>
     panel.categorias.find((categoria) => categoria.id === id)?.nombre ?? 'Sin categoría';
 
@@ -41,6 +45,13 @@ export const SeccionMenu: React.FC<{ panel: PanelRestaurante }> = ({ panel }) =>
           </div>
         );
       })}
+      <div style={{ marginTop: 16 }}>
+        <NuevoPlatillo
+          restauranteId={panel.restaurante.id}
+          categorias={panel.categorias}
+          alCrear={alCrear}
+        />
+      </div>
     </Tarjeta>
   );
 };
