@@ -129,7 +129,7 @@ export const Panel = () => {
             </div>
 
             <div style={{ display: 'grid', gap: 16 }}>
-              <SeccionMenu panel={panel} />
+              <SeccionMenu panel={panel} alCrear={() => void cargar()} />
               <SeccionPedidos
                 pedidos={pedidos}
                 onCambiarEstado={(id, estado) => void cambiarEstado(id, estado)}

@@ -93,4 +93,44 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
       method: 'PUT',
       body: JSON.stringify(datos),
     }),
+
+  crearCategoria: (restauranteId: string, datos: { nombre: string; orden?: number }) =>
+    http.solicitar<unknown>(`/v1/restaurantes/${restauranteId}/categorias`, {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
+  crearPlatillo: (
+    restauranteId: string,
+    datos: {
+      nombre: string;
+      precio: number;
+      categoriaId?: string | null;
+      descripcion?: string;
+      disponible?: boolean;
+      vegetariano?: boolean;
+      vegano?: boolean;
+      picante?: boolean;
+    },
+  ) =>
+    http.solicitar<unknown>(`/v1/restaurantes/${restauranteId}/platillos`, {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
+  eliminarPlatillo: (restauranteId: string, platilloId: string) =>
+    http.solicitar<void>(
+      `/v1/restaurantes/${restauranteId}/platillos/${platilloId}`,
+      { method: 'DELETE' },
+    ),
+
+  disponibilidadPlatillo: (
+    restauranteId: string,
+    platilloId: string,
+    disponible: boolean,
+  ) =>
+    http.solicitar<unknown>(
+      `/v1/restaurantes/${restauranteId}/platillos/${platilloId}/disponibilidad`,
+      { method: 'PATCH', body: JSON.stringify({ disponible }) },
+    ),
 });
