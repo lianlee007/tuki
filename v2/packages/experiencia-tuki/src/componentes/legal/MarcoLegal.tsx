@@ -8,19 +8,19 @@ import { Contenedor, Logo, ThemeToggle, SEO } from '../ui';
  * Identidad del proveedor.
  *
  * Estos datos son de ejemplo y están aquí para que los documentos no salgan con
- * huecos: Tuki es un proyecto universitario y no se publica. El día que fuera un
+ * huecos: TukiTuki es un proyecto universitario y no se publica. El día que fuera un
  * servicio real, razón social, NIT, domicilio y teléfono serían lo primero que
  * habría que reemplazar por los de verdad, porque el artículo 50 de la Ley 1480
  * de 2011 exige que estén visibles en cualquier sitio que venda a distancia.
  */
 export const EMPRESA = {
-  marca: 'Tuki',
-  razonSocial: 'Tuki S.A.S.',
+  marca: 'TukiTuki',
+  razonSocial: 'TukiTuki S.A.S.',
   nit: '901.654.321-8',
   domicilio: 'Carrera 8 # 3-15, Popayán, Cauca, Colombia',
   telefono: '+57 300 555 0199',
-  correo: 'hola@tuki.app',
-  sitio: 'tuki.app',
+  correo: 'hola@tukituki.app',
+  sitio: 'tukituki.app',
   actualizado: '18 de octubre de 2026',
 };
 

@@ -27,7 +27,7 @@ const PantallaCarga = () => (
       <Logo size={40} />
     </div>
     <span className="text-xs font-bold text-text-muted uppercase tracking-widest">
-      Cargando Tuki Panel...
+      Cargando TukiTuki Panel...
     </span>
   </div>
 );

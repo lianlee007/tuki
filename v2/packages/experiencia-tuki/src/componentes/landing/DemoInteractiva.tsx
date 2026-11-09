@@ -216,7 +216,7 @@ export const DemoInteractiva = () => {
                         <div className="flex-1 flex justify-center px-4">
                            <div className="bg-white dark:bg-[#1a1a1a] rounded-[6px] px-3 py-1 text-xs text-center flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full max-w-md text-gray-600 dark:text-gray-400 transition-all ring-1 ring-black/5 dark:ring-white/10 group-hover/url:shadow-md">
                               <Lock size={10} className="text-green-600 dark:text-green-500 fill-current"/>
-                              <span className="truncate select-text selection:bg-af-accent/25">tuki.app/{urlSlug}</span>
+                              <span className="truncate select-text selection:bg-af-accent/25">tukituki.app/{urlSlug}</span>
                               <RefreshCw size={10} className="ml-auto opacity-50 hover:opacity-100 cursor-pointer"/>
                            </div>
                         </div>

@@ -28,7 +28,7 @@ const PLANES: Plan[] = [
       'Pedidos por WhatsApp',
       'Código QR para tus mesas',
       'Descripciones con IA',
-      'Tu enlace tuki.app/tu-restaurante',
+      'Tu enlace tukituki.app/tu-restaurante',
     ],
   },
   {
@@ -40,7 +40,7 @@ const PLANES: Plan[] = [
     features: [
       'Todo lo del plan Básico',
       'Platos ilimitados',
-      'Sin la marca de Tuki',
+      'Sin la marca de TukiTuki',
       'Estadísticas de visitantes',
       'Galería de fotos propia',
     ],

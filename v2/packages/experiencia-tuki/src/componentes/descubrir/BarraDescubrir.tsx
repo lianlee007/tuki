@@ -243,7 +243,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="truncate font-jakarta text-lg font-extrabold tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink">
-                Tuki
+                TukiTuki
               </span>
               <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
                 Mercado culinario

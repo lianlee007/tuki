@@ -32,7 +32,7 @@ export default function PaginaEntrar() {
   return (
     <>
       <SEO
-        titulo="Entra a pedir | Tuki"
+        titulo="Entra a pedir | TukiTuki"
         descripcion="Entra a tu cuenta de comensal para guardar tu carrito y pedir a los restaurantes de Popayán."
       />
       <LayoutAuth

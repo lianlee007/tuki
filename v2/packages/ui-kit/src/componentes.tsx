@@ -39,7 +39,7 @@ export const MensajeError: React.FC<{ children: React.ReactNode }> = ({ children
 export const Cabecera: React.FC<{
   titulo?: string;
   children?: React.ReactNode;
-}> = ({ titulo = 'Tuki', children }) => (
+}> = ({ titulo = 'TukiTuki', children }) => (
   <header className="tuki-header">
     <div className="tuki-marca">
       <span>T</span>

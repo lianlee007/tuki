@@ -24,7 +24,7 @@ const PEDIDO = [
 ];
 
 /**
- * Por qué Tuki.
+ * Por qué TukiTuki.
  *
  * El argumento de venta no es «tenemos un panel bonito», es que el pedido
  * acaba en el WhatsApp que el dueño ya usa y que nadie se lleva un porcentaje.

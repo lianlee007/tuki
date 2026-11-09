@@ -13,7 +13,7 @@ import { SeccionPrecios } from '../componentes/landing/SeccionPrecios';
 /**
  * Landing de venta: ahora vive en `/para-restaurantes`.
  *
- * Desde el giro social, la portada de Tuki es Descubrir; esta página es la que
+ * Desde el giro social, la portada de TukiTuki es Descubrir; esta página es la que
  * le habla a quien tiene un restaurante. El orden sigue siendo el de una
  * conversación, no el de un índice: qué es (héroe), por qué me conviene
  * (beneficios), cómo se ve lo mío (demostración), quién más lo usa (prueba
@@ -51,7 +51,7 @@ export default function PaginaParaRestaurantes() {
   return (
     <div className="af-landing min-h-screen overflow-x-hidden bg-af-ground font-jakarta text-af-ink">
       <SEO
-        titulo="Tuki — La web de tu restaurante, lista hoy"
+        titulo="TukiTuki — La web de tu restaurante, lista hoy"
         descripcion="Menú digital, código QR para las mesas y pedidos que llegan directo a tu WhatsApp. Sin comisiones y sin saber programar."
       />
 
@@ -246,7 +246,7 @@ export default function PaginaParaRestaurantes() {
           </div>
 
           <p className="mt-12 text-xs text-af-ink-secondary">
-            © {new Date().getFullYear()} Tuki Inc. Todos los derechos reservados.
+            © {new Date().getFullYear()} TukiTuki Inc. Todos los derechos reservados.
           </p>
         </Contenedor>
       </footer>

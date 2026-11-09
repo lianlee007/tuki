@@ -114,12 +114,12 @@
       "id": 7,
       "targets": [
         {
-          "expr": "sum(nginx_connections_active{namespace=\"tuki\"})",
+          "expr": "sum(nginx_connections_active{namespace=\"tukituki\"})",
           "legendFormat": "activas",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(nginx_http_requests_total{namespace=\"tuki\"}[5m]))",
+          "expr": "sum(rate(nginx_http_requests_total{namespace=\"tukituki\"}[5m]))",
           "legendFormat": "req/s",
           "refId": "B"
         }
@@ -130,7 +130,7 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["tuki", "ai-gateway", "cloudforge"],
+  "tags": ["tukituki", "ai-gateway", "cloudforge"],
   "templating": {
     "list": [
       {

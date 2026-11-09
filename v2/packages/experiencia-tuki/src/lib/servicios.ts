@@ -1,5 +1,5 @@
 /**
- * Descripción: servicios externos de Tuki.
+ * Descripción: servicios externos de TukiTuki.
  *
  * La IA pasa por Groq y las imágenes por Supabase Storage. La subida vive en
  * `almacenamiento.ts`; aquí se reexporta para no tocar los formularios.

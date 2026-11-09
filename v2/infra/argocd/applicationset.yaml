@@ -1,0 +1,40 @@
+# Un solo ApplicationSet genera las dos aplicaciones de ArgoCD (local y
+# producción). Cada una sincroniza su overlay y se puede sincronizar o
+# revertir por separado.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tukituki
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - nombre: local
+            rama: feat/migracion-microservicios-desarrollo
+            overlay: local
+          - nombre: produccion
+            rama: main
+            overlay: production
+  template:
+    metadata:
+      name: 'tukituki-{{.nombre}}'
+      labels:
+        app.kubernetes.io/part-of: tukituki
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/lianlee007/Tuki.git
+        targetRevision: '{{.rama}}'
+        path: 'v2/infra/k8s/overlays/{{.overlay}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: tukituki
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

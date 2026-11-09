@@ -105,7 +105,7 @@ export const PanelCarrito: React.FC<PanelCarritoProps> = ({ abierto, onCerrar })
     };
   }, [abierto, restauranteId]);
 
-  /* Precarga lo que el comensal ya guardó en cualquier menú de Tuki. */
+  /* Precarga lo que el comensal ya guardó en cualquier menú de TukiTuki. */
   useEffect(() => {
     if (!abierto || !usuarioId) return;
 

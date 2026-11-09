@@ -1,0 +1,112 @@
+# Presupuestos de interrupción: durante un drain o una actualización del
+# clúster siempre queda al menos un pod atendiendo. Con una réplica local el
+# presupuesto protege el servicio; en producción los overlays suben réplicas.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: identidad-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: identidad-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: restaurantes-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: restaurantes-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: media-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: media-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pedidos-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: pedidos-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: resenas-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: resenas-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: admin-service
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: admin-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-gateway
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ai-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-comensal
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: web-comensal
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: panel-restaurante
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: panel-restaurante
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: admin-plataforma
+  namespace: tukituki
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: admin-plataforma

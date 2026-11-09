@@ -4,9 +4,9 @@ Contraseña de las cuentas demo: **Demo12345**
 
 | Cuenta | Rol |
 |---|---|
-| `cliente@tuki.local` | cliente |
-| `dueno1@tuki.local` | dueño de Café Bolívar |
-| `dueno2@tuki.local` | dueño de Pizzería Centenario |
+| `cliente@tukituki.local` | cliente |
+| `dueno1@tukituki.local` | dueño de Café Bolívar |
+| `dueno2@tukituki.local` | dueño de Pizzería Centenario |
 
 ## Aplicar en local
 
@@ -21,10 +21,10 @@ psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_re
 ## Aplicar en Kubernetes
 
 ```bash
-kubectl exec -i -n tuki postgres-0 -- \
+kubectl exec -i -n tukituki postgres-0 -- \
   psql -U tuki_admin -d tuki_identidad < db/seeds/identidad-demo.sql
 
-kubectl exec -i -n tuki postgres-0 -- \
+kubectl exec -i -n tukituki postgres-0 -- \
   psql -U tuki_admin -d tuki_restaurantes < db/seeds/restaurantes-demo.sql
 ```
 

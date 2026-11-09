@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: panel-restaurante
-  namespace: tuki
+  namespace: tukituki
   labels:
     app: panel-restaurante
 spec:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: panel
-          image: ghcr.io/lianlee007/tuki-v2-panel:latest
+          image: ghcr.io/lianlee007/tukituki-panel:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -51,13 +51,13 @@ spec:
       volumes:
         - name: config-runtime
           configMap:
-            name: tuki-frontend-config
+            name: tukituki-frontend-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: panel-restaurante
-  namespace: tuki
+  namespace: tukituki
   labels:
     app: panel-restaurante
 spec:

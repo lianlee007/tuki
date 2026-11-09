@@ -1,5 +1,5 @@
 /**
- * Superficie pública de la experiencia heredada de Tuki.
+ * Superficie pública de la experiencia heredada de TukiTuki.
  *
  * Los tres frontends importan de aquí las páginas y proveedores que necesitan;
  * así comparten el diseño y el comportamiento originales sin duplicar código.
