@@ -2,12 +2,16 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import { crearServiciosRemotos } from './adaptadores/http/servicios.cliente.js';
+import { crearRepositorioAuditoria } from './adaptadores/postgres/auditoria.repositorio.js';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearCasosDeUsoAdmin } from './aplicacion/casos-uso.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasAdmin } from './entrada/http/admin.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasAdmin } from './modulos/admin/admin.routes.js';
 
+/** Construye el BFF sin abrir el puerto. */
 export const crearApp = async () => {
   const app = Fastify({
     logger: { level: config.NODE_ENV === 'development' ? 'info' : 'warn' },
@@ -35,6 +39,11 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasAdmin);
+  const servicios = crearCasosDeUsoAdmin({
+    remotos: crearServiciosRemotos(),
+    auditoria: crearRepositorioAuditoria(),
+  });
+  await registrarRutasAdmin(app, servicios);
+
   return app;
 };

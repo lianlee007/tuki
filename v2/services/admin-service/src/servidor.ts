@@ -1,7 +1,8 @@
 import { crearApp } from './app.js';
+import { cerrarDb } from './adaptadores/postgres/cliente.js';
 import { config } from './config.js';
-import { cerrarDb } from './db/cliente.js';
 
+/** Arranque y apagado ordenado del BFF. */
 const main = async () => {
   const app = await crearApp();
 

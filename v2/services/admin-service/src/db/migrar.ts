@@ -1,7 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { sql, cerrarDb } from './cliente.js';
+import { sql, cerrarDb } from '../adaptadores/postgres/cliente.js';
 
+/** Aplica las migraciones pendientes una sola vez por archivo. */
 const ejecutar = async () => {
   const carpeta = path.resolve(process.cwd(), 'db/migraciones');
   await sql`

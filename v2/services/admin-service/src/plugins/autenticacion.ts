@@ -1,8 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest, preHandlerHookHandler } from 'fastify';
-import { errorNoAutorizado, errorProhibido } from '../lib/errores.js';
-import { verificarAcceso } from '../lib/jwt.js';
-import type { ContextoAutenticacion } from '../modulos/admin/admin.types.js';
+import { verificarAcceso } from '../adaptadores/auth/jwt.js';
+import { errorNoAutorizado, errorProhibido } from '../dominio/errores.js';
+import type { ContextoAutenticacion } from '../dominio/usuario.js';
 
 declare module 'fastify' {
   interface FastifyRequest {

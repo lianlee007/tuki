@@ -1,11 +1,5 @@
 import type { Restaurante, Rol } from '@tuki/dominio';
 
-export interface ContextoAutenticacion {
-  usuarioId: string;
-  rol: Rol;
-  email: string;
-}
-
 export interface UsuarioAdmin {
   id: string;
   email: string;
@@ -52,3 +46,21 @@ export interface Auditoria {
   detalle: Record<string, unknown>;
   creadoEn: string;
 }
+
+export interface EntradaAuditoria {
+  actorId: string;
+  accion: string;
+  entidad: string;
+  entidadId?: string | null;
+  detalle?: Record<string, unknown>;
+}
+
+export interface FiltrosListado {
+  q?: string;
+  limite: number;
+  desde: number;
+}
+
+/** Nombre estable de la acción de auditoría para activar o suspender. */
+export const accionDeEstado = (activo: boolean): string =>
+  activo ? 'activar_restaurante' : 'suspender_restaurante';
