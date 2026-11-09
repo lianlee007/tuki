@@ -1,8 +1,8 @@
 import { jwtVerify } from 'jose';
-import { config } from '../config.js';
-import type { ContextoAutenticacion } from '../modulos/pedidos/pedidos.types.js';
+import { config } from '../../config.js';
+import type { ContextoAutenticacion } from '../../dominio/usuario.js';
 
-/** Verifica el JWT emitido por identidad. */
+/** Verifica el JWT emitido por identidad-service. */
 const secreto = new TextEncoder().encode(config.JWT_SECRETO);
 
 export const verificarAcceso = async (token: string): Promise<ContextoAutenticacion> => {
