@@ -60,6 +60,13 @@ export const esquemaRol = z.object({
   rol: z.enum(['cliente', 'dueno', 'superadmin']),
 });
 
+/** Campos de la propia cuenta que el usuario puede cambiar. */
+export const esquemaPerfil = z.object({
+  nombre: nombre.optional(),
+  apellido: apellido.optional(),
+  avatarUrl: z.string().trim().url().max(500).nullable().optional(),
+});
+
 export const esquemaListadoUsuarios = z.object({
   q: z.string().trim().max(100).optional(),
   limite: z.coerce.number().int().min(1).max(100).default(50),

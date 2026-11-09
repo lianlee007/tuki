@@ -39,4 +39,10 @@ export const registrarRutasIdentidad = async (app: FastifyInstance): Promise<voi
     { preHandler: app.autenticar },
     controlador.perfil,
   );
+
+  app.patch(
+    '/v1/identidad/perfil',
+    { preHandler: app.autenticar },
+    controlador.actualizarPerfil,
+  );
 };

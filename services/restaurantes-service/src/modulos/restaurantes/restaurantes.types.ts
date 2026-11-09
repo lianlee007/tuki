@@ -74,6 +74,10 @@ export interface FilaRestaurante {
   imagen_banner_url: string | null;
   horario_apertura: string | null;
   horario_cierre: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  twitter: string | null;
+  dias_abierto: Record<string, boolean>;
   activo: boolean;
   creado_en: Date;
 }
@@ -119,5 +123,9 @@ export interface FilaPlatillo {
   vegetariano: boolean;
   vegano: boolean;
   picante: boolean;
+  ingredientes: string[];
+  alergenos: string[];
+  destacado: boolean;
+  tiempo_preparacion: number | null;
   orden: number;
 }

@@ -5,7 +5,7 @@
  * `user.user_metadata.rol`…). Aquí se conserva esa forma para no tocar los
  * componentes, pero los datos vienen de `identidad-service`.
  */
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { ProveedorAuth, usarAuth } from '@tuki/auth-react';
 import type { Usuario } from '@tuki/dominio';
 import { apis } from '../lib/api-tuki';
@@ -75,6 +75,11 @@ const aHeredado = (usuario: Usuario | null): UsuarioHeredado | null =>
 
 const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { usuario, cargando, entrar, registrar, salir } = usarAuth();
+  const [avatar, setAvatar] = useState<string | null>(usuario?.avatarUrl ?? null);
+
+  useEffect(() => {
+    setAvatar(usuario?.avatarUrl ?? null);
+  }, [usuario?.id, usuario?.avatarUrl]);
 
   const valor = useMemo<AuthContextType>(() => {
     const user = aHeredado(usuario);
@@ -85,9 +90,19 @@ const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       loading: cargando,
       rol: usuario ? (usuario.rol === 'cliente' ? 'cliente' : 'restaurante') : null,
       cargandoRol: false,
-      // La foto de perfil todavía no vive en el servicio de identidad.
-      avatarUrl: null,
-      guardarAvatar: async () => 'La foto de perfil estará disponible próximamente.',
+      avatarUrl: avatar,
+      guardarAvatar: async (url) => {
+        if (!usuario) return 'Entra a tu cuenta para cambiar la foto.';
+        try {
+          const { usuario: actualizado } = await apis.identidad.actualizarPerfil({
+            avatarUrl: url,
+          });
+          setAvatar(actualizado.avatarUrl ?? null);
+          return null;
+        } catch {
+          return 'No pudimos guardar tu foto. Inténtalo otra vez.';
+        }
+      },
       iniciarSesion: async (email, password) => {
         await entrar({ email, password });
       },
@@ -96,7 +111,7 @@ const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       },
       cerrarSesion: salir,
     };
-  }, [usuario, cargando, entrar, registrar, salir]);
+  }, [usuario, cargando, avatar, entrar, registrar, salir]);
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
 };

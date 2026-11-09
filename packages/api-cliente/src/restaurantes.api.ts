@@ -82,6 +82,10 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
     direccion?: string;
     horarioApertura?: string;
     horarioCierre?: string;
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    diasAbierto?: Record<string, boolean>;
     cocinas?: string[];
   }) =>
     http.solicitar<{ restaurante: unknown; tema: unknown }>('/v1/restaurantes', {
@@ -135,6 +139,10 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
       vegetariano?: boolean;
       vegano?: boolean;
       picante?: boolean;
+      ingredientes?: string[];
+      alergenos?: string[];
+      destacado?: boolean;
+      tiempoPreparacion?: number | null;
     },
   ) =>
     http.solicitar<unknown>(`/v1/restaurantes/${restauranteId}/platillos`, {
