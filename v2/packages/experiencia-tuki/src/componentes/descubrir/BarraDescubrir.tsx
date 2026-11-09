@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, NavLink } from 'react-router-dom';
-import { LogOut, Search, ShoppingBag, ShoppingCart, Store, UserRound, X } from 'lucide-react';
+import { LogOut, Search, ShoppingBag, Store, UserRound, X } from 'lucide-react';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
-import { ThemeToggle } from '../ui';
+import { PalabraTuki, SimboloTuki, ThemeToggle } from '../ui';
 import { FOCO } from './estilos';
 
 /**
@@ -238,13 +238,17 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
             to="/"
             className={`af-pulsar flex shrink-0 items-center gap-2.5 ${FOCO} rounded-xl`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-hearth-terracotta to-[#EE8062] text-white shadow-warm dark:from-hearth-night-terracotta dark:to-[#E97A56] dark:text-hearth-night">
-              <ShoppingCart size={22} aria-hidden="true" />
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center bg-af-accent-solid text-white"
+              style={{ borderRadius: 10 }}
+            >
+              <SimboloTuki size={28} />
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate font-jakarta text-lg font-extrabold tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink">
-                TukiTuki
-              </span>
+              <PalabraTuki
+                tamano={18}
+                className="truncate text-hearth-espresso dark:text-hearth-night-ink"
+              />
               <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
                 Mercado culinario
               </span>

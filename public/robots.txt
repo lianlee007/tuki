@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-# Las rutas privadas (panel, cuenta y entrar) no aportan nada al índice.
-Disallow: /panel
-Disallow: /mi-cuenta
-Disallow: /entrar
