@@ -1,5 +1,8 @@
 # TukiTuki — microservicios
 
+> Esta rama contiene únicamente el monorepo `v2/`. La aplicación anterior vive
+> en `main` y no se publica aquí.
+
 Migración del Tuki original a TukiTuki, una arquitectura de microservicios con tres
 frontends independientes y backend propio sobre PostgreSQL.
 
