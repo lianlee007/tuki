@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { z } from 'zod';
-import { crearSuperadmin } from '../modulos/identidad/identidad.service.js';
-import { cerrarDb } from '../db/cliente.js';
+import { cerrarDb } from '../adaptadores/postgres/cliente.js';
+import { crearServiciosIdentidad } from '../composicion.js';
 
 /**
  * Crea el superadmin inicial.
@@ -24,7 +24,8 @@ const esquema = z.object({
 
 const ejecutar = async () => {
   const datos = esquema.parse(process.env);
-  const usuario = await crearSuperadmin({
+  const { casos } = crearServiciosIdentidad();
+  const usuario = await casos.crearSuperadmin({
     email: datos.SUPERADMIN_EMAIL,
     password: datos.SUPERADMIN_PASSWORD,
     nombre: datos.SUPERADMIN_NOMBRE,

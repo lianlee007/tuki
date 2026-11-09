@@ -33,15 +33,50 @@ export interface SesionCreada {
   refreshExpiraEn: Date;
 }
 
-/** Fila cruda de PostgreSQL; el mapeo vive en el repositorio. */
-export interface FilaUsuario {
-  id: string;
+/** Metadatos de la petición que se guardan con el token de refresco. */
+export interface ContextoPeticion {
+  userAgent?: string | undefined;
+  ip?: string | undefined;
+}
+
+export type RolRegistro = Exclude<Rol, 'superadmin'>;
+
+export interface EntradaRegistro {
   email: string;
-  password_hash: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+  rol: RolRegistro;
+}
+
+export interface EntradaLogin {
+  email: string;
+  password: string;
+}
+
+export interface EntradaActualizarPerfil {
+  nombre?: string;
+  apellido?: string;
+  avatarUrl?: string | null;
+}
+
+export interface EntradaCrearUsuario {
+  email: string;
+  passwordHash: string;
   nombre: string;
   apellido: string;
   rol: Rol;
-  email_verificado_en: Date | null;
-  creado_en: Date;
-  avatar_url: string | null;
+}
+
+export interface EntradaCrearSuperadmin {
+  email: string;
+  password: string;
+  nombre?: string;
+  apellido?: string;
+}
+
+export interface FiltrosUsuarios {
+  q?: string;
+  limite: number;
+  desde: number;
 }

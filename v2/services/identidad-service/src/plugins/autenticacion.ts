@@ -1,8 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest, preHandlerHookHandler } from 'fastify';
-import { errorNoAutorizado, errorProhibido } from '../lib/errores.js';
-import { verificarAcceso } from '../lib/tokens.js';
-import type { ContextoAutenticacion } from '../modulos/identidad/identidad.types.js';
+import { errorNoAutorizado, errorProhibido } from '../dominio/errores.js';
+import type { ContextoAutenticacion } from '../dominio/usuario.js';
+import type { TokensSesion } from '../puertos/tokens-sesion.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -30,7 +30,7 @@ export const exigirRol =
  * firma del JWT. La revocación inmediata se resuelve con la vida corta del
  * token de acceso y la rotación del refresco.
  */
-export default fp(async (app: FastifyInstance) => {
+export default fp<{ tokens: TokensSesion }>(async (app, opciones) => {
   app.decorateRequest('usuario', null);
 
   app.decorate('autenticar', async (request: FastifyRequest) => {
@@ -43,7 +43,7 @@ export default fp(async (app: FastifyInstance) => {
     if (!token) throw errorNoAutorizado('El token de acceso está vacío.');
 
     try {
-      request.usuario = await verificarAcceso(token);
+      request.usuario = await opciones.tokens.verificarAcceso(token);
     } catch {
       throw errorNoAutorizado('La sesión no es válida o expiró.');
     }

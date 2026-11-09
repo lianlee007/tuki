@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import * as controlador from './identidad.controller.js';
+import type { CasosDeUsoIdentidad } from '../../aplicacion/casos-uso.js';
+import { crearControlador } from './identidad.controlador.js';
 
 /**
  * Rutas públicas y protegidas de identidad.
@@ -7,31 +8,27 @@ import * as controlador from './identidad.controller.js';
  * El prefijo `/v1/identidad` permite que el gateway enrute por servicio sin
  * reescribir rutas y deja espacio para versionar el contrato.
  */
-export const registrarRutasIdentidad = async (app: FastifyInstance): Promise<void> => {
+export const registrarRutasIdentidad = async (
+  app: FastifyInstance,
+  casos: CasosDeUsoIdentidad,
+): Promise<void> => {
+  const controlador = crearControlador(casos);
+
   app.post(
     '/v1/identidad/registro',
-    {
-      config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
-    },
+    { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } },
     controlador.registrar,
   );
-
   app.post(
     '/v1/identidad/login',
-    {
-      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
-    },
+    { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
     controlador.iniciarSesion,
   );
-
   app.post(
     '/v1/identidad/refresh',
-    {
-      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
-    },
+    { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } },
     controlador.refrescar,
   );
-
   app.post('/v1/identidad/logout', controlador.cerrarSesion);
 
   app.get(
@@ -39,7 +36,6 @@ export const registrarRutasIdentidad = async (app: FastifyInstance): Promise<voi
     { preHandler: app.autenticar },
     controlador.perfil,
   );
-
   app.patch(
     '/v1/identidad/perfil',
     { preHandler: app.autenticar },

@@ -2,12 +2,13 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearServiciosIdentidad } from './composicion.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasIdentidad } from './entrada/http/identidad.rutas.js';
+import { registrarRutasAdminIdentidad } from './entrada/http/identidad.admin.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasIdentidad } from './modulos/identidad/identidad.routes.js';
-import { registrarRutasAdminIdentidad } from './modulos/identidad/identidad.admin.routes.js';
 
 /**
  * Construye la aplicación sin escuchar el puerto.
@@ -33,8 +34,10 @@ export const crearApp = async () => {
     timeWindow: '1 minute',
   });
 
+  const { casos, tokens } = crearServiciosIdentidad();
+
   await app.register(errores);
-  await app.register(autenticacion);
+  await app.register(autenticacion, { tokens });
 
   app.get('/salud', async () => ({
     estado: 'ok',
@@ -51,8 +54,8 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasIdentidad);
-  await app.register(registrarRutasAdminIdentidad);
+  await registrarRutasIdentidad(app, casos);
+  await registrarRutasAdminIdentidad(app, casos);
 
   return app;
 };
