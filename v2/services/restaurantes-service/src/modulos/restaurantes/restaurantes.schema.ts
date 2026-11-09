@@ -17,6 +17,10 @@ export const esquemaCrearRestaurante = z.object({
   departamento: texto(80),
   horarioApertura: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   horarioCierre: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  facebook: texto(200),
+  instagram: texto(200),
+  twitter: texto(200),
+  diasAbierto: z.record(z.string(), z.boolean()).optional(),
   cocinas: z.array(z.string().trim().min(2)).max(6).default([]),
 });
 
@@ -62,6 +66,10 @@ export const esquemaPlatillo = z.object({
   vegano: z.boolean().default(false),
   picante: z.boolean().default(false),
   activo: z.boolean().optional(),
+  ingredientes: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
+  alergenos: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
+  destacado: z.boolean().default(false),
+  tiempoPreparacion: z.coerce.number().int().min(0).max(240).nullable().optional(),
   orden: z.coerce.number().int().min(0).max(999).default(0),
 });
 

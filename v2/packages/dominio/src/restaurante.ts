@@ -16,6 +16,12 @@ export interface Restaurante {
   imagenBannerUrl: string | null;
   horarioApertura: string | null;
   horarioCierre: string | null;
+  /** Redes sociales del local; la ficha pública las muestra si existen. */
+  facebook?: string | null;
+  instagram?: string | null;
+  twitter?: string | null;
+  /** Días de servicio activos, por nombre en español. */
+  diasAbierto?: Record<string, boolean>;
   activo: boolean;
   creadoEn: string;
 }
@@ -61,6 +67,10 @@ export interface Platillo {
   vegetariano: boolean;
   vegano: boolean;
   picante: boolean;
+  ingredientes?: string[];
+  alergenos?: string[];
+  destacado?: boolean;
+  tiempoPreparacion?: number | null;
   orden: number;
 }
 

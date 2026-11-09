@@ -4,6 +4,7 @@ import * as servicio from './identidad.service.js';
 import {
   esquemaLogin,
   esquemaLogout,
+  esquemaPerfil,
   esquemaRefresh,
   esquemaRegistro,
 } from './identidad.schema.js';
@@ -46,5 +47,15 @@ export const perfil = async (request: FastifyRequest, reply: FastifyReply) => {
     throw errorNoAutorizado('Inicia sesión para continuar.');
   }
   const usuario = await servicio.obtenerPerfil(request.usuario.usuarioId);
+  return reply.code(200).send({ usuario });
+};
+
+/** Actualiza los datos editables de la propia cuenta. */
+export const actualizarPerfil = async (request: FastifyRequest, reply: FastifyReply) => {
+  if (!request.usuario) {
+    throw errorNoAutorizado('Inicia sesión para continuar.');
+  }
+  const entrada = esquemaPerfil.parse(request.body);
+  const usuario = await servicio.actualizarPerfil(request.usuario, entrada);
   return reply.code(200).send({ usuario });
 };

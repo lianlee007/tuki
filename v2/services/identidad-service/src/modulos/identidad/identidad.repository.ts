@@ -31,6 +31,7 @@ const aUsuario = (fila: FilaUsuario): UsuarioPublico => ({
   rol: fila.rol,
   emailVerificado: Boolean(fila.email_verificado_en),
   creadoEn: fila.creado_en,
+  avatarUrl: fila.avatar_url ?? null,
 });
 
 const aCredenciales = (fila: FilaUsuario): UsuarioConCredenciales => ({
@@ -50,7 +51,7 @@ export const crearUsuario = async (entrada: {
     values (${entrada.email}, ${entrada.passwordHash}, ${entrada.nombre},
             ${entrada.apellido}, ${entrada.rol})
     returning id, email, password_hash, nombre, apellido, rol,
-              email_verificado_en, creado_en
+              email_verificado_en, creado_en, avatar_url
   `;
   if (!fila) throw new Error('No se pudo crear el usuario.');
   return aUsuario(fila);
@@ -61,7 +62,7 @@ export const buscarPorEmail = async (
 ): Promise<UsuarioConCredenciales | null> => {
   const [fila] = await sql<FilaUsuario[]>`
     select id, email, password_hash, nombre, apellido, rol,
-           email_verificado_en, creado_en
+           email_verificado_en, creado_en, avatar_url
     from usuarios
     where lower(email) = lower(${email})
     limit 1
@@ -72,7 +73,7 @@ export const buscarPorEmail = async (
 export const buscarPorId = async (id: string): Promise<UsuarioPublico | null> => {
   const [fila] = await sql<FilaUsuario[]>`
     select id, email, password_hash, nombre, apellido, rol,
-           email_verificado_en, creado_en
+           email_verificado_en, creado_en, avatar_url
     from usuarios
     where id = ${id}
     limit 1
@@ -101,7 +102,7 @@ export const buscarRefreshVigente = async (
     select t.id, t.usuario_id, t.token_hash, t.expira_en, t.revocado_en,
            t.user_agent, t.ip,
            u.email, u.password_hash, u.nombre, u.apellido, u.rol,
-           u.email_verificado_en, u.creado_en
+           u.email_verificado_en, u.creado_en, u.avatar_url
     from refresh_tokens t
     join usuarios u on u.id = t.usuario_id
     where t.token_hash = ${tokenHash}
@@ -155,6 +156,29 @@ export const actualizarCredenciales = async (entrada: {
   `;
 };
 
+/** Actualiza los datos editables de la cuenta: nombre, apellido y foto. */
+export const actualizarPerfil = async (entrada: {
+  usuarioId: string;
+  nombre?: string | undefined;
+  apellido?: string | undefined;
+  avatarUrl?: string | null | undefined;
+}): Promise<UsuarioPublico | null> => {
+  const campos: Record<string, unknown> = {};
+  if (entrada.nombre !== undefined) campos.nombre = entrada.nombre;
+  if (entrada.apellido !== undefined) campos.apellido = entrada.apellido;
+  if (entrada.avatarUrl !== undefined) campos.avatar_url = entrada.avatarUrl;
+
+  if (Object.keys(campos).length === 0) return buscarPorId(entrada.usuarioId);
+
+  const [fila] = await sql<FilaUsuario[]>`
+    update usuarios set ${sql(campos)}, actualizado_en = now()
+    where id = ${entrada.usuarioId}
+    returning id, email, password_hash, nombre, apellido, rol,
+              email_verificado_en, creado_en, avatar_url
+  `;
+  return fila ? aUsuario(fila) : null;
+};
+
 export const listarUsuarios = async (filtros: {
   q?: string;
   limite: number;
@@ -163,7 +187,7 @@ export const listarUsuarios = async (filtros: {
   const q = filtros.q?.trim() || null;
   const filas = await sql<(FilaUsuario & { total: string })[]>`
     select id, email, password_hash, nombre, apellido, rol,
-           email_verificado_en, creado_en,
+           email_verificado_en, creado_en, avatar_url,
            count(*) over() as total
     from usuarios
     where (
@@ -196,7 +220,7 @@ export const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico |
     update usuarios set rol = ${rol}, actualizado_en = now()
     where id = ${id}
     returning id, email, password_hash, nombre, apellido, rol,
-              email_verificado_en, creado_en
+              email_verificado_en, creado_en, avatar_url
   `;
   return fila ? aUsuario(fila) : null;
 };

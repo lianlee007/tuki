@@ -112,6 +112,9 @@ export interface PlatoDescubierto {
   vegetariano: boolean;
   vegano: boolean;
   picante: boolean;
+  ingredientes?: string[];
+  alergenos?: string[];
+  destacado?: boolean;
   restaurante_id: string;
   restaurante_nombre: string;
   ciudad: string | null;

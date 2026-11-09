@@ -9,6 +9,7 @@ export interface Usuario {
   rol: Rol;
   emailVerificado: boolean;
   creadoEn: string;
+  avatarUrl?: string | null;
 }
 
 /** Sesión completa que entrega el login. */

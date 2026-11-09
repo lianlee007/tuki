@@ -10,6 +10,7 @@ export interface UsuarioPublico {
   rol: Rol;
   emailVerificado: boolean;
   creadoEn: Date;
+  avatarUrl: string | null;
 }
 
 /** Usuario con el hash necesario para validar el inicio de sesión. */
@@ -42,4 +43,5 @@ export interface FilaUsuario {
   rol: Rol;
   email_verificado_en: Date | null;
   creado_en: Date;
+  avatar_url: string | null;
 }
