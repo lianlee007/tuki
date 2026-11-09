@@ -1,0 +1,82 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tuki-alertas
+  namespace: tuki
+  labels:
+    app.kubernetes.io/part-of: tuki
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: tuki.disponibilidad
+      rules:
+        - alert: TukiAiGatewayDown
+          expr: up{namespace="tuki",service="ai-gateway"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: tuki
+          annotations:
+            summary: "El AI Gateway no responde"
+            description: "Sin gateway, la IA del panel falla. Revisa pods, logs y el secreto de Groq."
+
+        - alert: TukiPodNotReady
+          expr: kube_pod_status_ready{namespace="tuki",condition="true"} == 0
+          for: 10m
+          labels:
+            severity: warning
+            team: tuki
+          annotations:
+            summary: "Un pod de Tuki lleva 10 minutos sin estar listo"
+            description: "Revisa los probes, las migraciones y los logs del pod afectado."
+
+        - alert: TukiPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="tuki"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: tuki
+          annotations:
+            summary: "Un contenedor de Tuki se está reiniciando"
+            description: "Puede ser una migración fallida, falta de variables o un crash de arranque."
+
+    - name: tuki.calidad
+      rules:
+        - alert: TukiGatewayErrorRate
+          expr: |
+            (
+              sum(rate(ai_gateway_http_requests_total{status=~"5.."}[5m]))
+              /
+              clamp_min(sum(rate(ai_gateway_http_requests_total[5m])), 0.001)
+            ) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            team: tuki
+          annotations:
+            summary: "Más del 5 % de peticiones al gateway fallan"
+            description: "Revisa Groq, timeouts y logs del gateway."
+
+        - alert: TukiGatewayLatencyHigh
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (rate(ai_gateway_http_request_duration_seconds_bucket[5m]))
+            ) > 10
+          for: 10m
+          labels:
+            severity: warning
+            team: tuki
+          annotations:
+            summary: "Latencia p95 del gateway por encima de 10 s"
+            description: "Puede ser degradación de Groq o saturación del pod."
+
+        - alert: TukiGatewayRateLimitAbuse
+          expr: sum(rate(ai_gateway_rate_limited_total[5m])) > 1
+          for: 10m
+          labels:
+            severity: warning
+            team: tuki
+          annotations:
+            summary: "Muchas peticiones rechazadas por rate limit"
+            description: "Revisa la cuota anónima o autenticada."
