@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: admin
-          image: ghcr.io/lianlee007/tukituki-admin:latest
+          image: ghcr.io/lianlee007/tukituki-web-admin:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
