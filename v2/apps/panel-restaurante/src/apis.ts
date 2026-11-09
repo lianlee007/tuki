@@ -10,6 +10,7 @@ export const apis = crearApis({
     media: env.VITE_MEDIA_URL ?? 'http://localhost:3003',
     pedidos: env.VITE_PEDIDOS_URL ?? 'http://localhost:3004',
     resenas: env.VITE_RESENAS_URL ?? 'http://localhost:3005',
+    admin: env.VITE_ADMIN_URL ?? 'http://localhost:3006',
   },
   obtenerToken: () => localStorage.getItem('tuki.access'),
 });

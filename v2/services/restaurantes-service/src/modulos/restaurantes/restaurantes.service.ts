@@ -134,3 +134,27 @@ export const menuPublico = async (restauranteId: string) => {
   if (!menu) throw errorNoEncontrado('No encontramos ese restaurante.');
   return menu;
 };
+
+/** Listado administrativo con el dueño incluido. */
+export const listarTodosAdmin = async (filtros: {
+  q?: string;
+  limite: number;
+  desde: number;
+}) => {
+  const { items, total } = await repo.listarTodos(filtros);
+  return {
+    items: items.map((fila) => ({
+      ...aRestaurante(fila),
+      duenoId: fila.dueno_id,
+    })),
+    total,
+  };
+};
+
+export const resumenAdmin = repo.resumen;
+
+export const cambiarActivo = async (id: string, activo: boolean) => {
+  const fila = await repo.cambiarActivo(id, activo);
+  if (!fila) throw errorNoEncontrado('No encontramos el restaurante.');
+  return { ...aRestaurante(fila), duenoId: fila.dueno_id };
+};

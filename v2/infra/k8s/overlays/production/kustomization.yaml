@@ -13,6 +13,8 @@ images:
     newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-resenas
     newTag: v2.0.0
+  - name: ghcr.io/lianlee007/tuki-v2-admin-service
+    newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-web-comensal
     newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-panel
@@ -27,6 +29,8 @@ replicas:
   - name: pedidos-service
     count: 2
   - name: resenas-service
+    count: 2
+  - name: admin-service
     count: 2
   - name: web-comensal
     count: 2

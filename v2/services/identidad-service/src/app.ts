@@ -7,6 +7,7 @@ import { sql } from './db/cliente.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
 import { registrarRutasIdentidad } from './modulos/identidad/identidad.routes.js';
+import { registrarRutasAdminIdentidad } from './modulos/identidad/identidad.admin.routes.js';
 
 /**
  * Construye la aplicación sin escuchar el puerto.
@@ -51,6 +52,7 @@ export const crearApp = async () => {
   });
 
   await app.register(registrarRutasIdentidad);
+  await app.register(registrarRutasAdminIdentidad);
 
   return app;
 };

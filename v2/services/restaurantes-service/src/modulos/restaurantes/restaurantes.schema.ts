@@ -84,6 +84,16 @@ export const esquemaListadoPlatos = esquemaListado.extend({
   picante: z.enum(['true', 'false']).optional(),
 });
 
+export const esquemaListadoAdmin = z.object({
+  q: z.string().trim().max(100).optional(),
+  limite: z.coerce.number().int().min(1).max(100).default(50),
+  desde: z.coerce.number().int().min(0).default(0),
+});
+
+export const esquemaEstadoRestaurante = z.object({
+  activo: z.boolean(),
+});
+
 export type EntradaCrearRestaurante = z.infer<typeof esquemaCrearRestaurante>;
 export type EntradaActualizarRestaurante = z.infer<typeof esquemaActualizarRestaurante>;
 export type EntradaTema = z.infer<typeof esquemaTema>;

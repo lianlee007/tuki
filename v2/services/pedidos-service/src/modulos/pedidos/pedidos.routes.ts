@@ -12,4 +12,9 @@ export const registrarRutasPedidos = async (app: FastifyInstance): Promise<void>
   app.get('/v1/pedidos/restaurante/:restauranteId', soloDueno, controlador.porRestaurante);
   app.get('/v1/pedidos/:id', sesion, controlador.obtener);
   app.patch('/v1/pedidos/:id/estado', soloDueno, controlador.cambiarEstado);
+  app.get(
+    '/v1/admin/pedidos/resumen',
+    { preHandler: [app.autenticar, exigirRol('superadmin')] },
+    controlador.resumenAdmin,
+  );
 };
