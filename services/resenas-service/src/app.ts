@@ -2,11 +2,14 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import { crearClienteRestaurantes } from './adaptadores/http/restaurantes.cliente.js';
+import { crearRepositorioResenas } from './adaptadores/postgres/resenas.repositorio.js';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearCasosDeUsoResenas } from './aplicacion/casos-uso.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasResenas } from './entrada/http/resenas.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasResenas } from './modulos/resenas/resenas.routes.js';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -36,7 +39,11 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasResenas);
+  const servicios = crearCasosDeUsoResenas({
+    resenas: crearRepositorioResenas(),
+    restaurantes: crearClienteRestaurantes(),
+  });
+  await registrarRutasResenas(app, servicios);
 
   return app;
 };

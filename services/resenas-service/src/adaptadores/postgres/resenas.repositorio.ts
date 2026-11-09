@@ -1,7 +1,11 @@
-import { sql } from '../../db/cliente.js';
-import type { Resena } from '@tuki/dominio';
-import { redondearPromedio } from '../../lib/promedio.js';
-import type { EntradaResena, FilaResena, ResumenResenas } from './resenas.types.js';
+import type { Resena } from '../../dominio/resena.js';
+import { redondearPromedio } from '../../dominio/promedio.js';
+import type {
+  EntradaResenaRepositorio,
+  ResenasRepositorio,
+} from '../../puertos/resenas.repositorio.js';
+import { sql } from './cliente.js';
+import type { FilaResena } from './resenas.tipos.js';
 
 const aResena = (fila: FilaResena): Resena => ({
   id: fila.id,
@@ -22,7 +26,7 @@ const CAMPOS = `
   (select count(*) from resenas_utiles u where u.resena_id = r.id) as utiles
 `;
 
-export const listarPorRestaurante = async (restauranteId: string): Promise<Resena[]> => {
+const listarPorRestaurante = async (restauranteId: string): Promise<Resena[]> => {
   const filas = await sql<FilaResena[]>`
     select ${sql.unsafe(CAMPOS)}
     from resenas r
@@ -33,7 +37,7 @@ export const listarPorRestaurante = async (restauranteId: string): Promise<Resen
   return filas.map(aResena);
 };
 
-export const listarPorUsuario = async (usuarioId: string): Promise<Resena[]> => {
+const listarPorUsuario = async (usuarioId: string): Promise<Resena[]> => {
   const filas = await sql<FilaResena[]>`
     select ${sql.unsafe(CAMPOS)}
     from resenas r
@@ -44,7 +48,7 @@ export const listarPorUsuario = async (usuarioId: string): Promise<Resena[]> => 
   return filas.map(aResena);
 };
 
-export const crear = async (entrada: EntradaResena & { usuarioId: string }): Promise<Resena> => {
+const crear = async (entrada: EntradaResenaRepositorio): Promise<Resena> => {
   const [fila] = await sql<FilaResena[]>`
     insert into resenas (
       restaurante_id, platillo_id, usuario_id, nombre_cliente,
@@ -60,19 +64,19 @@ export const crear = async (entrada: EntradaResena & { usuarioId: string }): Pro
   return aResena(fila);
 };
 
-export const buscarPorId = async (id: string): Promise<Resena | null> => {
+const buscarPorId = async (id: string): Promise<Resena | null> => {
   const [fila] = await sql<FilaResena[]>`
     select ${sql.unsafe(CAMPOS)} from resenas r where r.id = ${id} limit 1
   `;
   return fila ? aResena(fila) : null;
 };
 
-export const eliminar = async (id: string): Promise<boolean> => {
+const eliminar = async (id: string): Promise<boolean> => {
   const filas = await sql`delete from resenas where id = ${id} returning id`;
   return filas.length > 0;
 };
 
-export const marcarUtil = async (resenaId: string, usuarioId: string): Promise<void> => {
+const marcarUtil = async (resenaId: string, usuarioId: string): Promise<void> => {
   await sql`
     insert into resenas_utiles (resena_id, usuario_id)
     values (${resenaId}, ${usuarioId})
@@ -80,14 +84,14 @@ export const marcarUtil = async (resenaId: string, usuarioId: string): Promise<v
   `;
 };
 
-export const quitarUtil = async (resenaId: string, usuarioId: string): Promise<void> => {
+const quitarUtil = async (resenaId: string, usuarioId: string): Promise<void> => {
   await sql`
     delete from resenas_utiles
     where resena_id = ${resenaId} and usuario_id = ${usuarioId}
   `;
 };
 
-export const responder = async (id: string, respuesta: string): Promise<Resena | null> => {
+const responder = async (id: string, respuesta: string): Promise<Resena | null> => {
   const [fila] = await sql<FilaResena[]>`
     update resenas set respuesta_dueno = ${respuesta}, actualizado_en = now()
     where id = ${id}
@@ -96,8 +100,7 @@ export const responder = async (id: string, respuesta: string): Promise<Resena |
   return fila ? aResena(fila) : null;
 };
 
-/** Quita la respuesta del dueño dejando la reseña intacta. */
-export const borrarRespuesta = async (id: string): Promise<Resena | null> => {
+const borrarRespuesta = async (id: string): Promise<Resena | null> => {
   const [fila] = await sql<FilaResena[]>`
     update resenas set respuesta_dueno = null, actualizado_en = now()
     where id = ${id}
@@ -106,7 +109,7 @@ export const borrarRespuesta = async (id: string): Promise<Resena | null> => {
   return fila ? aResena(fila) : null;
 };
 
-export const cambiarVisible = async (id: string, visible: boolean): Promise<Resena | null> => {
+const cambiarVisible = async (id: string, visible: boolean): Promise<Resena | null> => {
   const [fila] = await sql<FilaResena[]>`
     update resenas set visible = ${visible}, actualizado_en = now()
     where id = ${id}
@@ -115,7 +118,7 @@ export const cambiarVisible = async (id: string, visible: boolean): Promise<Rese
   return fila ? aResena(fila) : null;
 };
 
-export const resumen = async (restauranteId: string): Promise<ResumenResenas> => {
+const resumen = async (restauranteId: string) => {
   const [fila] = await sql<{ promedio: string; cantidad: string }[]>`
     select coalesce(avg(calificacion), 0)::text as promedio, count(*)::text as cantidad
     from resenas
@@ -126,3 +129,18 @@ export const resumen = async (restauranteId: string): Promise<ResumenResenas> =>
     cantidad: Number(fila?.cantidad ?? 0),
   };
 };
+
+/** Adaptador PostgreSQL del puerto `ResenasRepositorio`. */
+export const crearRepositorioResenas = (): ResenasRepositorio => ({
+  listarPorRestaurante,
+  listarPorUsuario,
+  crear,
+  buscarPorId,
+  eliminar,
+  marcarUtil,
+  quitarUtil,
+  responder,
+  borrarRespuesta,
+  cambiarVisible,
+  resumen,
+});

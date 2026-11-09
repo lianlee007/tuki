@@ -17,3 +17,5 @@ export const esquemaRespuesta = z.object({
 export const esquemaVisible = z.object({
   visible: z.boolean(),
 });
+
+export type EntradaCrearResena = z.infer<typeof esquemaCrear>;
