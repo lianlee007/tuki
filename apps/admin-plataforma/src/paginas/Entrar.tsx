@@ -32,7 +32,7 @@ export const Entrar = () => {
 
   return (
     <>
-      <Cabecera titulo="Tuki Admin" />
+      <Cabecera titulo="TukiTuki Admin" />
       <main className="tuki-main" style={{ maxWidth: 460 }}>
         <Tarjeta>
           <h1 className="tuki-titulo">Administración de la plataforma</h1>

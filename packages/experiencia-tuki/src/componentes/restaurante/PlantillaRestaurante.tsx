@@ -385,7 +385,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
     const url = urlPublica(`${window.location.pathname}${window.location.search}`);
     const datos = {
       title: restaurante.nombre,
-      text: `Mira el menú de ${restaurante.nombre} en Tuki`,
+      text: `Mira el menú de ${restaurante.nombre} en TukiTuki`,
       url,
     };
 
@@ -870,7 +870,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           </div>
 
           <div className="border-t border-af/20 py-6 text-center text-xs text-af-ink-secondary">
-            © {new Date().getFullYear()} {restaurante.nombre}. Creado con Tuki.
+            © {new Date().getFullYear()} {restaurante.nombre}. Creado con TukiTuki.
           </div>
         </div>
       </footer>

@@ -3,25 +3,25 @@ kind: Kustomization
 resources:
   - ../../base
 images:
-  - name: ghcr.io/lianlee007/tuki-v2-identidad
+  - name: ghcr.io/lianlee007/tukituki-identidad
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-restaurantes
+  - name: ghcr.io/lianlee007/tukituki-restaurantes
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-media
+  - name: ghcr.io/lianlee007/tukituki-media
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-pedidos
+  - name: ghcr.io/lianlee007/tukituki-pedidos
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-resenas
+  - name: ghcr.io/lianlee007/tukituki-resenas
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-admin-service
+  - name: ghcr.io/lianlee007/tukituki-admin-service
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-ai-gateway
+  - name: ghcr.io/lianlee007/tukituki-ai-gateway
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-web-comensal
+  - name: ghcr.io/lianlee007/tukituki-web-comensal
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-panel
+  - name: ghcr.io/lianlee007/tukituki-panel
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tuki-v2-admin
+  - name: ghcr.io/lianlee007/tukituki-admin
     newTag: v2.0.0
 replicas:
   - name: identidad-service

@@ -1,5 +1,5 @@
 /**
- * Puente entre la interfaz heredada de Tuki y los microservicios de v2.
+ * Puente entre la interfaz heredada de TukiTuki y los microservicios de v2.
  *
  * La interfaz original hablaba con Supabase y trabajaba con nombres en
  * snake_case. Aquí se centraliza la traducción: los componentes siguen usando

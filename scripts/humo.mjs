@@ -19,9 +19,9 @@ const BASE = {
 };
 
 const DEMO = {
-  cliente: 'cliente@tuki.local',
-  dueno: 'dueno1@tuki.local',
-  admin: 'admin@tuki.local',
+  cliente: 'cliente@tukituki.local',
+  dueno: 'dueno1@tukituki.local',
+  admin: 'admin@tukituki.local',
   password: 'Demo12345',
   passwordAdmin: 'Admin12345',
 };

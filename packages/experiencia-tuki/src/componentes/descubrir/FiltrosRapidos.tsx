@@ -119,7 +119,7 @@ export const FiltrosRapidos: React.FC<FiltrosRapidosProps> = ({
       </div>
 
       <p className="mt-4 rounded-xl bg-hearth-oat/70 p-3 text-[10.5px] leading-relaxed text-hearth-pebble ring-1 ring-hearth-line/60 dark:bg-hearth-night-oat/70 dark:text-hearth-night-pebble dark:ring-hearth-night-line/60">
-        Los precios son los de la carta de cada restaurante. Tuki no aplica
+        Los precios son los de la carta de cada restaurante. TukiTuki no aplica
         recargos ni comisiones al comensal.
       </p>
     </section>

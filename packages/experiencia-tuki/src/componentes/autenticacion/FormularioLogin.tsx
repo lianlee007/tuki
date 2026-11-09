@@ -29,7 +29,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
   const formValid = isEmailValid && password.length > 0;
 
   useEffect(() => {
-    // La clave se llamaba `smartfood_email` antes del renombrado a Tuki: se lee
+    // La clave se llamaba `smartfood_email` antes del renombrado a TukiTuki: se lee
     // la antigua para no perder el correo de quien ya lo tenía guardado.
     const savedEmail = localStorage.getItem('tuki_email') || localStorage.getItem('smartfood_email');
     if (savedEmail) {

@@ -222,7 +222,7 @@ const PaginaInspiracion = () => {
   return (
     <div className="min-h-screen bg-hearth-cream font-jakarta text-hearth-espresso transition-colors dark:bg-hearth-night dark:text-hearth-night-ink">
       <SEO
-        titulo="Inspiración — Tuki"
+        titulo="Inspiración — TukiTuki"
         descripcion="Desliza platos uno a uno: a la derecha para guardarlos en tus favoritos, a la izquierda para pasar. Descubre qué comer sin decidir a ciegas."
       />
 

@@ -1,17 +1,17 @@
-name: tuki-v2
+name: tukituki
 
 # Orígenes permitidos por los servicios durante el desarrollo local.
 # Incluye los puertos de Vite y los de los contenedores Nginx.
 x-cors-origenes: &cors-origenes "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:8081,http://localhost:8082,http://localhost:8083"
 
-# Infraestructura local de Tuki v2.
+# Infraestructura local de TukiTuki.
 # Levanta las dependencias compartidas y el primer microservicio.
 # Uso: docker compose -f infra/docker/docker-compose.yml up -d --build
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tuki-v2-postgres
+    container_name: tukituki-postgres
     environment:
       POSTGRES_USER: tuki_admin
       POSTGRES_PASSWORD: tuki_admin_dev
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: tuki-v2-redis
+    container_name: tukituki-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -48,7 +48,7 @@ services:
   # API; el código del media-service no cambia.
   rustfs:
     image: rustfs/rustfs:1.0.4
-    container_name: tuki-v2-rustfs
+    container_name: tukituki-rustfs
     command: ["/data"]
     environment:
       RUSTFS_ACCESS_KEY: tuki_s3
@@ -72,14 +72,14 @@ services:
 
   mailpit:
     image: axllent/mailpit:v1.21
-    container_name: tuki-v2-mailpit
+    container_name: tukituki-mailpit
     ports:
       - "8025:8025"
       - "1025:1025"
 
   traefik:
     image: traefik:v3.1
-    container_name: tuki-v2-traefik
+    container_name: tukituki-traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -96,7 +96,7 @@ services:
     build:
       context: ../..
       dockerfile: services/identidad-service/Dockerfile
-    container_name: tuki-v2-identidad
+    container_name: tukituki-identidad
     environment:
       NODE_ENV: development
       PUERTO: "3001"
@@ -112,7 +112,7 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.identidad.rule=Host(`identidad.tuki.local`)"
+      - "traefik.http.routers.identidad.rule=Host(`identidad.tukituki.local`)"
       - "traefik.http.services.identidad.loadbalancer.server.port=3001"
     restart: unless-stopped
 
@@ -120,7 +120,7 @@ services:
     build:
       context: ../..
       dockerfile: services/restaurantes-service/Dockerfile
-    container_name: tuki-v2-restaurantes
+    container_name: tukituki-restaurantes
     environment:
       NODE_ENV: development
       PUERTO: "3002"
@@ -136,7 +136,7 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.restaurantes.rule=Host(`restaurantes.tuki.local`)"
+      - "traefik.http.routers.restaurantes.rule=Host(`restaurantes.tukituki.local`)"
       - "traefik.http.services.restaurantes.loadbalancer.server.port=3002"
     restart: unless-stopped
 
@@ -144,7 +144,7 @@ services:
     build:
       context: ../..
       dockerfile: services/media-service/Dockerfile
-    container_name: tuki-v2-media
+    container_name: tukituki-media
     environment:
       NODE_ENV: development
       PUERTO: "3003"
@@ -168,7 +168,7 @@ services:
         condition: service_started
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.media.rule=Host(`media.tuki.local`)"
+      - "traefik.http.routers.media.rule=Host(`media.tukituki.local`)"
       - "traefik.http.services.media.loadbalancer.server.port=3003"
     restart: unless-stopped
 
@@ -176,7 +176,7 @@ services:
     build:
       context: ../..
       dockerfile: services/pedidos-service/Dockerfile
-    container_name: tuki-v2-pedidos
+    container_name: tukituki-pedidos
     environment:
       NODE_ENV: development
       PUERTO: "3004"
@@ -195,7 +195,7 @@ services:
         condition: service_started
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pedidos.rule=Host(`pedidos.tuki.local`)"
+      - "traefik.http.routers.pedidos.rule=Host(`pedidos.tukituki.local`)"
       - "traefik.http.services.pedidos.loadbalancer.server.port=3004"
     restart: unless-stopped
 
@@ -203,7 +203,7 @@ services:
     build:
       context: ../..
       dockerfile: services/resenas-service/Dockerfile
-    container_name: tuki-v2-resenas
+    container_name: tukituki-resenas
     environment:
       NODE_ENV: development
       PUERTO: "3005"
@@ -222,7 +222,7 @@ services:
         condition: service_started
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.resenas.rule=Host(`resenas.tuki.local`)"
+      - "traefik.http.routers.resenas.rule=Host(`resenas.tukituki.local`)"
       - "traefik.http.services.resenas.loadbalancer.server.port=3005"
     restart: unless-stopped
 
@@ -230,7 +230,7 @@ services:
     build:
       context: ../..
       dockerfile: services/admin-service/Dockerfile
-    container_name: tuki-v2-admin-service
+    container_name: tukituki-admin-service
     environment:
       NODE_ENV: development
       PUERTO: "3006"
@@ -249,7 +249,7 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.admin-service.rule=Host(`admin-api.tuki.local`)"
+      - "traefik.http.routers.admin-service.rule=Host(`admin-api.tukituki.local`)"
       - "traefik.http.services.admin-service.loadbalancer.server.port=3006"
     restart: unless-stopped
 
@@ -257,7 +257,7 @@ services:
     build:
       context: ../../services/ai-gateway
       dockerfile: Dockerfile
-    container_name: tuki-v2-ai-gateway
+    container_name: tukituki-ai-gateway
     environment:
       AI_ENVIRONMENT: development
       AI_AUTH_MODE: local
@@ -273,7 +273,7 @@ services:
       - "8000:8000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ai-gateway.rule=Host(`ai.tuki.local`)"
+      - "traefik.http.routers.ai-gateway.rule=Host(`ai.tukituki.local`)"
       - "traefik.http.services.ai-gateway.loadbalancer.server.port=8000"
     restart: unless-stopped
 
@@ -281,12 +281,12 @@ services:
     build:
       context: ../..
       dockerfile: apps/web-comensal/Dockerfile
-    container_name: tuki-v2-web-comensal
+    container_name: tukituki-web-comensal
     ports:
       - "8081:80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.web-comensal.rule=Host(`tuki.local`)"
+      - "traefik.http.routers.web-comensal.rule=Host(`tukituki.local`)"
       - "traefik.http.services.web-comensal.loadbalancer.server.port=80"
     restart: unless-stopped
 
@@ -294,12 +294,12 @@ services:
     build:
       context: ../..
       dockerfile: apps/panel-restaurante/Dockerfile
-    container_name: tuki-v2-panel
+    container_name: tukituki-panel
     ports:
       - "8082:80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.panel-restaurante.rule=Host(`panel.tuki.local`)"
+      - "traefik.http.routers.panel-restaurante.rule=Host(`panel.tukituki.local`)"
       - "traefik.http.services.panel-restaurante.loadbalancer.server.port=80"
     restart: unless-stopped
 
@@ -307,12 +307,12 @@ services:
     build:
       context: ../..
       dockerfile: apps/admin-plataforma/Dockerfile
-    container_name: tuki-v2-admin
+    container_name: tukituki-admin
     ports:
       - "8083:80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.admin-plataforma.rule=Host(`admin.tuki.local`)"
+      - "traefik.http.routers.admin-plataforma.rule=Host(`admin.tukituki.local`)"
       - "traefik.http.services.admin-plataforma.loadbalancer.server.port=80"
     restart: unless-stopped
 

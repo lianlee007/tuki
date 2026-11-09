@@ -34,7 +34,7 @@ const PantallaCarga = () => (
       <Logo size={40} />
     </div>
     <span className="text-xs font-bold text-text-muted uppercase tracking-widest">
-      Cargando Tuki...
+      Cargando TukiTuki...
     </span>
   </div>
 );

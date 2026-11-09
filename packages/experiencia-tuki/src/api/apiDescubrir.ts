@@ -5,7 +5,7 @@ import type {
 } from '../tipos/modelos';
 
 /**
- * Portada social de Tuki sobre el servicio de restaurantes.
+ * Portada social de TukiTuki sobre el servicio de restaurantes.
  *
  * La búsqueda, el total y la paginación viajan en una sola respuesta, igual
  * que antes con las funciones de Postgres.

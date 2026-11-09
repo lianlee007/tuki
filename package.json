@@ -1,8 +1,8 @@
 {
-  "name": "tuki-v2",
+  "name": "tukituki",
   "private": true,
   "version": "0.1.0",
-  "description": "Tuki en microservicios: tres frontends y backend propio sobre PostgreSQL.",
+  "description": "TukiTuki en microservicios: tres frontends y backend propio sobre PostgreSQL.",
   "packageManager": "pnpm@12.14.0",
   "scripts": {
     "dev:identidad": "pnpm --filter identidad-service dev",
