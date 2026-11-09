@@ -1,34 +1,82 @@
-import { Link, Route, Routes } from 'react-router-dom';
-import { RutaProtegida } from '@tuki/auth-react';
-import { Inicio } from './paginas/Inicio';
-import { Ficha } from './paginas/Ficha';
-import { Entrar } from './paginas/Entrar';
-import { MisPedidos } from './paginas/MisPedidos';
-import { NoEncontrada } from './paginas/NoEncontrada';
+import React, { Suspense, lazy } from 'react';
+// @ts-ignore
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { AnimatePresence } from 'framer-motion';
+import {
+  ErrorBoundary,
+  Logo,
+  PaginaAutenticacion,
+  PaginaDescubrir,
+  PaginaEntrar,
+  PaginaInspiracion,
+  PaginaMiCuenta,
+  PaginaParaRestaurantes,
+  PaginaPrivacidad,
+  PaginaQR,
+  PaginaTerminos,
+  Pagina404,
+  ProveedorAutenticacion,
+  ProveedorTema,
+  RutaAuth,
+  RutaConSesion,
+  SincronizacionCarrito,
+  TransicionPagina,
+  VistaPublica,
+} from '@tuki/experiencia';
+import './estilos.css';
+import '@tuki/experiencia/estilos/tokens.css';
+import '@tuki/experiencia/estilos/apple-tokens.css';
 
-export const App = () => (
-  <Routes>
-    <Route path="/" element={<Inicio />} />
-    <Route path="/restaurante/:slug" element={<Ficha />} />
-    <Route path="/entrar" element={<Entrar />} />
-    <Route
-      path="/mi-cuenta"
-      element={
-        <RutaProtegida>
-          <MisPedidos />
-        </RutaProtegida>
-      }
-    />
-    <Route path="*" element={<NoEncontrada />} />
-    <Route path="/para-restaurantes" element={<RedirigirPanel />} />
-  </Routes>
+const PantallaCarga = () => (
+  <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4 animate-fadeIn">
+    <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white animate-bounce">
+      <Logo size={40} />
+    </div>
+    <span className="text-xs font-bold text-text-muted uppercase tracking-widest">
+      Cargando Tuki...
+    </span>
+  </div>
 );
 
-const RedirigirPanel = () => (
-  <main className="tuki-main">
-    <h1 className="tuki-titulo">¿Tienes un restaurante?</h1>
-    <p className="tuki-subtitulo">
-      El panel del dueño vive en <Link to="http://localhost:5174">localhost:5174</Link>.
-    </p>
-  </main>
-);
+const ContenidoAnimado = () => {
+  const location = useLocation();
+
+  return (
+    <ErrorBoundary key={location.pathname}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
+          <Route path="/explorar" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
+          <Route path="/inspiracion" element={<RutaConSesion><TransicionPagina><PaginaInspiracion /></TransicionPagina></RutaConSesion>} />
+          <Route path="/para-restaurantes" element={<TransicionPagina><PaginaParaRestaurantes /></TransicionPagina>} />
+          <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
+          <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
+          <Route path="/mi-cuenta" element={<RutaConSesion><TransicionPagina><PaginaMiCuenta /></TransicionPagina></RutaConSesion>} />
+          <Route path="/restaurante/:slug" element={<TransicionPagina><VistaPublica /></TransicionPagina>} />
+          <Route path="/terminos" element={<TransicionPagina><PaginaTerminos /></TransicionPagina>} />
+          <Route path="/privacidad" element={<TransicionPagina><PaginaPrivacidad /></TransicionPagina>} />
+          <Route path="/qr" element={<TransicionPagina><PaginaQR /></TransicionPagina>} />
+          <Route path="*" element={<Pagina404 />} />
+        </Routes>
+      </AnimatePresence>
+    </ErrorBoundary>
+  );
+};
+
+export default function App() {
+  return (
+    <HelmetProvider>
+      <ProveedorAutenticacion>
+        <SincronizacionCarrito />
+        <ProveedorTema>
+          <Router>
+            <Suspense fallback={<PantallaCarga />}>
+              <ContenidoAnimado />
+            </Suspense>
+          </Router>
+        </ProveedorTema>
+      </ProveedorAutenticacion>
+    </HelmetProvider>
+  );
+}

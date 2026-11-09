@@ -78,9 +78,16 @@ export const platillo = {
   orden: 1,
 };
 
-const cabeceras = { 'access-control-allow-origin': '*' };
+export const cocina = {
+  id: 'c2222222-2222-4222-8222-222222222222',
+  slug: 'cafeteria',
+  nombre: 'Cafetería',
+  icono: 'Coffee',
+};
 
-/** Simula la sesión y las respuestas del backend para las pruebas de UI. */
+export const cabeceras = { 'access-control-allow-origin': '*' };
+
+/** Simula la sesión guardada y el perfil del servicio de identidad. */
 export const simularSesion = async (page: Page, usuario: typeof usuarioDueno) => {
   await page.addInitScript(() => {
     localStorage.setItem('tuki.access', 'token-de-prueba');
@@ -92,10 +99,82 @@ export const simularSesion = async (page: Page, usuario: typeof usuarioDueno) =>
   );
 };
 
-export const simularRestaurantes = async (page: Page, items: unknown[]) => {
-  await page.route('**/v1/restaurantes?**', (ruta) =>
+/** Datos mínimos del panel: restaurante, tema, cocinas, categorías y platos. */
+export const simularPanel = async (page: Page) => {
+  const panel = {
+    restaurante,
+    tema,
+    cocinas: [cocina],
+    categorias: [categoria],
+    platillos: [platillo],
+    duenoId: usuarioDueno.id,
+  };
+
+  await page.route('**/v1/restaurantes/cocinas', (ruta) =>
+    ruta.fulfill({ json: { cocinas: [cocina] }, headers: cabeceras }),
+  );
+
+  await page.route('**/v1/restaurantes/mios', (ruta) =>
+    ruta.fulfill({ json: panel, headers: cabeceras }),
+  );
+
+  await page.route(/\/v1\/restaurantes\/[0-9a-f-]+\/panel$/, (ruta) =>
+    ruta.fulfill({ json: panel, headers: cabeceras }),
+  );
+
+  await page.route('**/v1/pedidos/restaurante/**', (ruta) =>
+    ruta.fulfill({ json: { pedidos: [] }, headers: cabeceras }),
+  );
+
+  await page.route('**/v1/resenas/restaurante/**', (ruta) =>
     ruta.fulfill({
-      json: { items, total: items.length, desde: 0, limite: 24 },
+      json: { resenas: [], resumen: { promedio: 0, cantidad: 0 } },
+      headers: cabeceras,
+    }),
+  );
+};
+
+/** Datos del buscador: cocinas, platos y restaurantes. */
+export const simularDescubrir = async (page: Page) => {
+  await page.route('**/v1/restaurantes/cocinas', (ruta) =>
+    ruta.fulfill({ json: { cocinas: [cocina] }, headers: cabeceras }),
+  );
+
+  await page.route('**/v1/restaurantes/platos?**', (ruta) =>
+    ruta.fulfill({
+      json: {
+        items: [
+          {
+            ...platillo,
+            restauranteNombre: restaurante.nombre,
+            restauranteSlug: restaurante.slug,
+            ciudad: restaurante.ciudad,
+            cocina: cocina.nombre,
+          },
+        ],
+        total: 1,
+        desde: 0,
+        limite: 24,
+      },
+      headers: cabeceras,
+    }),
+  );
+
+  await page.route(/\/v1\/restaurantes\?.*/, (ruta) =>
+    ruta.fulfill({
+      json: {
+        items: [
+          {
+            ...restaurante,
+            platosCantidad: 1,
+            precioMin: 8500,
+            precioMax: 8500,
+          },
+        ],
+        total: 1,
+        desde: 0,
+        limite: 8,
+      },
       headers: cabeceras,
     }),
   );
