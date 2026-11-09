@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: panel
-          image: ghcr.io/lianlee007/tukituki-panel:latest
+          image: ghcr.io/lianlee007/tukituki-web-panel:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
