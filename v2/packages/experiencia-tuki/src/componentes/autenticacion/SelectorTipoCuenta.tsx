@@ -39,7 +39,7 @@ const OPCIONES: Array<{
 /**
  * Elige de quién es la cuenta antes de pedir correo y contraseña.
  *
- * Tuki tiene dos públicos y una misma pantalla servía para ambos: quien venía a
+ * TukiTuki tiene dos públicos y una misma pantalla servía para ambos: quien venía a
  * comer podía acabar con una cuenta de restaurante (y al revés) sin darse
  * cuenta hasta después de confirmar el correo. Este selector hace explícito el
  * papel y permite cambiarlo sin perder lo que se estaba haciendo.

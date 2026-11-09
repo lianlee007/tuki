@@ -1,4 +1,4 @@
-# Contexto de build de las imágenes de Tuki v2.
+# Contexto de build de las imágenes de TukiTuki.
 # Se aplica a los contenedores definidos en infra/docker/docker-compose.yml.
 
 # Control de versiones y metadatos del editor

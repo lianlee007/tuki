@@ -7,7 +7,7 @@ import type { Clausula } from '../componentes/legal/MarcoLegal';
  *
  * La distinción que más importa aquí —y que la versión anterior no hacía— es la
  * de responsable y encargado: cuando alguien pide comida desde el menú de un
- * restaurante, esos datos son del restaurante y de su cliente. Tuki los trata
+ * restaurante, esos datos son del restaurante y de su cliente. TukiTuki los trata
  * por cuenta del restaurante, para armar y enviar el pedido, y no los usa para
  * nada propio. Decirlo así no es un tecnicismo: cambia quién atiende el reclamo
  * de una persona que pide ver o borrar sus datos.
@@ -363,7 +363,7 @@ export default function PaginaPrivacidad() {
   return (
     <MarcoLegal
       titulo="Política de Tratamiento de Datos Personales"
-      descripcion="Cómo Tuki trata los datos personales: qué recogemos, para qué, con quién los compartimos, cuánto tiempo los guarda y cómo ejercer tus derechos."
+      descripcion="Cómo TukiTuki trata los datos personales: qué recogemos, para qué, con quién los compartimos, cuánto tiempo los guarda y cómo ejercer tus derechos."
       entradilla="Aquí explicamos qué datos recogemos, para qué los usamos, con quién los compartimos y cómo puedes pedirnos verlos, corregirlos o eliminarlos. Está escrita siguiendo la Ley 1581 de 2012 y su decreto reglamentario."
       resumen={[
         <>

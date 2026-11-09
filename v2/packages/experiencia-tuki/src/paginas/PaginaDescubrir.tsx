@@ -385,7 +385,7 @@ const PaginaDescubrir = () => {
   return (
     <div className="min-h-screen bg-hearth-cream font-jakarta text-hearth-espresso transition-colors dark:bg-hearth-night dark:text-hearth-night-ink">
       <SEO
-        titulo="Tuki — Descubre platos de restaurantes"
+        titulo="TukiTuki — Descubre platos de restaurantes"
         descripcion="Busca platos por cocina, precio y preferencias. Encuentra qué comer y pide directo al restaurante."
       />
 
@@ -608,7 +608,7 @@ const PaginaDescubrir = () => {
                 to="/para-restaurantes"
                 className="af-pulsar inline-flex items-center gap-1.5 font-jakarta text-[15px] font-extrabold text-hearth-terracotta-ink transition-colors hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta"
               >
-                Crea tu menú con Tuki
+                Crea tu menú con TukiTuki
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </footer>

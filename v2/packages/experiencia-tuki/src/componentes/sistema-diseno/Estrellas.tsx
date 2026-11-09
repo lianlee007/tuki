@@ -18,7 +18,7 @@ interface EstrellasProps {
 }
 
 /**
- * Estrellas de Tuki.
+ * Estrellas de TukiTuki.
  *
  * Dos capas: cinco estrellas apagadas y encima el mismo grupo recortado al
  * porcentaje de la nota. Así un 4,6 se ve como 4,6 y no como 5. En modo

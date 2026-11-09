@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 
 export const usuarioDueno = {
   id: '11111111-1111-4111-8111-111111111111',
-  email: 'dueno1@tuki.local',
+  email: 'dueno1@tukituki.local',
   nombre: 'Dueño',
   apellido: 'Café',
   rol: 'dueno',
@@ -12,7 +12,7 @@ export const usuarioDueno = {
 
 export const usuarioAdmin = {
   id: '99999999-9999-4999-8999-999999999999',
-  email: 'admin@tuki.local',
+  email: 'admin@tukituki.local',
   nombre: 'Super',
   apellido: 'Admin',
   rol: 'superadmin',
@@ -28,7 +28,7 @@ export const restaurante = {
   eslogan: 'El mejor café de la ciudad',
   telefono: '3001234567',
   whatsapp: '3001234567',
-  email: 'cafe@tuki.local',
+  email: 'cafe@tukituki.local',
   direccion: 'Calle 5 # 4-21',
   ciudad: 'Popayán',
   departamento: 'Cauca',

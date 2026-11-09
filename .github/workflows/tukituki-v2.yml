@@ -1,0 +1,131 @@
+# Calidad de TukiTuki: tipos, pruebas, build, e2e y validación de Kustomize.
+# Solo se dispara cuando cambia el monorepo v2 o este mismo workflow.
+name: TukiTuki v2 - calidad
+
+on:
+  push:
+    branches: [main, feat/migracion-microservicios-desarrollo]
+    paths:
+      - "v2/**"
+      - ".github/workflows/tukituki-v2.yml"
+  pull_request:
+    paths:
+      - "v2/**"
+      - ".github/workflows/tukituki-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tukituki-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: "12.14.0"
+
+jobs:
+  calidad:
+    name: Tipos, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: v2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: v2/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar tipos
+        run: pnpm -r typecheck
+
+      - name: Ejecutar pruebas unitarias
+        run: pnpm -r test
+
+      - name: Compilar los tres frontends y los servicios
+        run: pnpm -r build
+
+  e2e:
+    name: E2E de los tres frontends
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: v2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: v2/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Ejecutar Playwright
+        run: pnpm test:e2e
+
+      - name: Guardar el informe si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: v2/playwright-report/
+          retention-days: 7
+
+  gateway:
+    name: AI Gateway (FastAPI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: v2/services/ai-gateway
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Revisar estilo
+        run: ruff check app tests
+
+      - name: Ejecutar pruebas
+        run: pytest -q
+
+  manifiestos:
+    name: Kustomize de local y producción
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar el overlay local
+        run: kubectl kustomize v2/infra/k8s/overlays/local > /dev/null
+
+      - name: Validar el overlay de producción
+        run: kubectl kustomize v2/infra/k8s/overlays/production > /dev/null

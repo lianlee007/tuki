@@ -1,5 +1,5 @@
 /**
- * Sesión del Tuki heredado sobre el servicio de identidad.
+ * Sesión del TukiTuki heredado sobre el servicio de identidad.
  *
  * La interfaz original consumía un objeto de Supabase (`user.id`,
  * `user.user_metadata.rol`…). Aquí se conserva esa forma para no tocar los

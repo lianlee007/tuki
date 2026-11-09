@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: tuki
-  namespace: tuki
+  name: tukituki
+  namespace: tukituki
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
@@ -12,13 +12,13 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - tuki.example.com
-        - panel.tuki.example.com
-        - admin.tuki.example.com
-        - api.tuki.example.com
-      secretName: tuki-tls
+        - tukituki.example.com
+        - panel.tukituki.example.com
+        - admin.tukituki.example.com
+        - api.tukituki.example.com
+      secretName: tukituki-tls
   rules:
-    - host: tuki.example.com
+    - host: tukituki.example.com
       http:
         paths:
           - path: /
@@ -28,7 +28,7 @@ spec:
                 name: web-comensal
                 port:
                   name: http
-    - host: panel.tuki.example.com
+    - host: panel.tukituki.example.com
       http:
         paths:
           - path: /
@@ -38,7 +38,7 @@ spec:
                 name: panel-restaurante
                 port:
                   name: http
-    - host: admin.tuki.example.com
+    - host: admin.tukituki.example.com
       http:
         paths:
           - path: /
@@ -48,7 +48,7 @@ spec:
                 name: admin-plataforma
                 port:
                   name: http
-    - host: api.tuki.example.com
+    - host: api.tukituki.example.com
       http:
         paths:
           - path: /v1/identidad

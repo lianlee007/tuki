@@ -5,7 +5,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rustfs
-  namespace: tuki
+  namespace: tukituki
   labels:
     app: rustfs
 spec:
@@ -23,7 +23,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: rustfs
-  namespace: tuki
+  namespace: tukituki
 spec:
   serviceName: rustfs
   replicas: 1
@@ -53,12 +53,12 @@ spec:
             - name: RUSTFS_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: tuki-secrets
+                  name: tukituki-secrets
                   key: s3-access-key
             - name: RUSTFS_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: tuki-secrets
+                  name: tukituki-secrets
                   key: s3-secret-key
             - name: RUSTFS_ADDRESS
               value: ":9000"

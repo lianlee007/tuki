@@ -116,7 +116,7 @@ export const SeccionDemo: React.FC = () => {
               </MarcoTablet>
             )}
             {dispositivo === 'pc' && (
-              <MarcoPortatil url={`tuki.app/${slug(nombre)}`}>
+              <MarcoPortatil url={`tukituki.app/${slug(nombre)}`}>
                 <MenuDemo nombre={nombre} dispositivo="pc" />
               </MarcoPortatil>
             )}

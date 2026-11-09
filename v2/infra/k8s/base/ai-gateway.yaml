@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ai-gateway
-  namespace: tuki
+  namespace: tukituki
   labels:
     app: ai-gateway
 spec:
@@ -22,24 +22,24 @@ spec:
         fsGroup: 10001
       containers:
         - name: ai-gateway
-          image: ghcr.io/lianlee007/tuki-v2-ai-gateway:latest
+          image: ghcr.io/lianlee007/tukituki-ai-gateway:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 8000
           envFrom:
             - configMapRef:
-                name: tuki-config
+                name: tukituki-config
           env:
             - name: JWT_SECRETO
               valueFrom:
                 secretKeyRef:
-                  name: tuki-secrets
+                  name: tukituki-secrets
                   key: jwt-secreto
             - name: GROQ_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: tuki-secrets
+                  name: tukituki-secrets
                   key: groq-api-key
           readinessProbe:
             httpGet:
@@ -76,7 +76,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ai-gateway
-  namespace: tuki
+  namespace: tukituki
   labels:
     app: ai-gateway
 spec:

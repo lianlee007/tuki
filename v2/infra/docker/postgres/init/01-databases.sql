@@ -1,4 +1,4 @@
--- Bases y usuarios de Tuki v2.
+-- Bases y usuarios de TukiTuki.
 -- Cada microservicio tiene su propia base lógica y su propio usuario.
 -- En local comparten instancia; en producción se pueden separar sin cambiar
 -- el código, solo la cadena de conexión.

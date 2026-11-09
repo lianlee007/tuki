@@ -1,41 +1,41 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: tuki-alertas
-  namespace: tuki
+  name: tukituki-alertas
+  namespace: tukituki
   labels:
-    app.kubernetes.io/part-of: tuki
+    app.kubernetes.io/part-of: tukituki
     release: kube-prometheus-stack
 spec:
   groups:
     - name: tuki.disponibilidad
       rules:
         - alert: TukiAiGatewayDown
-          expr: up{namespace="tuki",service="ai-gateway"} == 0
+          expr: up{namespace="tukituki",service="ai-gateway"} == 0
           for: 5m
           labels:
             severity: critical
-            team: tuki
+            team: tukituki
           annotations:
             summary: "El AI Gateway no responde"
             description: "Sin gateway, la IA del panel falla. Revisa pods, logs y el secreto de Groq."
 
         - alert: TukiPodNotReady
-          expr: kube_pod_status_ready{namespace="tuki",condition="true"} == 0
+          expr: kube_pod_status_ready{namespace="tukituki",condition="true"} == 0
           for: 10m
           labels:
             severity: warning
-            team: tuki
+            team: tukituki
           annotations:
             summary: "Un pod de Tuki lleva 10 minutos sin estar listo"
             description: "Revisa los probes, las migraciones y los logs del pod afectado."
 
         - alert: TukiPodCrashLooping
-          expr: increase(kube_pod_container_status_restarts_total{namespace="tuki"}[15m]) > 3
+          expr: increase(kube_pod_container_status_restarts_total{namespace="tukituki"}[15m]) > 3
           for: 5m
           labels:
             severity: warning
-            team: tuki
+            team: tukituki
           annotations:
             summary: "Un contenedor de Tuki se está reiniciando"
             description: "Puede ser una migración fallida, falta de variables o un crash de arranque."
@@ -52,7 +52,7 @@ spec:
           for: 10m
           labels:
             severity: warning
-            team: tuki
+            team: tukituki
           annotations:
             summary: "Más del 5 % de peticiones al gateway fallan"
             description: "Revisa Groq, timeouts y logs del gateway."
@@ -66,7 +66,7 @@ spec:
           for: 10m
           labels:
             severity: warning
-            team: tuki
+            team: tukituki
           annotations:
             summary: "Latencia p95 del gateway por encima de 10 s"
             description: "Puede ser degradación de Groq o saturación del pod."
@@ -76,7 +76,7 @@ spec:
           for: 10m
           labels:
             severity: warning
-            team: tuki
+            team: tukituki
           annotations:
             summary: "Muchas peticiones rechazadas por rate limit"
             description: "Revisa la cuota anónima o autenticada."

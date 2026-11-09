@@ -110,7 +110,7 @@ const dibujarTarjeta = async (codigoUrl: string, nombre: string, logoUrl?: strin
     }
   }
 
-  // El pie lleva el nombre del RESTAURANTE, no el de Tuki: esta tarjeta la
+  // El pie lleva el nombre del RESTAURANTE, no el de TukiTuki: esta tarjeta la
   // imprime el dueño y acaba en su mesa, así que lo que tiene que leerse ahí es
   // lo suyo.
   ctx.fillStyle = TINTA_QR;

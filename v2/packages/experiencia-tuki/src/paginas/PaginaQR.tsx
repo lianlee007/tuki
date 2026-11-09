@@ -23,7 +23,7 @@ export default function PaginaQR() {
               <div className="p-2 rounded-xl bg-af-accent-solid text-white">
                 <Logo size={22} />
               </div>
-              <span className="text-af-ink tracking-tight">Tuki</span>
+              <span className="text-af-ink tracking-tight">TukiTuki</span>
             </Link>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -44,10 +44,10 @@ export default function PaginaQR() {
               <QrCode size={48} />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-af-ink mb-4 font-system tracking-tight">
-              Código QR de Tuki
+              Código QR de TukiTuki
             </h1>
             <p className="text-lg text-af-ink-secondary max-w-2xl mx-auto leading-relaxed">
-              Escanea este código con tu celular para acceder directamente a Tuki
+              Escanea este código con tu celular para acceder directamente a TukiTuki
             </p>
           </div>
 

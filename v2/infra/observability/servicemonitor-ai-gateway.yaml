@@ -1,15 +1,15 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: tuki-ai-gateway
-  namespace: tuki
+  name: tukituki-ai-gateway
+  namespace: tukituki
   labels:
-    app.kubernetes.io/part-of: tuki
+    app.kubernetes.io/part-of: tukituki
     release: kube-prometheus-stack
 spec:
   namespaceSelector:
     matchNames:
-      - tuki
+      - tukituki
   selector:
     matchLabels:
       app: ai-gateway

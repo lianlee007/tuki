@@ -121,14 +121,14 @@ export default function PaginaMiCuenta() {
   return (
     <>
       <SEO
-        titulo="Mi cuenta · Tuki"
-        descripcion="Tus datos de envío, reseñas y pedidos en Tuki, en un solo lugar."
+        titulo="Mi cuenta · TukiTuki"
+        descripcion="Tus datos de envío, reseñas y pedidos en TukiTuki, en un solo lugar."
       />
 
       <div className="min-h-screen bg-af-ground font-system text-af-ink">
         <header className="nav-af sticky top-0 z-40">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-3">
-            <Link to="/" className="af-pulsar flex items-center" aria-label="Tuki, volver a descubrir">
+            <Link to="/" className="af-pulsar flex items-center" aria-label="TukiTuki, volver a descubrir">
               <MarcaTuki tamano={20} titulo="" />
             </Link>
 
@@ -196,7 +196,7 @@ export default function PaginaMiCuenta() {
                   </span>
                   {desde && (
                     <span className="text-[11px] text-af-ink-secondary">
-                      En Tuki desde {desde}
+                      En TukiTuki desde {desde}
                     </span>
                   )}
                 </div>

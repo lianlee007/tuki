@@ -53,7 +53,7 @@ export const MarcoTablet: React.FC<{ children: React.ReactNode }> = ({ children 
 /**
  * Portátil: marco + barra de navegador + base.
  *
- * La barra de navegador no es decoración: es donde se lee `tuki.app/tu-slug`,
+ * La barra de navegador no es decoración: es donde se lee `tukituki.app/tu-slug`,
  * que es justo la promesa de la sección — tu propia dirección, no un enlace
  * dentro de otra plataforma.
  */

@@ -58,7 +58,7 @@ export const PanelAdmin = () => {
 
   return (
     <>
-      <Cabecera titulo="Tuki Admin">
+      <Cabecera titulo="TukiTuki Admin">
         <span>{usuario?.email}</span>
         <button className="tuki-btn tuki-btn-secundario" onClick={() => void salir()}>
           Salir

@@ -70,7 +70,7 @@ export const SeccionPortafolio: React.FC = () => {
             Ya están en línea
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl text-center font-jakarta text-2xl font-extrabold tracking-[-0.03em] text-af-ink sm:text-3xl">
-            Restaurantes que ya reciben pedidos con Tuki
+            Restaurantes que ya reciben pedidos con TukiTuki
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-base text-af-ink-secondary">
             Menús publicados y funcionando hoy mismo.

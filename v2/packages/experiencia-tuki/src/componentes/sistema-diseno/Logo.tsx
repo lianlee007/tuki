@@ -1,7 +1,7 @@
 import React from 'react';
 
 /* ==========================================================================
-   MARCA TUKI — sistema modular
+   MARCA TUKITUKI — sistema modular
    --------------------------------------------------------------------------
    La marca se arma con tres piezas que se pueden usar juntas o por separado:
 
@@ -15,7 +15,7 @@ import React from 'react';
    variantes que se puedan desincronizar.
 
    Por qué una «T» y no una «R»: la marca anterior dibujaba una «R» que no
-   aparecía en el nombre. La «T» sí deletrea Tuki, y su trazo horizontal es la
+   aparecía en el nombre. La «T» sí deletrea TukiTuki, y su trazo horizontal es la
    mesa donde se comparte la comida; la chispa es lo que se comparte.
    ========================================================================== */
 
@@ -92,7 +92,7 @@ interface PalabraTukiProps {
  *
  * Usa la misma familia y el mismo peso que los títulos de la aplicación para
  * que la marca no parezca un injerto. El tracking negativo es deliberado: a
- * tamaños pequeños, «Tuki» con el espaciado por defecto se desarma.
+ * tamaños pequeños, «TukiTuki» con el espaciado por defecto se desarma.
  */
 export const PalabraTuki: React.FC<PalabraTukiProps> = ({
   tamano = 20,
@@ -102,7 +102,7 @@ export const PalabraTuki: React.FC<PalabraTukiProps> = ({
     className={`font-bold leading-none tracking-[-0.035em] ${className}`}
     style={{ fontSize: tamano }}
   >
-    Tuki
+    TukiTuki
   </span>
 );
 
@@ -156,7 +156,7 @@ export const MarcaTuki: React.FC<MarcaTukiProps> = ({
   descriptor = 'La mesa se comparte',
   conFondo = true,
   className = '',
-  titulo = 'Tuki',
+  titulo = 'TukiTuki',
 }) => {
   const lado = tamano + 12;
   const etiqueta = [titulo, conDescriptor ? descriptor : null].filter(Boolean).join('. ');
