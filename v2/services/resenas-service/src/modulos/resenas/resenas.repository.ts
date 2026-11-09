@@ -96,6 +96,16 @@ export const responder = async (id: string, respuesta: string): Promise<Resena |
   return fila ? aResena(fila) : null;
 };
 
+/** Quita la respuesta del dueño dejando la reseña intacta. */
+export const borrarRespuesta = async (id: string): Promise<Resena | null> => {
+  const [fila] = await sql<FilaResena[]>`
+    update resenas set respuesta_dueno = null, actualizado_en = now()
+    where id = ${id}
+    returning *, 0::bigint as utiles
+  `;
+  return fila ? aResena(fila) : null;
+};
+
 export const cambiarVisible = async (id: string, visible: boolean): Promise<Resena | null> => {
   const [fila] = await sql<FilaResena[]>`
     update resenas set visible = ${visible}, actualizado_en = now()

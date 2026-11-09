@@ -29,6 +29,11 @@ spec:
             - configMapRef:
                 name: tuki-config
           env:
+            - name: JWT_SECRETO
+              valueFrom:
+                secretKeyRef:
+                  name: tuki-secrets
+                  key: jwt-secreto
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

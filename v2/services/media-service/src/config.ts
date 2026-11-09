@@ -18,8 +18,8 @@ const esquema = z.object({
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
   S3_REGION: z.string().min(1).default('us-east-1'),
   S3_BUCKET: z.string().min(1).default('tuki-media'),
-  S3_ACCESS_KEY: z.string().min(1).default('tuki_minio'),
-  S3_SECRET_KEY: z.string().min(1).default('tuki_minio_dev'),
+  S3_ACCESS_KEY: z.string().min(1).default('tuki_s3'),
+  S3_SECRET_KEY: z.string().min(1).default('tuki_s3_dev'),
   S3_PUBLIC_URL: z.string().url().default('http://localhost:9000/tuki-media'),
 });
 

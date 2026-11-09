@@ -43,20 +43,29 @@ services:
       timeout: 3s
       retries: 10
 
-  minio:
-    image: minio/minio:latest
-    container_name: tuki-v2-minio
-    command: server /data --console-address ":9001"
+  # MinIO dejó de publicar sus imágenes en octubre de 2025. RustFS es un
+  # servidor S3 compatible, Apache 2.0, que ocupa el mismo puerto y la misma
+  # API; el código del media-service no cambia.
+  rustfs:
+    image: rustfs/rustfs:1.0.4
+    container_name: tuki-v2-rustfs
+    command: ["/data"]
     environment:
-      MINIO_ROOT_USER: tuki_minio
-      MINIO_ROOT_PASSWORD: tuki_minio_dev
+      RUSTFS_ACCESS_KEY: tuki_s3
+      RUSTFS_SECRET_KEY: tuki_s3_dev
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_OBS_LOGGER_LEVEL: error
+      RUSTFS_OBS_LOG_DIRECTORY: /var/log/rustfs/
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio_data:/data
+      - rustfs_data:/data
+      - rustfs_logs:/var/log/rustfs
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -77,8 +86,9 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
-      - "80:80"
-      - "8080:8080"
+      # 80/8080 suelen estar ocupados por el stack legacy o por WSL.
+      - "8088:80"
+      - "8089:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
@@ -143,18 +153,18 @@ services:
       JWT_EMISOR: tuki-identidad
       JWT_AUDIENCIA: tuki
       CORS_ORIGENES: *cors-origenes
-      S3_ENDPOINT: http://minio:9000
+      S3_ENDPOINT: http://rustfs:9000
       S3_REGION: us-east-1
       S3_BUCKET: tuki-media
-      S3_ACCESS_KEY: tuki_minio
-      S3_SECRET_KEY: tuki_minio_dev
+      S3_ACCESS_KEY: tuki_s3
+      S3_SECRET_KEY: tuki_s3_dev
       S3_PUBLIC_URL: http://localhost:9000/tuki-media
     ports:
       - "3003:3003"
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
+      rustfs:
         condition: service_started
     labels:
       - "traefik.enable=true"
@@ -309,4 +319,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  minio_data:
+  rustfs_data:
+  rustfs_logs:
