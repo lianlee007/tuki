@@ -1,8 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest, preHandlerHookHandler } from 'fastify';
-import { errorNoAutorizado } from '../lib/errores.js';
-import { verificarAcceso } from '../lib/jwt.js';
-import type { ContextoAutenticacion } from '../modulos/media/media.types.js';
+import { verificarAcceso } from '../adaptadores/auth/jwt.js';
+import { errorNoAutorizado, errorProhibido } from '../dominio/errores.js';
+import type { ContextoAutenticacion } from '../dominio/usuario.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -12,6 +12,15 @@ declare module 'fastify' {
     autenticar: preHandlerHookHandler;
   }
 }
+
+export const exigirRol =
+  (...roles: string[]) =>
+  async (request: FastifyRequest): Promise<void> => {
+    if (!request.usuario) throw errorNoAutorizado('Inicia sesión para continuar.');
+    if (roles.length > 0 && !roles.includes(request.usuario.rol)) {
+      throw errorProhibido('Tu cuenta no tiene permiso para esta acción.');
+    }
+  };
 
 export default fp(async (app: FastifyInstance) => {
   app.decorateRequest('usuario', null);

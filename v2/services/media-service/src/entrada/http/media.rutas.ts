@@ -1,8 +1,14 @@
 import type { FastifyInstance } from 'fastify';
-import * as controlador from './media.controller.js';
+import type { CasosDeUsoMedia } from '../../aplicacion/casos-uso.js';
+import { crearControlador } from './media.controlador.js';
 
 /** Rutas de medios; siempre requieren sesión. */
-export const registrarRutasMedia = async (app: FastifyInstance): Promise<void> => {
+export const registrarRutasMedia = async (
+  app: FastifyInstance,
+  servicios: CasosDeUsoMedia,
+): Promise<void> => {
+  const controlador = crearControlador(servicios);
+
   app.post(
     '/v1/media/subir',
     {
