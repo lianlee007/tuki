@@ -77,12 +77,12 @@ export const crearPlatillo = async (
   const [fila] = await sql<FilaPlatillo[]>`
     insert into platillos (
       restaurante_id, categoria_id, nombre, descripcion, precio, imagen_url,
-      disponible, vegetariano, vegano, picante, orden
+      disponible, vegetariano, vegano, picante, activo, orden
     ) values (
       ${restauranteId}, ${entrada.categoriaId ?? null}, ${entrada.nombre},
       ${entrada.descripcion ?? null}, ${entrada.precio}, ${entrada.imagenUrl ?? null},
       ${entrada.disponible}, ${entrada.vegetariano}, ${entrada.vegano},
-      ${entrada.picante}, ${entrada.orden}
+      ${entrada.picante}, ${entrada.activo ?? true}, ${entrada.orden}
     )
     returning *
   `;
@@ -104,6 +104,7 @@ export const actualizarPlatillo = async (
     vegetariano: entrada.vegetariano,
     vegano: entrada.vegano,
     picante: entrada.picante,
+    activo: entrada.activo,
     orden: entrada.orden,
   });
   if (Object.keys(cambios).length === 0) return null;

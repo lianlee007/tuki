@@ -61,6 +61,7 @@ export const esquemaPlatillo = z.object({
   vegetariano: z.boolean().default(false),
   vegano: z.boolean().default(false),
   picante: z.boolean().default(false),
+  activo: z.boolean().optional(),
   orden: z.coerce.number().int().min(0).max(999).default(0),
 });
 
