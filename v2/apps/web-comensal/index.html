@@ -1,12 +1,34 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tuki — Descubrir</title>
+    <title>Tuki - Descubre qué comer hoy</title>
+    <meta
+      name="description"
+      content="Descubre platos de restaurantes locales por cocina, precio y preferencias. Guarda tus favoritos y pide directo por WhatsApp."
+    />
+    <script>
+      // Aplica el modo guardado antes del primer pintado para evitar el fogonazo.
+      try {
+        var modoGuardado = localStorage.getItem('tema');
+        if (modoGuardado === 'dark' || modoGuardado === 'light') {
+          document.documentElement.classList.add(modoGuardado);
+        }
+      } catch (e) {
+        /* sin localStorage: se queda en claro */
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>
+    <script src="/config.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

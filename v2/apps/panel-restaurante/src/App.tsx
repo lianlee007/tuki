@@ -1,20 +1,68 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { RutaProtegida } from '@tuki/auth-react';
-import { Entrar } from './paginas/Entrar';
-import { Panel } from './paginas/Panel';
+import React, { Suspense } from 'react';
+// @ts-ignore
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { AnimatePresence } from 'framer-motion';
+import {
+  ErrorBoundary,
+  Logo,
+  PaginaAutenticacion,
+  PaginaEntrar,
+  PanelControl,
+  Pagina404,
+  ProveedorAutenticacion,
+  ProveedorTema,
+  RutaAuth,
+  RutaPanel,
+  TransicionPagina,
+  VistaPublica,
+} from '@tuki/experiencia';
+import './estilos.css';
+import '@tuki/experiencia/estilos/tokens.css';
+import '@tuki/experiencia/estilos/apple-tokens.css';
 
-export const App = () => (
-  <Routes>
-    <Route path="/" element={<Navigate to="/panel" replace />} />
-    <Route path="/entrar" element={<Entrar />} />
-    <Route
-      path="/panel"
-      element={
-        <RutaProtegida roles={['dueno', 'superadmin']}>
-          <Panel />
-        </RutaProtegida>
-      }
-    />
-    <Route path="*" element={<Navigate to="/panel" replace />} />
-  </Routes>
+const PantallaCarga = () => (
+  <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4 animate-fadeIn">
+    <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white animate-bounce">
+      <Logo size={40} />
+    </div>
+    <span className="text-xs font-bold text-text-muted uppercase tracking-widest">
+      Cargando Tuki Panel...
+    </span>
+  </div>
 );
+
+const ContenidoAnimado = () => {
+  const location = useLocation();
+
+  return (
+    <ErrorBoundary key={location.pathname}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Navigate to="/panel" replace />} />
+          <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
+          <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
+          <Route path="/panel" element={<RutaPanel><TransicionPagina><PanelControl /></TransicionPagina></RutaPanel>} />
+          <Route path="/restaurante/:slug" element={<TransicionPagina><VistaPublica /></TransicionPagina>} />
+          <Route path="*" element={<Pagina404 />} />
+        </Routes>
+      </AnimatePresence>
+    </ErrorBoundary>
+  );
+};
+
+export default function App() {
+  return (
+    <HelmetProvider>
+      <ProveedorAutenticacion>
+        <ProveedorTema>
+          <Router>
+            <Suspense fallback={<PantallaCarga />}>
+              <ContenidoAnimado />
+            </Suspense>
+          </Router>
+        </ProveedorTema>
+      </ProveedorAutenticacion>
+    </HelmetProvider>
+  );
+}
