@@ -70,6 +70,23 @@ export const responder = async (
   return repo.responder(id, respuesta);
 };
 
+/** Borra la respuesta pública del dueño sin eliminar la reseña. */
+export const borrarRespuesta = async (
+  usuario: ContextoAutenticacion,
+  id: string,
+  token: string,
+) => {
+  const resena = await repo.buscarPorId(id);
+  if (!resena) throw errorNoEncontrado('No encontramos la reseña.');
+  if (usuario.rol !== 'dueno' && usuario.rol !== 'superadmin') {
+    throw errorProhibido('Solo el dueño puede responder una reseña.');
+  }
+  if (usuario.rol === 'dueno') {
+    await verificarPropietario(resena.restauranteId, token);
+  }
+  return repo.borrarRespuesta(id);
+};
+
 export const cambiarVisible = async (usuario: ContextoAutenticacion, id: string, visible: boolean) => {
   if (usuario.rol !== 'superadmin') {
     throw errorProhibido('Solo el superadmin puede ocultar una reseña.');

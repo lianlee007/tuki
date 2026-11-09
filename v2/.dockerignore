@@ -1,0 +1,39 @@
+# Contexto de build de las imágenes de Tuki v2.
+# Se aplica a los contenedores definidos en infra/docker/docker-compose.yml.
+
+# Control de versiones y metadatos del editor
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Dependencias y artefactos locales: se regeneran dentro de la imagen
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+test-results
+playwright-report
+*.log
+
+# Entornos y secretos
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.venv
+
+# Material que no interviene en el build
+docs
+e2e
+*.md

@@ -23,7 +23,7 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx
 ---
-# Los servicios pueden hablar con PostgreSQL, Redis y MinIO.
+# Los servicios pueden hablar con PostgreSQL, Redis y RustFS.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -34,7 +34,7 @@ spec:
     matchExpressions:
       - key: app
         operator: In
-        values: ["postgres", "redis", "minio"]
+        values: ["postgres", "redis", "rustfs"]
   policyTypes: ["Ingress"]
   ingress:
     - from:
@@ -42,7 +42,7 @@ spec:
             matchExpressions:
               - key: app
                 operator: NotIn
-                values: ["postgres", "redis", "minio"]
+                values: ["postgres", "redis", "rustfs"]
 ---
 # Salida controlada: DNS, dependencias y el servicio de restaurantes.
 apiVersion: networking.k8s.io/v1
@@ -83,7 +83,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app: minio
+              app: rustfs
       ports:
         - protocol: TCP
           port: 9000

@@ -12,7 +12,7 @@ data:
   RESTAURANTES_URL: http://restaurantes-service:3002
   IDENTIDAD_URL: http://identidad-service:3001
   PEDIDOS_URL: http://pedidos-service:3004
-  S3_ENDPOINT: http://minio:9000
+  S3_ENDPOINT: http://rustfs:9000
   S3_REGION: us-east-1
   S3_BUCKET: tuki-media
   S3_PUBLIC_URL: https://media.tuki.example.com/tuki-media

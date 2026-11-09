@@ -43,6 +43,15 @@ spec:
               memory: 96Mi
           securityContext:
             allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: config-runtime
+              mountPath: /usr/share/nginx/html/config.js
+              subPath: config.js
+              readOnly: true
+      volumes:
+        - name: config-runtime
+          configMap:
+            name: tuki-frontend-config
 ---
 apiVersion: v1
 kind: Service

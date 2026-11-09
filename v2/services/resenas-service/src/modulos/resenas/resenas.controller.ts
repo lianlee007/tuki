@@ -58,6 +58,14 @@ export const responder = async (request: FastifyRequest, reply: FastifyReply) =>
     .send(await servicio.responder(usuarioDe(request), id, respuesta, tokenDe(request)));
 };
 
+/** Elimina la respuesta del dueño y devuelve la reseña actualizada. */
+export const borrarRespuesta = async (request: FastifyRequest, reply: FastifyReply) => {
+  const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
+  return reply
+    .code(200)
+    .send(await servicio.borrarRespuesta(usuarioDe(request), id, tokenDe(request)));
+};
+
 export const cambiarVisible = async (request: FastifyRequest, reply: FastifyReply) => {
   const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
   const { visible } = esquemaVisible.parse(request.body);

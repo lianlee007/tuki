@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tuki-frontend-config
+  namespace: tuki
+  labels:
+    app.kubernetes.io/part-of: tuki
+data:
+  # Se monta como /config.js en los tres frontends. La misma imagen sirve para
+  # local y para el clúster sin recompilar.
+  config.js: |
+    window.__TUKI_CONFIG__ = {
+      identidad: 'http://api.tuki.example.com',
+      restaurantes: 'http://api.tuki.example.com',
+      media: 'http://api.tuki.example.com',
+      pedidos: 'http://api.tuki.example.com',
+      resenas: 'http://api.tuki.example.com',
+      admin: 'http://api.tuki.example.com',
+      ai: 'http://api.tuki.example.com'
+    };

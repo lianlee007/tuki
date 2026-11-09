@@ -15,5 +15,6 @@ export const registrarRutasResenas = async (app: FastifyInstance): Promise<void>
   app.post('/v1/resenas/:id/util', sesion, controlador.marcarUtil);
   app.delete('/v1/resenas/:id/util', sesion, controlador.quitarUtil);
   app.put('/v1/resenas/:id/respuesta', dueno, controlador.responder);
+app.delete('/v1/resenas/:id/respuesta', dueno, controlador.borrarRespuesta);
   app.patch('/v1/resenas/:id/visible', admin, controlador.cambiarVisible);
 };

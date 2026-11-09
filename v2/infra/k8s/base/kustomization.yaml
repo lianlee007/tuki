@@ -4,10 +4,11 @@ namespace: tuki
 resources:
   - namespace.yaml
   - configmap.yaml
+  - frontend-config.yaml
   - secret.example.yaml
   - postgres.yaml
   - redis.yaml
-  - minio.yaml
+  - rustfs.yaml
   - identidad.yaml
   - restaurantes.yaml
   - media.yaml

@@ -18,5 +18,6 @@ create database tuki_resenas owner tuki_resenas;
 create role tuki_media login password 'tuki_media_dev';
 create database tuki_media owner tuki_media;
 
-create role tuki_admin login password 'tuki_admin_dev';
+-- El rol tuki_admin lo crea la propia imagen (POSTGRES_USER), así que aquí
+-- solo se le asigna su base lógica.
 create database tuki_admin owner tuki_admin;
