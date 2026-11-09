@@ -15,7 +15,7 @@ frontends independientes y backend propio sobre PostgreSQL.
 | F5. Administración | `admin-service` y app con métricas, suspensión y auditoría |
 | F6. Cierre de frontends | Tres apps con flujos principales |
 | F7. Kubernetes, GitOps y observabilidad | K8s, ArgoCD, AI Gateway y observabilidad listos |
-| F8. Datos, corte y demo | Pendiente |
+| F8. Datos, corte y demo | Seeds, e2e y guion de demo listos |
 
 ## Estructura
 
