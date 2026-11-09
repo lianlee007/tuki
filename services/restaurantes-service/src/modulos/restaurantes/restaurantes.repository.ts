@@ -195,3 +195,43 @@ export const temaDe = async (restauranteId: string) => {
   const fila = await obtenerTema(restauranteId);
   return fila ? aTema(fila) : null;
 };
+
+export const listarTodos = async (filtros: {
+  q?: string;
+  limite: number;
+  desde: number;
+}): Promise<{ items: FilaRestaurante[]; total: number }> => {
+  const q = filtros.q?.trim() || null;
+  const filas = await sql<(FilaRestaurante & { total: string })[]>`
+    select *, count(*) over() as total
+    from restaurantes
+    where (
+      ${q}::text is null
+      or normalizar_busqueda(nombre) like '%' || normalizar_busqueda(${q}::text) || '%'
+      or normalizar_busqueda(coalesce(ciudad, '')) like '%' || normalizar_busqueda(${q}::text) || '%'
+    )
+    order by creado_en desc
+    limit ${filtros.limite} offset ${filtros.desde}
+  `;
+  return { items: filas, total: Number(filas[0]?.total ?? 0) };
+};
+
+export const resumen = async (): Promise<{ total: number; activos: number }> => {
+  const [fila] = await sql<{ total: string; activos: string }[]>`
+    select count(*)::text as total, count(*) filter (where activo)::text as activos
+    from restaurantes
+  `;
+  return { total: Number(fila?.total ?? 0), activos: Number(fila?.activos ?? 0) };
+};
+
+export const cambiarActivo = async (
+  id: string,
+  activo: boolean,
+): Promise<FilaRestaurante | null> => {
+  const [fila] = await sql<FilaRestaurante[]>`
+    update restaurantes set activo = ${activo}, actualizado_en = now()
+    where id = ${id}
+    returning *
+  `;
+  return fila ?? null;
+};

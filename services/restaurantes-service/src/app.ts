@@ -9,6 +9,7 @@ import errores from './plugins/errores.js';
 import { registrarRutasPublicas } from './modulos/restaurantes/publico.routes.js';
 import { registrarRutasPanel } from './modulos/restaurantes/panel.routes.js';
 import { registrarRutasMenu } from './modulos/restaurantes/menu.routes.js';
+import { registrarRutasAdminRestaurantes } from './modulos/restaurantes/admin.routes.js';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -41,6 +42,7 @@ export const crearApp = async () => {
   await app.register(registrarRutasPublicas);
   await app.register(registrarRutasPanel);
   await app.register(registrarRutasMenu);
+  await app.register(registrarRutasAdminRestaurantes);
 
   return app;
 };

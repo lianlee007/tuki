@@ -128,3 +128,27 @@ export const actualizarEstado = async (
   const items = await itemsDe([id]);
   return aPedido(fila, items);
 };
+
+/** Totales globales para el panel de administración. */
+export const resumen = async (): Promise<{
+  total: number;
+  pendientes: number;
+  ingresos: number;
+}> => {
+  const [fila] = await sql<{
+    total: string;
+    pendientes: string;
+    ingresos: string;
+  }[]>`
+    select
+      count(*)::text as total,
+      count(*) filter (where estado = 'pendiente')::text as pendientes,
+      coalesce(sum(total) filter (where estado <> 'cancelado'), 0)::text as ingresos
+    from pedidos
+  `;
+  return {
+    total: Number(fila?.total ?? 0),
+    pendientes: Number(fila?.pendientes ?? 0),
+    ingresos: Number(fila?.ingresos ?? 0),
+  };
+};

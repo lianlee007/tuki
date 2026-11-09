@@ -13,6 +13,8 @@ images:
     newTag: local
   - name: ghcr.io/lianlee007/tuki-v2-resenas
     newTag: local
+  - name: ghcr.io/lianlee007/tuki-v2-admin-service
+    newTag: local
   - name: ghcr.io/lianlee007/tuki-v2-web-comensal
     newTag: local
   - name: ghcr.io/lianlee007/tuki-v2-panel

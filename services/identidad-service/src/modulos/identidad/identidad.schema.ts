@@ -56,5 +56,15 @@ export const esquemaLogout = z.object({
   refreshToken: z.string().min(20, 'El token de refresco no es válido.'),
 });
 
+export const esquemaRol = z.object({
+  rol: z.enum(['cliente', 'dueno', 'superadmin']),
+});
+
+export const esquemaListadoUsuarios = z.object({
+  q: z.string().trim().max(100).optional(),
+  limite: z.coerce.number().int().min(1).max(100).default(50),
+  desde: z.coerce.number().int().min(0).default(0),
+});
+
 export type EntradaRegistro = z.infer<typeof esquemaRegistro>;
 export type EntradaLogin = z.infer<typeof esquemaLogin>;
