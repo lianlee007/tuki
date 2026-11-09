@@ -25,6 +25,46 @@ values
     'Cliente',
     'Demo',
     'cliente'
+  ),
+  (
+    '44444444-4444-4444-8444-444444444444',
+    'dueno3@tukituki.local',
+    '$argon2id$v=19$m=65536,t=3,p=4$cwXk1F9ewaDs1zexBtxYvA$7uJ1ETarVxMMysJQzoE4/B7Cz70Amoi4mik35zUyBi8',
+    'Dueño',
+    'Sabor Payanés',
+    'dueno'
+  ),
+  (
+    '55555555-5555-4555-8555-555555555555',
+    'dueno4@tukituki.local',
+    '$argon2id$v=19$m=65536,t=3,p=4$cwXk1F9ewaDs1zexBtxYvA$7uJ1ETarVxMMysJQzoE4/B7Cz70Amoi4mik35zUyBi8',
+    'Dueño',
+    'Asadero Los Arcos',
+    'dueno'
+  ),
+  (
+    '66666666-6666-4666-8666-666666666666',
+    'dueno5@tukituki.local',
+    '$argon2id$v=19$m=65536,t=3,p=4$cwXk1F9ewaDs1zexBtxYvA$7uJ1ETarVxMMysJQzoE4/B7Cz70Amoi4mik35zUyBi8',
+    'Dueño',
+    'Fritanga El Fogón',
+    'dueno'
+  ),
+  (
+    '77777777-7777-4777-8777-777777777777',
+    'dueno6@tukituki.local',
+    '$argon2id$v=19$m=65536,t=3,p=4$cwXk1F9ewaDs1zexBtxYvA$7uJ1ETarVxMMysJQzoE4/B7Cz70Amoi4mik35zUyBi8',
+    'Dueño',
+    'Donde Lian',
+    'dueno'
+  ),
+  (
+    '88888888-8888-4888-8888-888888888888',
+    'dueno7@tukituki.local',
+    '$argon2id$v=19$m=65536,t=3,p=4$cwXk1F9ewaDs1zexBtxYvA$7uJ1ETarVxMMysJQzoE4/B7Cz70Amoi4mik35zUyBi8',
+    'Dueño',
+    'Don Leo',
+    'dueno'
   )
 on conflict do nothing;
 
