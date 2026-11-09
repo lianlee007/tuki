@@ -15,6 +15,8 @@ images:
     newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-admin-service
     newTag: v2.0.0
+  - name: ghcr.io/lianlee007/tuki-v2-ai-gateway
+    newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-web-comensal
     newTag: v2.0.0
   - name: ghcr.io/lianlee007/tuki-v2-panel

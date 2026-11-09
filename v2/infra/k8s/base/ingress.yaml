@@ -93,3 +93,10 @@ spec:
                 name: admin-service
                 port:
                   name: http
+          - path: /v1/ai
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-gateway
+                port:
+                  name: http

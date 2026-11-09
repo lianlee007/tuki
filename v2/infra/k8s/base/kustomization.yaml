@@ -14,6 +14,7 @@ resources:
   - pedidos.yaml
   - resenas.yaml
   - admin-service.yaml
+  - ai-gateway.yaml
   - web-comensal.yaml
   - panel-restaurante.yaml
   - admin-plataforma.yaml

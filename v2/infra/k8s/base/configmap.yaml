@@ -16,3 +16,9 @@ data:
   S3_REGION: us-east-1
   S3_BUCKET: tuki-media
   S3_PUBLIC_URL: https://media.tuki.example.com/tuki-media
+  AI_ENVIRONMENT: production
+  AI_AUTH_MODE: local
+  AI_ALLOW_ANON: "true"
+  AI_GROQ_MODELS: openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b
+  AI_CORS_ORIGINS: >-
+    https://tuki.example.com,https://panel.tuki.example.com,https://admin.tuki.example.com
