@@ -1,12 +1,7 @@
 import postgres from 'postgres';
-import { config } from '../config.js';
+import { config } from '../../config.js';
 
-/**
- * Conexión única a PostgreSQL.
- *
- * El pool es pequeño a propósito: la escala horizontal se resuelve con más
- * réplicas del servicio, no con más conexiones por réplica.
- */
+/** Pool de conexiones del servicio de identidad. */
 export const sql = postgres(config.DATABASE_URL, {
   max: 10,
   idle_timeout: 20,

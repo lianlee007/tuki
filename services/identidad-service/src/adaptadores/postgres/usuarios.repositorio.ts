@@ -1,27 +1,22 @@
-import { sql } from '../../db/cliente.js';
+import { errorConflicto } from '../../dominio/errores.js';
 import type {
-  FilaUsuario,
+  EntradaCrearUsuario,
+  FiltrosUsuarios,
   Rol,
   UsuarioConCredenciales,
   UsuarioPublico,
-} from './identidad.types.js';
-
-/**
- * Acceso a datos de identidad.
- *
- * Es el único archivo del servicio que contiene SQL. Las consultas devuelven
- * filas crudas; el mapeo al dominio ocurre aquí para que el resto del código
- * no conozca los nombres de las columnas.
- */
-interface FilaRefresh {
-  id: string;
-  usuario_id: string;
-  token_hash: string;
-  expira_en: Date;
-  revocado_en: Date | null;
-  user_agent: string | null;
-  ip: string | null;
-}
+} from '../../dominio/usuario.js';
+import type {
+  EntradaActualizarCredenciales,
+  EntradaActualizarPerfil,
+  EntradaGuardarRefresh,
+  RefreshVigente,
+  ResultadoListadoUsuarios,
+  UsuariosRepositorio,
+} from '../../puertos/usuarios.repositorio.js';
+import { sql } from './cliente.js';
+import { esViolacionUnica } from './db-errores.js';
+import type { FilaRefresh, FilaUsuario } from './tipos.js';
 
 const aUsuario = (fila: FilaUsuario): UsuarioPublico => ({
   id: fila.id,
@@ -39,25 +34,26 @@ const aCredenciales = (fila: FilaUsuario): UsuarioConCredenciales => ({
   passwordHash: fila.password_hash,
 });
 
-export const crearUsuario = async (entrada: {
-  email: string;
-  passwordHash: string;
-  nombre: string;
-  apellido: string;
-  rol: Rol;
-}): Promise<UsuarioPublico> => {
-  const [fila] = await sql<FilaUsuario[]>`
-    insert into usuarios (email, password_hash, nombre, apellido, rol)
-    values (${entrada.email}, ${entrada.passwordHash}, ${entrada.nombre},
-            ${entrada.apellido}, ${entrada.rol})
-    returning id, email, password_hash, nombre, apellido, rol,
-              email_verificado_en, creado_en, avatar_url
-  `;
-  if (!fila) throw new Error('No se pudo crear el usuario.');
-  return aUsuario(fila);
+const crearUsuario = async (entrada: EntradaCrearUsuario): Promise<UsuarioPublico> => {
+  try {
+    const [fila] = await sql<FilaUsuario[]>`
+      insert into usuarios (email, password_hash, nombre, apellido, rol)
+      values (${entrada.email}, ${entrada.passwordHash}, ${entrada.nombre},
+              ${entrada.apellido}, ${entrada.rol})
+      returning id, email, password_hash, nombre, apellido, rol,
+                email_verificado_en, creado_en, avatar_url
+    `;
+    if (!fila) throw new Error('No se pudo crear el usuario.');
+    return aUsuario(fila);
+  } catch (error) {
+    if (esViolacionUnica(error)) {
+      throw errorConflicto('Ese correo ya tiene una cuenta.');
+    }
+    throw error;
+  }
 };
 
-export const buscarPorEmail = async (
+const buscarPorEmail = async (
   email: string,
 ): Promise<UsuarioConCredenciales | null> => {
   const [fila] = await sql<FilaUsuario[]>`
@@ -70,7 +66,7 @@ export const buscarPorEmail = async (
   return fila ? aCredenciales(fila) : null;
 };
 
-export const buscarPorId = async (id: string): Promise<UsuarioPublico | null> => {
+const buscarPorId = async (id: string): Promise<UsuarioPublico | null> => {
   const [fila] = await sql<FilaUsuario[]>`
     select id, email, password_hash, nombre, apellido, rol,
            email_verificado_en, creado_en, avatar_url
@@ -81,13 +77,7 @@ export const buscarPorId = async (id: string): Promise<UsuarioPublico | null> =>
   return fila ? aUsuario(fila) : null;
 };
 
-export const guardarRefreshToken = async (entrada: {
-  usuarioId: string;
-  tokenHash: string;
-  expiraEn: Date;
-  userAgent?: string | undefined;
-  ip?: string | undefined;
-}): Promise<void> => {
+const guardarRefreshToken = async (entrada: EntradaGuardarRefresh): Promise<void> => {
   await sql`
     insert into refresh_tokens (usuario_id, token_hash, expira_en, user_agent, ip)
     values (${entrada.usuarioId}, ${entrada.tokenHash}, ${entrada.expiraEn},
@@ -95,9 +85,9 @@ export const guardarRefreshToken = async (entrada: {
   `;
 };
 
-export const buscarRefreshVigente = async (
+const buscarRefreshVigente = async (
   tokenHash: string,
-): Promise<{ usuario: UsuarioPublico; expiraEn: Date } | null> => {
+): Promise<RefreshVigente | null> => {
   const [fila] = await sql<(FilaRefresh & FilaUsuario)[]>`
     select t.id, t.usuario_id, t.token_hash, t.expira_en, t.revocado_en,
            t.user_agent, t.ip,
@@ -114,7 +104,7 @@ export const buscarRefreshVigente = async (
   return { usuario: aUsuario(fila), expiraEn: fila.expira_en };
 };
 
-export const revocarRefreshToken = async (tokenHash: string): Promise<void> => {
+const revocarRefreshToken = async (tokenHash: string): Promise<void> => {
   await sql`
     update refresh_tokens
     set revocado_en = now()
@@ -122,31 +112,9 @@ export const revocarRefreshToken = async (tokenHash: string): Promise<void> => {
   `;
 };
 
-export const revocarTodosLosTokens = async (usuarioId: string): Promise<void> => {
-  await sql`
-    update refresh_tokens
-    set revocado_en = now()
-    where usuario_id = ${usuarioId} and revocado_en is null
-  `;
-};
-
-export const registrarAuditoria = async (entrada: {
-  usuarioId?: string;
-  accion: string;
-  detalle?: Record<string, unknown>;
-}): Promise<void> => {
-  await sql`
-    insert into auditoria_identidad (usuario_id, accion, detalle)
-    values (${entrada.usuarioId ?? null}, ${entrada.accion},
-            ${JSON.stringify(entrada.detalle ?? {})})
-  `;
-};
-
-export const actualizarCredenciales = async (entrada: {
-  usuarioId: string;
-  passwordHash: string;
-  rol?: Rol | undefined;
-}): Promise<void> => {
+const actualizarCredenciales = async (
+  entrada: EntradaActualizarCredenciales,
+): Promise<void> => {
   await sql`
     update usuarios
     set password_hash = ${entrada.passwordHash},
@@ -156,13 +124,9 @@ export const actualizarCredenciales = async (entrada: {
   `;
 };
 
-/** Actualiza los datos editables de la cuenta: nombre, apellido y foto. */
-export const actualizarPerfil = async (entrada: {
-  usuarioId: string;
-  nombre?: string | undefined;
-  apellido?: string | undefined;
-  avatarUrl?: string | null | undefined;
-}): Promise<UsuarioPublico | null> => {
+const actualizarPerfil = async (
+  entrada: EntradaActualizarPerfil,
+): Promise<UsuarioPublico | null> => {
   const campos: Record<string, unknown> = {};
   if (entrada.nombre !== undefined) campos.nombre = entrada.nombre;
   if (entrada.apellido !== undefined) campos.apellido = entrada.apellido;
@@ -179,11 +143,9 @@ export const actualizarPerfil = async (entrada: {
   return fila ? aUsuario(fila) : null;
 };
 
-export const listarUsuarios = async (filtros: {
-  q?: string;
-  limite: number;
-  desde: number;
-}): Promise<{ items: UsuarioPublico[]; total: number }> => {
+const listarUsuarios = async (
+  filtros: FiltrosUsuarios,
+): Promise<ResultadoListadoUsuarios> => {
   const q = filtros.q?.trim() || null;
   const filas = await sql<(FilaUsuario & { total: string })[]>`
     select id, email, password_hash, nombre, apellido, rol,
@@ -204,7 +166,7 @@ export const listarUsuarios = async (filtros: {
   };
 };
 
-export const resumenUsuarios = async (): Promise<Record<Rol, number>> => {
+const resumenUsuarios = async (): Promise<Record<Rol, number>> => {
   const filas = await sql<{ rol: Rol; cantidad: string }[]>`
     select rol, count(*)::text as cantidad
     from usuarios
@@ -215,7 +177,7 @@ export const resumenUsuarios = async (): Promise<Record<Rol, number>> => {
   return resumen;
 };
 
-export const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico | null> => {
+const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico | null> => {
   const [fila] = await sql<FilaUsuario[]>`
     update usuarios set rol = ${rol}, actualizado_en = now()
     where id = ${id}
@@ -224,3 +186,18 @@ export const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico |
   `;
   return fila ? aUsuario(fila) : null;
 };
+
+/** Adaptador PostgreSQL del puerto `UsuariosRepositorio`. */
+export const crearRepositorioUsuarios = (): UsuariosRepositorio => ({
+  crearUsuario,
+  buscarPorEmail,
+  buscarPorId,
+  guardarRefreshToken,
+  buscarRefreshVigente,
+  revocarRefreshToken,
+  actualizarCredenciales,
+  actualizarPerfil,
+  listarUsuarios,
+  resumenUsuarios,
+  cambiarRol,
+});
