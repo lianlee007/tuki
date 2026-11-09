@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { esquemaListado } from './admin.schema.js';
+import { esquemaListado } from './admin.esquemas.js';
 
 describe('esquemaListado', () => {
   it('aplica límites por defecto', () => {

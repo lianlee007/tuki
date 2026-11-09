@@ -1,9 +1,14 @@
 import type { FastifyInstance } from 'fastify';
+import type { CasosDeUsoAdmin } from '../../aplicacion/casos-uso.js';
 import { exigirRol } from '../../plugins/autenticacion.js';
-import * as controlador from './admin.controller.js';
+import { crearControlador } from './admin.controlador.js';
 
 /** Todo el BFF exige superadmin. */
-export const registrarRutasAdmin = async (app: FastifyInstance): Promise<void> => {
+export const registrarRutasAdmin = async (
+  app: FastifyInstance,
+  servicios: CasosDeUsoAdmin,
+): Promise<void> => {
+  const controlador = crearControlador(servicios);
   const soloAdmin = { preHandler: [app.autenticar, exigirRol('superadmin')] };
 
   app.get('/v1/admin/panorama', soloAdmin, controlador.panorama);

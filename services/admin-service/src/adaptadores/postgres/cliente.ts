@@ -1,9 +1,9 @@
 import postgres from 'postgres';
-import { config } from '../config.js';
+import { config } from '../../config.js';
 
-/** Pool de conexiones del servicio de administración. */
+/** Pool de conexiones del BFF de administración. */
 export const sql = postgres(config.DATABASE_URL, {
-  max: 5,
+  max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
   transform: { undefined: null },
