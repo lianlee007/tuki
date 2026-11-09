@@ -1,24 +1,24 @@
 # Calidad de TukiTuki: tipos, pruebas, build, e2e y validación de Kustomize.
 # Solo se dispara cuando cambia el monorepo v2 o este mismo workflow.
-name: TukiTuki v2 - calidad
+name: TukiTuki - calidad
 
 on:
   push:
     branches: [main, feat/migracion-microservicios-desarrollo]
     paths:
       - "v2/**"
-      - ".github/workflows/tukituki-v2.yml"
+      - ".github/workflows/tukituki-calidad.yml"
   pull_request:
     paths:
       - "v2/**"
-      - ".github/workflows/tukituki-v2.yml"
+      - ".github/workflows/tukituki-calidad.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: tukituki-v2-${{ github.ref }}
+  group: tukituki-calidad-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -129,3 +129,4 @@ jobs:
 
       - name: Validar el overlay de producción
         run: kubectl kustomize v2/infra/k8s/overlays/production > /dev/null
+
