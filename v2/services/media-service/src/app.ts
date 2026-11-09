@@ -3,11 +3,14 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import { crearAlmacenS3 } from './adaptadores/s3/almacen.js';
+import { crearRepositorioMedia } from './adaptadores/postgres/media.repositorio.js';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearCasosDeUsoMedia } from './aplicacion/casos-uso.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasMedia } from './entrada/http/media.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasMedia } from './modulos/media/media.routes.js';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -40,7 +43,11 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasMedia);
+  const servicios = crearCasosDeUsoMedia({
+    media: crearRepositorioMedia(),
+    almacen: crearAlmacenS3(),
+  });
+  await registrarRutasMedia(app, servicios);
 
   return app;
 };

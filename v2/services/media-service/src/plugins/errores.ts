@@ -1,14 +1,26 @@
 import fp from 'fastify-plugin';
 import { ZodError } from 'zod';
 import type { FastifyInstance } from 'fastify';
-import { ErrorHttp } from '../lib/errores.js';
+import { ErrorDominio, type CodigoError } from '../dominio/errores.js';
+
+const ESTADOS: Record<CodigoError, number> = {
+  no_encontrado: 404,
+  no_autorizado: 401,
+  prohibido: 403,
+  validacion: 400,
+  servicio_no_disponible: 503,
+};
 
 /** Formato único de error del servicio. */
 export default fp(async (app: FastifyInstance) => {
   app.setErrorHandler((error, request, reply) => {
-    if (error instanceof ErrorHttp) {
-      return reply.code(error.estado).send({
-        error: { codigo: error.codigo, mensaje: error.message },
+    if (error instanceof ErrorDominio) {
+      return reply.code(ESTADOS[error.codigo]).send({
+        error: {
+          codigo: error.codigo,
+          mensaje: error.message,
+          ...(error.detalles === undefined ? {} : { detalles: error.detalles }),
+        },
       });
     }
 
