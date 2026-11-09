@@ -1,15 +1,7 @@
-import { sql } from '../../db/cliente.js';
-import type { Auditoria } from './admin.types.js';
-
-interface FilaAuditoria {
-  id: string;
-  actor_id: string;
-  accion: string;
-  entidad: string;
-  entidad_id: string | null;
-  detalle: Record<string, unknown>;
-  creado_en: Date;
-}
+import type { Auditoria, EntradaAuditoria } from '../../dominio/admin.js';
+import type { AuditoriaRepositorio } from '../../puertos/auditoria.repositorio.js';
+import { sql } from './cliente.js';
+import type { FilaAuditoria } from './auditoria.tipos.js';
 
 const aAuditoria = (fila: FilaAuditoria): Auditoria => ({
   id: fila.id,
@@ -21,13 +13,7 @@ const aAuditoria = (fila: FilaAuditoria): Auditoria => ({
   creadoEn: fila.creado_en.toISOString(),
 });
 
-export const registrar = async (entrada: {
-  actorId: string;
-  accion: string;
-  entidad: string;
-  entidadId?: string | null;
-  detalle?: Record<string, unknown>;
-}): Promise<void> => {
+const registrar = async (entrada: EntradaAuditoria): Promise<void> => {
   await sql`
     insert into auditoria_admin (actor_id, accion, entidad, entidad_id, detalle)
     values (${entrada.actorId}, ${entrada.accion}, ${entrada.entidad},
@@ -35,9 +21,15 @@ export const registrar = async (entrada: {
   `;
 };
 
-export const listar = async (limite = 100): Promise<Auditoria[]> => {
+const listar = async (limite = 100): Promise<Auditoria[]> => {
   const filas = await sql<FilaAuditoria[]>`
     select * from auditoria_admin order by creado_en desc limit ${limite}
   `;
   return filas.map(aAuditoria);
 };
+
+/** Adaptador PostgreSQL del puerto `AuditoriaRepositorio`. */
+export const crearRepositorioAuditoria = (): AuditoriaRepositorio => ({
+  registrar,
+  listar,
+});
