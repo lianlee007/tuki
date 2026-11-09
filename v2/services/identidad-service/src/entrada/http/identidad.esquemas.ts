@@ -3,8 +3,8 @@ import { z } from 'zod';
 /**
  * Contratos de entrada del servicio.
  *
- * La validación vive en el borde HTTP. El servicio recibe datos ya tipados y
- * no repite comprobaciones de formato.
+ * La validación vive en el borde HTTP. Los casos de uso reciben datos ya
+ * tipados y no repiten comprobaciones de formato.
  */
 const email = z
   .string()
@@ -73,5 +73,5 @@ export const esquemaListadoUsuarios = z.object({
   desde: z.coerce.number().int().min(0).default(0),
 });
 
-export type EntradaRegistro = z.infer<typeof esquemaRegistro>;
-export type EntradaLogin = z.infer<typeof esquemaLogin>;
+export type EntradaRegistroValidada = z.infer<typeof esquemaRegistro>;
+export type EntradaLoginValidada = z.infer<typeof esquemaLogin>;

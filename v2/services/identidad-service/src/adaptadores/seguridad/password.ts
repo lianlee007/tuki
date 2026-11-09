@@ -1,4 +1,5 @@
 import argon2, { type Options } from 'argon2';
+import type { HasherPassword } from '../../puertos/hasher-password.js';
 
 /**
  * Contraseñas con Argon2id.
@@ -13,8 +14,8 @@ const OPCIONES: Options = {
   parallelism: 1,
 };
 
-export const hashearPassword = (password: string): Promise<string> =>
-  argon2.hash(password, OPCIONES);
-
-export const verificarPassword = (hash: string, password: string): Promise<boolean> =>
-  argon2.verify(hash, password).catch(() => false);
+export const crearHasherPassword = (): HasherPassword => ({
+  hashear: (password) => argon2.hash(password, OPCIONES),
+  verificar: (hash, password) =>
+    argon2.verify(hash, password).catch(() => false),
+});
