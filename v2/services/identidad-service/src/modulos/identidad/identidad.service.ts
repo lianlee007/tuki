@@ -148,8 +148,7 @@ export const crearSuperadmin = async (entrada: {
   password: string;
   nombre?: string;
   apellido?: string;
-}): Promise<UsuarioPublico> => {
-  const existente = await repositorio.buscarPorEmail(entrada.email);
+}): Promise<UsuarioPublico> => {  const existente = await repositorio.buscarPorEmail(entrada.email);
   const passwordHash = await hashearPassword(entrada.password);
 
   if (existente) {
@@ -169,4 +168,22 @@ export const crearSuperadmin = async (entrada: {
     apellido: entrada.apellido ?? 'Admin',
     rol: 'superadmin',
   });
+};
+
+/** Listado de cuentas para el panel de administración. */
+export const listarUsuarios = repositorio.listarUsuarios;
+
+/** Conteo de cuentas por rol. */
+export const resumenUsuarios = repositorio.resumenUsuarios;
+
+/** Cambia el rol y deja rastro en auditoría. */
+export const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico> => {
+  const usuario = await repositorio.cambiarRol(id, rol);
+  if (!usuario) throw errorNoEncontrado('No encontramos la cuenta.');
+  await repositorio.registrarAuditoria({
+    usuarioId: id,
+    accion: 'cambio_rol',
+    detalle: { rol },
+  });
+  return usuario;
 };

@@ -12,8 +12,8 @@ frontends independientes y backend propio sobre PostgreSQL.
 | F2. Identidad y roles | Backend listo; frontends pendientes |
 | F3. Restaurantes, menú y medios | Backend listo; frontends pendientes |
 | F4. Pedidos y reseñas | Backend listo; frontends pendientes |
-| F5. Administración | App base y estado de servicios |
-| F6. Cierre de frontends | Tres apps independientes; integración profunda pendiente |
+| F5. Administración | `admin-service` y app con métricas, suspensión y auditoría |
+| F6. Cierre de frontends | Tres apps con flujos principales |
 | F7. Kubernetes, GitOps y observabilidad | K8s local/producción y ArgoCD listos; observabilidad pendiente |
 | F8. Datos, corte y demo | Pendiente |
 

@@ -86,3 +86,10 @@ spec:
                 name: resenas-service
                 port:
                   name: http
+          - path: /v1/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-service
+                port:
+                  name: http

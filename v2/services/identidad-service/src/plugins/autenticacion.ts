@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest, preHandlerHookHandler } from 'fastify';
-import { errorNoAutorizado } from '../lib/errores.js';
+import { errorNoAutorizado, errorProhibido } from '../lib/errores.js';
 import { verificarAcceso } from '../lib/tokens.js';
 import type { ContextoAutenticacion } from '../modulos/identidad/identidad.types.js';
 
@@ -12,6 +12,16 @@ declare module 'fastify' {
     autenticar: preHandlerHookHandler;
   }
 }
+
+/** Exige una sesión válida y uno de los roles indicados. */
+export const exigirRol =
+  (...roles: string[]) =>
+  async (request: FastifyRequest): Promise<void> => {
+    if (!request.usuario) throw errorNoAutorizado('Inicia sesión para continuar.');
+    if (roles.length > 0 && !roles.includes(request.usuario.rol)) {
+      throw errorProhibido('Tu cuenta no tiene permiso para esta acción.');
+    }
+  };
 
 /**
  * Autenticación por Bearer token.

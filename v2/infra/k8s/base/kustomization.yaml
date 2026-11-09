@@ -13,6 +13,7 @@ resources:
   - media.yaml
   - pedidos.yaml
   - resenas.yaml
+  - admin-service.yaml
   - web-comensal.yaml
   - panel-restaurante.yaml
   - admin-plataforma.yaml

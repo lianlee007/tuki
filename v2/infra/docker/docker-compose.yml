@@ -216,6 +216,33 @@ services:
       - "traefik.http.services.resenas.loadbalancer.server.port=3005"
     restart: unless-stopped
 
+  admin-service:
+    build:
+      context: ../..
+      dockerfile: services/admin-service/Dockerfile
+    container_name: tuki-v2-admin-service
+    environment:
+      NODE_ENV: development
+      PUERTO: "3006"
+      DATABASE_URL: postgres://tuki_admin:tuki_admin_dev@postgres:5432/tuki_admin
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      IDENTIDAD_URL: http://identidad-service:3001
+      RESTAURANTES_URL: http://restaurantes-service:3002
+      PEDIDOS_URL: http://pedidos-service:3004
+      CORS_ORIGENES: *cors-origenes
+    ports:
+      - "3006:3006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-service.rule=Host(`admin-api.tuki.local`)"
+      - "traefik.http.services.admin-service.loadbalancer.server.port=3006"
+    restart: unless-stopped
+
   web-comensal:
     build:
       context: ../..

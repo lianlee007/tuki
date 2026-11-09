@@ -50,3 +50,7 @@ export const cambiarEstado = async (request: FastifyRequest, reply: FastifyReply
     .code(200)
     .send(await servicio.cambiarEstado(usuarioDe(request), id, estado, tokenDe(request)));
 };
+
+export const resumenAdmin = async (_request: FastifyRequest, reply: FastifyReply) => {
+  return reply.code(200).send(await servicio.resumenAdmin());
+};

@@ -154,3 +154,49 @@ export const actualizarCredenciales = async (entrada: {
     where id = ${entrada.usuarioId}
   `;
 };
+
+export const listarUsuarios = async (filtros: {
+  q?: string;
+  limite: number;
+  desde: number;
+}): Promise<{ items: UsuarioPublico[]; total: number }> => {
+  const q = filtros.q?.trim() || null;
+  const filas = await sql<(FilaUsuario & { total: string })[]>`
+    select id, email, password_hash, nombre, apellido, rol,
+           email_verificado_en, creado_en,
+           count(*) over() as total
+    from usuarios
+    where (
+      ${q}::text is null
+      or lower(email) like '%' || lower(${q}::text) || '%'
+      or lower(nombre || ' ' || apellido) like '%' || lower(${q}::text) || '%'
+    )
+    order by creado_en desc
+    limit ${filtros.limite} offset ${filtros.desde}
+  `;
+  return {
+    items: filas.map(aUsuario),
+    total: Number(filas[0]?.total ?? 0),
+  };
+};
+
+export const resumenUsuarios = async (): Promise<Record<Rol, number>> => {
+  const filas = await sql<{ rol: Rol; cantidad: string }[]>`
+    select rol, count(*)::text as cantidad
+    from usuarios
+    group by rol
+  `;
+  const resumen: Record<Rol, number> = { cliente: 0, dueno: 0, superadmin: 0 };
+  for (const fila of filas) resumen[fila.rol] = Number(fila.cantidad);
+  return resumen;
+};
+
+export const cambiarRol = async (id: string, rol: Rol): Promise<UsuarioPublico | null> => {
+  const [fila] = await sql<FilaUsuario[]>`
+    update usuarios set rol = ${rol}, actualizado_en = now()
+    where id = ${id}
+    returning id, email, password_hash, nombre, apellido, rol,
+              email_verificado_en, creado_en
+  `;
+  return fila ? aUsuario(fila) : null;
+};

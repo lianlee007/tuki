@@ -127,3 +127,6 @@ export const cambiarEstado = async (
   if (!actualizado) throw errorNoEncontrado('No encontramos el pedido.');
   return actualizado;
 };
+
+/** Resumen global de pedidos para superadmin. */
+export const resumenAdmin = repo.resumen;
