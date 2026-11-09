@@ -7,15 +7,15 @@ frontends independientes y backend propio sobre PostgreSQL.
 
 | Fase | Estado |
 |---|---|
-| F0. Preparación y convenciones | Contratos y rama listos; rescate pendiente de credenciales |
+| F0. Preparación y convenciones | Rescate ejecutado: 7 locales, 61 platos, 5 reseñas y 70 imágenes |
 | F1. Plataforma base | Completada, con CI de tipos, pruebas, build, e2e y Kustomize |
 | F2. Identidad y roles | Backend y UI originales conectados |
-| F3. Restaurantes, menú y medios | Backend y panel original conectados; catálogo real pendiente de rescate |
-| F4. Pedidos y reseñas | Backend y UI originales conectados |
+| F3. Restaurantes, menú y medios | Catálogo real importado y 70 imágenes migradas a RustFS |
+| F4. Pedidos y reseñas | Backend y UI originales conectados; 5 reseñas rescatadas |
 | F5. Administración | `admin-service` y app con métricas, suspensión y auditoría |
 | F6. Cierre de frontends | Tres apps; comensal y panel reutilizan la UI original |
 | F7. Kubernetes, GitOps y observabilidad | K8s, HPA, PDB, NetworkPolicies, ApplicationSet y alertas; Loki y trazas pendientes |
-| F8. Datos, corte y demo | Seeds, e2e y guion de demo listos; rescate real pendiente |
+| F8. Datos, corte y demo | Seeds, catálogo, reseñas y guion de demo listos; el stack legacy se conserva |
 
 El detalle de lo hecho, lo parcial y lo pendiente está en
 [`docs/estado-fases.md`](docs/estado-fases.md).
