@@ -1,6 +1,6 @@
 import { crearApp } from './app.js';
 import { config } from './config.js';
-import { cerrarDb } from './db/cliente.js';
+import { cerrarDb } from './adaptadores/postgres/cliente.js';
 
 /** Arranque y apagado ordenado del servicio. */
 const main = async () => {

@@ -1,4 +1,4 @@
-import type { ItemPedido, TipoPedido } from '@tuki/dominio';
+import type { ItemPedido, TipoPedido } from './pedido.js';
 
 interface DatosWhatsapp {
   restaurante: { nombre: string; whatsapp: string | null; telefono: string | null };
