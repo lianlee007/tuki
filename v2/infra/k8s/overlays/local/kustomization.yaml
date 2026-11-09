@@ -22,9 +22,9 @@ images:
     newTag: local
   - name: ghcr.io/lianlee007/tukituki-web-comensal
     newTag: local
-  - name: ghcr.io/lianlee007/tukituki-panel
+  - name: ghcr.io/lianlee007/tukituki-web-panel
     newTag: local
-  - name: ghcr.io/lianlee007/tukituki-admin
+  - name: ghcr.io/lianlee007/tukituki-web-admin
     newTag: local
 replicas:
   - name: restaurantes-service

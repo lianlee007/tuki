@@ -278,6 +278,7 @@ services:
     restart: unless-stopped
 
   web-comensal:
+    image: tukituki-web-comensal
     build:
       context: ../..
       dockerfile: apps/web-comensal/Dockerfile
@@ -291,10 +292,11 @@ services:
     restart: unless-stopped
 
   panel-restaurante:
+    image: tukituki-web-panel
     build:
       context: ../..
       dockerfile: apps/panel-restaurante/Dockerfile
-    container_name: tukituki-panel-restaurante
+    container_name: tukituki-web-panel
     ports:
       - "8082:80"
     labels:
@@ -304,10 +306,11 @@ services:
     restart: unless-stopped
 
   admin-plataforma:
+    image: tukituki-web-admin
     build:
       context: ../..
       dockerfile: apps/admin-plataforma/Dockerfile
-    container_name: tukituki-admin-plataforma
+    container_name: tukituki-web-admin
     ports:
       - "8083:80"
     labels:

@@ -19,9 +19,9 @@ images:
     newTag: v2.0.0
   - name: ghcr.io/lianlee007/tukituki-web-comensal
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tukituki-panel
+  - name: ghcr.io/lianlee007/tukituki-web-panel
     newTag: v2.0.0
-  - name: ghcr.io/lianlee007/tukituki-admin
+  - name: ghcr.io/lianlee007/tukituki-web-admin
     newTag: v2.0.0
 replicas:
   - name: identidad-service
