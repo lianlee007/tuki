@@ -2,11 +2,14 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import { crearClienteRestaurantes } from './adaptadores/http/restaurantes.cliente.js';
+import { crearRepositorioPedidos } from './adaptadores/postgres/pedidos.repositorio.js';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearCasosDeUsoPedidos } from './aplicacion/casos-uso.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasPedidos } from './entrada/http/pedidos.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasPedidos } from './modulos/pedidos/pedidos.routes.js';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -36,7 +39,11 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasPedidos);
+  const servicios = crearCasosDeUsoPedidos({
+    pedidos: crearRepositorioPedidos(),
+    restaurantes: crearClienteRestaurantes(),
+  });
+  await registrarRutasPedidos(app, servicios);
 
   return app;
 };

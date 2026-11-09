@@ -1,6 +1,11 @@
-import { sql } from '../../db/cliente.js';
-import type { EstadoPedido, ItemPedido, Pedido } from '@tuki/dominio';
-import type { FilaItem, FilaPedido, LineaGuardar } from './pedidos.types.js';
+import type { EstadoPedido, ItemPedido, Pedido } from '../../dominio/pedido.js';
+import type {
+  EntradaCrearPedidoRepositorio,
+  PedidosRepositorio,
+  ResumenPedidos,
+} from '../../puertos/pedidos.repositorio.js';
+import { sql } from './cliente.js';
+import type { FilaItem, FilaPedido } from './pedidos.tipos.js';
 
 const aItem = (fila: FilaItem): ItemPedido => ({
   platilloId: fila.platillo_id,
@@ -45,18 +50,7 @@ const agrupar = (filas: FilaItem[]) => {
   return mapa;
 };
 
-export const crear = async (entrada: {
-  restauranteId: string;
-  usuarioId: string;
-  nombreCliente: string;
-  telefonoCliente: string;
-  direccionEntrega: string | null;
-  tipoPedido: 'entrega' | 'recoger';
-  notasCliente: string | null;
-  subtotal: number;
-  total: number;
-  items: LineaGuardar[];
-}): Promise<Pedido> => {
+const crear = async (entrada: EntradaCrearPedidoRepositorio): Promise<Pedido> => {
   const id = await sql.begin(async (tx) => {
     const [pedido] = await tx<{ id: string }[]>`
       insert into pedidos (
@@ -90,14 +84,14 @@ export const crear = async (entrada: {
   return creado;
 };
 
-export const buscarPorId = async (id: string): Promise<Pedido | null> => {
+const buscarPorId = async (id: string): Promise<Pedido | null> => {
   const [fila] = await sql<FilaPedido[]>`select * from pedidos where id = ${id} limit 1`;
   if (!fila) return null;
   const items = await itemsDe([id]);
   return aPedido(fila, items);
 };
 
-export const listarPorUsuario = async (usuarioId: string): Promise<Pedido[]> => {
+const listarPorUsuario = async (usuarioId: string): Promise<Pedido[]> => {
   const filas = await sql<FilaPedido[]>`
     select * from pedidos where usuario_id = ${usuarioId}
     order by creado_en desc limit 50
@@ -106,7 +100,7 @@ export const listarPorUsuario = async (usuarioId: string): Promise<Pedido[]> => 
   return filas.map((fila) => aPedido(fila, items.get(fila.id) ?? []));
 };
 
-export const listarPorRestaurante = async (restauranteId: string): Promise<Pedido[]> => {
+const listarPorRestaurante = async (restauranteId: string): Promise<Pedido[]> => {
   const filas = await sql<FilaPedido[]>`
     select * from pedidos where restaurante_id = ${restauranteId}
     order by creado_en desc limit 100
@@ -115,7 +109,7 @@ export const listarPorRestaurante = async (restauranteId: string): Promise<Pedid
   return filas.map((fila) => aPedido(fila, items.get(fila.id) ?? []));
 };
 
-export const actualizarEstado = async (
+const actualizarEstado = async (
   id: string,
   estado: EstadoPedido,
 ): Promise<Pedido | null> => {
@@ -129,12 +123,7 @@ export const actualizarEstado = async (
   return aPedido(fila, items);
 };
 
-/** Totales globales para el panel de administración. */
-export const resumen = async (): Promise<{
-  total: number;
-  pendientes: number;
-  ingresos: number;
-}> => {
+const resumen = async (): Promise<ResumenPedidos> => {
   const [fila] = await sql<{
     total: string;
     pendientes: string;
@@ -152,3 +141,13 @@ export const resumen = async (): Promise<{
     ingresos: Number(fila?.ingresos ?? 0),
   };
 };
+
+/** Adaptador PostgreSQL del puerto `PedidosRepositorio`. */
+export const crearRepositorioPedidos = (): PedidosRepositorio => ({
+  crear,
+  buscarPorId,
+  listarPorUsuario,
+  listarPorRestaurante,
+  actualizarEstado,
+  resumen,
+});
