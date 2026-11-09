@@ -53,3 +53,7 @@ __pycache__
 playwright-report/
 test-results/
 blob-report/
+
+# Documentación y rescate locales: no se publican en la rama remota
+v2/docs/
+v2/rescate/
