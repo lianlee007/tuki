@@ -10,13 +10,14 @@ import { cerrarDb } from '../db/cliente.js';
  * entorno del despliegue con `pnpm db:superadmin`.
  */
 const esquema = z.object({
-  SUPERADMIN_EMAIL: z.string().trim().toLowerCase().email(),
+  SUPERADMIN_EMAIL: z.string().trim().toLowerCase().email().default('admin@tuki.local'),
   SUPERADMIN_PASSWORD: z
     .string()
     .min(8)
     .regex(/[A-Z]/)
     .regex(/[a-z]/)
-    .regex(/\d/),
+    .regex(/\d/)
+    .default('Admin12345'),
   SUPERADMIN_NOMBRE: z.string().trim().min(1).default('Super'),
   SUPERADMIN_APELLIDO: z.string().trim().min(1).default('Admin'),
 });
