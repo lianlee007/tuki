@@ -1,9 +1,8 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest, preHandlerHookHandler } from 'fastify';
-import type { Rol } from '@tuki/dominio';
-import { errorNoAutorizado, errorProhibido } from '../lib/errores.js';
-import { verificarAcceso } from '../lib/jwt.js';
-import type { ContextoAutenticacion } from '../modulos/restaurantes/restaurantes.types.js';
+import { verificarAcceso } from '../adaptadores/auth/jwt.js';
+import { errorNoAutorizado, errorProhibido } from '../dominio/errores.js';
+import type { ContextoAutenticacion } from '../dominio/usuario.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -16,7 +15,7 @@ declare module 'fastify' {
 
 /** Exige una sesión válida y, opcionalmente, uno de los roles indicados. */
 export const exigirRol =
-  (...roles: Rol[]) =>
+  (...roles: string[]) =>
   async (request: FastifyRequest): Promise<void> => {
     if (!request.usuario) throw errorNoAutorizado('Inicia sesión para continuar.');
     if (roles.length > 0 && !roles.includes(request.usuario.rol)) {

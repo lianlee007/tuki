@@ -2,14 +2,15 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import { sql } from './adaptadores/postgres/cliente.js';
+import { crearServiciosRestaurantes } from './composicion.js';
 import { config } from './config.js';
-import { sql } from './db/cliente.js';
+import { registrarRutasAdminRestaurantes } from './entrada/http/admin.rutas.js';
+import { registrarRutasMenu } from './entrada/http/menu.rutas.js';
+import { registrarRutasPanel } from './entrada/http/panel.rutas.js';
+import { registrarRutasPublicas } from './entrada/http/publico.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
-import { registrarRutasPublicas } from './modulos/restaurantes/publico.routes.js';
-import { registrarRutasPanel } from './modulos/restaurantes/panel.routes.js';
-import { registrarRutasMenu } from './modulos/restaurantes/menu.routes.js';
-import { registrarRutasAdminRestaurantes } from './modulos/restaurantes/admin.routes.js';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -39,10 +40,11 @@ export const crearApp = async () => {
     }
   });
 
-  await app.register(registrarRutasPublicas);
-  await app.register(registrarRutasPanel);
-  await app.register(registrarRutasMenu);
-  await app.register(registrarRutasAdminRestaurantes);
+  const casos = crearServiciosRestaurantes();
+  await registrarRutasPublicas(app, casos);
+  await registrarRutasPanel(app, casos);
+  await registrarRutasMenu(app, casos);
+  await registrarRutasAdminRestaurantes(app, casos);
 
   return app;
 };
