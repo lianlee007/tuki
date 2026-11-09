@@ -10,6 +10,17 @@ import type {
 const sinVacios = (datos: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(datos).filter(([, valor]) => valor !== undefined));
 
+/** Días de servicio por defecto: el local abre toda la semana. */
+const DIAS_POR_DEFECTO = {
+  lunes: true,
+  martes: true,
+  miercoles: true,
+  jueves: true,
+  viernes: true,
+  sabado: true,
+  domingo: true,
+};
+
 /** Perfil, tema y cocinas del restaurante. */
 export const buscarPorSlug = async (slug: string): Promise<FilaRestaurante | null> => {
   const [fila] = await sql<FilaRestaurante[]>`
@@ -75,14 +86,18 @@ export const crearConBase = async (
     const [fila] = await tx<FilaRestaurante[]>`
       insert into restaurantes (
         dueno_id, slug, nombre, descripcion, eslogan, telefono, whatsapp, email,
-        direccion, ciudad, departamento, horario_apertura, horario_cierre
+        direccion, ciudad, departamento, horario_apertura, horario_cierre,
+        facebook, instagram, twitter, dias_abierto
       ) values (
         ${entrada.duenoId}, ${entrada.slug}, ${entrada.nombre},
         ${entrada.descripcion ?? null}, ${entrada.eslogan ?? null},
         ${entrada.telefono ?? null}, ${entrada.whatsapp ?? null},
         ${entrada.email ?? null}, ${entrada.direccion ?? null},
         ${entrada.ciudad ?? null}, ${entrada.departamento ?? null},
-        ${entrada.horarioApertura ?? '09:00'}, ${entrada.horarioCierre ?? '22:00'}
+        ${entrada.horarioApertura ?? '09:00'}, ${entrada.horarioCierre ?? '22:00'},
+        ${entrada.facebook ?? null}, ${entrada.instagram ?? null},
+        ${entrada.twitter ?? null},
+        ${JSON.stringify(entrada.diasAbierto ?? DIAS_POR_DEFECTO)}::jsonb
       )
       returning *
     `;
@@ -120,28 +135,40 @@ export const actualizar = async (
   id: string,
   entrada: EntradaActualizarRestaurante,
 ): Promise<FilaRestaurante | null> => {
+  const { diasAbierto, ...resto } = entrada;
   const cambios = sinVacios({
-    nombre: entrada.nombre,
-    descripcion: entrada.descripcion,
-    eslogan: entrada.eslogan,
-    telefono: entrada.telefono,
-    whatsapp: entrada.whatsapp,
-    email: entrada.email,
-    direccion: entrada.direccion,
-    ciudad: entrada.ciudad,
-    departamento: entrada.departamento,
-    horario_apertura: entrada.horarioApertura,
-    horario_cierre: entrada.horarioCierre,
+    nombre: resto.nombre,
+    descripcion: resto.descripcion,
+    eslogan: resto.eslogan,
+    telefono: resto.telefono,
+    whatsapp: resto.whatsapp,
+    email: resto.email,
+    direccion: resto.direccion,
+    ciudad: resto.ciudad,
+    departamento: resto.departamento,
+    horario_apertura: resto.horarioApertura,
+    horario_cierre: resto.horarioCierre,
+    facebook: resto.facebook,
+    instagram: resto.instagram,
+    twitter: resto.twitter,
   });
 
-  if (Object.keys(cambios).length === 0) return buscarPorId(id);
+  if (Object.keys(cambios).length > 0) {
+    await sql`
+      update restaurantes set ${sql(cambios)}, actualizado_en = now()
+      where id = ${id}
+    `;
+  }
 
-  const [fila] = await sql<FilaRestaurante[]>`
-    update restaurantes set ${sql(cambios)}, actualizado_en = now()
-    where id = ${id}
-    returning *
-  `;
-  return fila ?? null;
+  if (diasAbierto) {
+    await sql`
+      update restaurantes
+      set dias_abierto = ${JSON.stringify(diasAbierto)}::jsonb, actualizado_en = now()
+      where id = ${id}
+    `;
+  }
+
+  return buscarPorId(id);
 };
 
 export const actualizarTema = async (

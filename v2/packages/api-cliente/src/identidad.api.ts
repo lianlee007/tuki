@@ -34,4 +34,14 @@ export const crearApiIdentidad = (http: ClienteHttp) => ({
 
   perfil: (): Promise<{ usuario: Usuario }> =>
     http.solicitar<{ usuario: Usuario }>('/v1/identidad/perfil'),
+
+  actualizarPerfil: (entrada: {
+    nombre?: string;
+    apellido?: string;
+    avatarUrl?: string | null;
+  }): Promise<{ usuario: Usuario }> =>
+    http.solicitar<{ usuario: Usuario }>('/v1/identidad/perfil', {
+      method: 'PATCH',
+      body: JSON.stringify(entrada),
+    }),
 });

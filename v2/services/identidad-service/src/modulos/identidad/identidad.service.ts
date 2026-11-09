@@ -5,6 +5,7 @@ import { esViolacionUnica } from '../../lib/db-errores.js';
 import * as repositorio from './identidad.repository.js';
 import type { EntradaLogin, EntradaRegistro } from './identidad.schema.js';
 import type {
+  ContextoAutenticacion,
   Rol,
   SesionCreada,
   UsuarioConCredenciales,
@@ -135,6 +136,19 @@ export const obtenerPerfil = async (usuarioId: string): Promise<UsuarioPublico> 
   const usuario = await repositorio.buscarPorId(usuarioId);
   if (!usuario) throw errorNoEncontrado('No encontramos la cuenta.');
   return usuario;
+};
+
+/** Actualiza nombre, apellido o foto de la propia cuenta. */
+export const actualizarPerfil = async (
+  usuario: ContextoAutenticacion,
+  entrada: { nombre?: string; apellido?: string; avatarUrl?: string | null },
+): Promise<UsuarioPublico> => {
+  const actualizado = await repositorio.actualizarPerfil({
+    usuarioId: usuario.usuarioId,
+    ...entrada,
+  });
+  if (!actualizado) throw errorNoEncontrado('No encontramos la cuenta.');
+  return actualizado;
 };
 
 /**

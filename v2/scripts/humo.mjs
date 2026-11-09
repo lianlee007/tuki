@@ -137,7 +137,58 @@ const principal = async () => {
   const respuestaImagen = await fetch(subida.url);
   comprobar('la imagen es pública', respuestaImagen.ok, `status=${respuestaImagen.status}`);
 
-  console.log('6. Superadmin');
+  console.log('6. Campos del perfil y del menú');
+  const perfil = await pedir(`${BASE.identidad}/v1/identidad/perfil`, {
+    method: 'PATCH',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${tokenDueno}`,
+    },
+    body: JSON.stringify({ avatarUrl: subida.url }),
+  });
+  comprobar('la foto de perfil se guarda', perfil.usuario.avatarUrl === subida.url);
+
+  await pedir(`${BASE.restaurantes}/v1/restaurantes/${restauranteId}`, {
+    method: 'PUT',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${tokenDueno}`,
+    },
+    body: JSON.stringify({
+      instagram: 'https://instagram.com/cafebolivar',
+      diasAbierto: { lunes: true, martes: true, domingo: false },
+    }),
+  });
+
+  await pedir(
+    `${BASE.restaurantes}/v1/restaurantes/${restauranteId}/platillos/${platillo.id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${tokenDueno}`,
+      },
+      body: JSON.stringify({
+        ingredientes: ['espresso', 'leche', 'cacao'],
+        alergenos: ['lactosa'],
+        destacado: true,
+        tiempoPreparacion: 6,
+      }),
+    },
+  );
+
+  const fichaActualizada = await pedir(`${BASE.restaurantes}/v1/restaurantes/cafe-bolivar`);
+  const platoActualizado = fichaActualizada.platillos.find((p) => p.id === platillo.id);
+  comprobar(
+    'la ficha conserva redes, días y detalle del plato',
+    fichaActualizada.restaurante.instagram === 'https://instagram.com/cafebolivar' &&
+      fichaActualizada.restaurante.diasAbierto?.domingo === false &&
+      platoActualizado?.destacado === true &&
+      platoActualizado?.ingredientes?.includes('cacao') &&
+      platoActualizado?.tiempoPreparacion === 6,
+  );
+
+  console.log('7. Superadmin');
   const panorama = await pedir(`${BASE.admin}/v1/admin/panorama`, {
     headers: { authorization: `Bearer ${tokenAdmin}` },
   });

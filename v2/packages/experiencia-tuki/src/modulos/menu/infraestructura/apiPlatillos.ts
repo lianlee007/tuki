@@ -74,6 +74,10 @@ export const apiPlatillos = {
       vegetariano: platillo.vegetariano ?? false,
       vegano: platillo.vegano ?? false,
       picante: platillo.picante ?? false,
+      ingredientes: platillo.ingredientes ?? [],
+      alergenos: platillo.alergenos ?? [],
+      destacado: platillo.destacado ?? false,
+      tiempoPreparacion: platillo.tiempo_preparacion ?? null,
     };
 
     if (platillo.id) {

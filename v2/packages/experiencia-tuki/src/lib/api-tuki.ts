@@ -116,6 +116,22 @@ const diasPorDefecto = {
   domingo: true,
 };
 
+/** El servicio puede devolver `jsonb` como texto; se normaliza aquí. */
+const diasDe = (valor: unknown): Record<string, boolean> => {
+  if (valor && typeof valor === 'object') return valor as Record<string, boolean>;
+  if (typeof valor === 'string') {
+    try {
+      const parseado = JSON.parse(valor);
+      return parseado && typeof parseado === 'object'
+        ? (parseado as Record<string, boolean>)
+        : diasPorDefecto;
+    } catch {
+      return diasPorDefecto;
+    }
+  }
+  return diasPorDefecto;
+};
+
 export const aRestaurante = (dto: RestauranteDto & { duenoId?: string }): Restaurante => ({
   id: dto.id,
   usuario_id: dto.duenoId ?? '',
@@ -130,13 +146,13 @@ export const aRestaurante = (dto: RestauranteDto & { duenoId?: string }): Restau
   ciudad: dto.ciudad ?? '',
   pais: 'Colombia',
   codigo_postal: '',
-  facebook: '',
-  instagram: '',
-  twitter: '',
+  facebook: dto.facebook ?? '',
+  instagram: dto.instagram ?? '',
+  twitter: dto.twitter ?? '',
   whatsapp: dto.whatsapp ?? '',
   horario_apertura: dto.horarioApertura ?? '09:00',
   horario_cierre: dto.horarioCierre ?? '22:00',
-  dias_abierto: diasPorDefecto,
+  dias_abierto: { ...diasPorDefecto, ...diasDe(dto.diasAbierto) },
   imagen_logo_url: dto.imagenLogoUrl ?? '',
   imagen_banner_url: dto.imagenBannerUrl ?? '',
   moneda: 'COP',
@@ -161,6 +177,10 @@ export const aRestauranteDto = (datos: Partial<Restaurante>): Record<string, unk
   if (datos.horario_cierre !== undefined) salida.horarioCierre = datos.horario_cierre;
   if (datos.imagen_logo_url !== undefined) salida.imagenLogoUrl = datos.imagen_logo_url || null;
   if (datos.imagen_banner_url !== undefined) salida.imagenBannerUrl = datos.imagen_banner_url || null;
+  if (datos.facebook !== undefined) salida.facebook = datos.facebook;
+  if (datos.instagram !== undefined) salida.instagram = datos.instagram;
+  if (datos.twitter !== undefined) salida.twitter = datos.twitter;
+  if (datos.dias_abierto !== undefined) salida.diasAbierto = datos.dias_abierto;
   return salida;
 };
 
@@ -212,15 +232,16 @@ export const aPlatillo = (
     descripcion: dto.descripcion ?? '',
     precio: Number(dto.precio),
     imagen_url: dto.imagenUrl ?? '',
-    ingredientes: [],
-    alergenos: [],
+    ingredientes: dto.ingredientes ?? [],
+    alergenos: dto.alergenos ?? [],
     vegetariano: dto.vegetariano,
     vegano: dto.vegano,
     picante: dto.picante,
     disponible: dto.disponible,
     visible: dto.activo,
-    destacado: false,
+    destacado: dto.destacado ?? false,
     activo: dto.activo,
+    tiempo_preparacion: dto.tiempoPreparacion ?? undefined,
   };
 };
 
@@ -242,6 +263,9 @@ export const aPlatoDescubierto = (dto: PlatoDescubierto): PlatoLegado => ({
   vegetariano: dto.vegetariano,
   vegano: dto.vegano,
   picante: dto.picante,
+  ingredientes: dto.ingredientes ?? [],
+  alergenos: dto.alergenos ?? [],
+  destacado: dto.destacado ?? false,
   restaurante_id: dto.restauranteId,
   restaurante_nombre: dto.restauranteNombre,
   ciudad: dto.ciudad,

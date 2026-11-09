@@ -6,6 +6,22 @@ import type {
   FilaTema,
 } from './restaurantes.types.js';
 
+/** PostgreSQL devuelve `jsonb` como texto; aquí se normaliza a objeto. */
+const aDiasAbierto = (valor: unknown): Record<string, boolean> => {
+  if (valor && typeof valor === 'object') return valor as Record<string, boolean>;
+  if (typeof valor === 'string') {
+    try {
+      const parseado = JSON.parse(valor);
+      return parseado && typeof parseado === 'object'
+        ? (parseado as Record<string, boolean>)
+        : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
+
 /** Traduce filas de PostgreSQL al modelo de dominio en camelCase. */
 export const aRestaurante = (fila: FilaRestaurante): Restaurante => ({
   id: fila.id,
@@ -24,6 +40,10 @@ export const aRestaurante = (fila: FilaRestaurante): Restaurante => ({
   imagenBannerUrl: fila.imagen_banner_url,
   horarioApertura: fila.horario_apertura,
   horarioCierre: fila.horario_cierre,
+  facebook: fila.facebook,
+  instagram: fila.instagram,
+  twitter: fila.twitter,
+  diasAbierto: aDiasAbierto(fila.dias_abierto),
   activo: fila.activo,
   creadoEn: fila.creado_en.toISOString(),
 });
@@ -68,6 +88,10 @@ export const aPlatillo = (fila: FilaPlatillo): Platillo => ({
   vegetariano: fila.vegetariano,
   vegano: fila.vegano,
   picante: fila.picante,
+  ingredientes: fila.ingredientes ?? [],
+  alergenos: fila.alergenos ?? [],
+  destacado: fila.destacado,
+  tiempoPreparacion: fila.tiempo_preparacion,
   orden: fila.orden,
 });
 
