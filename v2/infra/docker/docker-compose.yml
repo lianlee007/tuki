@@ -243,6 +243,30 @@ services:
       - "traefik.http.services.admin-service.loadbalancer.server.port=3006"
     restart: unless-stopped
 
+  ai-gateway:
+    build:
+      context: ../../services/ai-gateway
+      dockerfile: Dockerfile
+    container_name: tuki-v2-ai-gateway
+    environment:
+      AI_ENVIRONMENT: development
+      AI_AUTH_MODE: local
+      AI_ALLOW_ANON: "true"
+      AI_LOG_LEVEL: INFO
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      JWT_SECRETO: cambio-este-secreto-en-produccion
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      AI_CORS_ORIGINS: *cors-origenes
+      AI_GROQ_MODELS: ${AI_GROQ_MODELS:-openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b}
+    ports:
+      - "8000:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-gateway.rule=Host(`ai.tuki.local`)"
+      - "traefik.http.services.ai-gateway.loadbalancer.server.port=8000"
+    restart: unless-stopped
+
   web-comensal:
     build:
       context: ../..
