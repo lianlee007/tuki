@@ -1,9 +1,0 @@
-{
-  "name": "Tuki",
-  "description": "Constructor de sitios web para restaurantes con IA, diseño neumórfico y gestión de menús.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone",
-    "geolocation"
-  ]
-}

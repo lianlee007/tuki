@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="192" height="192" fill="none" role="img" aria-label="Símbolo de Tuki">
-  <title>Símbolo de Tuki: la T de la mesa y la chispa</title>
-  <g transform="translate(-1.25 1.35)">
-    <path d="M4.4 7.6H16" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/>
-    <path d="M10.2 7.6V19.6" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round"/>
-    <path d="M19.6 1.7Q20.06 3.74 22.1 4.2Q20.06 4.66 19.6 6.7Q19.14 4.66 17.1 4.2Q19.14 3.74 19.6 1.7Z" fill="#C2410C"/>
-  </g>
-</svg>

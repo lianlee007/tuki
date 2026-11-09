@@ -12,9 +12,9 @@ interface RobotIAProps {
  * ASISTENTE TUKI — la cabeza del robot.
  *
  * Tres trazos y nada más: una cabeza redondeada, una antena y dos ojos. La
- * antena no termina en un punto cualquiera: termina en la misma chispa de
- * cuatro puntas que lleva la «T» de la marca, así que el asistente se lee como
- * parte de TukiTuki y no como un icono genérico de «IA».
+ * antena termina en una chispa de cuatro puntas: es el acento del asistente.
+ * La marca de Tuki ya no usa esa chispa —su símbolo es la T-mesa—, así que el
+ * asistente tiene su propia figura sin competir con el logo.
  *
  * Todo se pinta con `currentColor` y un solo grosor de trazo, para que herede
  * el color del texto y encaje con el resto de iconos. Los ojos y la chispa van
