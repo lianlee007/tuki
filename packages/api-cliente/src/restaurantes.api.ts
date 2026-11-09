@@ -1,4 +1,5 @@
 import type {
+  Categoria,
   MenuPublico,
   Pagina,
   PanelRestaurante,
@@ -72,9 +73,15 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
     nombre: string;
     slug?: string;
     descripcion?: string;
+    eslogan?: string;
     ciudad?: string;
+    departamento?: string;
     telefono?: string;
     whatsapp?: string;
+    email?: string;
+    direccion?: string;
+    horarioApertura?: string;
+    horarioCierre?: string;
     cocinas?: string[];
   }) =>
     http.solicitar<{ restaurante: unknown; tema: unknown }>('/v1/restaurantes', {
@@ -100,6 +107,23 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
       body: JSON.stringify(datos),
     }),
 
+  categorias: (restauranteId: string) =>
+    http.solicitar<{ categorias: Categoria[] }>(
+      `/v1/restaurantes/${encodeURIComponent(restauranteId)}/categorias`,
+    ),
+
+  eliminarCategoria: (restauranteId: string, categoriaId: string) =>
+    http.solicitar<void>(
+      `/v1/restaurantes/${encodeURIComponent(restauranteId)}/categorias/${encodeURIComponent(categoriaId)}`,
+      { method: 'DELETE' },
+    ),
+
+  actualizarCocinas: (restauranteId: string, cocinas: string[]) =>
+    http.solicitar<unknown>(
+      `/v1/restaurantes/${encodeURIComponent(restauranteId)}/cocinas`,
+      { method: 'PUT', body: JSON.stringify({ cocinas }) },
+    ),
+
   crearPlatillo: (
     restauranteId: string,
     datos: {
@@ -122,6 +146,16 @@ export const crearApiRestaurantes = (http: ClienteHttp) => ({
     http.solicitar<void>(
       `/v1/restaurantes/${restauranteId}/platillos/${platilloId}`,
       { method: 'DELETE' },
+    ),
+
+  actualizarPlatillo: (
+    restauranteId: string,
+    platilloId: string,
+    datos: Record<string, unknown>,
+  ) =>
+    http.solicitar<unknown>(
+      `/v1/restaurantes/${encodeURIComponent(restauranteId)}/platillos/${encodeURIComponent(platilloId)}`,
+      { method: 'PUT', body: JSON.stringify(datos) },
     ),
 
   disponibilidadPlatillo: (

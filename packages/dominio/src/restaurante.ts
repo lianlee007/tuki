@@ -11,6 +11,7 @@ export interface Restaurante {
   direccion: string | null;
   ciudad: string | null;
   departamento: string | null;
+  pais?: string | null;
   imagenLogoUrl: string | null;
   imagenBannerUrl: string | null;
   horarioApertura: string | null;
@@ -28,6 +29,12 @@ export interface Tema {
   colorFondo: string;
   colorTexto: string;
   colorTextoTitulos: string;
+  /** Paleta opcional para el modo oscuro del menú público. */
+  colorPrimarioOscuro?: string | null;
+  colorSecundarioOscuro?: string | null;
+  colorFondoOscuro?: string | null;
+  colorTextoOscuro?: string | null;
+  colorTextoTitulosOscuro?: string | null;
   fuenteTitulos: string;
   fuenteCuerpo: string;
 }

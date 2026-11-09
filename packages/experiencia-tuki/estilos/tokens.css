@@ -1,0 +1,347 @@
+/* Tokens visuales heredados del Tuki original.
+ * Se importan antes de Tailwind para que las variables --af-* y los
+ * componentes .neumorphic sigan funcionando igual. */
+
+    :root {
+      /* --- LIGHT MODE: PAPEL TERROSO (Earthy Paper) --- */
+      --bg-color: #F5F1E8;
+      --surface-color: #FFFFFF;
+      /* Tarjetas blancas como papel */
+      --text-main: #2C2416;
+      /* Marrón muy oscuro */
+      --text-muted: #8A7A6A;
+      /* Marrón suave */
+
+      /* Bordes sólidos para modo claro - MUY VISIBLES */
+      --border-primary: #D4C4B0;
+      --border-subtle: #E8DCC8;
+      --border-hover: #C4B4A0;
+      --border-width: 2px;
+
+      --input-bg: #FFFFFF;
+
+      /* Variables de sombra (Sutiles tipo papel para modo claro) */
+      --shadow-paper: 0 2px 8px rgba(44, 36, 22, 0.08);
+      --shadow-paper-hover: 0 4px 12px rgba(44, 36, 22, 0.12);
+
+      /* Variables de sombra neumórfica (Reset para modo claro) */
+      --shadow-dark: transparent;
+      --shadow-light: transparent;
+
+      --border-highlight: rgba(255, 255, 255, 0.6);
+      --border-shadow: rgba(0, 0, 0, 0.1);
+
+      /* Textura de papel (SVG Data URI) - Opacidad ajustada */
+      --paper-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+
+      /* Variables dinámicas de usuario (defaults) */
+      --user-primary: #EA580C;
+      --user-secondary: #10B981;
+    }
+
+    .dark {
+      /* MODO OSCURO: fondo tostado del sistema «Warm Culinary Hearth».
+         #131110 para el lienzo y #1F1C1A para las superficies: el marrón
+         profundo conserva la calidez del modo claro y evita el negro frío. */
+      --bg-color: #131110;
+      --surface-color: #1F1C1A;
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+
+      /* Sombras EXTREMAS para profundidad 3D */
+      --shadow-dark: rgba(0, 0, 0, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.08);
+
+      /* Sombras coloreadas sutiles */
+      --shadow-primary-tint: rgba(234, 88, 12, 0.15);
+
+      /* Bordes de alto contraste para definición 3D */
+      --border-highlight: rgba(255, 255, 255, 0.12);
+      --border-shadow: rgba(0, 0, 0, 0.9);
+
+      --border-primary: transparent;
+      --border-width: 0px;
+      --paper-texture: none;
+
+      /* Glow effects */
+      --glow-primary: 0 0 20px rgba(234, 88, 12, 0.3);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+      background-image: var(--paper-texture);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* --- MOTOR DE ESTILOS NIVEL DIOS --- */
+
+    /* MODO CLARO: Papel Elegante */
+    .neumorphic {
+      background: var(--surface-color);
+      border: var(--border-width) solid var(--border-primary);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-paper);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .neumorphic:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-paper-hover);
+      transform: translateY(-2px);
+    }
+
+    /* MODO OSCURO: Neumorfismo Extremo */
+    .dark .neumorphic {
+      background: var(--bg-color);
+      box-shadow:
+        16px 16px 32px var(--shadow-dark),
+        -16px -16px 32px var(--shadow-light),
+        inset 1px 1px 0px var(--border-highlight),
+        inset -1px -1px 0px var(--border-shadow);
+      border: none;
+      border-radius: 1.5rem;
+    }
+
+    .dark .neumorphic:hover {
+      box-shadow:
+        20px 20px 40px var(--shadow-dark),
+        -20px -20px 40px var(--shadow-light),
+        inset 1px 1px 0px var(--border-highlight),
+        inset -1px -1px 0px var(--border-shadow);
+      transform: translateY(-4px);
+    }
+
+    /* MODO CLARO: Inset (Inputs) */
+    .neumorphic-inset {
+      background: #FFFFFF;
+      border: var(--border-width) solid var(--border-primary);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(139, 115, 85, 0.1);
+    }
+
+    .neumorphic-inset:focus-within {
+      border-color: var(--user-primary);
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+    }
+
+    /* MODO OSCURO: Inset Profundo */
+    .dark .neumorphic-inset {
+      background: var(--bg-color);
+      box-shadow:
+        inset 8px 8px 16px var(--shadow-dark),
+        inset -8px -8px 16px var(--shadow-light);
+      border: none;
+      border-bottom: 1px solid var(--border-highlight);
+      border-right: 1px solid var(--border-highlight);
+      border-top: 1px solid var(--border-shadow);
+      border-left: 1px solid var(--border-shadow);
+    }
+
+    .dark .neumorphic-inset:focus-within {
+      box-shadow:
+        inset 8px 8px 16px var(--shadow-dark),
+        inset -8px -8px 16px var(--shadow-light),
+        0 0 15px var(--shadow-primary-tint);
+    }
+
+    /* BOTONES */
+    .neumorphic-btn {
+      background: var(--user-primary);
+      color: #FFFFFF;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-radius: 0.75rem;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .neumorphic-btn:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+      filter: brightness(1.1);
+    }
+
+    .neumorphic-btn:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+    }
+
+    /* MODO OSCURO: Botones Neumórficos */
+    .dark .neumorphic-btn {
+      background: var(--bg-color);
+      color: var(--user-primary);
+      box-shadow:
+        8px 8px 16px var(--shadow-dark),
+        -8px -8px 16px var(--shadow-light),
+        inset 1px 1px 0px var(--border-highlight),
+        inset -1px -1px 0px var(--border-shadow);
+    }
+
+    .dark .neumorphic-btn:hover:not(:disabled) {
+      color: #FFFFFF;
+      background: var(--bg-color);
+      /* Mantener fondo oscuro pero añadir glow al texto/borde si se desea, o cambiar background */
+      box-shadow:
+        12px 12px 24px var(--shadow-dark),
+        -12px -12px 24px var(--shadow-light),
+        inset 1px 1px 0px var(--border-highlight),
+        inset -1px -1px 0px var(--border-shadow),
+        0 0 15px var(--shadow-primary-tint);
+      /* Glow sutil */
+    }
+
+    .dark .neumorphic-btn:active:not(:disabled) {
+      box-shadow:
+        inset 4px 4px 8px var(--shadow-dark),
+        inset -4px -4px 8px var(--shadow-light);
+    }
+
+    /* Scrollbar Personalizado */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--user-primary);
+      border-radius: 10px;
+      border: 3px solid var(--bg-color);
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+      background-color: #3D302B;
+      border: 3px solid var(--bg-color);
+    }
+
+    /* Animaciones Globales */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    /* Autocomplete Fix */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px var(--bg-color) inset !important;
+      -webkit-text-fill-color: var(--text-main) !important;
+      caret-color: var(--text-main) !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus,
+    .dark input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px var(--bg-color) inset !important;
+      -webkit-text-fill-color: var(--text-main) !important;
+    }
+
+    /* Time/Date Picker Inversion */
+    .dark input[type="time"]::-webkit-calendar-picker-indicator,
+    .dark input[type="date"]::-webkit-calendar-picker-indicator,
+    .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    /* --- UTILIDADES NIVEL DIOS --- */
+
+    /* Selección de Texto Personalizada */
+    ::selection {
+      background-color: var(--user-primary);
+      color: #FFFFFF;
+    }
+
+    /* Efecto Glassmorphism Universal */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Efecto Glow Texto */
+    .text-glow {
+      text-shadow: 0 0 20px var(--user-primary);
+    }
+
+    /* Efecto Glow Caja (Solo Dark) */
+    .dark .box-glow {
+      box-shadow: 0 0 30px -5px var(--shadow-primary-tint);
+    }
+
+    /* Animaciones Adicionales */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .animate-slideIn {
+      animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-zoomIn {
+      animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes flipIn {
+      from {
+        opacity: 0;
+        transform: rotateY(-90deg) scale(0.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: rotateY(0deg) scale(1);
+      }
+    }
+
+    .animate-flipIn {
+      animation: flipIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+  

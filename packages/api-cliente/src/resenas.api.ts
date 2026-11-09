@@ -51,6 +51,12 @@ export const crearApiResenas = (http: ClienteHttp) => ({
       { method: 'PUT', body: JSON.stringify({ respuesta }) },
     ),
 
+  borrarRespuesta: (resenaId: string) =>
+    http.solicitar<Resena>(
+      `/v1/resenas/${encodeURIComponent(resenaId)}/respuesta`,
+      { method: 'DELETE' },
+    ),
+
   cambiarVisible: (resenaId: string, visible: boolean) =>
     http.solicitar<Resena>(
       `/v1/resenas/${encodeURIComponent(resenaId)}/visible`,

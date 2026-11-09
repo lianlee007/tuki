@@ -1,0 +1,40 @@
+{
+  "name": "@tuki/experiencia",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./paginas/*": "./src/paginas/*",
+    "./componentes/*": "./src/componentes/*",
+    "./contexto/*": "./src/contexto/*",
+    "./estilos/tokens.css": "./estilos/tokens.css",
+    "./estilos/apple-tokens.css": "./estilos/apple-tokens.css",
+    "./tailwind-preset": "./tailwind-preset.cjs"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@tuki/api-cliente": "workspace:*",
+    "@tuki/auth-react": "workspace:*",
+    "@tuki/dominio": "workspace:*",
+    "framer-motion": "11",
+    "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-helmet-async": "2.0.4",
+    "react-hook-form": "7.51.3",
+    "react-router-dom": "^7.18.4",
+    "zod": "^4.0.17",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.2"
+  }
+}
