@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validarArchivo } from './validar-archivo.js';
+import { validarArchivo } from './media.js';
 
 describe('validarArchivo', () => {
   it('acepta una imagen de menú dentro del límite', () => {

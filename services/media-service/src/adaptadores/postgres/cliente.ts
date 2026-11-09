@@ -1,5 +1,5 @@
 import postgres from 'postgres';
-import { config } from '../config.js';
+import { config } from '../../config.js';
 
 /** Pool de conexiones del servicio de medios. */
 export const sql = postgres(config.DATABASE_URL, {
