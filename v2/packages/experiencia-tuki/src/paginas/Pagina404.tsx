@@ -8,10 +8,8 @@ export default function Pagina404() {
   return (
     <TransicionPagina>
       <div className="min-h-screen bg-af-ground flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-32 h-32 rounded-[28px] flex items-center justify-center mb-8 border border-af/20 shadow-xl relative bg-af-surface">
-          <div className="text-af-accent opacity-60">
-            <Logo size={64} />
-          </div>
+        <div className="w-32 h-32 rounded-[28px] flex items-center justify-center mb-8 border border-af/20 shadow-xl relative bg-af-accent-solid text-white">
+          <Logo size={64} />
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold text-af-ink mb-4 font-system tracking-tight">

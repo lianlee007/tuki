@@ -64,7 +64,7 @@ export default function PaginaParaRestaurantes() {
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="af-pulsar flex shrink-0 items-center gap-2.5 sm:gap-3"
               >
-                <MarcaTuki tamano={22} />
+                <MarcaTuki tamano={26} />
               </button>
 
               {/* Las dos portadas del producto. Es el mismo par que ofrece la
@@ -217,7 +217,7 @@ export default function PaginaParaRestaurantes() {
         <Contenedor maxAncho="grande">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
             <MarcaTuki
-              tamano={20}
+              tamano={22}
               conDescriptor
               descriptor="Webs para restaurantes, hechas en Colombia."
             />

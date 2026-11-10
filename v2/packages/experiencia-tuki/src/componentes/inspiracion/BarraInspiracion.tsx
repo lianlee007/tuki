@@ -29,8 +29,8 @@ export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAnto
       </Link>
 
       <div className="flex min-w-0 items-center gap-2.5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-hearth-terracotta to-[#EE8062] text-white shadow-warm dark:from-hearth-night-terracotta dark:to-[#E97A56] dark:text-hearth-night">
-          <SimboloTuki size={22} />
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:h-12 sm:w-12">
+          <SimboloTuki size={30} />
         </span>
         <div className="min-w-0 leading-tight">
           <h1 className="truncate font-jakarta text-lg font-extrabold tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink">

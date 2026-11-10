@@ -1,24 +1,18 @@
 import React from 'react';
+import {
+  ASPECTO_TUKI,
+  ASPECTO_TUKITUKI,
+  TRAZADO_TUKI,
+  TRAZADO_TUKITUKI,
+  VIEWBOX_TUKI,
+  VIEWBOX_TUKITUKI,
+} from './marca-trazados';
 
 /* ==========================================================================
-   MARCA TUKI — sistema modular
-   --------------------------------------------------------------------------
-   La marca se arma con tres piezas que se pueden usar juntas o por separado:
-
-   1. `SimboloTuki`  — la «T» construida como una mesa de pedestal.
-   2. `PalabraTuki`  — el logotipo tipográfico (Plus Jakarta Sans 800).
-   3. `DescriptorTuki` — la línea de marca en español.
-
-   `MarcaTuki` compone las tres en horizontal o en vertical. Todo se pinta con
-   `currentColor`, así que la marca hereda el color del contexto: tinta sobre
-   papel, blanco sobre el acento. No hay archivos de color duplicados ni
-   variantes que se puedan desincronizar.
-
-   Por qué una mesa de pedestal: la «T» es el tablero, la columna y la base de
-   una mesa de restaurante. De un solo golpe dice el nombre (T de Tuki) y el
-   producto (la mesa donde se comparte la comida). La chispa anterior se
-   retiró: a 16 px no sobrevivía y competía con la letra. El símbolo ahora es
-   una sola silueta, legible en el favicon y en la baldosa de la aplicación.
+   MARCA TUKITUKI 2026 — la chispa se hizo llama
+   `SimboloTuki` (mesa y llama), `PalabraTuki` (logotipo con la llama en la «i»)
+   y `DescriptorTuki`. Todo se pinta con `currentColor`; la baldosa de
+   `MarcaTuki` fija el terracota y el blanco.
    ========================================================================== */
 
 interface SimboloTukiProps {
@@ -29,14 +23,10 @@ interface SimboloTukiProps {
 }
 
 /**
- * La «T» de la mesa.
+ * La mesa con la llama.
  *
- * Tres piezas sólidas, sin trazos finos: el tablero (barra superior), la
- * columna (asta) y la base (pedestal). La barra y la base tienen los extremos
- * redondeados; las esquinas interiores quedan vivas, como una unión de madera.
- *
- * El lienzo es de 64 × 64 y la marca ocupa 44 × 50.5, con aire suficiente para
- * que la baldosa respire y para que a 16 px el trazo no toque el borde.
+ * La llama se apoya en el tablero: no flota. Esa unión es la que convierte la
+ * marca en una escena —la mesa encendida— y la aleja de un destello genérico.
  */
 export const SimboloTuki: React.FC<SimboloTukiProps> = ({
   size = 24,
@@ -54,12 +44,14 @@ export const SimboloTuki: React.FC<SimboloTukiProps> = ({
     aria-label={titulo}
     aria-hidden={titulo ? undefined : true}
   >
-    {/* Tablero: la barra superior de la T y la superficie donde se comparte. */}
-    <rect x="10" y="7.5" width="44" height="10" rx="5" fill="currentColor" />
-    {/* Columna: el asta que sostiene la mesa y completa la T. */}
-    <rect x="27" y="17" width="10" height="33.5" fill="currentColor" />
-    {/* Base: el pedestal que apoya la mesa en el suelo. */}
-    <rect x="17.5" y="50" width="29" height="8" rx="4" fill="currentColor" />
+    <g fill="currentColor">
+      {/* La llama: rizo, punta y base redonda sobre el tablero. */}
+      <path d="M30 32.5 C27 30.5 24 26 24.5 21 C25 17 27 14 29.5 11.5 C29 14.5 30 16.5 31.5 17.5 C32 14 32 11 33 8.5 C36 12.5 39.5 16.5 39 22 C38.5 27 35.5 30.5 34 32.5 C32.7 33.5 31.3 33.5 30 32.5 Z" />
+      {/* El tablero y las dos patas. */}
+      <rect x="12" y="32.5" width="40" height="7" rx="3.5" />
+      <rect x="18" y="39.5" width="6" height="12" rx="2" />
+      <rect x="40" y="39.5" width="6" height="12" rx="2" />
+    </g>
   </svg>
 );
 
@@ -67,30 +59,46 @@ export const SimboloTuki: React.FC<SimboloTukiProps> = ({
 export const Logo = SimboloTuki;
 
 interface PalabraTukiProps {
-  /** Tamaño en píxeles del logotipo. */
+  /** Alto del logotipo en píxeles. El ancho lo pone la proporción del trazado. */
   tamano?: number;
   className?: string;
+  /** «Tuki» para el producto; «TukiTuki» para el mercado. */
+  nombre?: 'Tuki' | 'TukiTuki';
 }
 
 /**
- * El logotipo tipográfico.
+ * El logotipo trazado, con la llama sustituyendo al punto de la «i».
  *
- * Usa Plus Jakarta Sans, la misma familia de la portada, para que la marca
- * tenga voz propia sin salirse del sistema. El tracking negativo es
- * deliberado: a tamaños pequeños, «Tuki» con el espaciado por defecto se
- * desarma.
+ * No usa texto vivo: el trazado viaja con el componente y no depende de que la
+ * fuente esté cargada. La llama mide 165 × 250 unidades y sube por encima de la
+ * altura de las mayúsculas, así que el nombre gana un remate propio.
  */
 export const PalabraTuki: React.FC<PalabraTukiProps> = ({
   tamano = 20,
   className = '',
-}) => (
-  <span
-    className={`font-jakarta font-extrabold leading-none tracking-[-0.045em] ${className}`}
-    style={{ fontSize: tamano }}
-  >
-    Tuki
-  </span>
-);
+  nombre = 'Tuki',
+}) => {
+  const largo = nombre === 'TukiTuki';
+  const viewBox = largo ? VIEWBOX_TUKITUKI : VIEWBOX_TUKI;
+  const aspecto = largo ? ASPECTO_TUKITUKI : ASPECTO_TUKI;
+  const trazado = largo ? TRAZADO_TUKITUKI : TRAZADO_TUKI;
+
+  return (
+    <svg
+      width={tamano * aspecto}
+      height={tamano}
+      viewBox={viewBox}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      role="img"
+      aria-label={nombre}
+      style={{ display: 'block' }}
+    >
+      <path fill="currentColor" d={trazado} />
+    </svg>
+  );
+};
 
 interface DescriptorTukiProps {
   children?: React.ReactNode;
@@ -121,6 +129,8 @@ interface MarcaTukiProps {
   /** Muestra la línea de marca debajo del logotipo. */
   conDescriptor?: boolean;
   descriptor?: string;
+  /** «Tuki» para el producto; «TukiTuki» para el mercado. */
+  nombre?: 'Tuki' | 'TukiTuki';
   /** Fondo terracota con la marca en blanco. Desactívalo sobre papel o foto. */
   conFondo?: boolean;
   className?: string;
@@ -134,20 +144,18 @@ interface MarcaTukiProps {
  * No fija colores propios: el contenedor decide con `text-*`. Eso permite la
  * misma pieza en la barra de Descubrir, en el panel, en el pie de la landing y
  * en la pantalla de carga sin duplicar componentes.
- *
- * La baldosa usa el mismo radio proporcional que el favicon (24 % del lado)
- * para que la marca se vea igual en la pestaña y dentro de la aplicación.
  */
 export const MarcaTuki: React.FC<MarcaTukiProps> = ({
-  tamano = 22,
+  tamano = 24,
   variante = 'horizontal',
   conDescriptor = false,
   descriptor = 'La mesa se comparte',
+  nombre = 'Tuki',
   conFondo = true,
   className = '',
-  titulo = 'Tuki',
+  titulo = 'TukiTuki',
 }) => {
-  const lado = tamano + 10;
+  const lado = tamano + 12;
   const etiqueta = [titulo, conDescriptor ? descriptor : null].filter(Boolean).join('. ');
 
   return (
@@ -163,8 +171,8 @@ export const MarcaTuki: React.FC<MarcaTukiProps> = ({
     >
       {conFondo ? (
         <span
-          className="inline-flex shrink-0 items-center justify-center bg-af-accent-solid text-white"
-          style={{ width: lado, height: lado, borderRadius: lado * 0.24 }}
+          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-af-accent-solid text-white"
+          style={{ width: lado, height: lado }}
         >
           <SimboloTuki size={tamano} />
         </span>
@@ -175,6 +183,7 @@ export const MarcaTuki: React.FC<MarcaTukiProps> = ({
       <span className="flex min-w-0 flex-col">
         <PalabraTuki
           tamano={tamano * 0.92}
+          nombre={nombre}
           className={variante === 'apilada' ? 'text-center' : ''}
         />
         {conDescriptor && (

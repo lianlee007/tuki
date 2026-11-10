@@ -107,7 +107,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
             aria-expanded={false}
             className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-af-accent-solid text-white outline-none transition-opacity hover:opacity-90 md:flex"
           >
-            <Logo size={22} />
+            <Logo size={26} />
             <span className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-af-ground text-af-ink ring-1 ring-af/25">
               <ChevronRight size={13} strokeWidth={3} />
             </span>
@@ -115,7 +115,7 @@ export const BarraLateral: React.FC<BarraLateralProps> = ({
         )}
 
         <div className={`flex min-w-0 items-center ${etiqueta}`}>
-          <MarcaTuki tamano={22} />
+          <MarcaTuki tamano={26} />
         </div>
 
         {/* Desplegada: botón con nombre para plegar (escritorio). En móvil, cerrar. */}
