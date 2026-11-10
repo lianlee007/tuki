@@ -303,6 +303,29 @@ kubectl kustomize infra/k8s/overlays/production
 La observabilidad está en `infra/observability`: ServiceMonitor, alertas de
 Prometheus y un dashboard de Grafana para el panorama de TukiTuki.
 
+### Dokploy (host Docker único)
+
+`infra/docker/docker-compose.production.yml` despliega el monorepo completo en
+un host Docker: PostgreSQL, RustFS, los seis servicios Node, el gateway de IA,
+un API Gateway con Nginx y los tres frontends.
+
+1. Copia `infra/docker/.env.production.example` y completa los secretos.
+2. Configura esas variables en el servicio de Dokploy.
+3. Apunta el *Compose Path* a `infra/docker/docker-compose.production.yml`.
+
+El compose publica:
+
+| Servicio | URL local del host |
+|---|---|
+| Comensal | `http://<host>:8081` |
+| Panel | `http://<host>:8082` |
+| Administración | `http://<host>:8083` |
+| API | `http://<host>:8084` |
+
+PostgreSQL, RustFS y la red interna no se exponen. Las migraciones se ejecutan
+al arrancar cada servicio y las imágenes de los frontends reciben la URL del API
+en tiempo de ejecución mediante `/config.js`.
+
 ## Convenciones
 
 - Dominio en español y capa técnica en inglés: `pedidos.service.ts`.
