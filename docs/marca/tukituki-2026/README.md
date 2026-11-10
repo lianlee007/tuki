@@ -132,18 +132,21 @@ con los scripts de `scripts/`.
 
 | Superficie | Versión | Tamaño |
 | --- | --- | --- |
-| Barra de Descubrir | Símbolo 28 px + «Tuki» 24 px | 28 / 24 |
-| Panel, cabecera | Marca horizontal 22 px | 22 |
-| Autenticación | Símbolo 56 px en baldosa de 80 px | 56 / 80 |
-| Landing | Marca horizontal 22 px | 22 |
+| Barra de Descubrir | Símbolo 36/40 px en baldosa de 44/48 + «TukiTuki» 22/27 px | 36–48 |
+| Panel, cabecera | Marca horizontal 30 px | 30 |
+| Autenticación | Símbolo 56 px en baldosa de 80 px + «TukiTuki» 27 px | 56 / 80 |
+| Landing | Marca horizontal 30 px | 30 |
 | Carga | Símbolo 46 px en baldosa de 64 px | 46 / 64 |
 | 404 | Símbolo 64 px | 64 |
-| Administración | Símbolo 22 px en baldosa de 32 px | 22 / 32 |
+| Administración | Símbolo 28 px en baldosa de 36 px | 28 / 36 |
+| Mi cuenta | Marca horizontal 28 px | 28 |
 | Favicon | `favicon.svg` + ICO 16/32/48 | 16–48 |
 | Instalación | 192 / 512 / maskable | 192–512 |
 
 El símbolo completo no baja de **32 px**. Por debajo, se usa el **icono** (la
-baldosa) o la **llama** sola como acento, nunca la mesa sin baldosa.
+baldosa) o la **llama** sola como acento, nunca la mesa sin baldosa. Por eso, en
+pantallas de menos de 360 px la barra de Descubrir se queda en la baldosa: el
+nombre completo empujaría el carrito y la cuenta fuera de la pantalla.
 
 ## 8. Favicon
 
@@ -182,10 +185,12 @@ La marca ya está integrada en la V2:
 
 1. `SimboloTuki` y `PalabraTuki` viven en
    `packages/experiencia-tuki/src/componentes/sistema-diseno/Logo.tsx`; los
-   trazados, en `marca-trazados.ts`.
-2. La barra de Descubrir lleva la baldosa de 44/48 px y «TukiTuki» a 22 px; el
-   panel, la landing y Mi cuenta usan `MarcaTuki` a 24–26 px; la autenticación,
-   la carga y el 404 usan la baldosa con el símbolo grande.
+   trazados, en `marca-trazados.ts`. El símbolo recorta su `viewBox` a la caja
+   del dibujo (40 × 43) para que llene la baldosa sin quedar diminuto.
+2. La barra de Descubrir lleva la baldosa de 44/48 px con el símbolo a 36/40 px
+   y «TukiTuki» a 22/27 px; el panel, la landing y Mi cuenta usan `MarcaTuki` a
+   28–30 px; la autenticación usa la baldosa de 80 px con el logotipo debajo; la
+   carga y el 404 usan la baldosa con el símbolo grande.
 3. Los favicons y manifiestos están en `public/` de las tres apps y enlazados
    desde sus `index.html`.
 4. `RobotIA` usa una llama en miniatura en la antena.

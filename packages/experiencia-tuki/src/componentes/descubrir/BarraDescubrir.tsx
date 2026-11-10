@@ -240,15 +240,26 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
             className={`af-pulsar flex shrink-0 items-center gap-2.5 rounded-xl sm:gap-3 ${FOCO}`}
           >
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:h-12 sm:w-12">
-              <SimboloTuki size={30} />
+              <SimboloTuki size={38} className="h-9 w-9 sm:h-10 sm:w-10" />
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
-              <PalabraTuki
-                nombre="TukiTuki"
-                tamano={22}
-                className="text-hearth-espresso dark:text-hearth-night-ink"
-              />
-              <span className="mt-0.5 truncate text-[10px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+              {/* En pantallas muy estrechas la marca se queda en la baldosa:
+                  el nombre completo empujaría el carrito y la cuenta fuera. */}
+              <span className="hidden min-[360px]:block sm:hidden">
+                <PalabraTuki
+                  nombre="TukiTuki"
+                  tamano={22}
+                  className="text-hearth-espresso dark:text-hearth-night-ink"
+                />
+              </span>
+              <span className="hidden sm:block">
+                <PalabraTuki
+                  nombre="TukiTuki"
+                  tamano={27}
+                  className="text-hearth-espresso dark:text-hearth-night-ink"
+                />
+              </span>
+              <span className="mt-0.5 hidden truncate text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-hearth-terracotta-ink sm:block dark:text-hearth-night-terracotta-ink">
                 Mercado culinario
               </span>
             </span>

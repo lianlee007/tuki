@@ -27,6 +27,11 @@ interface SimboloTukiProps {
  *
  * La llama se apoya en el tablero: no flota. Esa unión es la que convierte la
  * marca en una escena —la mesa encendida— y la aleja de un destello genérico.
+ *
+ * El `viewBox` recorta el lienzo de 64 × 64 a la caja real del dibujo (40 × 43)
+ * con solo 3,5 unidades de aire por lado. Así el símbolo llena la baldosa y se
+ * lee a tamaño de barra; con el lienzo completo el trazo quedaba al 62 % y
+ * parecía diminuto dentro de su recuadro.
  */
 export const SimboloTuki: React.FC<SimboloTukiProps> = ({
   size = 24,
@@ -36,7 +41,7 @@ export const SimboloTuki: React.FC<SimboloTukiProps> = ({
   <svg
     width={size}
     height={size}
-    viewBox="0 0 64 64"
+    viewBox="8.5 6.5 47 47"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
@@ -182,7 +187,7 @@ export const MarcaTuki: React.FC<MarcaTukiProps> = ({
 
       <span className="flex min-w-0 flex-col">
         <PalabraTuki
-          tamano={tamano * 0.92}
+          tamano={tamano * 0.95}
           nombre={nombre}
           className={variante === 'apilada' ? 'text-center' : ''}
         />
