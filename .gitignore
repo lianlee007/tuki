@@ -1,104 +1,27 @@
-# Artefactos de validación local (kubeconform, kube-linter, SBOM)
-build/
-build-*.yaml
+node_modules/
+dist/
 coverage/
-licencias.json
-
-# Material de trabajo ajeno al producto
-CloudForge_AI_5_0_Diplomado*.pdf
-Skills/
-.opencode/
-
-# Herramientas locales de desarrollo (binarios descargados por
-# scripts/instalar-herramientas.ps1). No se versionan: pesan ~100 MB.
-.tools/
-
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-.venv
-__pycache__
-.pytest_cache
-.ruff_cache
-
-# Variables de entorno: nunca se versionan (solo el ejemplo sin valores)
 .env
 .env.*
 !.env.example
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+*.log
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-.vercel
-
-# Playwright
-playwright-report/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
 test-results/
+playwright-report/
 blob-report/
 
 # Documentación y rescate locales: no se publican en la rama remota
-v2/docs/
-v2/rescate/
+docs/
+rescate/
 
-# Aplicación legacy: no forma parte de la rama de microservicios
-/.dockerignore
-/.env.example
-/.gitattributes
-/.npmrc
-/AGENTS.md
-/DESIGN.md
-/Dockerfile
-/PRODUCT.md
-/README.md
-/SECURITY.md
-/catalog-info.yaml
-/db/
-/deploy/
-/docker-compose.yml
-/docker/
-/docs/
-/e2e/
-/eslint.config.js
-/index.html
-/iniciar-tuki.bat
-/metadata.json
-/opencode.json
-/package.json
-/playwright.config.ts
-/pnpm-lock.yaml
-/pnpm-workspace.yaml
-/public/
-/scripts/
-/services/
-/src/
-/tests/
-/tsconfig.json
-/vercel.json
-/vite.config.ts
-/.github/CODEOWNERS
-/.github/PULL_REQUEST_TEMPLATE.md
-/.github/dependabot.yml
-/.github/workflows/contenedor.yml
-/.github/workflows/e2e.yml
-/.github/workflows/promover.yml
-/entregables/
-/Historias_de_Usuario_*.xlsx
-/Laboratorio 4.pdf
+# Herramientas y material local del agente
+.opencode/
+.tools/
+Skills/
+AGENTS.md
+opencode.json
+build/
+CloudForge_AI_5_0_Diplomado*.pdf

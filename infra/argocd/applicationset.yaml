@@ -28,7 +28,7 @@ spec:
       source:
         repoURL: https://github.com/lianlee007/Tuki.git
         targetRevision: '{{.rama}}'
-        path: 'v2/infra/k8s/overlays/{{.overlay}}'
+        path: 'infra/k8s/overlays/{{.overlay}}'
       destination:
         server: https://kubernetes.default.svc
         namespace: tukituki

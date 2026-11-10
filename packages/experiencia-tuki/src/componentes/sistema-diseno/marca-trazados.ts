@@ -1,7 +1,7 @@
 /**
  * Trazados del logotipo de TukiTuki 2026.
  *
- * Generado desde `v2/docs/marca/tukituki-2026/`; no editar a mano.
+ * Generado desde `docs/marca/tukituki-2026/`; no editar a mano.
  * La llama que sustituye al punto de la «i» ya viene incluida en el trazado.
  */
 export const VIEWBOX_TUKI = '-13 -869 1880 905';
