@@ -109,6 +109,18 @@ html, body {
   min-height: 100vh;
 }
 
+/* Los controles nativos (selects, scrollbars, date pickers) siguen el modo. */
+.dark {
+  color-scheme: dark;
+}
+
+/* En táctil, el doble toque no debe esperar 300 ms para decidir si es zoom. */
+a,
+button,
+[role='button'] {
+  touch-action: manipulation;
+}
+
 /* -------------------------------------------------------------------------
    Alto del panel del dueño.
    `100vh` no sirve en móvil: cuando la barra del navegador aparece y
@@ -793,6 +805,106 @@ html.af-tema-cambiando *::after {
   .af-zoom:hover img { transform: scale(1.045); }
 }
 
+/* -------------------------------------------------------------------------
+   Materiales de la landing.
+
+   La casa prohíbe la sombra de reposo y el degradado, así que la profundidad
+   no puede venir de un `box-shadow` grande ni de un brillo. Viene de tres
+   cosas pequeñas y muy controladas:
+     · un borde de un pelo (1 px) que separa la tarjeta del papel;
+     · un realce interior de 1 px arriba, el mismo brillo que tiene el canto
+       de una ventana de macOS cuando le da la luz;
+     · una sombra cálida muy abierta y con poca opacidad, que solo se nota
+       cuando la tarjeta se apoya sobre una banda de otro color.
+   El conjunto pesa mucho menos que un desenfoque y no crea capas extra.
+   ------------------------------------------------------------------------- */
+.af-tarjeta {
+  border: 1px solid rgb(var(--af-border-rgb) / 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 12px 30px -18px rgba(78, 42, 29, 0.18),
+    0 2px 6px -2px rgba(78, 42, 29, 0.06);
+  transition:
+    transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+.dark .af-tarjeta {
+  border-color: rgb(var(--af-border-rgb) / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 12px 30px -18px rgba(0, 0, 0, 0.6),
+    0 2px 6px -2px rgba(0, 0, 0, 0.35);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .af-tarjeta--interactiva:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--af-border-rgb));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 22px 44px -24px rgba(78, 42, 29, 0.3),
+      0 4px 10px -4px rgba(78, 42, 29, 0.08);
+  }
+
+  .dark .af-tarjeta--interactiva:hover {
+    border-color: rgb(var(--af-border-rgb));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 22px 44px -24px rgba(0, 0, 0, 0.7),
+      0 4px 10px -4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* La tarjeta que sí flota: el plan recomendado y el cierre. Una sola por
+   sección, igual que una sola acción rellena por sección. */
+.af-tarjeta-alta {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 28px 60px -24px rgba(78, 42, 29, 0.42),
+    0 6px 16px -8px rgba(78, 42, 29, 0.16);
+}
+
+.dark .af-tarjeta-alta {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 28px 60px -24px rgba(0, 0, 0, 0.8),
+    0 6px 16px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* Baldosa de icono: el cuadrado tintado de las listas de ajustes de macOS.
+   Sin borde ni sombra exterior; el realce superior es la única profundidad. */
+.af-icono {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 0.8rem;
+  color: rgb(var(--af-accent-text-rgb));
+  background-color: rgb(var(--af-accent-rgb) / 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.dark .af-icono {
+  background-color: rgb(var(--af-accent-rgb) / 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Escenario del aparato: un plano de avena con el borde justo para que el
+   teléfono no parezca pegado al papel. No lleva sombra: el aparato ya la
+   tiene, y dos sombras juntas ensucian el borde inferior. */
+.af-escenario {
+  background-color: rgb(var(--af-surface-rgb) / 0.55);
+  border: 1px solid rgb(var(--af-border-rgb) / 0.45);
+}
+
+/* Marca de agua del cierre: la llama a tamaño de pared, al 5,5 %. Va siempre
+   en claro porque solo se usa sobre la banda espresso, que es oscura en los dos
+   modos. */
+.af-marca-agua {
+  color: rgba(253, 251, 247, 0.055);
+}
+
 /* Barra de scroll oculta (carrusel de categorías de la barra superior). */
 .af-sin-scrollbar {
   scrollbar-width: none;
@@ -886,6 +998,7 @@ html.af-tema-cambiando *::after {
   .btn-af-secondary:active:not(:disabled),
   .btn-af-danger:active:not(:disabled),
   .af-elevar:hover,
+  .af-tarjeta--interactiva:hover,
   .af-zoom:hover img,
   .af-pulsar:active,
   .af-tema:active {
