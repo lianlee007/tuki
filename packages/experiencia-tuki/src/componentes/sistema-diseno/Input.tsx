@@ -14,10 +14,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, pr
   /* El hueco de la izquierda lo ocupan el icono y/o el prefijo. Se calcula el
      ancho real de cada uno —no a ojo— porque antes «+57» se montaba encima del
      icono y del número. */
-  let paddingLeftClass = 'pl-3';
-  if (icon && prefix) paddingLeftClass = 'pl-[4.5rem]'; // icono (16+12) + «+57» + aire
-  else if (prefix) paddingLeftClass = 'pl-12';
-  else if (icon) paddingLeftClass = 'pl-10';
+  let paddingLeftClass = '';
+  if (icon && prefix) paddingLeftClass = '!pl-[4.5rem]'; // icono (16+12) + «+57» + aire
+  else if (prefix) paddingLeftClass = '!pl-12';
+  else if (icon) paddingLeftClass = '!pl-10';
 
   return (
     <div className="w-full relative group">
@@ -41,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, pr
         )}
         <input
           ref={ref}
-          className={`input-af w-full pr-10 ${paddingLeftClass} ${error ? 'border-af-danger focus:border-af-danger' : ''} ${className}`}
+          className={`input-af w-full !pr-10 ${paddingLeftClass} ${error ? 'border-af-danger focus:border-af-danger' : ''} ${className}`}
           {...props}
         />
 
