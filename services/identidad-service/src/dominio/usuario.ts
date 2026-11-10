@@ -18,6 +18,19 @@ export interface UsuarioConCredenciales extends UsuarioPublico {
   passwordHash: string;
 }
 
+/**
+ * Quita el hash de contraseña antes de devolver un usuario a la capa HTTP.
+ *
+ * Es la única frontera segura: los repositorios pueden necesitar el hash para
+ * autenticar, pero nunca debe salir en una respuesta.
+ */
+export const aUsuarioPublico = (usuario: UsuarioPublico): UsuarioPublico => {
+  const { passwordHash: _passwordHash, ...publico } = usuario as UsuarioPublico & {
+    passwordHash?: string;
+  };
+  return publico;
+};
+
 /** Identidad que viaja en el JWT y que consumen los demás servicios. */
 export interface ContextoAutenticacion {
   usuarioId: string;
