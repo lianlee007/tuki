@@ -56,15 +56,12 @@ export const ResumenCarrito: React.FC<ResumenCarritoProps> = ({
       </div>
 
       {carrito.length === 0 ? (
-        <div className="flex flex-col items-center py-7 text-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-hearth-oat text-hearth-pebble dark:bg-hearth-night-oat dark:text-hearth-night-pebble">
-            <ShoppingBag size={20} aria-hidden="true" />
-          </span>
-          <p className="mt-3 text-[13px] font-bold text-hearth-espresso dark:text-hearth-night-ink">
-            Tu canasta está lista para cocinar
+        <div className="py-4">
+          <p className="text-[13px] font-bold text-hearth-espresso dark:text-hearth-night-ink">
+            Tu pedido está vacío
           </p>
-          <p className="mt-1 max-w-[26ch] text-[12px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
-            Añade un plato con el botón + y lo verás aquí.
+          <p className="mt-1 text-[11.5px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
+            Añade un plato con el botón + y aparecerá aquí.
           </p>
         </div>
       ) : (

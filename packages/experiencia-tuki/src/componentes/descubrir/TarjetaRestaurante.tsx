@@ -14,6 +14,8 @@ interface TarjetaRestauranteProps {
    * resultado explique por qué está ahí.
    */
   cocinaCoincidente?: string | null;
+  /** Las primeras tarjetas de la tira se ven al cargar y no deben esperar. */
+  prioridad?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ interface TarjetaRestauranteProps {
 export const TarjetaRestaurante: React.FC<TarjetaRestauranteProps> = ({
   restaurante,
   cocinaCoincidente,
+  prioridad = false,
 }) => {
   const tieneRating = restaurante.rating_cantidad > 0;
   const cocina = cocinaCoincidente || restaurante.tipo_cocina;
@@ -36,14 +39,16 @@ export const TarjetaRestaurante: React.FC<TarjetaRestauranteProps> = ({
     <article className={`group flex h-full flex-col overflow-hidden ${TARJETA_INTERACTIVA}`}>
       <Link
         to={destino}
+        aria-label={`Ver el menú de ${restaurante.nombre}`}
         className={`relative block aspect-[16/10] overflow-hidden bg-hearth-oat dark:bg-hearth-night-oat ${FOCO}`}
       >
         {restaurante.imagen_banner_url ? (
           <img
             src={restaurante.imagen_banner_url}
             alt=""
-            loading="lazy"
+            loading={prioridad ? 'eager' : 'lazy'}
             decoding="async"
+            fetchPriority={prioridad ? 'high' : undefined}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -87,22 +92,26 @@ export const TarjetaRestaurante: React.FC<TarjetaRestauranteProps> = ({
       <div className="flex flex-1 items-center justify-between gap-3 p-4">
         <div className="min-w-0">
           <p className="truncate text-[13px] font-semibold text-hearth-espresso dark:text-hearth-night-ink">
-            {cocina ?? 'Restaurante'}
+            {cocina ?? 'Menú digital'}
           </p>
           <p className="mt-0.5 truncate text-[12px] text-hearth-pebble dark:text-hearth-night-pebble">
-            {restaurante.platos_cantidad}{' '}
-            {restaurante.platos_cantidad === 1 ? 'plato' : 'platos'}
-            {restaurante.precio_min !== null
-              ? ` · Desde ${formatearPrecio(restaurante.precio_min)}`
-              : ''}
+            {restaurante.platos_cantidad > 0 && (
+              <>
+                {restaurante.platos_cantidad}{' '}
+                {restaurante.platos_cantidad === 1 ? 'plato' : 'platos'}
+              </>
+            )}
+            {restaurante.platos_cantidad > 0 && restaurante.precio_min !== null && ' · '}
+            {restaurante.precio_min !== null && formatearPrecio(restaurante.precio_min)}
           </p>
         </div>
 
         <Link
           to={destino}
-          className={`af-pulsar inline-flex shrink-0 items-center gap-1 rounded-xl bg-hearth-oat px-3 py-2 text-[12px] font-bold text-hearth-espresso transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO}`}
+          aria-label={`Ver el menú de ${restaurante.nombre}`}
+          className={`af-pulsar inline-flex shrink-0 items-center gap-1 rounded-xl bg-hearth-oat px-2.5 py-2 text-[12px] font-bold text-hearth-espresso transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink sm:px-3 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO}`}
         >
-          Ver menú
+          <span className="hidden sm:inline">Ver menú</span>
           <ArrowUpRight size={14} aria-hidden="true" />
         </Link>
       </div>

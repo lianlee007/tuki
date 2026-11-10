@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, ChevronDown, LayoutGrid, SlidersHorizontal, Store } from 'lucide-react';
+import { ChevronDown, LayoutGrid, SlidersHorizontal } from 'lucide-react';
 import type { TipoCocina } from '../../tipos/modelos';
 import { iconoCocina } from './iconosCocina';
 import { ETIQUETA, FOCO } from './estilos';
@@ -11,8 +11,6 @@ interface CarrilCocinasProps {
   /** Cifras del catálogo para el resumen de la cabecera. */
   totalPlatos: number;
   totalRestaurantes: number;
-  /** Atajo a la sección de restaurantes, que vive después del feed. */
-  onVerRestaurantes?: () => void;
 }
 
 /** Cuántas cocinas se ven sin desplegar el panel. */
@@ -33,7 +31,6 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
   onElegir,
   totalPlatos,
   totalRestaurantes,
-  onVerRestaurantes,
 }) => {
   const [desplegado, setDesplegado] = useState(false);
 
@@ -84,10 +81,10 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
       onClick={() => setDesplegado((previo) => !previo)}
       aria-expanded={desplegado}
       aria-controls="panel-mas-cocinas"
-      className={`af-pulsar items-center gap-1.5 rounded-xl bg-hearth-card text-[12.5px] font-bold text-hearth-espresso ring-1 ring-hearth-line/70 transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-ink dark:ring-hearth-night-line dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO} ${
+      className={`af-pulsar items-center gap-1.5 rounded-xl text-[12.5px] font-bold transition-colors ${FOCO} ${
         ancho
-          ? 'flex w-full justify-center px-4 py-3'
-          : 'inline-flex shrink-0 px-3.5 py-2.5'
+          ? 'inline-flex justify-center bg-transparent px-3 py-2 text-hearth-terracotta-ink hover:bg-hearth-terracotta-soft dark:text-hearth-night-terracotta-ink dark:hover:bg-hearth-night-terracotta-soft'
+          : 'inline-flex shrink-0 bg-hearth-card px-3.5 py-2.5 text-hearth-espresso ring-1 ring-hearth-line/70 hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-ink dark:ring-hearth-night-line dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink'
       }`}
     >
       <SlidersHorizontal size={15} aria-hidden="true" />
@@ -108,19 +105,15 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
     <section aria-labelledby="titulo-cocinas" className="flex flex-col gap-3">
       <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-3">
         <div className="min-w-0">
-          <p className={`${ETIQUETA} text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
-            Filtra por antojo
-          </p>
           <h1
             id="titulo-cocinas"
-            className="mt-1 font-jakarta text-[clamp(1.55rem,3.4vw,2rem)] font-extrabold leading-tight tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink"
+            className="text-balance font-jakarta text-[clamp(1.6rem,3.4vw,2rem)] font-extrabold leading-tight tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink"
           >
             ¿Qué se te antoja hoy?
           </h1>
           <p className="mt-1 text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble">
-            {totalPlatos.toLocaleString('es-CO')} platos de{' '}
-            {totalRestaurantes.toLocaleString('es-CO')} locales ·{' '}
-            {cocinas.length.toLocaleString('es-CO')} cocinas
+            {totalPlatos.toLocaleString('es-CO')} platos en{' '}
+            {totalRestaurantes.toLocaleString('es-CO')} restaurantes
           </p>
         </div>
 
@@ -153,7 +146,7 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
         />
       </div>
 
-      {resto.length > 0 && <div className="sm:hidden">{botonMas(true)}</div>}
+      {resto.length > 0 && <div className="flex justify-center sm:hidden">{botonMas(true)}</div>}
 
       {desplegado && resto.length > 0 && (
         <div
@@ -189,22 +182,6 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
               );
             })}
           </div>
-        </div>
-      )}
-
-      {onVerRestaurantes && totalRestaurantes > 0 && (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onVerRestaurantes}
-            className={`af-pulsar inline-flex items-center gap-1.5 rounded-lg text-[12px] font-bold text-hearth-terracotta-ink transition-colors hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
-          >
-            <Store size={14} aria-hidden="true" />
-            {totalRestaurantes === 1
-              ? 'Ver el restaurante'
-              : `Ver los ${totalRestaurantes} restaurantes`}
-            <ArrowRight size={14} aria-hidden="true" />
-          </button>
         </div>
       )}
     </section>

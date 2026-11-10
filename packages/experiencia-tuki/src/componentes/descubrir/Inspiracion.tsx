@@ -26,16 +26,6 @@ export const Inspiracion: React.FC<InspiracionProps> = ({
     aria-label="Inspiración al paso"
     className={`${TARJETA} relative overflow-hidden p-5`}
   >
-    {/* Halos cálidos, apenas visibles sobre el papel. */}
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute -right-12 -top-14 h-36 w-36 rounded-full bg-hearth-terracotta-soft/80 blur-2xl dark:bg-hearth-night-terracotta-soft/30"
-    />
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute -bottom-16 -left-10 h-36 w-36 rounded-full bg-hearth-honey-soft/70 blur-2xl dark:bg-[#3A2A12]/30"
-    />
-
     <div className="relative">
       <div className="flex items-center gap-2.5 border-b border-hearth-line/70 pb-3 dark:border-hearth-night-line">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink">
