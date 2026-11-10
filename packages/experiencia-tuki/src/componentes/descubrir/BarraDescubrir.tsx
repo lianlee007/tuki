@@ -150,34 +150,32 @@ const Acciones: React.FC<AccionesProps> = ({
   <div className="flex items-center gap-1.5">
     <ThemeToggle />
 
-    {/* El carrito vive siempre en la barra superior: el detalle solo se abre
-        al hacer clic aquí, nunca como un letrero fijo en la parte de abajo. */}
-    <button
-      type="button"
-      onClick={onCarrito}
-      aria-label={
-        cantidadCarrito > 0
-          ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
-          : 'Abrir el carrito'
-      }
-      className={`af-pulsar relative flex h-10 w-10 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
-    >
-      <ShoppingBag size={18} aria-hidden="true" />
-      {cantidadCarrito > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
-          {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
-        </span>
-      )}
-    </button>
+    {/* En móvil el carrito vive en la barra del pulgar, siempre a un toque.
+        En escritorio se queda aquí, junto a la cuenta. */}
+    {!compacto && (
+      <button
+        type="button"
+        onClick={onCarrito}
+        aria-label={
+          cantidadCarrito > 0
+            ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
+            : 'Abrir el carrito'
+        }
+        className={`af-pulsar relative flex h-10 w-10 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
+      >
+        <ShoppingBag size={18} aria-hidden="true" />
+        {cantidadCarrito > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
+            {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
+          </span>
+        )}
+      </button>
+    )}
 
-    {hayUsuario && cargandoRol ? null : !hayUsuario ? (
+    {hayUsuario && cargandoRol ? null : compacto ? null : !hayUsuario ? (
       <Link
         to="/entrar"
-        className={
-          compacto
-            ? 'af-pulsar rounded-xl px-3 py-2 text-[13px] font-bold text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink'
-            : `af-pulsar inline-flex items-center rounded-xl bg-hearth-terracotta-deep px-4 py-2.5 text-[13px] font-bold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`
-        }
+        className={`af-pulsar inline-flex items-center rounded-xl bg-hearth-terracotta-deep px-4 py-2.5 text-[13px] font-bold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
       >
         Entrar
       </Link>
@@ -231,7 +229,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hearth-line/70 bg-hearth-cream/90 backdrop-blur-xl dark:border-hearth-night-line/80 dark:bg-hearth-night/90">
+    <header className="relative z-40 border-b border-hearth-line/70 bg-hearth-cream dark:border-hearth-night-line/80 dark:bg-hearth-night lg:sticky lg:top-0 lg:bg-hearth-cream/90 lg:backdrop-blur-xl lg:dark:bg-hearth-night/90">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <Link
@@ -284,6 +282,18 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
             }
           >
             Explorar
+          </NavLink>
+          <NavLink
+            to="/inspiracion"
+            className={({ isActive }) =>
+              `rounded-xl px-3 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
+                isActive
+                  ? 'bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink'
+                  : 'text-hearth-pebble hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink'
+              }`
+            }
+          >
+            Inspiración
           </NavLink>
           <Link
             to="/para-restaurantes"

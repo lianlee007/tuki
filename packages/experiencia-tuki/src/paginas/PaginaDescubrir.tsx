@@ -32,7 +32,6 @@ import {
 import {
   BOTON_FANTASMA,
   BOTON_PRIMARIO,
-  ETIQUETA,
   FOCO,
   TARJETA,
 } from '../componentes/descubrir/estilos';
@@ -70,15 +69,22 @@ const aPlatillo = (plato: PlatoDescubierto): Platillo => ({
 
 /** Esqueletos del primer pintado: estáticos, sin pulso que distraiga. */
 const Esqueletos: React.FC = () => (
-  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2" aria-hidden="true">
+  <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4" aria-hidden="true">
     {Array.from({ length: 4 }).map((_, indice) => (
-      <div key={indice} className={`${TARJETA} p-3.5`}>
-        <div className="aspect-[4/3] rounded-2xl bg-hearth-oat dark:bg-hearth-night-oat" />
+      <div
+        key={indice}
+        className={`${TARJETA} p-2.5 sm:p-3.5 ${indice === 0 ? 'col-span-2 sm:col-span-1' : ''}`}
+      >
+        <div
+          className={`rounded-2xl bg-hearth-oat dark:bg-hearth-night-oat ${
+            indice === 0 ? 'aspect-[16/10] sm:aspect-[4/3]' : 'aspect-[4/3]'
+          }`}
+        />
         <div className="mt-3.5 h-4 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
         <div className="mt-2 h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="h-6 w-24 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
-          <div className="h-9 w-32 rounded-xl bg-hearth-oat dark:bg-hearth-night-oat" />
+          <div className="hidden h-9 w-32 rounded-xl bg-hearth-oat sm:block dark:bg-hearth-night-oat" />
         </div>
       </div>
     ))}
@@ -351,12 +357,6 @@ const PaginaDescubrir = () => {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const irARestaurantes = () => {
-    document
-      .getElementById('restaurantes')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   const platosVisibles = useMemo(
     () => (soloFavoritos ? platos.filter((plato) => esFavorito(plato.id)) : platos),
     [platos, soloFavoritos, esFavorito]
@@ -406,18 +406,21 @@ const PaginaDescubrir = () => {
               onElegir={(slug) => actualizar({ cocina: slug })}
               totalPlatos={total}
               totalRestaurantes={totalRestaurantes}
-              onVerRestaurantes={irARestaurantes}
+            />
+
+            <CarrilRestaurantes
+              restaurantes={restaurantes}
+              total={totalRestaurantes}
+              cargando={cargandoRestaurantes}
+              cocinaCoincidente={cocinaElegida?.nombre ?? null}
             />
 
             <section id="catalogo-platos" aria-labelledby="titulo-platos" className="scroll-mt-28">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className={`${ETIQUETA} text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
-                    El feed de hoy
-                  </p>
                   <h2
                     id="titulo-platos"
-                    className="mt-1 font-jakarta text-[clamp(1.35rem,3vw,1.7rem)] font-extrabold tracking-[-0.025em] text-hearth-espresso dark:text-hearth-night-ink"
+                    className="text-balance font-jakarta text-[clamp(1.4rem,3vw,1.7rem)] font-extrabold tracking-[-0.025em] text-hearth-espresso dark:text-hearth-night-ink"
                   >
                     Platos en tendencia
                   </h2>
@@ -550,7 +553,7 @@ const PaginaDescubrir = () => {
               ) : (
                 <>
                   <div
-                    className={`mt-5 grid grid-cols-1 gap-4 transition-opacity duration-200 sm:grid-cols-2 ${
+                    className={`mt-5 grid grid-cols-2 gap-3 transition-opacity duration-200 sm:gap-4 ${
                       cargando ? 'opacity-60' : 'opacity-100'
                     }`}
                     aria-busy={cargando}
@@ -564,6 +567,7 @@ const PaginaDescubrir = () => {
                         onFavorito={alternarFavorito}
                         onVerDetalle={setDetalle}
                         onAgregar={agregarAlCarrito}
+                        prioridad={indice < 3}
                       />
                     ))}
                   </div>
@@ -584,21 +588,6 @@ const PaginaDescubrir = () => {
                 </>
               )}
             </section>
-
-            {/* En móvil y tableta la columna lateral no existe: el atajo a la
-                baraja va al final del feed, después de los platos recomendados. */}
-            <div className="xl:hidden">
-              <Inspiracion cantidadPlatos={platos.length} onSorprender={sorprender} />
-            </div>
-
-            <div id="restaurantes" className="scroll-mt-28">
-              <CarrilRestaurantes
-                restaurantes={restaurantes}
-                total={totalRestaurantes}
-                cargando={cargandoRestaurantes}
-                cocinaCoincidente={cocinaElegida?.nombre ?? null}
-              />
-            </div>
 
             <footer className={`${TARJETA} flex flex-col items-center gap-2 p-6 text-center`}>
               <p className="text-[13px] text-hearth-pebble dark:text-hearth-night-pebble">
@@ -639,11 +628,11 @@ const PaginaDescubrir = () => {
       </main>
 
       <BarraMovil
-        favoritosActivos={soloFavoritos}
         rutaCuenta={rutaCuenta}
+        cantidadCarrito={cantidadCarrito}
         onInicio={irAInicio}
         onBuscar={enfocarBuscador}
-        onFavoritos={verFavoritos}
+        onCarrito={() => setCarritoAbierto(true)}
       />
 
       <PanelFiltros
