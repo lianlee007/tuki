@@ -3,6 +3,7 @@ import type {
   SesionCreada,
   UsuarioPublico,
 } from '../dominio/usuario.js';
+import { aUsuarioPublico } from '../dominio/usuario.js';
 import type { DependenciasIdentidad } from './dependencias.js';
 
 /**
@@ -30,7 +31,7 @@ export const crearSesion = async (
   });
 
   return {
-    usuario,
+    usuario: aUsuarioPublico(usuario),
     accessToken,
     refreshToken: refresco.token,
     refreshExpiraEn: refresco.expiraEn,

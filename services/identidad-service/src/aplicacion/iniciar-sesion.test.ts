@@ -65,6 +65,7 @@ describe('iniciarSesion', () => {
     );
 
     expect(sesion.accessToken).toBe('access-token');
+    expect(sesion.usuario).not.toHaveProperty('passwordHash');
     expect(auditoria.registrar).toHaveBeenCalledWith(
       expect.objectContaining({ accion: 'login', usuarioId: 'usuario-1' }),
     );
