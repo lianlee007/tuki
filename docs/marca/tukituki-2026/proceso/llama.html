@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>La llama · pruebas</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:36px; background:var(--papel); color:var(--tinta); font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.lead { color:var(--sec); font-size:12px; margin:0 0 24px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:16px; padding:16px; }
+  .card h2 { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--sec); margin:0 0 12px; }
+  .row { display:flex; align-items:end; gap:16px; }
+  .row figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .row figcaption { font-size:8px; color:var(--sec); }
+  .tile { width:112px; height:112px; border-radius:30px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+<h1>La llama · pruebas</h1>
+<p class="lead">Sustituir la chispa de cuatro puntas por una llama. La mesa no se toca.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+const mesa = `<rect x="12" y="32.5" width="40" height="7" rx="3.5"/><rect x="18" y="39.5" width="6" height="12" rx="2"/><rect x="40" y="39.5" width="6" height="12" rx="2"/>`;
+const llamas = {
+  'A · gota simétrica': `M32 32.5 C27.5 29.8 24.5 26 24.5 21.5 C24.5 16.5 28 13 32 9.5 C36 13 39.5 16.5 39.5 21.5 C39.5 26 36.5 29.8 32 32.5 Z`,
+  'B · llama inclinada': `M32 32.5 C27 29.8 24 25.8 24.5 21 C25 16 28.5 12.5 33.5 9 C35.5 13.5 39.5 17 39 22.5 C38.6 27 35.5 30 32 32.5 Z`,
+  'C · llama con rizo': `M32 32.5 C27 30 24 26 24.5 21 C25 17 27 14 29.5 11.5 C29 14.5 30 16.5 31.5 17.5 C32 14 32 11 33 8.5 C36 12.5 39.5 16.5 39 22 C38.5 27 35.5 30 32 32.5 Z`,
+  'C2 · rizo y base': `M30 32.5 C27 30.5 24 26 24.5 21 C25 17 27 14 29.5 11.5 C29 14.5 30 16.5 31.5 17.5 C32 14 32 11 33 8.5 C36 12.5 39.5 16.5 39 22 C38.5 27 35.5 30.5 34 32.5 C32.7 33.5 31.3 33.5 30 32.5 Z`,
+  'D · llama interior': `M32 32.5 C27 29.8 24 25.8 24.5 21 C25 16 28.5 12.5 33.5 9 C35.5 13.5 39.5 17 39 22.5 C38.6 27 35.5 30 32 32.5 Z
+    M32 28.5 C30 26.5 28.5 24.5 28.8 22.2 C29.2 19.5 30.8 17.8 32.6 16 C33.6 18.5 35 20.3 34.7 23 C34.4 25.5 33.2 27.2 32 28.5 Z`,
+  'E · vela': `M32 26 C28 24 25.5 21 26 17.5 C26.5 13.5 29 11 32.5 8 C34 11.5 37 14 36.5 18 C36.1 21.5 34 24 32 26 Z
+    <rect x="29" y="26" width="6" height="6.5" rx="1"/>`,
+  'F · tres puntas': `M32 6.5 C33.5 18 40 25.5 40 25.5 C33.5 26 32 32.5 32 32.5 C32 32.5 30.5 26 24 25.5 C24 25.5 30.5 18 32 6.5 Z`,
+  'G · cuatro puntas rectas': `M32 7.5 L34.6 19 L45 21.5 L34.6 24 L32 32.5 L29.4 24 L19 21.5 L29.4 19 Z`,
+  'H · cinco puntas': `M32 10 L34.4 20.2 L45 20.6 L36.7 27.4 L39.7 37.5 L32 31.6 L24.3 37.5 L27.3 27.4 L19 20.6 L29.6 20.2 Z`,
+};
+const grid = document.getElementById('grid');
+for (const [nombre, llama] of Object.entries(llamas)) {
+  const c = document.createElement('div'); c.className='card';
+  c.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <figure><svg width="100" height="100" viewBox="0 0 64 64" fill="${C}" fill-rule="evenodd">${llama}${mesa}</svg><figcaption>100</figcaption></figure>
+      <figure><svg width="40" height="40" viewBox="0 0 64 64" fill="${C}" fill-rule="evenodd">${llama}${mesa}</svg><figcaption>40</figcaption></figure>
+      <figure><svg width="24" height="24" viewBox="0 0 64 64" fill="${C}" fill-rule="evenodd">${llama}${mesa}</svg><figcaption>24</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 64 64" fill="${C}" fill-rule="evenodd">${llama}${mesa}</svg><figcaption>16</figcaption></figure>
+    </div>
+    <div style="margin-top:12px"><div class="tile"><svg width="88" height="88" viewBox="0 0 64 64" fill="${P}" fill-rule="evenodd">${llama}${mesa}</svg></div></div>`;
+  grid.appendChild(c);
+}
+
+// Hoja de contacto para revisar sin depender de capturas de pantalla.
+window.dibujarContacto = () => {
+  const total = Object.entries(llamas);
+  const cols = 4, cw = 300, ch = 210;
+  const canvas = document.createElement('canvas');
+  canvas.width = cols * cw;
+  canvas.height = Math.ceil(total.length / cols) * ch;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FBF8F4';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const mesaPath = (x, y, s) => {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.beginPath(); ctx.roundRect(12, 32.5, 40, 7, 3.5); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(18, 39.5, 6, 12, 2); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(40, 39.5, 6, 12, 2); ctx.fill();
+    ctx.restore();
+  };
+  const llamaPath = (d, x, y, s, color, rule = 'nonzero') => {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = color;
+    ctx.fill(new Path2D(d), rule);
+    ctx.restore();
+  };
+
+  total.forEach(([nombre, d], i) => {
+    const x = (i % cols) * cw, y = Math.floor(i / cols) * ch;
+    ctx.fillStyle = '#1D1D1F';
+    ctx.font = '600 12px Inter, sans-serif';
+    ctx.fillText(nombre, x + 18, y + 26);
+
+    // Logo a 120 px.
+    llamaPath(d, x + 22, y + 38, 120 / 64, '#C2410C', 'evenodd');
+    mesaPath(x + 22, y + 38, 120 / 64);
+
+    // Icono a 16 px, ampliado ×4 sin interpolar.
+    const ix = x + 172, iy = y + 46, side = 64;
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.fillStyle = '#C2410C';
+    ctx.beginPath(); ctx.roundRect(0, 0, side, side, 15); ctx.fill();
+    ctx.imageSmoothingEnabled = false;
+    // Dibujar a 16 px en un canvas auxiliar y ampliarlo.
+    const aux = document.createElement('canvas'); aux.width = 16; aux.height = 16;
+    const actx = aux.getContext('2d');
+    actx.fillStyle = '#C2410C'; actx.beginPath(); actx.roundRect(0, 0, 16, 16, 3.8); actx.fill();
+    actx.save(); actx.translate(0.3, 0.3); actx.scale(16 / 64, 16 / 64);
+    actx.fillStyle = '#FBF8F4';
+    actx.fill(new Path2D(d), 'evenodd');
+    actx.beginPath(); actx.roundRect(12, 32.5, 40, 7, 3.5); actx.fill();
+    actx.beginPath(); actx.roundRect(18, 39.5, 6, 12, 2); actx.fill();
+    actx.beginPath(); actx.roundRect(40, 39.5, 6, 12, 2); actx.fill();
+    actx.restore();
+    ctx.drawImage(aux, 0, 0, 16, 16, 0, 0, side, side);
+    ctx.restore();
+    ctx.fillStyle = '#6E6E73';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.fillText('icono 16 px ×4', ix, iy + side + 12);
+  });
+
+  canvas.toBlob((blob) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'llama-contacto.png';
+    a.click();
+  }, 'image/png');
+};
+
+</script>
+</body>
+</html>

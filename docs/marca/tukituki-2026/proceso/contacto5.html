@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Exploraciones 5 · mesa bajo toldo</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+  p.lead { color:var(--sec); font-size:13px; margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:18px; padding:16px; }
+  .card h2 { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 14px; }
+  .row { display:flex; align-items:end; gap:16px; }
+  .big { width:112px; height:112px; border-radius:14px; background:var(--sup); display:flex; align-items:center; justify-content:center; }
+  .small { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .small span { font-size:9px; color:var(--sec); }
+  .tile { width:112px; height:112px; border-radius:26px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<h1>Exploraciones 5 · mesa bajo toldo</h1>
+<p class="lead">El puesto y la mesa en una sola imagen.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+const scallops3 = (y, x0=6, x1=58, depth=7) => {
+  const w = (x1-x0)/3; let d = `M${x0} ${y}`;
+  for (let i=0;i<3;i++) d += ` Q${x0+w*(i+0.5)} ${y+depth} ${x0+w*(i+1)} ${y}`;
+  return d;
+};
+const toldo = (rayas=false) => rayas ? `
+  <path fill-rule="evenodd" d="M6 10 H58 V19 H6 Z M14 10 V19 H21 V10 Z M29 10 V19 H36 V10 Z M44 10 V19 H51 V10 Z"/>
+  <path d="${scallops3(19)} V24 H6 Z"/>` : `
+  <path d="M6 10 H58 V19 H6 Z"/>
+  <path d="${scallops3(19)} V24 H6 Z"/>`;
+
+const conceptos = {
+  'Toldo y mesa': `
+    ${toldo()}
+    <rect x="11" y="24" width="5" height="18" rx="2"/>
+    <rect x="48" y="24" width="5" height="18" rx="2"/>
+    <rect x="12" y="42" width="40" height="6" rx="3"/>
+    <rect x="18" y="48" width="6" height="12" rx="2.5"/>
+    <rect x="40" y="48" width="6" height="12" rx="2.5"/>
+    <ellipse cx="32" cy="40.5" rx="6" ry="1.8"/>`,
+  'Toldo rayado y mesa': `
+    ${toldo(true)}
+    <rect x="11" y="24" width="5" height="18" rx="2"/>
+    <rect x="48" y="24" width="5" height="18" rx="2"/>
+    <rect x="12" y="42" width="40" height="6" rx="3"/>
+    <rect x="18" y="48" width="6" height="12" rx="2.5"/>
+    <rect x="40" y="48" width="6" height="12" rx="2.5"/>
+    <ellipse cx="32" cy="40.5" rx="6" ry="1.8"/>`,
+  'Toldo y mesa con sillas': `
+    ${toldo()}
+    <rect x="14" y="22" width="4" height="14" rx="1.5"/>
+    <rect x="46" y="22" width="4" height="14" rx="1.5"/>
+    <rect x="18" y="38" width="28" height="6" rx="3"/>
+    <rect x="22" y="44" width="5" height="14" rx="2.5"/>
+    <rect x="37" y="44" width="5" height="14" rx="2.5"/>
+    <rect x="4" y="34" width="12" height="4" rx="2"/>
+    <rect x="48" y="34" width="12" height="4" rx="2"/>
+    <rect x="5" y="38" width="3" height="8" rx="1.5"/>
+    <rect x="12" y="38" width="3" height="8" rx="1.5"/>
+    <rect x="56" y="38" width="3" height="8" rx="1.5"/>
+    <rect x="49" y="38" width="3" height="8" rx="1.5"/>`,
+  'Un poste y mesa': `
+    <path d="M6 14 Q6 6 16 6 H48 Q58 6 58 14 V20 H6 Z"/>
+    <path d="${scallops3(20)} V25 H6 Z"/>
+    <rect x="29" y="25" width="6" height="12" rx="3"/>
+    <rect x="12" y="37" width="40" height="6" rx="3"/>
+    <rect x="18" y="43" width="6" height="15" rx="2.5"/>
+    <rect x="40" y="43" width="6" height="15" rx="2.5"/>
+    <ellipse cx="32" cy="35.5" rx="6" ry="1.8"/>`,
+  'Toldo y mesa redonda': `
+    ${toldo()}
+    <rect x="11" y="22" width="5" height="14" rx="2"/>
+    <rect x="48" y="22" width="5" height="14" rx="2"/>
+    <ellipse cx="32" cy="40" rx="20" ry="4.5"/>
+    <rect x="29.5" y="43" width="5" height="14" rx="2.5"/>
+    <ellipse cx="32" cy="58" rx="11" ry="3"/>`,
+  'Toldo y mesa con mantel': `
+    ${toldo()}
+    <rect x="11" y="24" width="5" height="14" rx="2"/>
+    <rect x="48" y="24" width="5" height="14" rx="2"/>
+    <path d="M11 38 H53 V42 Q49 43 49 47 V57 H43 V47 Q43 43 39 42 H25 Q21 43 21 47 V57 H15 V47 Q15 43 11 42 Z"/>`,
+  'Toldo, mesa y letrero': `
+    ${toldo()}
+    <rect x="11" y="24" width="5" height="16" rx="2"/>
+    <rect x="48" y="24" width="5" height="16" rx="2"/>
+    <rect x="24" y="22" width="2" height="7"/>
+    <rect x="18" y="29" width="22" height="10" rx="3"/>
+    <rect x="22" y="32" width="14" height="2" rx="1" fill="${P}"/>
+    <rect x="22" y="35.5" width="9" height="1.6" rx=".8" fill="${P}"/>
+    <rect x="12" y="43" width="40" height="6" rx="3"/>
+    <rect x="18" y="49" width="6" height="11" rx="2.5"/>
+    <rect x="40" y="49" width="6" height="11" rx="2.5"/>`,
+  'Toldo y dos tazas': `
+    ${toldo()}
+    <rect x="11" y="24" width="5" height="16" rx="2"/>
+    <rect x="48" y="24" width="5" height="16" rx="2"/>
+    <rect x="12" y="41" width="40" height="6" rx="3"/>
+    <rect x="18" y="47" width="6" height="13" rx="2.5"/>
+    <rect x="40" y="47" width="6" height="13" rx="2.5"/>
+    <path d="M20 30 H28 V37 A4 4 0 0 1 20 37 Z"/><path d="M28 32 H31 A3 3 0 0 1 31 38 H28" fill="none" stroke="${C}" stroke-width="2"/>
+    <path d="M36 30 H44 V37 A4 4 0 0 1 36 37 Z"/><path d="M44 32 H47 A3 3 0 0 1 47 38 H44" fill="none" stroke="${C}" stroke-width="2"/>`,
+};
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo] of Object.entries(conceptos)) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <div class="big"><svg width="92" height="92" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg></div>
+      <div class="small">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg>
+        <svg width="16" height="16" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg>
+        <span>40 · 16</span>
+      </div>
+    </div>
+    <div style="margin-top:14px"><div class="tile"><svg width="72" height="72" viewBox="0 0 64 64" fill="${P}" stroke="none">${cuerpo}</svg></div></div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

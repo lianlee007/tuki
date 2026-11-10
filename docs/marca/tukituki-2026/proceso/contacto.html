@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Exploraciones de marca</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+  p.lead { color:var(--sec); font-size:13px; margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:18px; padding:16px; }
+  .card h2 { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 14px; }
+  .row { display:flex; align-items:end; gap:16px; }
+  .big { width:112px; height:112px; border-radius:14px; background:var(--sup); display:flex; align-items:center; justify-content:center; }
+  .small { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .small span { font-size:9px; color:var(--sec); }
+  .tile { width:112px; height:112px; border-radius:26px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+  svg { display:block; }
+  .note { font-size:11px; color:var(--sec); line-height:1.45; margin:14px 0 0; }
+</style>
+</head>
+<body>
+<h1>Exploraciones · símbolo TukiTuki</h1>
+<p class="lead">Terracota sobre papel. Cada concepto se mira a 112, 40 y 16 px.</p>
+<div class="grid" id="grid"></div>
+
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+
+// Cada concepto devuelve el contenido interno de un viewBox 0 0 64 64.
+const conceptos = {
+  'Mesa doble': `
+    <rect x="6" y="13" width="52" height="10" rx="5"/>
+    <rect x="16" y="23" width="9" height="25" rx="2.5"/>
+    <rect x="39" y="23" width="9" height="25" rx="2.5"/>
+    <rect x="11" y="48" width="18" height="7" rx="3.5"/>
+    <rect x="35" y="48" width="18" height="7" rx="3.5"/>`,
+  'Plato sobre mesa': `
+    <circle cx="32" cy="20" r="12"/>
+    <rect x="8" y="33" width="48" height="8" rx="4"/>
+    <rect x="17" y="41" width="8" height="15" rx="2"/>
+    <rect x="39" y="41" width="8" height="15" rx="2"/>`,
+  'Dos comensales': `
+    <circle cx="20" cy="15" r="7"/><circle cx="44" cy="15" r="7"/>
+    <rect x="8" y="27" width="48" height="8" rx="4"/>
+    <rect x="28" y="35" width="8" height="17" rx="2"/>
+    <rect x="20" y="52" width="24" height="7" rx="3.5"/>`,
+  'Mesa de picnic': `
+    <rect x="8" y="20" width="48" height="7" rx="3.5"/>
+    <path d="M25 27 L16 55 M39 27 L48 55" stroke-width="8" stroke-linecap="round"/>
+    <rect x="3" y="38" width="17" height="6" rx="3"/>
+    <rect x="44" y="38" width="17" height="6" rx="3"/>
+    <rect x="27" y="40" width="10" height="5" rx="2.5"/>`,
+  'Sello doble T': `
+    <path fill-rule="evenodd" d="M10 6 H54 A4 4 0 0 1 58 10 V54 A4 4 0 0 1 54 58 H10 A4 4 0 0 1 6 54 V10 A4 4 0 0 1 10 6 Z
+      M28 6 V26 H18 V32 H46 V26 H36 V6 Z"/>`,
+  'Portal': `
+    <path fill-rule="evenodd" d="M12 58 V30 A20 20 0 0 1 52 30 V58 H44 V30 A12 12 0 0 0 20 30 V58 Z"/>
+    <rect x="22" y="38" width="20" height="6" rx="3"/>
+    <rect x="29" y="44" width="6" height="10" rx="3"/>`,
+  'Plato compartido': `
+    <path d="M32 6 A26 26 0 0 1 32 58 A13 13 0 0 1 32 32 A13 13 0 0 0 32 6 Z"/>`,
+  'Mesa larga': `
+    <rect x="6" y="26" width="52" height="10" rx="5"/>
+    <rect x="12" y="11" width="40" height="7" rx="3.5"/>
+    <rect x="12" y="44" width="40" height="7" rx="3.5"/>`,
+  'Pin de mesa': `
+    <path fill-rule="evenodd" d="M32 4 C18 4 7 15 7 29 C7 45 32 61 32 61 C32 61 57 45 57 29 C57 15 46 4 32 4 Z
+      M32 22 A9 9 0 1 0 32 40 A9 9 0 1 0 32 22 Z"/>
+    <rect x="30.5" y="26" width="3" height="10" rx="1.5"/>
+    <rect x="25" y="31" width="14" height="3" rx="1.5"/>`,
+  'T con plato': `
+    <path fill-rule="evenodd" d="M6 10 H58 V20 H37 V58 H27 V20 H6 Z
+      M32 26 A8 8 0 1 0 32 42 A8 8 0 1 0 32 26 Z"/>`,
+  'T de platos': `
+    <circle cx="32" cy="12" r="6"/><circle cx="18" cy="12" r="6"/><circle cx="46" cy="12" r="6"/>
+    <circle cx="32" cy="30" r="6"/><circle cx="32" cy="48" r="6"/>`,
+};
+
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo] of Object.entries(conceptos)) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <div class="big"><svg width="92" height="92" viewBox="0 0 64 64" fill="${C}" style="color:${C}">${cuerpo}</svg></div>
+      <div class="small">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <svg width="16" height="16" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <span>40 · 16</span>
+      </div>
+    </div>
+    <div style="margin-top:14px"><div class="tile"><svg width="72" height="72" viewBox="0 0 64 64" fill="${P}">${cuerpo}</svg></div></div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

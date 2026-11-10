@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Master · chispa de la mesa</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+  p.lead { color:var(--sec); font-size:13px; margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:18px; padding:16px; }
+  .card h2 { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 14px; }
+  .row { display:flex; align-items:end; gap:20px; }
+  .big { width:140px; height:140px; border-radius:14px; background:var(--sup); display:flex; align-items:center; justify-content:center; }
+  .small { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .small span { font-size:9px; color:var(--sec); }
+  .tile { width:140px; height:140px; border-radius:32px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+  .dark { background:#131110; }
+  svg { display:block; }
+  .row2 { display:flex; align-items:center; gap:14px; }
+  .bare { background:#fff; border:1px dashed var(--borde); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+<h1>Master · la chispa de la mesa</h1>
+<p class="lead">Prueba de geometría, tamaños y contraste.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+
+// Chispa de cuatro puntas, con lados cóncavos.
+const chispa = (cx, cy, r) => `
+  <path d="M${cx} ${cy-r}
+    Q${cx+r*0.13} ${cy-r*0.13} ${cx+r} ${cy}
+    Q${cx+r*0.13} ${cy+r*0.13} ${cx} ${cy+r}
+    Q${cx-r*0.13} ${cy+r*0.13} ${cx-r} ${cy}
+    Q${cx-r*0.13} ${cy-r*0.13} ${cx} ${cy-r} Z"/>`;
+
+// Mesa con mantel: barra superior + dos paños laterales que se abren.
+const mantel = (flare=2.5, hem=0) => {
+  const d = `M8 45 H56 V51
+    C56 51 54.5 53 54.5 55 V59.5 H48.5 V55 C48.5 53 47 51 45 51
+    H19 C17 51 15.5 53 15.5 55 V59.5 H9.5 V55 C9.5 53 8 51 8 51 Z`;
+  return `<path d="${d}"/>`;
+};
+const mantelRecto = `
+  <rect x="8" y="45" width="48" height="7" rx="3"/>
+  <rect x="9.5" y="52" width="7" height="8" rx="2.5"/>
+  <rect x="47.5" y="52" width="7" height="8" rx="2.5"/>`;
+const mesaPatas = `
+  <rect x="10" y="45" width="44" height="7" rx="3.5"/>
+  <rect x="18" y="52" width="6" height="9" rx="3"/>
+  <rect x="40" y="52" width="6" height="9" rx="3"/>`;
+
+const full = (table) => `
+  <rect x="28.8" y="2" width="6.4" height="3.6" rx="1.8"/>
+  <rect x="31.3" y="5.6" width="1.4" height="8.4" rx=".7"/>
+  ${chispa(32, 21.5, 8.2)}
+  ${table}`;
+
+const compact = (table) => `${chispa(32, 17, 8.4)}${table}`;
+
+const conceptos = [
+  ['Completa · mantel', full(mantel())],
+  ['Completa · paños rectos', full(mantelRecto)],
+  ['Completa · patas', full(mesaPatas)],
+  ['Compacta · patas', compact(mesaPatas)],
+  ['Compacta · mantel', compact(mantel())],
+  ['Compacta · mesa gruesa', compact(`
+    <rect x="6" y="43" width="52" height="9" rx="4.5"/>
+    <rect x="15" y="52" width="8" height="9" rx="4"/>
+    <rect x="41" y="52" width="8" height="9" rx="4"/>`)],
+  ['Solo chispa', chispa(32, 32, 26)],
+  ['Chispa + mesa, aire', `${chispa(32, 14, 7.2)}
+    <rect x="12" y="48" width="40" height="6" rx="3"/>
+    <rect x="19" y="54" width="6" height="7" rx="3"/>
+    <rect x="39" y="54" width="6" height="7" rx="3"/>`],
+];
+
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo] of conceptos) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <div class="big"><svg width="120" height="120" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg></div>
+      <div class="small">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <svg width="24" height="24" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <svg width="16" height="16" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <span>40 · 24 · 16</span>
+      </div>
+    </div>
+    <div style="margin-top:14px"><div class="tile"><svg width="104" height="104" viewBox="0 0 64 64" fill="${P}">${cuerpo}</svg></div></div>
+    <div style="margin-top:12px"><div class="tile dark"><svg width="104" height="104" viewBox="0 0 64 64" fill="${P}">${cuerpo}</svg></div></div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

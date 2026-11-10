@@ -14,7 +14,6 @@ playwright-report/
 blob-report/
 
 # Documentación y rescate locales: no se publican en la rama remota
-docs/
 rescate/
 
 # Herramientas y material local del agente
