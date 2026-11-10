@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Monitor, Smartphone, Store, Tablet } from 'lucide-react';
 import { Contenedor, Seccion } from '../ui';
+import { EncabezadoSeccion } from './EncabezadoSeccion';
 import { MarcoPortatil, MarcoTablet, MarcoTelefono, type Dispositivo } from './Marcos';
 import { MenuDemo } from './MenuDemo';
 
@@ -28,6 +29,11 @@ const slug = (t: string) =>
  * suyo (efecto de dotación, el mismo motivo por el que las tiendas de ropa
  * tienen espejos).
  *
+ * La dirección en vivo debajo del campo es la otra mitad de esa idea: no
+ * promete «tu web», la enseña escrita con su nombre. Y el selector va pegado a
+ * la caja de texto, como la barra de una ventana: un solo control, no dos
+ * bloques que hay que emparejar con la vista.
+ *
  * El selector de aparato solo aparece desde `lg`. Por debajo, la tableta de
  * 660 px y el portátil de 856 px no caben sin encogerlos hasta que dejan de
  * parecer aparatos, así que en el teléfono se muestra la vista de teléfono —
@@ -46,37 +52,46 @@ export const SeccionDemo: React.FC = () => {
   }, []);
 
   return (
-    <Seccion id="ejemplos" padding="grande" fondo="claro">
+    <Seccion id="ejemplos" padding="mediano" className="hidden !py-20 lg:block">
       <Contenedor maxAncho="grande">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
-            Así se ve
-          </p>
-          <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.03em] text-af-ink md:text-5xl">
-            Míralo en la pantalla de tus clientes
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-af-ink-secondary">
-            Escribe el nombre de tu restaurante y cámbialo de aparato. Lo que ves es
-            exactamente lo que ven ellos.
-          </p>
-        </div>
+        <EncabezadoSeccion
+          titulo="Míralo en la pantalla de tus clientes"
+          descripcion="Escribe el nombre de tu restaurante y cámbialo de aparato."
+        />
 
-        <div className="mx-auto mt-10 flex max-w-2xl flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <label className="sr-only" htmlFor="demo-nombre">
-            Nombre de tu restaurante
-          </label>
-          <input
-            id="demo-nombre"
-            type="text"
-            className="input-af w-full sm:max-w-xs"
-            placeholder="Nombre de tu restaurante"
-            value={nombre}
-            maxLength={28}
-            autoComplete="off"
-            onChange={(e) => setNombre(e.target.value)}
-          />
+        <div className="mx-auto mt-8 flex w-full max-w-2xl flex-col gap-5 sm:flex-row sm:items-start sm:justify-center">
+          <div className="w-full sm:max-w-sm">
+            <label
+              htmlFor="demo-nombre"
+              className="block text-[12px] font-semibold text-af-ink-secondary"
+            >
+              Nombre de tu restaurante
+            </label>
+            <div className="mt-2 flex h-12 items-center gap-2.5 rounded-xl border border-af-border/80 bg-af-ground px-3.5 transition-colors focus-within:border-af-accent/70 focus-within:ring-2 focus-within:ring-af-accent/20">
+              <Store size={16} className="shrink-0 text-af-ink-secondary" aria-hidden="true" />
+              <input
+                id="demo-nombre"
+                type="text"
+                className="h-full w-full min-w-0 bg-transparent text-[15px] font-medium text-af-ink outline-none placeholder:text-af-ink-secondary/70"
+                placeholder="El Fogón de Marta"
+                value={nombre}
+                maxLength={28}
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+            </div>
+            <p className="mt-2 truncate text-xs text-af-ink-secondary">
+              tukituki.app/
+              <span className="font-semibold text-af-accent-text">{slug(nombre)}</span>
+            </p>
+          </div>
 
-          <div className="hidden items-center gap-1 rounded-xl bg-hearth-oat/80 p-1 ring-1 ring-hearth-line/60 lg:flex dark:bg-hearth-night-oat dark:ring-hearth-night-line/70">
+          <div
+            className="hidden shrink-0 items-center gap-1 rounded-xl bg-af-surface/80 p-1 ring-1 ring-af-border/60 lg:mt-[1.55rem] lg:flex dark:bg-hearth-night-card dark:ring-white/10"
+            role="group"
+            aria-label="Elegir tamaño de pantalla"
+          >
             {APARATOS.map(({ id, etiqueta, icono: Icono }) => {
               const activo = dispositivo === id;
               return (
@@ -85,15 +100,14 @@ export const SeccionDemo: React.FC = () => {
                   type="button"
                   onClick={() => setDispositivo(id)}
                   aria-pressed={activo}
-                  title={etiqueta}
-                  className={`af-pulsar flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
+                  className={`af-pulsar flex h-9 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors ${
                     activo
-                      ? 'bg-hearth-card text-hearth-espresso shadow-warm dark:bg-hearth-night-card dark:text-hearth-night-ink'
+                      ? 'bg-hearth-card text-af-ink shadow-warm dark:bg-hearth-night-oat dark:text-hearth-night-ink'
                       : 'text-af-ink-secondary hover:text-af-ink'
                   }`}
                 >
-                  <Icono size={16} strokeWidth={2} />
-                  <span className="hidden xl:inline">{etiqueta}</span>
+                  <Icono size={15} strokeWidth={2} aria-hidden="true" />
+                  {etiqueta}
                 </button>
               );
             })}
@@ -103,8 +117,12 @@ export const SeccionDemo: React.FC = () => {
         {/* La clave del cambio de aparato hace que la vista entre con un fundido
             corto. El marco cambia de tamaño en el acto —es un objeto, no un
             contenedor que se estira— y el fundido tapa el salto. */}
-        <div className="mt-14 flex min-h-[600px] items-start justify-center">
-          <div key={dispositivo} className="af-entrada-velo" aria-hidden="true">
+        <div className="relative mt-12 flex justify-center py-4 lg:py-8">
+          <div
+            aria-hidden="true"
+            className="af-escenario absolute inset-x-4 top-6 bottom-6 hidden rounded-[3rem] lg:block"
+          />
+          <div key={dispositivo} className="af-entrada-velo relative z-10" aria-hidden="true">
             {dispositivo === 'movil' && (
               <MarcoTelefono>
                 <MenuDemo nombre={nombre} dispositivo="movil" conEstado />

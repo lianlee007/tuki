@@ -19,21 +19,32 @@ const CHASIS = '#1C1917';
 const SALIENTE = '#26221F';
 const SOMBRA = 'shadow-[0_45px_80px_-45px_rgba(28,25,23,0.65)]';
 
-export const MarcoTelefono: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div
-    className={`relative mx-auto h-[560px] w-[268px] rounded-[44px] p-[10px] ${SOMBRA}`}
-    style={{ backgroundColor: CHASIS }}
-  >
-    <div className="relative h-full w-full overflow-hidden rounded-[35px] bg-af-ground">
-      {/* Isla dinámica: flota sobre la fila de estado que dibuja el menú. */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-[9px] z-20 h-[20px] w-[74px] -translate-x-1/2 rounded-full"
-        style={{ backgroundColor: '#0B0A09' }}
-      />
-      <div className="h-full w-full">{children}</div>
+export const MarcoTelefono: React.FC<{
+  children: React.ReactNode;
+  /** En el héroe el teléfono crece con la columna; en la demostración se queda
+   *  en su medida, porque ahí compite con la tableta y el portátil. */
+  variante?: 'normal' | 'grande';
+}> = ({ children, variante = 'normal' }) => {
+  const grande = variante === 'grande';
+
+  return (
+    <div
+      className={`relative mx-auto h-[560px] w-[268px] rounded-[44px] p-[10px] ${SOMBRA} ${
+        grande ? 'lg:h-[620px] lg:w-[296px]' : ''
+      }`}
+      style={{ backgroundColor: CHASIS }}
+    >
+      <div className="relative h-full w-full overflow-hidden rounded-[35px] bg-af-ground">
+        {/* Isla dinámica: flota sobre la fila de estado que dibuja el menú. */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-[9px] z-20 h-[20px] w-[74px] -translate-x-1/2 rounded-full"
+          style={{ backgroundColor: '#0B0A09' }}
+        />
+        <div className="h-full w-full">{children}</div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const MarcoTablet: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div

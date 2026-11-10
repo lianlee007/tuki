@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, MapPin, UtensilsCrossed } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, MapPin, UtensilsCrossed } from 'lucide-react';
 import { apis, intentar } from '../../lib/api-tuki';
 import { Contenedor, ImagenInteligente, Seccion } from '../ui';
-import { Revelar } from './Revelar';
+import { EncabezadoSeccion } from './EncabezadoSeccion';
 
 /** El dato que se dibuja, ya normalizado. */
 interface Ejemplo {
@@ -63,37 +63,40 @@ export const SeccionPortafolio: React.FC = () => {
   if (cargando || ejemplos.length === 0) return null;
 
   return (
-    <Seccion padding="mediano">
+    <Seccion padding="mediano" fondo="claro" className="!py-14 md:!py-24">
       <Contenedor maxAncho="grande">
-        <Revelar>
-          <p className="text-center text-[11px] font-extrabold uppercase tracking-[0.14em] text-af-accent-text">
-            Ya están en línea
-          </p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center font-jakarta text-2xl font-extrabold tracking-[-0.03em] text-af-ink sm:text-3xl">
-            Restaurantes que ya reciben pedidos con TukiTuki
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-center text-base text-af-ink-secondary">
-            Menús publicados y funcionando hoy mismo.
-          </p>
-        </Revelar>
+        <div>
+          <EncabezadoSeccion
+            alineacion="izquierda"
+            titulo="Restaurantes que ya venden con TukiTuki"
+            descripcion="Menús publicados y recibiendo pedidos hoy."
+          />
+        </div>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {ejemplos.map((rest, i) => (
-            <Revelar key={rest.id} retraso={i * 60}>
+            <div
+              key={rest.id}
+              className={`h-full ${i >= 3 ? 'hidden sm:block' : ''}`}
+            >
               <Link
                 to={`/restaurante/${rest.id}`}
-                className="af-pulsar group flex h-full flex-col overflow-hidden rounded-3xl bg-hearth-card ring-1 ring-hearth-line/70 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-warm-lg dark:bg-hearth-night-card dark:ring-hearth-night-line/80 dark:hover:shadow-warm-dark"
+                className="af-tarjeta af-tarjeta--interactiva af-pulsar group flex h-full items-center gap-3 overflow-hidden rounded-2xl bg-hearth-card p-3 sm:flex-col sm:items-stretch sm:gap-0 sm:rounded-[22px] sm:p-0 dark:bg-hearth-night-card"
               >
-                <div className="af-zoom relative aspect-[16/10] overflow-hidden">
+                <div className="af-zoom relative h-20 w-20 shrink-0 overflow-hidden rounded-xl sm:aspect-[16/10] sm:h-auto sm:w-full sm:rounded-none">
                   <ImagenInteligente
                     src={rest.banner}
                     alt={`Menú de ${rest.nombre}`}
                     className="h-full w-full"
                   />
+                  <span className="absolute left-3 top-3 hidden items-center gap-1.5 rounded-full bg-hearth-cream/95 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-hearth-espresso sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-af-success" aria-hidden="true" />
+                    En línea
+                  </span>
                 </div>
 
-                <div className="flex flex-1 items-start gap-3 p-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-af-accent text-base font-bold text-white">
+                <div className="flex min-w-0 flex-1 items-center gap-3 sm:items-start sm:p-4">
+                  <span className="hidden h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-[14px] bg-af-accent-solid text-base font-bold text-white sm:grid">
                     {rest.logo ? (
                       <ImagenInteligente src={rest.logo} alt="" className="h-full w-full" />
                     ) : (
@@ -102,36 +105,45 @@ export const SeccionPortafolio: React.FC = () => {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="flex items-center gap-1 text-base font-semibold text-af-ink">
-                      <span className="truncate">{rest.nombre}</span>
-                      <ArrowUpRight
-                        size={15}
-                        className="shrink-0 text-af-ink-secondary opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                      />
-                    </h3>
+                    <h3 className="truncate text-[15px] font-bold text-af-ink">{rest.nombre}</h3>
 
-                    <p className="mt-0.5 truncate text-sm text-af-ink-secondary">
+                    <p className="mt-0.5 truncate text-[13px] text-af-ink-secondary">
                       {rest.eslogan || 'Menú digital'}
                     </p>
 
-                    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-af-ink-secondary">
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-af-ink-secondary sm:mt-2">
                       {rest.municipio && (
                         <span className="inline-flex items-center gap-1">
-                          <MapPin size={12} strokeWidth={2.4} />
+                          <MapPin size={12} strokeWidth={2.4} aria-hidden="true" />
                           {rest.municipio}
                         </span>
                       )}
                       {rest.platos > 0 && (
                         <span className="inline-flex items-center gap-1">
-                          <UtensilsCrossed size={12} strokeWidth={2.4} />
+                          <UtensilsCrossed size={12} strokeWidth={2.4} aria-hidden="true" />
                           {rest.platos} {rest.platos === 1 ? 'plato' : 'platos'}
                         </span>
                       )}
                     </p>
                   </div>
+
+                  <ChevronRight
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 text-af-ink-secondary/50 sm:hidden"
+                  />
+                </div>
+
+                <div className="mt-auto hidden items-center justify-between border-t border-af-border/60 px-4 py-3 text-[12px] font-semibold text-af-accent-text sm:flex">
+                  Ver menú
+                  <ArrowUpRight
+                    size={15}
+                    aria-hidden="true"
+                    className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
                 </div>
               </Link>
-            </Revelar>
+            </div>
           ))}
         </div>
       </Contenedor>

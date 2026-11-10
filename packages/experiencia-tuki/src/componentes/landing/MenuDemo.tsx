@@ -70,10 +70,14 @@ export const MenuDemo: React.FC<{
   dispositivo: Dispositivo;
   /** El portátil ya dibuja su barra de navegador, así que no lleva fila de estado. */
   conEstado?: boolean;
-}> = ({ nombre, dispositivo, conEstado = false }) => {
+  /** El héroe se ve al cargar y sus fotos deben entrar ya; la demostración
+   *  vive muy abajo y se carga al acercarse, para no competir con el héroe. */
+  prioridad?: boolean;
+}> = ({ nombre, dispositivo, conEstado = false, prioridad = false }) => {
   const movil = dispositivo === 'movil';
   const pc = dispositivo === 'pc';
   const titulo = nombre.trim() || 'Tu restaurante';
+  const carga = prioridad ? 'eager' : 'lazy';
 
   /* Alturas por aparato. La pantalla del portátil es la más baja de las tres
      (404 px útiles) y el menú gasta casi todo el alto en cabecera, portada y
@@ -103,7 +107,17 @@ export const MenuDemo: React.FC<{
       {/* Portada */}
       <div className="mx-3 shrink-0 overflow-hidden rounded-2xl" style={{ height: altoBanner }}>
         <div className="relative h-full w-full">
-          <img src={BANNER} alt="" className="h-full w-full object-cover" draggable={false} />
+          <img
+            src={BANNER}
+            alt=""
+            width={520}
+            height={220}
+            className="h-full w-full object-cover"
+            loading={carga}
+            decoding="async"
+            fetchPriority={prioridad ? 'high' : undefined}
+            draggable={false}
+          />
           {/* Velo plano, no degradado: casa con la casa y garantiza que el
               nombre se lea sobre cualquier foto. */}
           <div className="absolute inset-0 bg-black/45" />
@@ -166,7 +180,11 @@ export const MenuDemo: React.FC<{
                 <img
                   src={p.img}
                   alt=""
+                  width={62}
+                  height={62}
                   className="h-[62px] w-[62px] shrink-0 rounded-xl object-cover"
+                  loading={carga}
+                  decoding="async"
                   draggable={false}
                 />
                 <div className="min-w-0 flex-1">
@@ -188,7 +206,11 @@ export const MenuDemo: React.FC<{
                   <img
                     src={p.img}
                     alt=""
+                    width={320}
+                    height={168}
                     className="h-full w-full object-cover"
+                    loading={carga}
+                    decoding="async"
                     draggable={false}
                   />
                   <span className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-bold text-[#1C1917]">
