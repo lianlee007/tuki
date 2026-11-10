@@ -326,6 +326,12 @@ PostgreSQL, RustFS y la red interna no se exponen. Las migraciones se ejecutan
 al arrancar cada servicio y las imágenes de los frontends reciben la URL del API
 en tiempo de ejecución mediante `/config.js`.
 
+El servicio `importador` aplica
+[`db/importacion/importar-produccion.sql`](db/importacion/importar-produccion.sql)
+de forma idempotente después de las migraciones. Ese archivo contiene los datos
+rescatados del Tuki original: 7 restaurantes, 61 platos, 23 cocinas y 5 reseñas.
+Las 70 imágenes se cargaron en RustFS y las URLs públicas apuntan al API Gateway.
+
 ## Convenciones
 
 - Dominio en español y capa técnica en inglés: `pedidos.service.ts`.
