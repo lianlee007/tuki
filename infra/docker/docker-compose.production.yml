@@ -1,0 +1,367 @@
+name: tukituki-production
+
+# Despliegue del monorepo TukiTuki en un host Docker único.
+# Pensado para Dokploy: construye las imágenes desde el repositorio y publica
+# solo los tres frontends y el API. PostgreSQL, RustFS y la red interna no se
+# exponen al host.
+#
+# Variables obligatorias: ver .env.production.example.
+
+x-node-base: &node-base
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-node-env: &node-env
+  NODE_ENV: production
+  JWT_SECRETO: ${JWT_SECRETO:?Define JWT_SECRETO}
+  JWT_EMISOR: tuki-identidad
+  JWT_AUDIENCIA: tuki
+  CORS_ORIGENES: ${CORS_ORIGENES:?Define CORS_ORIGENES}
+
+x-healthcheck-node: &healthcheck-node
+  interval: 30s
+  timeout: 5s
+  retries: 5
+  start_period: 40s
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tukituki-prod-postgres
+    environment:
+      POSTGRES_USER: tuki_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+      IDENTIDAD_DB_PASSWORD: ${IDENTIDAD_DB_PASSWORD:?Define IDENTIDAD_DB_PASSWORD}
+      RESTAURANTES_DB_PASSWORD: ${RESTAURANTES_DB_PASSWORD:?Define RESTAURANTES_DB_PASSWORD}
+      MEDIA_DB_PASSWORD: ${MEDIA_DB_PASSWORD:?Define MEDIA_DB_PASSWORD}
+      PEDIDOS_DB_PASSWORD: ${PEDIDOS_DB_PASSWORD:?Define PEDIDOS_DB_PASSWORD}
+      RESENAS_DB_PASSWORD: ${RESENAS_DB_PASSWORD:?Define RESENAS_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-produccion.sh:/docker-entrypoint-initdb.d/01-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tuki_admin -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  rustfs:
+    image: rustfs/rustfs:1.0.4
+    container_name: tukituki-prod-rustfs
+    command: ["/data"]
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?Define S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?Define S3_SECRET_KEY}
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_OBS_LOGGER_LEVEL: error
+      RUSTFS_OBS_LOG_DIRECTORY: /var/log/rustfs/
+    volumes:
+      - rustfs_data:/data
+      - rustfs_logs:/var/log/rustfs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  identidad-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/identidad-service/Dockerfile
+    image: tukituki-production-identidad-service
+    container_name: tukituki-prod-identidad
+    environment:
+      <<: *node-env
+      PUERTO: "3001"
+      DATABASE_URL: postgres://tuki_identidad:${IDENTIDAD_DB_PASSWORD}@postgres:5432/tuki_identidad
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-admin@tukituki.local}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:?Define SUPERADMIN_PASSWORD}
+      SUPERADMIN_NOMBRE: ${SUPERADMIN_NOMBRE:-Super}
+      SUPERADMIN_APELLIDO: ${SUPERADMIN_APELLIDO:-Admin}
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  restaurantes-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/restaurantes-service/Dockerfile
+    image: tukituki-production-restaurantes-service
+    container_name: tukituki-prod-restaurantes
+    environment:
+      <<: *node-env
+      PUERTO: "3002"
+      DATABASE_URL: postgres://tuki_restaurantes:${RESTAURANTES_DB_PASSWORD}@postgres:5432/tuki_restaurantes
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3002/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  media-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/media-service/Dockerfile
+    image: tukituki-production-media-service
+    container_name: tukituki-prod-media
+    environment:
+      <<: *node-env
+      PUERTO: "3003"
+      DATABASE_URL: postgres://tuki_media:${MEDIA_DB_PASSWORD}@postgres:5432/tuki_media
+      S3_ENDPOINT: http://rustfs:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: tuki-media
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Define S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Define S3_SECRET_KEY}
+      S3_PUBLIC_URL: ${TUKI_API_URL:?Define TUKI_API_URL}/tuki-media
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3003/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  pedidos-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/pedidos-service/Dockerfile
+    image: tukituki-production-pedidos-service
+    container_name: tukituki-prod-pedidos
+    environment:
+      <<: *node-env
+      PUERTO: "3004"
+      DATABASE_URL: postgres://tuki_pedidos:${PEDIDOS_DB_PASSWORD}@postgres:5432/tuki_pedidos
+      RESTAURANTES_URL: http://restaurantes-service:3002
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3004/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  resenas-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/resenas-service/Dockerfile
+    image: tukituki-production-resenas-service
+    container_name: tukituki-prod-resenas
+    environment:
+      <<: *node-env
+      PUERTO: "3005"
+      DATABASE_URL: postgres://tuki_resenas:${RESENAS_DB_PASSWORD}@postgres:5432/tuki_resenas
+      RESTAURANTES_URL: http://restaurantes-service:3002
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3005/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  admin-service:
+    <<: *node-base
+    build:
+      context: ../..
+      dockerfile: services/admin-service/Dockerfile
+    image: tukituki-production-admin-service
+    container_name: tukituki-prod-admin
+    environment:
+      <<: *node-env
+      PUERTO: "3006"
+      DATABASE_URL: postgres://tuki_admin:${POSTGRES_PASSWORD}@postgres:5432/tuki_admin
+      IDENTIDAD_URL: http://identidad-service:3001
+      RESTAURANTES_URL: http://restaurantes-service:3002
+      PEDIDOS_URL: http://pedidos-service:3004
+    command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
+    healthcheck:
+      <<: *healthcheck-node
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3006/listo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+
+  ai-gateway:
+    build:
+      context: ../../services/ai-gateway
+      dockerfile: Dockerfile
+    image: tukituki-production-ai-gateway
+    container_name: tukituki-prod-ai-gateway
+    environment:
+      AI_ENVIRONMENT: production
+      AI_AUTH_MODE: local
+      AI_ALLOW_ANON: "true"
+      AI_LOG_LEVEL: INFO
+      JWT_SECRETO: ${JWT_SECRETO:?Define JWT_SECRETO}
+      JWT_EMISOR: tuki-identidad
+      JWT_AUDIENCIA: tuki
+      GROQ_API_KEY: ${GROQ_API_KEY:?Define GROQ_API_KEY}
+      AI_GROQ_MODELS: ${AI_GROQ_MODELS:-openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b}
+      AI_CORS_ORIGINS: ${CORS_ORIGENES:?Define CORS_ORIGENES}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api-gateway:
+    image: nginx:1.27-alpine
+    container_name: tukituki-prod-api
+    ports:
+      - "8084:80"
+    volumes:
+      - ./production/api-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      identidad-service:
+        condition: service_started
+      restaurantes-service:
+        condition: service_started
+      media-service:
+        condition: service_started
+      pedidos-service:
+        condition: service_started
+      resenas-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      ai-gateway:
+        condition: service_started
+      rustfs:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/salud || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web-comensal:
+    image: tukituki-production-web-comensal
+    build:
+      context: ../..
+      dockerfile: apps/web-comensal/Dockerfile
+    container_name: tukituki-prod-web-comensal
+    ports:
+      - "8081:80"
+    environment:
+      TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - /tuki/generar-config.sh && exec /docker-entrypoint.sh nginx -g 'daemon off;'
+    volumes:
+      - ./production/generar-config.sh:/tuki/generar-config.sh:ro
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/salud || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  panel-restaurante:
+    image: tukituki-production-web-panel
+    build:
+      context: ../..
+      dockerfile: apps/panel-restaurante/Dockerfile
+    container_name: tukituki-prod-web-panel
+    ports:
+      - "8082:80"
+    environment:
+      TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - /tuki/generar-config.sh && exec /docker-entrypoint.sh nginx -g 'daemon off;'
+    volumes:
+      - ./production/generar-config.sh:/tuki/generar-config.sh:ro
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/salud || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  admin-plataforma:
+    image: tukituki-production-web-admin
+    build:
+      context: ../..
+      dockerfile: apps/admin-plataforma/Dockerfile
+    container_name: tukituki-prod-web-admin
+    ports:
+      - "8083:80"
+    environment:
+      TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - /tuki/generar-config.sh && exec /docker-entrypoint.sh nginx -g 'daemon off;'
+    volumes:
+      - ./production/generar-config.sh:/tuki/generar-config.sh:ro
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/salud || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+  rustfs_data:
+  rustfs_logs:
