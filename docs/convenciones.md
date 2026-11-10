@@ -30,22 +30,26 @@ reconoce por su sufijo técnico.
 
 ## Capas
 
+Los servicios Node usan arquitectura hexagonal. La dirección de dependencias es
+siempre la misma:
+
 ```text
-routes -> controller -> service -> repository -> PostgreSQL
+entrada/http -> aplicacion -> puertos <- adaptadores
+                                  |
+                               dominio
 ```
 
-- `routes`: declara la URL y el esquema de entrada.
-- `controller`: traduce HTTP a llamadas del servicio; no contiene negocio.
-- `service`: reglas de negocio y transacciones.
-- `repository`: único lugar con SQL.
-- `schema`: validación con Zod.
-- `types`: contratos del dominio.
+- `dominio`: reglas y tipos del servicio; no conoce Fastify ni SQL.
+- `puertos`: interfaces de repositorio, almacenamiento y clientes HTTP.
+- `aplicacion`: casos de uso; no importa `fastify`, `postgres` ni `fetch`.
+- `adaptadores`: PostgreSQL, S3, JWT y clientes HTTP.
+- `entrada/http`: rutas, controladores y esquemas Zod.
+- `plugins`: autenticación y formato de errores de Fastify.
+- `app.ts` y `composicion.ts`: composición e inyección de dependencias.
 
-`pedidos-service`, `resenas-service`, `media-service`, `admin-service` e
-`identidad-service` son la excepción: ya usan arquitectura hexagonal
-(`dominio/`, `puertos/`, `aplicacion/`, `adaptadores/`, `entrada/`). Solo
-`restaurantes-service` sigue el esquema por capas hasta que se migre. El detalle
-está en [`arquitectura.md`](arquitectura.md).
+Los seis servicios Node ya están migrados. `restaurantes-service` fue el último
+y usa `RestaurantesRepositorio`, `MenuRepositorio` y `PublicoRepositorio` como
+puertos. El detalle está en [`arquitectura.md`](arquitectura.md).
 
 ## Frontend
 
