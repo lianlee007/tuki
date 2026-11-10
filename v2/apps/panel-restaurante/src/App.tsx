@@ -23,7 +23,7 @@ import '@tuki/experiencia/estilos/apple-tokens.css';
 
 const PantallaCarga = () => (
   <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4 animate-fadeIn">
-    <div className="w-16 h-16 rounded-[24%] bg-af-accent-solid flex items-center justify-center text-white animate-bounce">
+    <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white animate-bounce">
       <Logo size={46} />
     </div>
     <span className="text-xs font-bold text-text-muted uppercase tracking-widest">

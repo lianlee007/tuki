@@ -129,7 +129,7 @@ export default function PaginaMiCuenta() {
         <header className="nav-af sticky top-0 z-40">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-3">
             <Link to="/" className="af-pulsar flex items-center" aria-label="TukiTuki, volver a descubrir">
-              <MarcaTuki tamano={20} titulo="" />
+              <MarcaTuki tamano={24} titulo="" />
             </Link>
 
             <div className="flex items-center gap-1.5">

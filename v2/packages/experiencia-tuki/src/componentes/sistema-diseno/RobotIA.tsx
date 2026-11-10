@@ -12,9 +12,9 @@ interface RobotIAProps {
  * ASISTENTE TUKI — la cabeza del robot.
  *
  * Tres trazos y nada más: una cabeza redondeada, una antena y dos ojos. La
- * antena termina en una chispa de cuatro puntas: es el acento del asistente.
- * La marca de Tuki ya no usa esa chispa —su símbolo es la T-mesa—, así que el
- * asistente tiene su propia figura sin competir con el logo.
+ * antena no termina en un punto cualquiera: termina en la misma llama que lleva
+ * la marca en la «i», así que el asistente se lee como parte de TukiTuki y no
+ * como un icono genérico de «IA».
  *
  * Todo se pinta con `currentColor` y un solo grosor de trazo, para que herede
  * el color del texto y encaje con el resto de iconos. Los ojos y la chispa van
@@ -47,11 +47,11 @@ export const RobotIA: React.FC<RobotIAProps> = ({
       stroke="currentColor"
       strokeWidth={strokeWidth}
     />
-    {/* Antena: vástago hasta la chispa. */}
+    {/* Antena: vástago hasta la llama. */}
     <path d="M12 8.75V6.4" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" />
-    {/* Chispa de la marca, en miniatura. */}
+    {/* La llama de la marca, en miniatura. */}
     <path
-      d="M12 1.4Q12.29 3.36 14.25 3.65Q12.29 3.94 12 5.9Q11.71 3.94 9.75 3.65Q11.71 3.36 12 1.4Z"
+      d="M12 1.1C12.9 2.5 14.1 3.5 14.1 4.8C14.1 5.6 13.2 6.1 12 6.1C10.8 6.1 9.9 5.6 9.9 4.8C9.9 4.1 10.3 3.5 10.8 3C10.6 3.6 10.9 4 11.3 4.2C11.4 3.2 11.5 2.1 12 1.1Z"
       fill="currentColor"
     />
     {/* Ojos. */}

@@ -236,20 +236,19 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
         <div className="flex min-w-0 items-center gap-3">
           <Link
             to="/"
-            className={`af-pulsar flex shrink-0 items-center gap-2.5 ${FOCO} rounded-xl`}
+            aria-label="TukiTuki — Mercado culinario"
+            className={`af-pulsar flex shrink-0 items-center gap-2.5 rounded-xl sm:gap-3 ${FOCO}`}
           >
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center bg-af-accent-solid text-white"
-              style={{ borderRadius: 10 }}
-            >
-              <SimboloTuki size={28} />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:h-12 sm:w-12">
+              <SimboloTuki size={30} />
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
               <PalabraTuki
-                tamano={18}
-                className="truncate text-hearth-espresso dark:text-hearth-night-ink"
+                nombre="TukiTuki"
+                tamano={22}
+                className="text-hearth-espresso dark:text-hearth-night-ink"
               />
-              <span className="truncate text-[10px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+              <span className="mt-0.5 truncate text-[10px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
                 Mercado culinario
               </span>
             </span>
