@@ -361,6 +361,32 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  importador:
+    image: postgres:16-alpine
+    container_name: tukituki-prod-importador
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: tuki_admin
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+    volumes:
+      - ../../db/importacion/importar-produccion.sql:/importar.sql:ro
+    command: ["psql", "-v", "ON_ERROR_STOP=1", "-f", "/importar.sql"]
+    depends_on:
+      identidad-service:
+        condition: service_healthy
+      restaurantes-service:
+        condition: service_healthy
+      resenas-service:
+        condition: service_healthy
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   postgres_data:
   rustfs_data:
