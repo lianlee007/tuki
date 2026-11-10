@@ -12,6 +12,10 @@
 export const FOCO =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hearth-terracotta focus-visible:ring-offset-2 focus-visible:ring-offset-hearth-cream dark:focus-visible:ring-hearth-night-terracotta dark:focus-visible:ring-offset-hearth-night';
 
+/** Para enlaces que ocupan una foto recortada: el anillo va por dentro. */
+export const FOCO_IMAGEN =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hearth-terracotta dark:focus-visible:ring-hearth-night-terracotta';
+
 export const TARJETA =
   'rounded-3xl bg-hearth-card ring-1 ring-hearth-line/70 shadow-warm dark:bg-hearth-night-card dark:ring-white/5 dark:shadow-none';
 
@@ -30,7 +34,7 @@ export const BOTON_FANTASMA = `af-pulsar inline-flex items-center justify-center
 export const CAMPO = `w-full rounded-xl bg-hearth-oat px-4 text-[15px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/40 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40`;
 
 export const ETIQUETA =
-  'text-[11px] font-extrabold uppercase tracking-[0.14em]';
+  'text-[11px] font-extrabold tracking-[0.02em]';
 
 /** Tinte de la insignia de frescura (vegetariano, vegano). */
 export const INSIGNIA_FRESCA =

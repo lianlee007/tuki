@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight,
   Heart,
+  MapPin,
   SlidersHorizontal,
   UtensilsCrossed,
   X,
@@ -12,7 +13,8 @@ import { SEO } from '../componentes/ui';
 import { BarraDescubrir } from '../componentes/descubrir/BarraDescubrir';
 import { BarraMovil } from '../componentes/descubrir/BarraMovil';
 import { CarrilCocinas } from '../componentes/descubrir/CarrilCocinas';
-import { CarrilRestaurantes } from '../componentes/descubrir/CarrilRestaurantes';
+import { SeccionRestaurantes } from '../componentes/descubrir/SeccionRestaurantes';
+import { PanelRestaurantes } from '../componentes/descubrir/PanelRestaurantes';
 import { PanelFiltros } from '../componentes/descubrir/PanelFiltros';
 import { FiltrosRapidos } from '../componentes/descubrir/FiltrosRapidos';
 import { PanelCarrito } from '../componentes/descubrir/PanelCarrito';
@@ -33,7 +35,6 @@ import {
   BOTON_FANTASMA,
   BOTON_PRIMARIO,
   FOCO,
-  TARJETA,
 } from '../componentes/descubrir/estilos';
 import { apiDescubrir } from '../api/apiDescubrir';
 import { useAuth } from '../contexto/ContextoAutenticacion';
@@ -47,6 +48,13 @@ import type {
 } from '../tipos/modelos';
 
 const LIMITE = 24;
+
+/** El desplazamiento largo también respeta «Reducir movimiento». */
+const comportamientoDesplazamiento = (): ScrollBehavior =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 'auto'
+    : 'smooth';
 
 /** El carrito guarda `Platillo`; el feed trae una versión más corta. */
 const aPlatillo = (plato: PlatoDescubierto): Platillo => ({
@@ -69,22 +77,23 @@ const aPlatillo = (plato: PlatoDescubierto): Platillo => ({
 
 /** Esqueletos del primer pintado: estáticos, sin pulso que distraiga. */
 const Esqueletos: React.FC = () => (
-  <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4" aria-hidden="true">
+  <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4" aria-hidden="true">
     {Array.from({ length: 4 }).map((_, indice) => (
       <div
         key={indice}
-        className={`${TARJETA} p-2.5 sm:p-3.5 ${indice === 0 ? 'col-span-2 sm:col-span-1' : ''}`}
+        className={`overflow-hidden rounded-[22px] bg-hearth-card p-2 ring-1 ring-hearth-line/60 shadow-warm dark:bg-hearth-night-card dark:ring-white/5 dark:shadow-none sm:rounded-3xl ${
+          indice === 0 ? 'col-span-2' : ''
+        }`}
       >
         <div
-          className={`rounded-2xl bg-hearth-oat dark:bg-hearth-night-oat ${
-            indice === 0 ? 'aspect-[16/10] sm:aspect-[4/3]' : 'aspect-[4/3]'
+          className={`rounded-[17px] bg-hearth-oat dark:bg-hearth-night-oat ${
+            indice === 0 ? 'aspect-[16/10]' : 'aspect-square sm:aspect-[4/3]'
           }`}
         />
-        <div className="mt-3.5 h-4 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
-        <div className="mt-2 h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="h-6 w-24 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
-          <div className="hidden h-9 w-32 rounded-xl bg-hearth-oat sm:block dark:bg-hearth-night-oat" />
+        <div className="px-1 pb-1 pt-2.5">
+          <div className="h-4 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+          <div className="mt-2 h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
+          <div className="mt-3 h-5 w-20 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
         </div>
       </div>
     ))}
@@ -126,6 +135,7 @@ const PaginaDescubrir = () => {
   const [restaurantes, setRestaurantes] = useState<RestauranteDescubierto[]>([]);
   const [totalRestaurantes, setTotalRestaurantes] = useState(0);
   const [cargandoRestaurantes, setCargandoRestaurantes] = useState(true);
+  const [restaurantesAbiertos, setRestaurantesAbiertos] = useState(false);
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
@@ -135,7 +145,6 @@ const PaginaDescubrir = () => {
   const [soloFavoritos, setSoloFavoritos] = useState(false);
   const [detalle, setDetalle] = useState<PlatoDescubierto | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const refBuscador = useRef<HTMLInputElement>(null);
 
   /* Un aviso vive lo justo para leerse; no se apila. */
   useEffect(() => {
@@ -233,7 +242,7 @@ const PaginaDescubrir = () => {
     setCargandoRestaurantes(true);
 
     apiDescubrir
-      .restaurantes({ q: consulta, cocina, limite: 8 })
+      .restaurantes({ q: consulta, cocina, limite: 12 })
       .then(({ restaurantes: encontrados, error: fallo }) => {
         if (!vigente) return;
         if (fallo) {
@@ -334,12 +343,13 @@ const PaginaDescubrir = () => {
 
   const irAInicio = () => {
     setSoloFavoritos(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: comportamientoDesplazamiento() });
   };
 
-  const enfocarBuscador = () => {
-    refBuscador.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const irAlCatalogo = () => {
+    document
+      .getElementById('catalogo-platos')
+      ?.scrollIntoView({ behavior: comportamientoDesplazamiento(), block: 'start' });
   };
 
   const verFavoritos = () => {
@@ -354,7 +364,7 @@ const PaginaDescubrir = () => {
     );
     document
       .getElementById('catalogo-platos')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      ?.scrollIntoView({ behavior: comportamientoDesplazamiento(), block: 'start' });
   };
 
   const platosVisibles = useMemo(
@@ -367,7 +377,9 @@ const PaginaDescubrir = () => {
   const hayFiltros = filtrosActivos > 0 || consulta.trim().length > 0;
   const primerPintado = cargando && platos.length === 0;
   const volver = `${location.pathname}${location.search}`;
-  const rutaCuenta = user ? '/mi-cuenta' : '/entrar';
+  const rutaCuenta =
+    rol === 'restaurante' ? '/panel' : user ? '/mi-cuenta' : '/entrar';
+  const ciudad = platos[0]?.ciudad || restaurantes[0]?.ciudad || null;
 
   const totalMostrado = soloFavoritos ? platosVisibles.length : total;
   const etiquetaTotal = primerPintado
@@ -394,58 +406,102 @@ const PaginaDescubrir = () => {
         onConsulta={setTexto}
         onCarrito={() => setCarritoAbierto(true)}
         cantidadCarrito={cantidadCarrito}
-        inputRef={refBuscador}
+        onInicio={irAInicio}
       />
 
-      <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-16">
-        <div className="grid grid-cols-1 gap-7 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-8">
-          <div className="flex min-w-0 flex-col gap-7">
+      <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-16">
+        <div className="grid grid-cols-1 gap-7 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-9">
+          <div className="flex min-w-0 flex-col gap-6 sm:gap-8">
+            <section aria-labelledby="titulo-descubrir">
+              <div className="flex items-center gap-1.5 text-[11.5px] font-semibold text-hearth-pebble dark:text-hearth-night-pebble">
+                <MapPin size={13} aria-hidden="true" className="shrink-0" />
+                <span className="truncate">{ciudad ?? 'Cerca de ti'}</span>
+                <span
+                  aria-hidden="true"
+                  className="h-1 w-1 shrink-0 rounded-full bg-hearth-line dark:bg-hearth-night-line"
+                />
+                <span className="shrink-0 tabular-nums">
+                  {primerPintado
+                    ? 'Buscando…'
+                    : `${totalRestaurantes.toLocaleString('es-CO')} ${
+                        totalRestaurantes === 1 ? 'restaurante' : 'restaurantes'
+                      }`}
+                </span>
+              </div>
+
+              <h1
+                id="titulo-descubrir"
+                className="mt-2 text-balance font-jakarta text-[clamp(1.9rem,5.2vw,2.5rem)] font-extrabold leading-[1.06] tracking-[-0.035em] text-hearth-espresso dark:text-hearth-night-ink"
+              >
+                ¿Qué se te antoja hoy?
+              </h1>
+
+              <p className="mt-2 max-w-[36ch] text-[13px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
+                {error
+                  ? 'La cocina está tardando. Reintenta en un momento.'
+                  : primerPintado
+                    ? 'Buscando lo que cocinan cerca de ti…'
+                    : totalMostrado > 0
+                      ? `${totalMostrado.toLocaleString('es-CO')} ${
+                          totalMostrado === 1 ? 'plato' : 'platos'
+                        } para descubrir. Pide directo al restaurante.`
+                      : 'Descubre lo que cocinan los restaurantes de tu ciudad.'}
+              </p>
+            </section>
+
             <CarrilCocinas
               cocinas={cocinas}
               activa={cocina}
               onElegir={(slug) => actualizar({ cocina: slug })}
-              totalPlatos={total}
-              totalRestaurantes={totalRestaurantes}
             />
 
-            <CarrilRestaurantes
+            <SeccionRestaurantes
               restaurantes={restaurantes}
               total={totalRestaurantes}
               cargando={cargandoRestaurantes}
               cocinaCoincidente={cocinaElegida?.nombre ?? null}
+              onVerTodos={() => setRestaurantesAbiertos(true)}
             />
 
             <section id="catalogo-platos" aria-labelledby="titulo-platos" className="scroll-mt-28">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
                   <h2
                     id="titulo-platos"
-                    className="text-balance font-jakarta text-[clamp(1.4rem,3vw,1.7rem)] font-extrabold tracking-[-0.025em] text-hearth-espresso dark:text-hearth-night-ink"
+                    className="font-jakarta text-[20px] font-extrabold tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink"
                   >
-                    Platos en tendencia
+                    Para ti
                   </h2>
-                  <p aria-live="polite" className="mt-0.5 text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble">
+                  <p
+                    aria-live="polite"
+                    className="mt-0.5 truncate text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble"
+                  >
+                    <span className="font-semibold text-hearth-espresso dark:text-hearth-night-ink">
+                      Platos en tendencia
+                    </span>
+                    <span aria-hidden="true"> · </span>
                     {etiquetaTotal}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <button
                     type="button"
                     onClick={verFavoritos}
                     aria-pressed={soloFavoritos}
-                    className={`af-pulsar inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-bold transition-colors ${FOCO} ${
+                    aria-label={soloFavoritos ? 'Mostrar todos los platos' : 'Ver Favoritos'}
+                    className={`af-pulsar inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-3 text-[12px] font-bold transition-colors sm:h-10 ${FOCO} ${
                       soloFavoritos
                         ? 'bg-hearth-terracotta-deep text-white shadow-warm dark:bg-hearth-night-terracotta dark:text-hearth-night'
                         : 'bg-hearth-card text-hearth-pebble ring-1 ring-hearth-line/70 hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line'
                     }`}
                   >
                     <Heart
-                      size={14}
+                      size={16}
                       aria-hidden="true"
                       className={soloFavoritos ? 'fill-current' : undefined}
                     />
-                    Favoritos
+                    <span className="hidden sm:inline">Favoritos</span>
                     {favoritos.length > 0 && (
                       <span className="rounded-full bg-hearth-honey/25 px-1.5 text-[10px] font-extrabold tabular-nums">
                         {favoritos.length}
@@ -456,12 +512,12 @@ const PaginaDescubrir = () => {
                   <button
                     type="button"
                     onClick={() => setFiltrosAbiertos(true)}
-                    className={`af-pulsar inline-flex items-center gap-1.5 rounded-xl bg-hearth-card px-3.5 py-2.5 text-[12px] font-bold text-hearth-pebble ring-1 ring-hearth-line/70 transition-colors hover:text-hearth-espresso lg:hidden dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line dark:hover:text-hearth-night-ink ${FOCO}`}
+                    aria-label="Abrir filtros"
+                    className={`af-pulsar relative flex h-11 w-11 items-center justify-center rounded-full bg-hearth-card text-hearth-pebble ring-1 ring-hearth-line/70 transition-colors hover:text-hearth-espresso sm:h-10 sm:w-10 lg:hidden dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line dark:hover:text-hearth-night-ink ${FOCO}`}
                   >
-                    <SlidersHorizontal size={14} aria-hidden="true" />
-                    Filtros
+                    <SlidersHorizontal size={16} aria-hidden="true" />
                     {filtrosActivos > 0 && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white ring-2 ring-hearth-cream dark:bg-hearth-night-terracotta dark:text-hearth-night dark:ring-hearth-night">
                         {filtrosActivos}
                       </span>
                     )}
@@ -553,7 +609,7 @@ const PaginaDescubrir = () => {
               ) : (
                 <>
                   <div
-                    className={`mt-5 grid grid-cols-2 gap-3 transition-opacity duration-200 sm:gap-4 ${
+                    className={`mt-4 grid grid-cols-2 gap-3 transition-opacity duration-200 sm:gap-4 ${
                       cargando ? 'opacity-60' : 'opacity-100'
                     }`}
                     aria-busy={cargando}
@@ -589,15 +645,15 @@ const PaginaDescubrir = () => {
               )}
             </section>
 
-            <footer className={`${TARJETA} flex flex-col items-center gap-2 p-6 text-center`}>
-              <p className="text-[13px] text-hearth-pebble dark:text-hearth-night-pebble">
+            <footer className="flex flex-col items-center gap-1.5 pb-4 pt-2 text-center">
+              <p className="text-[12px] text-hearth-pebble dark:text-hearth-night-pebble">
                 ¿Tienes un restaurante?
               </p>
               <Link
                 to="/para-restaurantes"
                 className="af-pulsar inline-flex items-center gap-1.5 font-jakarta text-[15px] font-extrabold text-hearth-terracotta-ink transition-colors hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta"
               >
-                Crea tu menú con TukiTuki
+                Publica tu menú en TukiTuki
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </footer>
@@ -614,6 +670,7 @@ const PaginaDescubrir = () => {
               cantidad={cantidadCarrito}
               total={totalCarrito}
               onAbrir={() => setCarritoAbierto(true)}
+              onVerPlatos={irAlCatalogo}
             />
 
             <FiltrosRapidos
@@ -629,10 +686,21 @@ const PaginaDescubrir = () => {
 
       <BarraMovil
         rutaCuenta={rutaCuenta}
-        cantidadCarrito={cantidadCarrito}
+        cantidadFavoritos={favoritos.length}
+        favoritosActivos={soloFavoritos}
+        restaurantesActivo={restaurantesAbiertos}
         onInicio={irAInicio}
-        onBuscar={enfocarBuscador}
-        onCarrito={() => setCarritoAbierto(true)}
+        onRestaurantes={() => setRestaurantesAbiertos(true)}
+        onFavoritos={verFavoritos}
+      />
+
+      <PanelRestaurantes
+        abierto={restaurantesAbiertos}
+        restaurantes={restaurantes}
+        total={totalRestaurantes}
+        cargando={cargandoRestaurantes}
+        cocinaCoincidente={cocinaElegida?.nombre ?? null}
+        onCerrar={() => setRestaurantesAbiertos(false)}
       />
 
       <PanelFiltros

@@ -1,84 +1,130 @@
 import React from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
-import { Home, Layers, Search, ShoppingBag, UserRound } from 'lucide-react';
+import { Heart, Home, Sparkles, Store, UserRound } from 'lucide-react';
 import { FOCO } from './estilos';
 
 interface BarraMovilProps {
   rutaCuenta: string;
-  cantidadCarrito: number;
+  cantidadFavoritos: number;
+  favoritosActivos: boolean;
+  restaurantesActivo: boolean;
   onInicio: () => void;
-  onBuscar: () => void;
-  onCarrito: () => void;
+  onRestaurantes: () => void;
+  onFavoritos: () => void;
 }
 
 /**
- * Barra de navegación del pulgar.
+ * La barra del pulgar.
  *
- * Cuatro destinos y nada más: volver al inicio, buscar, abrir la baraja de
- * Inspiración y entrar a la cuenta. Favoritos vive en la cabecera del feed
- * (es un filtro, no un destino) y «Cocinas» se fue: apuntaba a la landing de
- * restaurantes y el nombre mentía. Con cuatro acciones cada objetivo recupera
- * espacio y se puede tocar sin apuntar.
+ * Cinco destinos reales: inicio, restaurantes, inspiración, guardados y cuenta.
+ * El carrito vive en la barra superior junto al buscador —es una acción, no un
+ * destino— y por eso no se repite aquí. Inspiración ocupa el centro y sube un
+ * poco: es la acción que convierte «no sé qué comer» en una decisión.
  */
 export const BarraMovil: React.FC<BarraMovilProps> = ({
   rutaCuenta,
-  cantidadCarrito,
+  cantidadFavoritos,
+  favoritosActivos,
+  restaurantesActivo,
   onInicio,
-  onBuscar,
-  onCarrito,
+  onRestaurantes,
+  onFavoritos,
 }) => {
-  const item = `af-pulsar flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-bold transition-colors ${FOCO}`;
+  const inicioActivo = !favoritosActivos && !restaurantesActivo;
+
+  const item = `af-pulsar flex min-w-0 flex-col items-center justify-end gap-0.5 rounded-xl px-1 pb-1 pt-0.5 text-[10px] font-bold leading-none transition-colors ${FOCO}`;
+  const icono = 'flex h-7 w-10 items-center justify-center rounded-full transition-colors';
   const apagado =
     'text-hearth-pebble hover:text-hearth-terracotta-ink dark:text-hearth-night-pebble dark:hover:text-hearth-night-terracotta';
+  const activo =
+    'text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink';
+  const iconoActivo =
+    'bg-hearth-terracotta-soft dark:bg-hearth-night-terracotta-soft';
 
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-hearth-line/80 bg-hearth-card pb-[env(safe-area-inset-bottom)] lg:hidden dark:border-hearth-night-line dark:bg-hearth-night"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-hearth-line/70 bg-hearth-card pb-[calc(0.375rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_30px_-18px_rgba(78,42,29,0.28)] lg:hidden dark:border-hearth-night-line dark:bg-hearth-night dark:shadow-[0_-8px_30px_-18px_rgba(0,0,0,0.8)]"
     >
-      <div className="mx-auto flex max-w-md items-stretch gap-1 px-3 py-1.5">
-        <button type="button" onClick={onInicio} className={`${item} ${apagado}`}>
-          <Home size={20} aria-hidden="true" />
+      <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-0.5 px-2">
+        <button
+          type="button"
+          onClick={onInicio}
+          aria-current={inicioActivo ? 'page' : undefined}
+          className={`${item} ${inicioActivo ? activo : apagado}`}
+        >
+          <span className={`${icono} ${inicioActivo ? iconoActivo : ''}`}>
+            <Home size={20} aria-hidden="true" />
+          </span>
           Inicio
-        </button>
-
-        <button type="button" onClick={onBuscar} className={`${item} ${apagado}`}>
-          <Search size={20} aria-hidden="true" />
-          Buscar
         </button>
 
         <button
           type="button"
-          onClick={onCarrito}
-          aria-label={
-            cantidadCarrito > 0
-              ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
-              : 'Abrir el carrito'
-          }
-          className={`${item} relative ${apagado}`}
+          onClick={onRestaurantes}
+          aria-pressed={restaurantesActivo}
+          className={`${item} ${restaurantesActivo ? activo : apagado}`}
         >
-          <span className="relative">
-            <ShoppingBag size={20} aria-hidden="true" />
-            {cantidadCarrito > 0 && (
-              <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[9px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
-                {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
-              </span>
-            )}
+          <span className={`${icono} ${restaurantesActivo ? iconoActivo : ''}`}>
+            <Store size={20} aria-hidden="true" />
           </span>
-          Carrito
+          Locales
         </button>
 
         <Link
           to="/inspiracion"
-          className={`${item} text-hearth-terracotta-ink hover:text-hearth-terracotta-deep dark:text-hearth-night-terracotta-ink dark:hover:text-hearth-night-terracotta`}
+          aria-label="Abrir Inspiración"
+          className={`${item} group text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}
         >
-          <Layers size={20} aria-hidden="true" />
-          Swipe
+          <span className="-mt-3 flex h-11 w-11 items-center justify-center rounded-full bg-hearth-terracotta-deep text-white shadow-warm-lg ring-4 ring-hearth-card transition-transform group-active:scale-95 dark:bg-hearth-night-terracotta dark:text-hearth-night dark:ring-hearth-night-card">
+            <Sparkles size={20} aria-hidden="true" />
+          </span>
+          <span className="mt-0.5 text-[10px] font-extrabold tracking-[-0.01em]">
+            Inspiración
+          </span>
         </Link>
 
-        <Link to={rutaCuenta} className={`${item} ${apagado}`}>
-          <UserRound size={20} aria-hidden="true" />
+        <button
+          type="button"
+          onClick={onFavoritos}
+          aria-pressed={favoritosActivos}
+          aria-label={
+            favoritosActivos
+              ? 'Mostrar todos los platos'
+              : 'Mostrar los platos guardados'
+          }
+          className={`${item} relative ${favoritosActivos ? activo : apagado}`}
+        >
+          <span className={`relative ${icono} ${favoritosActivos ? iconoActivo : ''}`}>
+            <Heart
+              size={20}
+              aria-hidden="true"
+              className={favoritosActivos ? 'fill-current' : undefined}
+            />
+            {cantidadFavoritos > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[9px] font-extrabold tabular-nums text-white ring-2 ring-hearth-card dark:bg-hearth-night-terracotta dark:text-hearth-night dark:ring-hearth-night">
+                {cantidadFavoritos > 9 ? '9+' : cantidadFavoritos}
+              </span>
+            )}
+          </span>
+          Guardados
+        </button>
+
+        <Link
+          to={rutaCuenta}
+          aria-label={
+            rutaCuenta === '/entrar'
+              ? 'Entrar a tu cuenta'
+              : rutaCuenta === '/panel'
+                ? 'Abrir el panel del restaurante'
+                : 'Abrir tu cuenta'
+          }
+          className={`${item} ${apagado}`}
+        >
+          <span className={icono}>
+            <UserRound size={20} aria-hidden="true" />
+          </span>
           Cuenta
         </Link>
       </div>

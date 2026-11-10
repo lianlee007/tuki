@@ -7,6 +7,8 @@ interface Props {
   className?: string;
   /** Refuerza el raíl, para cuando vive sobre una barra con desenfoque. */
   conFondo?: boolean;
+  /** En barras estrechas: un botón de 40 px en vez del raíl de 56 px. */
+  compacto?: boolean;
 }
 
 /**
@@ -19,17 +21,42 @@ interface Props {
  * estado no depende solo del color. Es `role="switch"`, de modo que un lector de
  * pantalla anuncia el estado («Modo oscuro, activado») igual de claro.
  */
-export const ThemeToggle: React.FC<Props> = ({ className = '', conFondo = false }) => {
+export const ThemeToggle: React.FC<Props> = ({
+  className = '',
+  conFondo = false,
+  compacto = false,
+}) => {
   const { tema, toggleTema } = useTema();
   const oscuro = tema === 'dark';
+  const etiqueta = oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+
+  if (compacto) {
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={oscuro}
+        aria-label={etiqueta}
+        title={etiqueta}
+        onClick={toggleTema}
+        className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${className}`}
+      >
+        {oscuro ? (
+          <Sun size={18} strokeWidth={2.1} aria-hidden="true" />
+        ) : (
+          <Moon size={18} strokeWidth={2.1} aria-hidden="true" />
+        )}
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
       role="switch"
       aria-checked={oscuro}
-      aria-label="Modo oscuro"
-      title={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      aria-label={etiqueta}
+      title={etiqueta}
       onClick={toggleTema}
       className={`af-tema ${conFondo ? 'af-tema--fondo' : ''} ${className}`}
     >

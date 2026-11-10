@@ -44,7 +44,7 @@ const formatearDireccion = (direccion: DireccionGuardada) =>
     .filter((parte) => Boolean(parte && String(parte).trim()))
     .join(' ');
 
-const CAMPO = `h-11 w-full rounded-xl bg-hearth-oat px-3.5 text-[14px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/40 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40`;
+const CAMPO = `h-11 w-full rounded-xl bg-hearth-oat px-3.5 text-[16px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/40 sm:text-[14px] dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40`;
 
 /**
  * El carrito de Descubrir.
