@@ -77,45 +77,38 @@ comensal no puede llamar a los endpoints del panel aunque conozca la URL.
 
 ## Estilo por servicio
 
-No todo el monorepo usa el mismo estilo. Conviene decirlo sin ambigüedad:
+El monorepo aplica la misma idea de puertos y adaptadores en todos los lenguajes:
+el dominio y los casos de uso no conocen Fastify, PostgreSQL, React ni Groq; los
+detalles viven en adaptadores intercambiables.
 
 ### Servicios Node de negocio
 
-`restaurantes-service` usa **arquitectura por capas**:
-
-```text
-ruta Fastify -> controlador -> servicio -> repositorio concreto -> PostgreSQL
-```
-
-- `*.routes.ts` declara la ruta y los guards de rol.
-- `*.controller.ts` valida la entrada con Zod y traduce a HTTP.
-- `*.service.ts` orquesta el caso de uso.
-- `*.repository.ts` habla con PostgreSQL mediante `postgres.js`.
-- `*.mapper.ts` traduce filas a camelCase y `*.types.ts` guarda los tipos.
-
-Estos servicios importan el repositorio concreto (`import * as repo from
-'./x.repository.js'`) y este importa `sql` directamente. **No tienen puertos,
-interfaces de repositorio ni composición por inyección de dependencias**, así
-que no son hexagonales en sentido estricto. Las reglas puras que sí existen
-—por ejemplo `siguienteEstado` y el cálculo de totales— viven en
-`packages/dominio` y se prueban sin base de datos.
-
-### Pedidos, reseñas, medios, admin e identidad: pilotos hexagonales
-
-`services/pedidos-service`, `services/resenas-service`,
-`services/media-service`, `services/admin-service` y
-`services/identidad-service` ya se migraron y sirven de plantilla para los
-demás:
+Los seis servicios Node comparten esta estructura:
 
 ```text
 dominio/        reglas puras y tipos del servicio, sin Fastify ni SQL
 puertos/        interfaces de repositorio y de clientes HTTP
 aplicacion/     casos de uso (crear, listar, responder, cambiar estado…)
-adaptadores/    PostgreSQL, HTTP de restaurantes y verificación JWT
-entrada/http/   rutas, controlador y esquemas Zod
+adaptadores/    PostgreSQL, HTTP y verificación JWT
+entrada/http/   rutas, controladores y esquemas Zod
 plugins/        autenticación y formato de errores de Fastify
-app.ts          composición: une casos de uso y adaptadores
+app.ts          composición de la aplicación
+composicion.ts  raíz de composición reutilizable por app y scripts
 ```
+
+- `dominio/` no importa Fastify, PostgreSQL ni variables de entorno.
+- `puertos/` declara lo que el núcleo necesita, no cómo se implementa.
+- `aplicacion/` orquesta los casos de uso y solo depende de los puertos.
+- `adaptadores/` implementa PostgreSQL, clientes HTTP, S3 y JWT.
+- `entrada/http/` declara rutas, valida con Zod y traduce a HTTP.
+- `plugins/` concentra autenticación y formato de errores.
+- `app.ts` y `composicion.ts` unen casos de uso y adaptadores.
+
+`restaurantes-service` fue el último en migrarse. Sus casos de uso dependen de
+`RestaurantesRepositorio`, `MenuRepositorio` y `PublicoRepositorio`; el acceso a
+PostgreSQL queda detrás de los adaptadores.
+
+### Puertos por servicio
 
 En `pedidos-service` la aplicación solo conoce `PedidosRepositorio` y
 `RestaurantesCliente`. En `resenas-service` solo conoce `ResenasRepositorio` y
@@ -123,10 +116,15 @@ En `pedidos-service` la aplicación solo conoce `PedidosRepositorio` y
 `AlmacenObjetos`. En `admin-service` solo conoce `ServiciosRemotos` y
 `AuditoriaRepositorio`. En `identidad-service` solo conoce
 `UsuariosRepositorio`, `AuditoriaRepositorio`, `HasherPassword` y
-`TokensSesion`; PostgreSQL, Argon2 y JWT son adaptadores intercambiables.
+`TokensSesion`. En `restaurantes-service` solo conoce
+`RestaurantesRepositorio`, `MenuRepositorio` y `PublicoRepositorio`.
+PostgreSQL, Argon2, JWT, RustFS y los clientes HTTP son adaptadores
+intercambiables.
 
 Los casos de uso se prueban con dobles sin levantar base de datos:
 
+- `restaurantes-service/src/aplicacion/crear-platillo.test.ts`
+- `restaurantes-service/src/aplicacion/crear-restaurante.test.ts`
 - `pedidos-service/src/aplicacion/crear-pedido.test.ts`
 - `resenas-service/src/aplicacion/crear-resena.test.ts`
 - `resenas-service/src/aplicacion/eliminar-resena.test.ts`
@@ -136,9 +134,14 @@ Los casos de uso se prueban con dobles sin levantar base de datos:
 - `identidad-service/src/aplicacion/registrar.test.ts`
 - `identidad-service/src/aplicacion/iniciar-sesion.test.ts`
 
+Las reglas puras también se prueban sin infraestructura, por ejemplo
+`restaurantes-service/src/dominio/slug.test.ts` y las reglas compartidas de
+`packages/dominio`.
+
 ### AI Gateway
 
-`services/ai-gateway` sí es **hexagonal**:
+`services/ai-gateway` también es **hexagonal**, con la misma dirección de
+dependencias:
 
 ```text
 entrada/        FastAPI: rutas, dependencias y middleware
@@ -163,24 +166,17 @@ modulos/<modulo>/infraestructura/ API, localStorage, adaptadores
 El carrito es el ejemplo más claro: `dominio/carrito.ts` no conoce React ni
 `localStorage`; la aplicación lo orquesta y la infraestructura lo persiste.
 
-### Deuda arquitectónica
+### Estado de la migración
 
-`pedidos-service`, `resenas-service`, `media-service`, `admin-service` e
-`identidad-service` ya están migrados y sirven de referencia. Queda un solo
-servicio Node por hexagonalizar: `restaurantes-service`.
+Los seis servicios Node ya están hexagonalizados; no queda ninguno por capas.
+`restaurantes-service` fue el último y el más grande: concentraba perfil, tema,
+cocinas, categorías, platillos, búsqueda y panel, y ahora separa esas
+responsabilidades en `aplicacion/perfil-restaurante.ts`, `menu.ts`, `publico.ts`
+y `admin-restaurantes.ts`.
 
-El refactor por servicio es:
-
-1. Extraer `dominio/` con entidades y reglas puras.
-2. Declarar `puertos/` con interfaces de repositorio y clientes.
-3. Mover los casos de uso a `aplicacion/`.
-4. Implementar `adaptadores/` PostgreSQL, HTTP y S3.
-5. Crear una raíz de composición que inyecte las dependencias.
-6. Probar los casos de uso con dobles, sin PostgreSQL.
-
-Es un refactor de aproximadamente **1–2 días por servicio** y no cambia el
-contrato HTTP. `restaurantes-service` es el último y el más grande: concentra
-perfil, tema, cocinas, categorías, platillos, búsqueda y panel.
+El contrato HTTP no cambió durante el refactor. La deuda pendiente ya no es de
+capas, sino de infraestructura: bus de eventos, límite de tasa compartido en
+Redis, trazas distribuidas y agregación de logs.
 
 ## Comunicación
 
@@ -208,7 +204,7 @@ perfil, tema, cocinas, categorías, platillos, búsqueda y panel.
 
 ## Decisiones pendientes
 
-- Hexagonalizar los seis servicios Node, empezando por `pedidos-service`.
 - Gateway concreto en Kubernetes: Traefik o Kong.
 - Bus de eventos: NATS JetStream o RabbitMQ.
+- Límite de tasa compartido en Redis y trazas/agregación de logs.
 - App de comensal con SSR si el SEO de las fichas resulta obligatorio.
