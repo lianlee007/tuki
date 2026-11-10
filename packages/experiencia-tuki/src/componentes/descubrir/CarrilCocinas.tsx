@@ -37,7 +37,7 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
 }) => {
   const [desplegado, setDesplegado] = useState(false);
 
-  const base = `af-pulsar inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[13px] font-bold transition-colors ${FOCO}`;
+  const base = `af-pulsar inline-flex shrink-0 snap-start items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[13px] font-bold transition-colors ${FOCO}`;
   const activaClase =
     'bg-hearth-terracotta-deep text-white shadow-warm dark:bg-hearth-night-terracotta dark:text-hearth-night';
   const inactivaClase =
@@ -71,9 +71,42 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
     );
   };
 
+  const totalCocinas = resto.length + visibles.length;
+
+  /**
+   * El botón que abre el resto del catálogo. En escritorio vive junto al
+   * título; en móvil se queda debajo del carril, a ancho completo, para que no
+   * flote solo a la derecha dejando un hueco muerto.
+   */
+  const botonMas = (ancho: boolean) => (
+    <button
+      type="button"
+      onClick={() => setDesplegado((previo) => !previo)}
+      aria-expanded={desplegado}
+      aria-controls="panel-mas-cocinas"
+      className={`af-pulsar items-center gap-1.5 rounded-xl bg-hearth-card text-[12.5px] font-bold text-hearth-espresso ring-1 ring-hearth-line/70 transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-ink dark:ring-hearth-night-line dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO} ${
+        ancho
+          ? 'flex w-full justify-center px-4 py-3'
+          : 'inline-flex shrink-0 px-3.5 py-2.5'
+      }`}
+    >
+      <SlidersHorizontal size={15} aria-hidden="true" />
+      {desplegado
+        ? 'Ver menos'
+        : ancho
+          ? `Ver todas las cocinas (${totalCocinas})`
+          : `Ver todas (${totalCocinas})`}
+      <ChevronDown
+        size={15}
+        aria-hidden="true"
+        className={`transition-transform duration-200 ${desplegado ? 'rotate-180' : ''}`}
+      />
+    </button>
+  );
+
   return (
     <section aria-labelledby="titulo-cocinas" className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className={`${ETIQUETA} text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
             Filtra por antojo
@@ -91,41 +124,36 @@ export const CarrilCocinas: React.FC<CarrilCocinasProps> = ({
           </p>
         </div>
 
-        {resto.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setDesplegado((previo) => !previo)}
-            aria-expanded={desplegado}
-            aria-controls="panel-mas-cocinas"
-            className={`af-pulsar ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-hearth-card px-3.5 py-2.5 text-[12.5px] font-bold text-hearth-espresso ring-1 ring-hearth-line/70 transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-card dark:text-hearth-night-ink dark:ring-hearth-night-line dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO}`}
-          >
-            <SlidersHorizontal size={15} aria-hidden="true" />
-            {desplegado ? 'Ver menos' : `Ver todas (${resto.length + visibles.length})`}
-            <ChevronDown
-              size={15}
-              aria-hidden="true"
-              className={`transition-transform duration-200 ${desplegado ? 'rotate-180' : ''}`}
-            />
-          </button>
-        )}
+        {resto.length > 0 && <div className="hidden sm:block">{botonMas(false)}</div>}
       </div>
 
-      <nav
-        aria-label="Tipos de cocina"
-        className="af-sin-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 py-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:px-0 lg:overflow-visible"
-      >
-        <button
-          type="button"
-          onClick={() => onElegir('')}
-          aria-pressed={!activa}
-          className={`${base} ${!activa ? activaClase : inactivaClase}`}
+      <div className="relative">
+        <nav
+          aria-label="Tipos de cocina"
+          className="af-sin-scrollbar -mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-px-4 px-4 py-1 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:snap-none lg:flex-wrap lg:overflow-visible lg:px-0"
         >
-          <LayoutGrid size={15} aria-hidden="true" />
-          Todas
-        </button>
+          <button
+            type="button"
+            onClick={() => onElegir('')}
+            aria-pressed={!activa}
+            className={`${base} ${!activa ? activaClase : inactivaClase}`}
+          >
+            <LayoutGrid size={15} aria-hidden="true" />
+            Todas
+          </button>
 
-        {visibles.map(pintarCocina)}
-      </nav>
+          {visibles.map(pintarCocina)}
+        </nav>
+
+        {/* El velo del borde derecho insinúa que hay más cocinas sin cortar una
+            pastilla a mitad: en móvil el carril se recorre con el pulgar. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 -right-4 w-8 bg-gradient-to-l from-hearth-cream to-transparent sm:-right-6 lg:hidden dark:from-hearth-night"
+        />
+      </div>
+
+      {resto.length > 0 && <div className="sm:hidden">{botonMas(true)}</div>}
 
       {desplegado && resto.length > 0 && (
         <div
