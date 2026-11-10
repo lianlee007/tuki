@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Exploraciones 7 · el puesto y la chispa</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+  p.lead { color:var(--sec); font-size:13px; margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:18px; padding:16px; }
+  .card h2 { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 14px; }
+  .row { display:flex; align-items:end; gap:20px; }
+  .big { width:140px; height:140px; border-radius:14px; background:var(--sup); display:flex; align-items:center; justify-content:center; }
+  .small { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .small span { font-size:9px; color:var(--sec); }
+  .tile { width:140px; height:140px; border-radius:32px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<h1>Exploraciones 7 · el puesto y la chispa</h1>
+<p class="lead">El mercado como casa y la chispa como enseña.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+const chispa = (cx, cy, r) => `
+  <path d="M${cx} ${cy-r}
+    Q${cx+r*0.13} ${cy-r*0.13} ${cx+r} ${cy}
+    Q${cx+r*0.13} ${cy+r*0.13} ${cx} ${cy+r}
+    Q${cx-r*0.13} ${cy+r*0.13} ${cx-r} ${cy}
+    Q${cx-r*0.13} ${cy-r*0.13} ${cx} ${cy-r} Z"/>`;
+const scallops3 = (y, x0=6, x1=58, depth=6) => {
+  const w = (x1-x0)/3; let d = `M${x0} ${y}`;
+  for (let i=0;i<3;i++) d += ` Q${x0+w*(i+0.5)} ${y+depth} ${x0+w*(i+1)} ${y}`;
+  return d;
+};
+const awning = (stripes=true, y=20) => stripes ? `
+  <path fill-rule="evenodd" d="M6 ${y-10} H58 V${y} H6 Z M14 ${y-10} V${y} H21 V${y-10} Z M29 ${y-10} V${y} H36 V${y-10} Z M44 ${y-10} V${y} H51 V${y-10} Z"/>
+  <path d="${scallops3(y)} V${y+5} H6 Z"/>` : `
+  <path d="M6 ${y-10} H58 V${y} H6 Z"/>
+  <path d="${scallops3(y)} V${y+5} H6 Z"/>`;
+const counter = (y=42) => `
+  <rect x="8" y="${y}" width="48" height="8" rx="4"/>
+  <rect x="10" y="${y+8}" width="44" height="3" rx="1.5"/>`;
+const posts = (y0=25, y1=42) => `
+  <rect x="11" y="${y0}" width="5" height="${y1-y0}" rx="2"/>
+  <rect x="48" y="${y0}" width="5" height="${y1-y0}" rx="2"/>`;
+
+const conceptos = {
+  'Puesto + chispa arriba': `${chispa(32, 9, 7)}${awning(true, 28)}${posts(33, 42)}${counter(42)}`,
+  'Puesto + chispa colgante': `${awning(true, 24)}
+    <rect x="24" y="29" width="16" height="2" rx="1"/>
+    <rect x="31.2" y="29" width="1.6" height="6" rx=".8"/>
+    ${chispa(32, 39, 5)}
+    ${posts(29, 47)}${counter(47)}`,
+  'Puesto + chispa en mostrador': `${awning(true, 22)}${posts(27, 41)}
+    <rect x="8" y="41" width="48" height="8" rx="4"/>
+    ${chispa(32, 37, 4.5)}
+    <rect x="10" y="49" width="44" height="3" rx="1.5"/>`,
+  'Puesto + chispa en toldo': `${awning(false, 24)}
+    ${chispa(32, 18, 5)}
+    ${posts(29, 44)}${counter(44)}`,
+  'Puesto llano + chispa': `${chispa(32, 9, 6.5)}
+    <rect x="6" y="19" width="52" height="8" rx="2"/>
+    <path d="${scallops3(27)} V32 H6 Z"/>
+    ${posts(32, 45)}${counter(45)}`,
+  'Puesto sin postes + chispa': `${chispa(32, 10, 7)}
+    <rect x="6" y="22" width="52" height="9" rx="3"/>
+    <path d="${scallops3(31)} V36 H6 Z"/>
+    <rect x="8" y="43" width="48" height="8" rx="4"/>
+    <rect x="10" y="51" width="44" height="3" rx="1.5"/>`,
+  'Puesto + dos tazas + chispa': `${chispa(32, 8, 6)}
+    ${awning(true, 26)}
+    ${posts(31, 42)}
+    <rect x="8" y="42" width="48" height="7" rx="3.5"/>
+    <rect x="15" y="35" width="7" height="7" rx="2"/>
+    <rect x="42" y="35" width="7" height="7" rx="2"/>
+    <rect x="10" y="49" width="44" height="3" rx="1.5"/>`,
+  'Puesto + mesa': `${awning(false, 22)}
+    ${posts(27, 38)}
+    <rect x="12" y="38" width="40" height="6" rx="3"/>
+    <rect x="18" y="44" width="6" height="14" rx="3"/>
+    <rect x="40" y="44" width="6" height="14" rx="3"/>
+    ${chispa(32, 9, 6)}`,
+};
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo] of Object.entries(conceptos)) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <div class="big"><svg width="120" height="120" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg></div>
+      <div class="small">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <svg width="24" height="24" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <svg width="16" height="16" viewBox="0 0 64 64" fill="${C}">${cuerpo}</svg>
+        <span>40 · 24 · 16</span>
+      </div>
+    </div>
+    <div style="margin-top:14px"><div class="tile"><svg width="104" height="104" viewBox="0 0 64 64" fill="${P}">${cuerpo}</svg></div></div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

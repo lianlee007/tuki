@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Favicon · píxeles reales</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:20px; margin:0 0 6px; }
+  p { color:var(--sec); font-size:12px; margin:0 0 24px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:14px; padding:14px; }
+  .card h2 { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 10px; }
+  .pix { display:flex; align-items:end; gap:14px; }
+  canvas { image-rendering: pixelated; border-radius:5px; display:block; }
+  .cap { font-size:9px; color:var(--sec); margin-top:6px; }
+  .browser { display:flex; align-items:center; gap:2px; background:#e8e6e3; border-radius:8px 8px 0 0; padding:6px 8px; width:max-content; }
+  .tab { display:flex; align-items:center; gap:5px; background:#fff; border-radius:5px 5px 0 0; padding:3px 7px; font-size:9px; }
+</style>
+</head>
+<body>
+<h1>Favicon · píxeles reales</h1>
+<p>Cada símbolo se dibuja a 16, 32 y 48 px y se amplía sin interpolación. Lo que se ve es lo que se obtiene.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+const chispa = (cx, cy, r) => `
+  <path d="M${cx} ${cy-r} Q${cx+r*0.13} ${cy-r*0.13} ${cx+r} ${cy} Q${cx+r*0.13} ${cy+r*0.13} ${cx} ${cy+r} Q${cx-r*0.13} ${cy+r*0.13} ${cx-r} ${cy} Q${cx-r*0.13} ${cy-r*0.13} ${cx} ${cy-r} Z"/>`;
+const mantel = `
+  <path d="M7 44 H57 V50.5 C57 50.5 55 52.5 55 54.5 V59.5 H49 V54.5 C49 52.5 47 50.5 45 50.5 H19 C17 50.5 15 52.5 15 54.5 V59.5 H9 V54.5 C9 52.5 7 50.5 7 50.5 Z"/>`;
+const mesaSimple = `
+  <rect x="8" y="42" width="48" height="8" rx="4"/>
+  <rect x="17" y="50" width="7" height="9" rx="3.5"/>
+  <rect x="40" y="50" width="7" height="9" rx="3.5"/>`;
+const mesaGruesa = `
+  <rect x="6" y="40" width="52" height="10" rx="5"/>
+  <rect x="15" y="50" width="9" height="9" rx="4.5"/>
+  <rect x="40" y="50" width="9" height="9" rx="4.5"/>`;
+const mesaAlta = `
+  <rect x="9" y="40" width="46" height="8" rx="4"/>
+  <rect x="17.5" y="48" width="6" height="12" rx="3"/>
+  <rect x="40.5" y="48" width="6" height="12" rx="3"/>`;
+
+const conceptos = [
+  ['Chispa + mantel', `${chispa(32,20,10)}${mantel}`, true],
+  ['Chispa + mesa simple', `${chispa(32,19,9.5)}${mesaSimple}`, true],
+  ['Chispa + mesa gruesa', `${chispa(32,19,9)}${mesaGruesa}`, true],
+  ['Chispa + mesa alta', `${chispa(32,18,9)}${mesaAlta}`, true],
+  ['Solo chispa', chispa(32,32,22), false],
+  ['Chispa + mantel (sin tile)', `${chispa(32,20,10)}${mantel}`, false],
+  ['Chispa + mesa simple (sin tile)', `${chispa(32,19,9.5)}${mesaSimple}`, false],
+  ['Solo chispa (sin tile)', chispa(32,32,22), false],
+];
+
+const pendientes = [];
+function dibujar(contenido, conTile) {
+  return (ctx, s) => {
+    ctx.clearRect(0,0,s,s);
+    if (conTile) {
+      const r = s * 0.24;
+      ctx.fillStyle = C;
+      ctx.beginPath();
+      ctx.moveTo(r,0); ctx.arcTo(s,0,s,s,r); ctx.arcTo(s,s,0,s,r); ctx.arcTo(0,s,0,0,r); ctx.arcTo(0,0,s,0,r);
+      ctx.fill();
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="${s}" height="${s}" fill="${conTile?P:C}">${contenido}</svg>`;
+    const img = new Image();
+    pendientes.push(new Promise(res => { img.onload = () => { ctx.drawImage(img,0,0,s,s); res(); }; }));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  };
+}
+
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo, conTile] of conceptos) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2><div class="pix"></div>
+    <div class="browser"><div class="tab"><span>●</span><span>Tuki</span></div></div>`;
+  const pix = card.querySelector('.pix');
+  for (const s of [16, 32, 48]) {
+    const canvas = document.createElement('canvas');
+    canvas.width = s; canvas.height = s;
+    canvas.style.width = s * 5 + 'px'; canvas.style.height = s * 5 + 'px';
+    const ctx = canvas.getContext('2d');
+    dibujar(cuerpo, conTile)(ctx, s);
+    const wrap = document.createElement('div');
+    wrap.appendChild(canvas);
+    const cap = document.createElement('div'); cap.className='cap'; cap.textContent = s + ' px';
+    wrap.appendChild(cap);
+    pix.appendChild(wrap);
+  }
+  grid.appendChild(card);
+}
+Promise.all(pendientes).then(() => {
+  const listo = document.createElement('p');
+  listo.id = 'listo'; listo.textContent = 'listo';
+  document.body.appendChild(listo);
+});
+</script>
+</body>
+</html>

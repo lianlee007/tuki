@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Exploraciones 6 · la chispa de la mesa</title>
+<style>
+  :root { --terra:#C2410C; --tinta:#1D1D1F; --papel:#FBF8F4; --sup:#F2ECE4; --borde:#E6DCD0; --sec:#6E6E73; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px; background:var(--papel); color:var(--tinta);
+         font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size:22px; letter-spacing:-.02em; margin:0 0 6px; }
+  p.lead { color:var(--sec); font-size:13px; margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:18px; padding:16px; }
+  .card h2 { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--sec); margin:0 0 14px; }
+  .row { display:flex; align-items:end; gap:16px; }
+  .big { width:112px; height:112px; border-radius:14px; background:var(--sup); display:flex; align-items:center; justify-content:center; }
+  .small { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .small span { font-size:9px; color:var(--sec); }
+  .tile { width:112px; height:112px; border-radius:26px; background:var(--terra); display:flex; align-items:center; justify-content:center; }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<h1>Exploraciones 6 · la chispa de la mesa</h1>
+<p class="lead">La chispa de la marca vuelve, ahora como la luz que cae sobre la mesa.</p>
+<div class="grid" id="grid"></div>
+<script>
+const C = '#C2410C', P = '#FBF8F4';
+// Chispa de cuatro puntas (la de siempre), escalable.
+const chispa = (cx, cy, r) => `
+  <path d="M${cx} ${cy-r}
+    Q${cx+r*0.14} ${cy-r*0.14} ${cx+r} ${cy}
+    Q${cx+r*0.14} ${cy+r*0.14} ${cx} ${cy+r}
+    Q${cx-r*0.14} ${cy+r*0.14} ${cx-r} ${cy}
+    Q${cx-r*0.14} ${cy-r*0.14} ${cx} ${cy-r} Z"/>`;
+
+const mesaRecta = `
+  <rect x="10" y="40" width="44" height="7" rx="3.5"/>
+  <rect x="18" y="47" width="6" height="13" rx="3"/>
+  <rect x="40" y="47" width="6" height="13" rx="3"/>`;
+const mesaPedestal = `
+  <rect x="10" y="40" width="44" height="7" rx="3.5"/>
+  <rect x="29.5" y="47" width="5" height="9" rx="2"/>
+  <rect x="21" y="55" width="22" height="5" rx="2.5"/>`;
+const mesaRedonda = `
+  <ellipse cx="32" cy="43" rx="22" ry="5"/>
+  <rect x="29" y="47" width="6" height="10" rx="3"/>
+  <ellipse cx="32" cy="57.5" rx="11" ry="3"/>`;
+
+const conceptos = {
+  'Chispa + mesa recta': `${chispa(32, 18, 10)}${mesaRecta}`,
+  'Chispa + pedestal': `${chispa(32, 17, 10)}${mesaPedestal}`,
+  'Chispa + mesa redonda': `${chispa(32, 16, 9)}${mesaRedonda}`,
+  'Chispa + dos sillas': `${chispa(32, 15, 9)}
+    <rect x="14" y="40" width="36" height="7" rx="3.5"/>
+    <rect x="20" y="47" width="6" height="13" rx="3"/>
+    <rect x="38" y="47" width="6" height="13" rx="3"/>
+    <rect x="4" y="33" width="10" height="4" rx="2"/>
+    <rect x="5" y="37" width="3" height="10" rx="1.5"/>
+    <rect x="11" y="37" width="3" height="10" rx="1.5"/>
+    <rect x="50" y="33" width="10" height="4" rx="2"/>
+    <rect x="56" y="37" width="3" height="10" rx="1.5"/>
+    <rect x="50" y="37" width="3" height="10" rx="1.5"/>`,
+  'Chispa colgante': `
+    <rect x="31" y="3" width="2" height="7" rx="1"/>
+    ${chispa(32, 16, 8)}
+    ${mesaRecta}`,
+  'Chispa + mesa grande': `${chispa(32, 16, 8)}
+    <rect x="6" y="38" width="52" height="9" rx="4.5"/>
+    <rect x="16" y="47" width="8" height="13" rx="4"/>
+    <rect x="40" y="47" width="8" height="13" rx="4"/>`,
+  'Chispa + mantel': `${chispa(32, 15, 9)}
+    <path d="M10 39 H54 V44 Q50 45 50 49 V57 H44 V49 Q44 45 40 44 H24 Q20 45 20 49 V57 H14 V49 Q14 45 10 44 Z"/>`,
+  'Dos chispas + mesa': `${chispa(24, 15, 7)}${chispa(40, 15, 7)}${mesaRecta}`,
+  'Chispa sobre plato': `${chispa(32, 15, 9)}
+    <ellipse cx="32" cy="34" rx="14" ry="4.5"/>
+    <rect x="10" y="41" width="44" height="6" rx="3"/>
+    <rect x="18" y="47" width="6" height="13" rx="3"/>
+    <rect x="40" y="47" width="6" height="13" rx="3"/>`,
+  'Chispa dentro de mesa': `${chispa(32, 30, 8)}
+    <path fill-rule="evenodd" d="M10 36 H54 A4 4 0 0 1 58 40 V46 A4 4 0 0 1 54 50 H10 A4 4 0 0 1 6 46 V40 A4 4 0 0 1 10 36 Z
+      M32 24 L36 30 L32 36 L28 30 Z"/>
+    <rect x="18" y="50" width="6" height="10" rx="3"/>
+    <rect x="40" y="50" width="6" height="10" rx="3"/>`,
+};
+const grid = document.getElementById('grid');
+for (const [nombre, cuerpo] of Object.entries(conceptos)) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<h2>${nombre}</h2>
+    <div class="row">
+      <div class="big"><svg width="92" height="92" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg></div>
+      <div class="small">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg>
+        <svg width="16" height="16" viewBox="0 0 64 64" fill="${C}" stroke="none">${cuerpo}</svg>
+        <span>40 · 16</span>
+      </div>
+    </div>
+    <div style="margin-top:14px"><div class="tile"><svg width="72" height="72" viewBox="0 0 64 64" fill="${P}" stroke="none">${cuerpo}</svg></div></div>`;
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>
