@@ -1,10 +1,11 @@
 import React from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, MapPin, Star, UtensilsCrossed } from 'lucide-react';
+import { ArrowUpRight, MapPin, UtensilsCrossed } from 'lucide-react';
 import type { RestauranteDescubierto } from '../../tipos/modelos';
 import { formatearPrecio, generarSlug } from '../../lib/utils';
-import { FOCO, TARJETA_INTERACTIVA } from './estilos';
+import { AvatarRestaurante } from './AvatarRestaurante';
+import { FOCO, FOCO_IMAGEN } from './estilos';
 
 interface TarjetaRestauranteProps {
   restaurante: RestauranteDescubierto;
@@ -14,106 +15,105 @@ interface TarjetaRestauranteProps {
    * resultado explique por qué está ahí.
    */
   cocinaCoincidente?: string | null;
-  /** Las primeras tarjetas de la tira se ven al cargar y no deben esperar. */
+  /** Las primeras tarjetas se ven al cargar y no deben esperar. */
   prioridad?: boolean;
 }
 
 /**
- * La tarjeta de un restaurante aliado.
+ * Un restaurante como perfil.
  *
- * La foto manda y el pie responde a una sola pregunta: ¿vale la pena entrar?
- * Cocina, ciudad, cuántos platos hay y desde cuánto. El botón «Ver menú» repite
- * el enlace de la foto para que en móvil no haya que apuntar a la imagen.
+ * La foto presenta el local, el logo lo firma y el pie responde a la pregunta
+ * que decide la entrada: qué cocina, cuántos platos y desde cuánto. Cabe en dos
+ * columnas de teléfono sin apretar el texto; en escritorio respira con más aire.
  */
 export const TarjetaRestaurante: React.FC<TarjetaRestauranteProps> = ({
   restaurante,
   cocinaCoincidente,
   prioridad = false,
 }) => {
-  const tieneRating = restaurante.rating_cantidad > 0;
   const cocina = cocinaCoincidente || restaurante.tipo_cocina;
   const resumen = restaurante.eslogan || restaurante.descripcion;
   const destino = `/restaurante/${generarSlug(restaurante.nombre)}`;
+  const platos = restaurante.platos_cantidad;
+  const detalles = [
+    platos > 0 ? `${platos} ${platos === 1 ? 'plato' : 'platos'}` : null,
+    restaurante.precio_min !== null ? `desde ${formatearPrecio(restaurante.precio_min)}` : null,
+  ].filter(Boolean) as string[];
 
   return (
-    <article className={`group flex h-full flex-col overflow-hidden ${TARJETA_INTERACTIVA}`}>
+    <article className="group flex h-full flex-col overflow-hidden rounded-[22px] bg-hearth-card ring-1 ring-hearth-line/60 shadow-warm transition-shadow hover:shadow-warm-lg dark:bg-hearth-night-card dark:ring-white/5 dark:shadow-none dark:hover:shadow-warm-dark">
       <Link
         to={destino}
         aria-label={`Ver el menú de ${restaurante.nombre}`}
-        className={`relative block aspect-[16/10] overflow-hidden bg-hearth-oat dark:bg-hearth-night-oat ${FOCO}`}
+        className={`relative block aspect-[16/9] overflow-hidden bg-hearth-oat dark:bg-hearth-night-oat ${FOCO_IMAGEN}`}
       >
-        {restaurante.imagen_banner_url ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 flex items-center justify-center text-hearth-line dark:text-hearth-night-line"
+        >
+          <UtensilsCrossed size={28} />
+        </span>
+
+        {restaurante.imagen_banner_url && (
           <img
             src={restaurante.imagen_banner_url}
             alt=""
             loading={prioridad ? 'eager' : 'lazy'}
             decoding="async"
             fetchPriority={prioridad ? 'high' : undefined}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="relative h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-hearth-pebble dark:text-hearth-night-pebble">
-            <UtensilsCrossed size={30} aria-hidden="true" />
-          </div>
         )}
 
-        <div
+        <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#2B1712]/80 via-[#2B1712]/20 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2B1712]/65 via-[#2B1712]/10 to-transparent"
         />
 
-        <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-xl bg-hearth-card/95 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-hearth-espresso shadow-warm backdrop-blur-md ring-1 ring-white/50 dark:bg-hearth-night-card/95 dark:text-hearth-night-ink dark:ring-white/10">
-            <span className="h-2 w-2 shrink-0 rounded-full bg-hearth-terracotta dark:bg-hearth-night-terracotta" />
-            <span className="truncate">{restaurante.nombre}</span>
+        {restaurante.ciudad && (
+          <span className="absolute right-2 top-2 inline-flex max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-black/30 px-2 py-1 text-[9.5px] font-bold text-white ring-1 ring-white/20 backdrop-blur-md">
+            <MapPin size={10} aria-hidden="true" />
+            <span className="truncate">{restaurante.ciudad}</span>
           </span>
-
-          {tieneRating && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-extrabold tabular-nums text-[#FFD79A] ring-1 ring-white/25 backdrop-blur-md">
-              <Star size={12} aria-hidden="true" className="fill-current" />
-              {restaurante.rating.toFixed(1)}
-            </span>
-          )}
-        </div>
-
-        <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 text-white">
-          <span className="truncate text-[12px] font-semibold drop-shadow">
-            {resumen || cocina || 'Cocina de la casa'}
-          </span>
-          {restaurante.ciudad && (
-            <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-white/85">
-              <MapPin size={12} aria-hidden="true" />
-              {restaurante.ciudad}
-            </span>
-          )}
-        </div>
+        )}
       </Link>
 
-      <div className="flex flex-1 items-center justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <p className="truncate text-[13px] font-semibold text-hearth-espresso dark:text-hearth-night-ink">
-            {cocina ?? 'Menú digital'}
-          </p>
-          <p className="mt-0.5 truncate text-[12px] text-hearth-pebble dark:text-hearth-night-pebble">
-            {restaurante.platos_cantidad > 0 && (
-              <>
-                {restaurante.platos_cantidad}{' '}
-                {restaurante.platos_cantidad === 1 ? 'plato' : 'platos'}
-              </>
-            )}
-            {restaurante.platos_cantidad > 0 && restaurante.precio_min !== null && ' · '}
-            {restaurante.precio_min !== null && formatearPrecio(restaurante.precio_min)}
-          </p>
+      <div className="flex flex-1 flex-col px-3 pb-3 sm:px-3.5 sm:pb-3.5">
+        <div className="-mt-4 flex items-end justify-between gap-2">
+          <AvatarRestaurante
+            nombre={restaurante.nombre}
+            imagenUrl={restaurante.imagen_logo_url}
+            tamano={36}
+            className="ring-4 ring-hearth-card dark:ring-hearth-night-card"
+          />
+
+          <Link
+            to={destino}
+            aria-label={`Abrir ${restaurante.nombre}`}
+            className={`af-pulsar mb-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-hearth-oat text-hearth-espresso transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO}`}
+          >
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </Link>
         </div>
 
-        <Link
-          to={destino}
-          aria-label={`Ver el menú de ${restaurante.nombre}`}
-          className={`af-pulsar inline-flex shrink-0 items-center gap-1 rounded-xl bg-hearth-oat px-2.5 py-2 text-[12px] font-bold text-hearth-espresso transition-colors hover:bg-hearth-terracotta-soft hover:text-hearth-terracotta-ink sm:px-3 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:bg-hearth-night-terracotta-soft dark:hover:text-hearth-night-terracotta-ink ${FOCO}`}
-        >
-          <span className="hidden sm:inline">Ver menú</span>
-          <ArrowUpRight size={14} aria-hidden="true" />
-        </Link>
+        <h3 className="mt-1.5 line-clamp-2 min-h-[2.6em] text-[13.5px] font-extrabold leading-snug tracking-[-0.01em] text-hearth-espresso sm:line-clamp-1 sm:min-h-0 sm:text-[14.5px] dark:text-hearth-night-ink">
+          <Link
+            to={destino}
+            className={`rounded transition-colors hover:text-hearth-terracotta-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
+          >
+            {restaurante.nombre}
+          </Link>
+        </h3>
+
+        <p className="mt-0.5 line-clamp-1 text-[10.5px] leading-relaxed text-hearth-pebble sm:text-[11.5px] dark:text-hearth-night-pebble">
+          {resumen || cocina || 'Menú digital'}
+        </p>
+
+        {detalles.length > 0 && (
+          <p className="mt-auto pt-2 text-[10.5px] font-semibold tabular-nums text-hearth-pebble sm:text-[11px] dark:text-hearth-night-pebble">
+            {detalles.join(' · ')}
+          </p>
+        )}
       </div>
     </article>
   );

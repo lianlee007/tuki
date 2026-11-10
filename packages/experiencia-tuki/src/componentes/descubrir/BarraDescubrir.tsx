@@ -10,7 +10,7 @@ import { FOCO } from './estilos';
  * Menú de la cuenta en la barra pública.
  *
  * Reúne las tres cosas que una persona busca ahí: quién es, a dónde ir y cómo
- * salir. Se cierra al pulsar fuera o con Escape, igual que antes.
+ * salir. Se cierra al pulsar fuera o con Escape.
  */
 const MenuCuenta: React.FC = () => {
   const { user, rol, cerrarSesion } = useAuth();
@@ -120,8 +120,8 @@ interface BarraDescubrirProps {
   onConsulta: (texto: string) => void;
   onCarrito: () => void;
   cantidadCarrito: number;
-  /** La barra móvil enfoca el buscador desde abajo: el campo vive aquí. */
-  inputRef?: React.RefObject<HTMLInputElement | null>;
+  /** El logo vuelve al inicio de la portada y limpia la vista guardada. */
+  onInicio?: () => void;
 }
 
 interface AccionesProps {
@@ -134,10 +134,11 @@ interface AccionesProps {
 }
 
 /**
- * Las acciones cambian con el papel de la cuenta: un comensal ve su carrito y
- * su salida; un restaurante ve el panel; quien no ha entrado ve la puerta de
- * `/entrar`, no la de venta. Vive fuera del componente para que escribir en el
- * buscador no vuelva a montar los botones en cada tecla.
+ * Las acciones de la barra.
+ *
+ * En móvil el espacio es de la marca, el buscador y el carrito; la cuenta vive
+ * en la barra del pulgar. En escritorio se suma el acceso a la cuenta y, si la
+ * sesión es de restaurante, el panel.
  */
 const Acciones: React.FC<AccionesProps> = ({
   compacto = false,
@@ -147,35 +148,31 @@ const Acciones: React.FC<AccionesProps> = ({
   cantidadCarrito,
   onCarrito,
 }) => (
-  <div className="flex items-center gap-1.5">
-    <ThemeToggle />
+  <div className="flex items-center gap-1.5 sm:gap-2">
+    <ThemeToggle compacto={compacto} conFondo={!compacto} />
 
-    {/* En móvil el carrito vive en la barra del pulgar, siempre a un toque.
-        En escritorio se queda aquí, junto a la cuenta. */}
-    {!compacto && (
-      <button
-        type="button"
-        onClick={onCarrito}
-        aria-label={
-          cantidadCarrito > 0
-            ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
-            : 'Abrir el carrito'
-        }
-        className={`af-pulsar relative flex h-10 w-10 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
-      >
-        <ShoppingBag size={18} aria-hidden="true" />
-        {cantidadCarrito > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white dark:bg-hearth-night-terracotta dark:text-hearth-night">
-            {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
-          </span>
-        )}
-      </button>
-    )}
+    <button
+      type="button"
+      onClick={onCarrito}
+      aria-label={
+        cantidadCarrito > 0
+          ? `Abrir el carrito, ${cantidadCarrito} ${cantidadCarrito === 1 ? 'producto' : 'productos'}`
+          : 'Abrir el carrito'
+      }
+      className={`af-pulsar relative flex h-11 w-11 items-center justify-center rounded-xl bg-hearth-oat text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink sm:h-10 sm:w-10 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
+    >
+      <ShoppingBag size={18} aria-hidden="true" />
+      {cantidadCarrito > 0 && (
+        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-hearth-terracotta-deep px-1 text-[10px] font-extrabold tabular-nums text-white ring-2 ring-hearth-cream dark:bg-hearth-night-terracotta dark:text-hearth-night dark:ring-hearth-night">
+          {cantidadCarrito > 9 ? '9+' : cantidadCarrito}
+        </span>
+      )}
+    </button>
 
-    {hayUsuario && cargandoRol ? null : compacto ? null : !hayUsuario ? (
+    {!compacto && (hayUsuario && cargandoRol ? null : !hayUsuario ? (
       <Link
         to="/entrar"
-        className={`af-pulsar inline-flex items-center rounded-xl bg-hearth-terracotta-deep px-4 py-2.5 text-[13px] font-bold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
+        className={`af-pulsar ml-1 inline-flex items-center rounded-xl bg-hearth-terracotta-deep px-4 py-2.5 text-[13px] font-bold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
       >
         Entrar
       </Link>
@@ -184,11 +181,7 @@ const Acciones: React.FC<AccionesProps> = ({
         {rol === 'restaurante' && (
           <Link
             to="/panel"
-            className={
-              compacto
-                ? 'rounded-xl px-3 py-2 text-[13px] font-bold text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink'
-                : `af-pulsar inline-flex items-center gap-2 rounded-xl bg-hearth-oat px-4 py-2.5 text-[13px] font-bold text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`
-            }
+            className={`af-pulsar inline-flex items-center gap-2 rounded-xl bg-hearth-oat px-4 py-2.5 text-[13px] font-bold text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
           >
             Mi panel
           </Link>
@@ -196,24 +189,25 @@ const Acciones: React.FC<AccionesProps> = ({
 
         <MenuCuenta />
       </>
-    )}
+    ))}
   </div>
 );
 
 /**
  * La barra de Descubrir.
  *
- * El buscador es el producto, así que vive siempre visible y con el foco a un
- * toque. En móvil se parte en dos filas y el campo ocupa el ancho completo; en
- * escritorio se sienta entre la marca y las acciones. La barra es translúcida
- * para que el papel cálido se asome por debajo al hacer scroll.
+ * Una sola fila en móvil: marca, buscador y carrito. El logo vuelve al inicio;
+ * el buscador es el producto y está siempre a un toque; el carrito es la única
+ * acción de compra. En escritorio se añaden las secciones y la cuenta. La barra
+ * se queda arriba con un material casi opaco para que el contenido pase por
+ * debajo sin perder legibilidad.
  */
 export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
   consulta,
   onConsulta,
   onCarrito,
   cantidadCarrito,
-  inputRef,
+  onInicio,
 }) => {
   const { user, rol, cargandoRol } = useAuth();
 
@@ -229,52 +223,42 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
   );
 
   return (
-    <header className="relative z-40 border-b border-hearth-line/70 bg-hearth-cream dark:border-hearth-night-line/80 dark:bg-hearth-night lg:sticky lg:top-0 lg:bg-hearth-cream/90 lg:backdrop-blur-xl lg:dark:bg-hearth-night/90">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            to="/"
-            aria-label="TukiTuki — Mercado culinario"
-            className={`af-pulsar flex shrink-0 items-center gap-2.5 rounded-xl sm:gap-3 ${FOCO}`}
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:h-12 sm:w-12">
-              <SimboloTuki size={38} className="h-9 w-9 sm:h-10 sm:w-10" />
-            </span>
-            <span className="flex min-w-0 flex-col leading-tight">
-              {/* En pantallas muy estrechas la marca se queda en la baldosa:
-                  el nombre completo empujaría el carrito y la cuenta fuera. */}
-              <span className="hidden min-[360px]:block sm:hidden">
-                <PalabraTuki
-                  nombre="TukiTuki"
-                  tamano={22}
-                  className="text-hearth-espresso dark:text-hearth-night-ink"
-                />
-              </span>
-              <span className="hidden sm:block">
-                <PalabraTuki
-                  nombre="TukiTuki"
-                  tamano={27}
-                  className="text-hearth-espresso dark:text-hearth-night-ink"
-                />
-              </span>
-              <span className="mt-0.5 hidden truncate text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-hearth-terracotta-ink sm:block dark:text-hearth-night-terracotta-ink">
-                Mercado culinario
-              </span>
-            </span>
-          </Link>
-
-          <div className="ml-auto sm:hidden">{acciones(true)}</div>
-        </div>
-
-        <nav
-          aria-label="Secciones"
-          className="hidden items-center gap-1 lg:flex"
+    <header className="sticky top-0 z-40 border-b border-hearth-line/60 bg-hearth-cream pt-[env(safe-area-inset-top)] dark:border-hearth-night-line/70 dark:bg-hearth-night lg:bg-hearth-cream/85 lg:backdrop-blur-xl lg:dark:bg-hearth-night/85">
+      <div className="mx-auto flex max-w-7xl items-center gap-1.5 px-4 py-2 sm:gap-3 sm:px-6 sm:py-2.5 lg:px-8">
+        <Link
+          to="/"
+          onClick={() => onInicio?.()}
+          aria-label="TukiTuki, ir al inicio"
+          className={`af-pulsar -m-1 flex shrink-0 items-center gap-2 rounded-xl p-1 sm:gap-2.5 ${FOCO}`}
         >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:h-10 sm:w-10">
+            <SimboloTuki size={34} className="h-8 w-8 sm:h-9 sm:w-9" />
+          </span>
+
+          <span className="hidden min-[480px]:block">
+            <span className="sm:hidden">
+              <PalabraTuki
+                nombre="TukiTuki"
+                tamano={20}
+                className="text-hearth-espresso dark:text-hearth-night-ink"
+              />
+            </span>
+            <span className="hidden sm:block">
+              <PalabraTuki
+                nombre="TukiTuki"
+                tamano={26}
+                className="text-hearth-espresso dark:text-hearth-night-ink"
+              />
+            </span>
+          </span>
+        </Link>
+
+        <nav aria-label="Secciones" className="hidden items-center gap-0.5 lg:flex">
           <NavLink
             to="/"
             end
             className={({ isActive }) =>
-              `rounded-xl px-3 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
+              `rounded-xl px-2.5 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
                 isActive
                   ? 'bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink'
                   : 'text-hearth-pebble hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink'
@@ -286,7 +270,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
           <NavLink
             to="/inspiracion"
             className={({ isActive }) =>
-              `rounded-xl px-3 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
+              `rounded-xl px-2.5 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
                 isActive
                   ? 'bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink'
                   : 'text-hearth-pebble hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink'
@@ -297,7 +281,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
           </NavLink>
           <Link
             to="/para-restaurantes"
-            className={`rounded-xl px-3 py-2 text-[13px] font-bold text-hearth-pebble transition-colors hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink ${FOCO}`}
+            className={`rounded-xl px-2.5 py-2 text-[13px] font-bold text-hearth-pebble transition-colors hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink ${FOCO}`}
           >
             Para restaurantes
           </Link>
@@ -305,37 +289,38 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
 
         <form
           role="search"
-          className="relative order-last w-full sm:order-none sm:max-w-xl sm:flex-1"
+          className="relative min-w-0 flex-1 sm:max-w-xl"
           onSubmit={(evento) => evento.preventDefault()}
         >
           <Search
-            size={17}
+            size={16}
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-hearth-pebble dark:text-hearth-night-pebble"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-hearth-pebble dark:text-hearth-night-pebble"
           />
           <input
-            ref={inputRef}
             id="buscador-descubrir"
             type="search"
             value={consulta}
             onChange={(evento) => onConsulta(evento.target.value)}
-            placeholder="Busca un plato, un restaurante o una cocina"
+            placeholder="Buscar"
             aria-label="Buscar platos, restaurantes o cocinas"
             autoComplete="off"
-            className="h-11 w-full appearance-none rounded-2xl bg-hearth-oat pl-10 pr-10 text-[15px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/50 dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40"
+            enterKeyHint="search"
+            className="h-11 w-full appearance-none rounded-full bg-hearth-oat pl-9 pr-9 text-[16px] text-hearth-espresso outline-none transition-colors placeholder:text-hearth-pebble focus:bg-hearth-card focus:ring-2 focus:ring-hearth-terracotta/45 sm:rounded-2xl sm:pl-10 sm:text-[15px] dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:placeholder:text-hearth-night-pebble dark:focus:bg-hearth-night-card dark:focus:ring-hearth-night-terracotta/40 [&::-webkit-search-cancel-button]:appearance-none"
           />
           {consulta && (
             <button
               type="button"
               onClick={() => onConsulta('')}
               aria-label="Borrar la búsqueda"
-              className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-hearth-pebble transition-colors hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink ${FOCO}`}
+              className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-hearth-pebble transition-colors hover:text-hearth-espresso dark:text-hearth-night-pebble dark:hover:text-hearth-night-ink ${FOCO}`}
             >
-              <X size={16} aria-hidden="true" />
+              <X size={15} aria-hidden="true" />
             </button>
           )}
         </form>
 
+        <div className="sm:hidden">{acciones(true)}</div>
         <div className="hidden sm:block">{acciones(false)}</div>
       </div>
     </header>

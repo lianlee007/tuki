@@ -9,6 +9,8 @@ interface ResumenCarritoProps {
   cantidad: number;
   total: number;
   onAbrir: () => void;
+  /** Sin carrito, el botón lleva al feed en vez de abrir una hoja vacía. */
+  onVerPlatos?: () => void;
 }
 
 /**
@@ -23,6 +25,7 @@ export const ResumenCarrito: React.FC<ResumenCarritoProps> = ({
   cantidad,
   total,
   onAbrir,
+  onVerPlatos,
 }) => {
   const visibles = carrito.slice(0, 3);
   const restantes = carrito.length - visibles.length;
@@ -119,7 +122,7 @@ export const ResumenCarrito: React.FC<ResumenCarritoProps> = ({
 
       <button
         type="button"
-        onClick={onAbrir}
+        onClick={carrito.length === 0 && onVerPlatos ? onVerPlatos : onAbrir}
         className={`af-pulsar mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-hearth-terracotta-deep px-4 py-3 text-[13px] font-extrabold text-white shadow-warm transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
       >
         {carrito.length === 0 ? 'Ver platos' : 'Revisar y pedir'}
