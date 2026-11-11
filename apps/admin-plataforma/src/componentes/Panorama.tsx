@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import type { Auditoria, Panorama as Resumen, RestauranteAdmin } from '@tuki/api-cliente';
 import {
   acortarId,
@@ -64,51 +63,6 @@ export const Panorama = ({
 
   return (
     <div className="admin-panorama">
-      <section className="admin-hero" aria-labelledby="admin-hero-titulo">
-        <div className="admin-hero-texto">
-          <p className="admin-live">
-            <span className="admin-live-punto" aria-hidden="true" />
-            Datos al día
-          </p>
-          <h2 id="admin-hero-titulo">La plataforma, en una mirada.</h2>
-          <p>
-            Revisa el pulso de TukiTuki, atiende lo pendiente y entra a cualquier
-            local o cuenta sin perder el contexto.
-          </p>
-          <div className="admin-hero-acciones">
-            <button type="button" className="admin-btn admin-btn-primario" onClick={onVerRestaurantes}>
-              Revisar restaurantes
-              <IconoFlecha size={16} />
-            </button>
-            <button type="button" className="admin-btn admin-btn-secundario" onClick={onVerAuditoria}>
-              Ver auditoría
-            </button>
-          </div>
-        </div>
-
-        <div className="admin-hero-salud">
-          <div className="admin-donut" style={{ '--admin-progreso': `${porcentajeActivos}%` } as CSSProperties}>
-            <div className="admin-donut-centro">
-              <strong>{porcentajeActivos}%</strong>
-              <span>locales activos</span>
-            </div>
-          </div>
-          <dl className="admin-hero-datos">
-            <div>
-              <dt>Restaurantes publicados</dt>
-              <dd>
-                {formatearNumero(activos)}
-                <span> de {formatearNumero(totalRestaurantes)}</span>
-              </dd>
-            </div>
-            <div>
-              <dt>Pedidos pendientes</dt>
-              <dd>{formatearNumero(pendientes)}</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
       <section aria-label="Indicadores principales" className="admin-metricas">
         <article className="admin-metrica">
           <span className="admin-metrica-icono admin-tono-primario">
