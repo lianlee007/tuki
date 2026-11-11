@@ -35,7 +35,7 @@ function mezclar<T>(lista: T[]): T[] {
 type Aviso = { texto: string; tipo: 'ok' | 'info' };
 
 /**
- * Inspiración: la baraja de platos.
+ * Descubrir: la baraja de platos.
  *
  * El feed responde a «¿qué busco?»; esta página responde a «decide por mí».
  * Un plato a la vez, con la foto como protagonista y dos gestos: derecha para
@@ -91,7 +91,7 @@ const PaginaInspiracion = () => {
           ? previos
           : [plato, ...previos]
       );
-      avisar(`«${plato.nombre}» está en tu inspiración`);
+      avisar(`«${plato.nombre}» está en tus guardados`);
       vibrate([8, 22, 8]);
     },
     [alternar, avisar, vibrate]
@@ -221,7 +221,7 @@ const PaginaInspiracion = () => {
   const quitarAprobado = (plato: PlatoDescubierto) => {
     setAprobados((previos) => previos.filter((guardado) => guardado.id !== plato.id));
     if (esFavorito(plato.id)) alternar(plato.id);
-    avisar(`«${plato.nombre}» salió de tu inspiración`, 'info');
+    avisar(`«${plato.nombre}» salió de tus guardados`, 'info');
   };
 
   const vaciarAprobados = () => {
@@ -236,7 +236,7 @@ const PaginaInspiracion = () => {
   return (
     <div className="min-h-screen bg-hearth-cream font-jakarta text-hearth-espresso transition-colors dark:bg-hearth-night dark:text-hearth-night-ink">
       <SEO
-        titulo="Inspiración — TukiTuki"
+        titulo="Descubrir — TukiTuki"
         descripcion="Desliza platos uno a uno: a la derecha para guardarlos en tus favoritos, a la izquierda para pasar. Descubre qué comer sin decidir a ciegas."
       />
 
@@ -247,7 +247,7 @@ const PaginaInspiracion = () => {
           <div className="min-w-0">
             <p className={`${ETIQUETA} hidden items-center gap-1.5 text-hearth-terracotta-ink lg:flex dark:text-hearth-night-terracotta-ink`}>
               <Sparkles size={12} aria-hidden="true" />
-              Inspiración al paso
+              Descubre sin buscar
             </p>
             <h2 className="font-jakarta text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-hearth-espresso sm:text-[clamp(1.55rem,3.6vw,2.05rem)] dark:text-hearth-night-ink">
               ¿Qué se te antoja hoy?
@@ -274,7 +274,7 @@ const PaginaInspiracion = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start lg:gap-7">
           {/* Columna izquierda: filtros fijos en escritorio. */}
-          <aside className="hidden lg:col-span-3 lg:block" aria-label="Filtros de inspiración">
+          <aside className="hidden lg:col-span-3 lg:block" aria-label="Filtros de Descubrir">
             <div className="lg:sticky lg:top-24">
               <FiltrosInspiracion
                 cocinas={cocinas}
@@ -365,7 +365,7 @@ const PaginaInspiracion = () => {
           </section>
 
           {/* Columna derecha: lo aprobado, en vivo. */}
-          <aside className="lg:col-span-3" aria-label="Inspiración en vivo">
+          <aside className="lg:col-span-3" aria-label="Descubrimientos en vivo">
             <div className="lg:sticky lg:top-24">
               <PanelEnVivo
                 aprobados={aprobados}

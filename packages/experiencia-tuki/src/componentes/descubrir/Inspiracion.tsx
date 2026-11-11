@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 import { FOCO, TARJETA } from './estilos';
 
 interface InspiracionProps {
@@ -13,7 +13,7 @@ const MUESTRAS = ['🍔', '🍣', '🥗'] as const;
 /**
  * «No sé qué comer».
  *
- * Es el atajo para quien no quiere filtrar: abre la baraja de Inspiración, que
+ * Es el atajo para quien no quiere filtrar: abre la baraja de Descubrir, que
  * reparte platos reales uno a la vez y deja decidir con un gesto. La tarjeta se
  * viste como el resto de Descubrir —papel marfil, tinta espresso y terracota—
  * para que no parezca un anuncio pegado encima del feed.
@@ -23,13 +23,13 @@ export const Inspiracion: React.FC<InspiracionProps> = ({
   onSorprender,
 }) => (
   <section
-    aria-label="Inspiración al paso"
+    aria-label="Descubrir al paso"
     className={`${TARJETA} relative overflow-hidden p-5`}
   >
     <div className="relative">
       <div className="flex items-center gap-2.5 border-b border-hearth-line/70 pb-3 dark:border-hearth-night-line">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink">
-          <Sparkles size={17} aria-hidden="true" />
+          <Compass size={17} aria-hidden="true" />
         </span>
         <div className="min-w-0">
           <h2 className="font-jakarta text-sm font-extrabold leading-snug text-hearth-espresso dark:text-hearth-night-ink">

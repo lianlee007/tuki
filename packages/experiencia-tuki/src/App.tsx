@@ -53,6 +53,7 @@ const ContenidoAnimado = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
           <Route path="/explorar" element={<TransicionPagina><PaginaDescubrir /></TransicionPagina>} />
+          <Route path="/descubrir" element={<RutaConSesion><TransicionPagina><PaginaInspiracion /></TransicionPagina></RutaConSesion>} />
           <Route path="/inspiracion" element={<RutaConSesion><TransicionPagina><PaginaInspiracion /></TransicionPagina></RutaConSesion>} />
           <Route path="/para-restaurantes" element={<TransicionPagina><PaginaParaRestaurantes /></TransicionPagina>} />
           <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />

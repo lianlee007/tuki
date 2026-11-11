@@ -244,7 +244,7 @@ export const FiltrosInspiracion: React.FC<FiltrosInspiracionProps> = ({
 
       <div className="mt-4 rounded-xl bg-hearth-oat/70 p-3 text-[10.5px] leading-relaxed text-hearth-pebble ring-1 ring-hearth-line/60 dark:bg-hearth-night-oat/70 dark:text-hearth-night-pebble dark:ring-hearth-night-line/60">
         Cada filtro vuelve a repartir la baraja. Los platos que ya aprobaste
-        siguen en <strong className="font-extrabold text-hearth-espresso dark:text-hearth-night-ink">Inspiración en vivo</strong>.
+        siguen en <strong className="font-extrabold text-hearth-espresso dark:text-hearth-night-ink">Descubrimientos en vivo</strong>.
       </div>
     </section>
   );

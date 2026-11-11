@@ -13,7 +13,7 @@ interface PanelEnVivoProps {
 }
 
 /**
- * «Inspiración en vivo».
+ * «Descubrimientos en vivo».
  *
  * El historial de lo aprobado durante la sesión, no una segunda lista de
  * favoritos escondida: cada tarjeta que cruza a la derecha aparece aquí con su
@@ -36,7 +36,7 @@ export const PanelEnVivo: React.FC<PanelEnVivoProps> = ({
             <span className="relative flex h-2.5 w-2.5">
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-hearth-honey" />
             </span>
-            Inspiración en vivo
+            Descubrimientos en vivo
           </p>
           <h2
             id="titulo-en-vivo"

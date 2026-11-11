@@ -20,7 +20,7 @@ interface OpcionesBaraja {
 }
 
 /**
- * Estado de la baraja de Inspiración.
+ * Estado de la baraja de Descubrir.
  *
  * La pila solo guarda los platos que quedan por decidir. Cada gesto deja una
  * decisión en el historial para poder deshacerlo sin volver a pedir datos al
