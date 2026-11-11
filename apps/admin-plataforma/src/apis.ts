@@ -10,12 +10,28 @@ const runtime =
 const url = (clave: string, variable: string, defecto: string): string =>
   runtime[clave] ?? env[variable] ?? defecto;
 
+const esDominioLocal = (valor: string) =>
+  /^https?:\/\/(?:www\.)?tukituki\.local(?::\d+)?\/?$/i.test(valor);
+
+const sitioPublicoPorDefecto = (): string => {
+  if (typeof window === 'undefined') return 'http://localhost:5173';
+  const { protocol, hostname, port } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+    return 'http://localhost:5173';
+  }
+  if (port === '8083') return `${protocol}//${hostname}:8081`;
+  if (hostname.startsWith('admin.')) return `${protocol}//${hostname.slice(6)}`;
+  return `${protocol}//${hostname}`;
+};
+
 /** URL del sitio público para abrir la ficha de un restaurante. */
-export const urlSitioPublico = url(
-  'web',
-  'VITE_WEB_URL',
-  'http://localhost:5173',
-).replace(/\/+$/, '');
+export const urlSitioPublico = (() => {
+  const configurada = url('web', 'VITE_WEB_URL', '');
+  const base = configurada && !esDominioLocal(configurada)
+    ? configurada
+    : sitioPublicoPorDefecto();
+  return base.replace(/\/+$/, '');
+})();
 
 /** Cliente único de la app de administración. */
 export const apis = crearApis({

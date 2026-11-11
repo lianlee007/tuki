@@ -65,10 +65,33 @@ export const urlGatewaysIa = (): string =>
  * búsqueda y se puede cambiar desde `/config.js` sin recompilar.
  */
 export const urlPanelAdmin = (): string => {
+  const esDominioLocal = (valor: string) =>
+    /^https?:\/\/(?:admin\.)?tukituki\.local(?::\d+)?\/?$/i.test(valor);
+
   const delRuntime = (configRuntime as Record<string, string | undefined>).adminPanel;
-  if (delRuntime) return delRuntime.replace(/\/+$/, '');
+  if (delRuntime && !esDominioLocal(delRuntime)) {
+    return delRuntime.replace(/\/+$/, '');
+  }
+
   const delBuild = entorno.VITE_ADMIN_PANEL_URL;
-  return (delBuild && delBuild !== '' ? delBuild : 'http://localhost:5175').replace(/\/+$/, '');
+  if (delBuild && delBuild !== '' && !esDominioLocal(delBuild)) {
+    return delBuild.replace(/\/+$/, '');
+  }
+
+  // En un despliegue sin dominio propio, el panel vive en el puerto 8083 del
+  // mismo host. En local sigue siendo el servidor de Vite.
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname, port } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+      return 'http://localhost:5175';
+    }
+    if (port === '8081' || port === '8082' || port === '8083') {
+      return `${protocol}//${hostname}:8083`;
+    }
+    return `${protocol}//${hostname}:8083`;
+  }
+
+  return 'http://localhost:5175';
 };
 
 /** Cliente único de los servicios, con el token de la sesión actual. */
