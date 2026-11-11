@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link, NavLink } from 'react-router-dom';
-import { LogOut, Search, ShoppingBag, Store, UserRound, X } from 'lucide-react';
+import { LogOut, Search, ShieldCheck, ShoppingBag, Store, UserRound, X, ArrowUpRight } from 'lucide-react';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
+import { urlPanelAdmin } from '../../lib/api-tuki';
 import { PalabraTuki, SimboloTuki, ThemeToggle } from '../ui';
 import { FOCO } from './estilos';
 
@@ -211,6 +212,9 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
 }) => {
   const { user, rol, cargandoRol } = useAuth();
 
+  /** Atajo oculto: la búsqueda abre el acceso reservado del superadmin. */
+  const atajoAdmin = consulta.trim().toLowerCase() === 'patatas321';
+
   const acciones = (compacto: boolean) => (
     <Acciones
       compacto={compacto}
@@ -317,6 +321,48 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
             >
               <X size={15} aria-hidden="true" />
             </button>
+          )}
+
+          {atajoAdmin && (
+            <div className="absolute left-1/2 top-full z-50 mt-2 w-[min(22rem,calc(100vw-1.75rem))] -translate-x-1/2 overflow-hidden rounded-2xl border border-hearth-line bg-hearth-card p-3.5 shadow-warm-xl dark:border-hearth-night-line dark:bg-hearth-night-card max-[560px]:fixed max-[560px]:left-3 max-[560px]:right-3 max-[560px]:top-[62px] max-[560px]:mt-0 max-[560px]:w-auto max-[560px]:translate-x-0">
+              <p className="sr-only" role="status">
+                Acceso de superadministrador disponible.
+              </p>
+
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-hearth-terracotta-soft text-hearth-terracotta-ink ring-1 ring-hearth-terracotta/20 dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink dark:ring-white/10">
+                  <ShieldCheck size={20} aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+                    Acceso reservado
+                  </p>
+                  <p className="mt-0.5 text-[13.5px] font-extrabold text-hearth-espresso dark:text-hearth-night-ink">
+                    Panel de superadministrador
+                  </p>
+                  <p className="mt-0.5 text-[11.5px] leading-snug text-hearth-pebble dark:text-hearth-night-pebble">
+                    La clave maestra abrió la puerta.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center gap-2">
+                <a
+                  href={urlPanelAdmin()}
+                  className={`af-pulsar inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-hearth-terracotta-deep px-3 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-hearth-terracotta-ink dark:bg-hearth-night-terracotta dark:text-hearth-night dark:hover:bg-[#F6A184] ${FOCO}`}
+                >
+                  Entrar al panel
+                  <ArrowUpRight size={15} aria-hidden="true" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => onConsulta('')}
+                  className={`inline-flex min-h-10 items-center justify-center rounded-xl bg-hearth-oat px-3 py-2 text-[12px] font-bold text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
+                >
+                  Seguir buscando
+                </button>
+              </div>
+            </div>
           )}
         </form>
 

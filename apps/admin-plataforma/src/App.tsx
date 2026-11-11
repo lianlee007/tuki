@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { RutaProtegida } from '@tuki/auth-react';
+import { RutaSuperadmin } from './componentes/RutaSuperadmin';
 import { Entrar } from './paginas/Entrar';
 import { PanelAdmin } from './paginas/PanelAdmin';
 
@@ -10,9 +10,9 @@ export const App = () => (
     <Route
       path="/admin"
       element={
-        <RutaProtegida roles={['superadmin']}>
+        <RutaSuperadmin>
           <PanelAdmin />
-        </RutaProtegida>
+        </RutaSuperadmin>
       }
     />
     <Route path="*" element={<Navigate to="/admin" replace />} />

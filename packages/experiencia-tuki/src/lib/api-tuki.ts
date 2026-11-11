@@ -60,6 +60,17 @@ const servicio = (clave: ClaveServicio, variable: string, defecto: string): stri
 export const urlGatewaysIa = (): string =>
   servicio('ai', 'VITE_AI_GATEWAY_URL', 'http://localhost:8000');
 
+/**
+ * URL del panel de superadministración. Se usa en el acceso directo de la
+ * búsqueda y se puede cambiar desde `/config.js` sin recompilar.
+ */
+export const urlPanelAdmin = (): string => {
+  const delRuntime = (configRuntime as Record<string, string | undefined>).adminPanel;
+  if (delRuntime) return delRuntime.replace(/\/+$/, '');
+  const delBuild = entorno.VITE_ADMIN_PANEL_URL;
+  return (delBuild && delBuild !== '' ? delBuild : 'http://localhost:5175').replace(/\/+$/, '');
+};
+
 /** Cliente único de los servicios, con el token de la sesión actual. */
 export const apis = crearApis({
   urls: {

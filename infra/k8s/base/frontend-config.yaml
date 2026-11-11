@@ -16,5 +16,7 @@ data:
       pedidos: 'http://api.tukituki.example.com',
       resenas: 'http://api.tukituki.example.com',
       admin: 'http://api.tukituki.example.com',
+      adminPanel: 'http://admin.tukituki.example.com',
+      web: 'http://tukituki.example.com',
       ai: 'http://api.tukituki.example.com'
     };
