@@ -248,7 +248,7 @@ const PaginaDescubrir = () => {
     setCargandoRestaurantes(true);
 
     apiDescubrir
-      .restaurantes({ q: consulta, cocina, limite: 24 })
+      .restaurantes({ q: consulta, cocina, limite: 60 })
       .then(({ restaurantes: encontrados, error: fallo }) => {
         if (!vigente) return;
         if (fallo) {
@@ -398,6 +398,9 @@ const PaginaDescubrir = () => {
   const ciudades = Array.from(
     new Set(restaurantes.map((local) => local.ciudad).filter(Boolean))
   ) as string[];
+  const departamentos = Array.from(
+    new Set(restaurantes.map((local) => local.departamento).filter(Boolean))
+  ) as string[];
   const ciudad =
     ciudades.length === 0
       ? platos[0]?.ciudad || restaurantes[0]?.ciudad || null
@@ -405,7 +408,9 @@ const PaginaDescubrir = () => {
         ? ciudades[0]
         : ciudades.length === 2
           ? `${ciudades[0]} y ${ciudades[1]}`
-          : 'Varias ciudades';
+          : departamentos.length === 2
+            ? `${departamentos[0]} y ${departamentos[1]}`
+            : 'Varias ciudades';
 
   const totalMostrado = soloFavoritos ? platosVisibles.length : total;
   const etiquetaTotal = primerPintado

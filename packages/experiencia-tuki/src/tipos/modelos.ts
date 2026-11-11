@@ -135,6 +135,7 @@ export interface RestauranteDescubierto {
   imagen_banner_url: string | null;
   imagen_logo_url: string | null;
   ciudad: string | null;
+  departamento?: string | null;
   tipo_cocina: string | null;
   tipo_cocina_slug: string | null;
   rating: number;

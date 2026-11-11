@@ -287,6 +287,7 @@ export const aRestauranteDescubierto = (
   imagen_banner_url: dto.imagenBannerUrl,
   imagen_logo_url: dto.imagenLogoUrl,
   ciudad: dto.ciudad,
+  departamento: dto.departamento ?? null,
   tipo_cocina: null,
   tipo_cocina_slug: null,
   rating: 0,
