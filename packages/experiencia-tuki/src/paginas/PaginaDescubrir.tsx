@@ -400,7 +400,7 @@ const PaginaDescubrir = () => {
   ) as string[];
   const departamentos = Array.from(
     new Set(restaurantes.map((local) => local.departamento).filter(Boolean))
-  ) as string[];
+  ).sort() as string[];
   const ciudad =
     ciudades.length === 0
       ? platos[0]?.ciudad || restaurantes[0]?.ciudad || null
