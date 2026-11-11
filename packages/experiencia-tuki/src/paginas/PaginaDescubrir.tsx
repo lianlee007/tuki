@@ -344,7 +344,7 @@ const PaginaDescubrir = () => {
   };
 
   const sorprender = () => {
-    navigate('/inspiracion');
+    navigate('/descubrir');
   };
 
   const irAInicio = () => {

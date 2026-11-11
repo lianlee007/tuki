@@ -41,7 +41,7 @@ export function RutaPanel({ children }: PropsWithChildren) {
 
 /**
  * Páginas que necesitan una cuenta para tener sentido. «Mi cuenta» y la baraja
- * de Inspiración comparten la misma regla: sin sesión se vuelve al acceso con la
+ * de Descubrir comparten la misma regla: sin sesión se vuelve al acceso con la
  * ruta de origen, para que al entrar se retome donde estaba.
  */
 export function RutaConSesion({ children }: PropsWithChildren) {

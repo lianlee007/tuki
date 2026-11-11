@@ -34,7 +34,7 @@ reutilizan la interfaz original de la versión anterior de Tuki a través de
 `packages/experiencia-tuki`:
 
 - **Comensal**: Descubrir, ficha pública con plantillas, carrito, pedidos,
-  reseñas, mi cuenta, inspiración, QR y páginas legales.
+  reseñas, mi cuenta, descubrir, QR y páginas legales.
 - **Panel**: configuración del restaurante, menú, pedidos, reseñas, apariencia y
   difusión.
 - **Administración**: aplicación propia con panorama, locales, usuarios y

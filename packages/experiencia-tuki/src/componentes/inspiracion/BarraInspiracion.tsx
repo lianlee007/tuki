@@ -1,8 +1,8 @@
 import React from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart } from 'lucide-react';
-import { SimboloTuki, ThemeToggle } from '../ui';
+import { ArrowLeft, Compass, Heart } from 'lucide-react';
+import { ThemeToggle } from '../ui';
 import { FOCO } from '../descubrir/estilos';
 
 interface BarraInspiracionProps {
@@ -10,12 +10,11 @@ interface BarraInspiracionProps {
 }
 
 /**
- * Barra de la página de Inspiración.
+ * Barra de la página de Descubrir.
  *
- * No repite el buscador del feed: aquí no se escribe, se desliza. En móvil se
- * queda en una fila fina —volver, título y acceso a guardados— para que la
- * baraja empiece cuanto antes. La marca grande solo aparece desde tablet, donde
- * sobra sitio.
+ * No repite el buscador del feed: aquí no se escribe, se desliza. La brújula es
+ * la marca de este modo —una forma distinta de llegar a la comida— y acompaña
+ * al título en móvil, donde la barra se queda en una sola fila.
  */
 export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAntojos }) => (
   <header className="sticky top-0 z-40 border-b border-hearth-line/60 bg-hearth-cream/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-hearth-night-line/80 dark:bg-hearth-night/95">
@@ -29,13 +28,13 @@ export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAnto
         <ArrowLeft size={19} aria-hidden="true" />
       </Link>
 
-      <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-af-accent-solid text-white shadow-warm sm:flex">
-        <SimboloTuki size={32} className="h-8 w-8" />
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-af-accent-solid text-white shadow-warm sm:h-10 sm:w-10">
+        <Compass size={20} aria-hidden="true" className="sm:h-[22px] sm:w-[22px]" />
       </span>
 
       <div className="min-w-0 flex-1 leading-tight">
         <h1 className="truncate font-jakarta text-[17px] font-extrabold tracking-[-0.03em] text-hearth-espresso sm:text-lg dark:text-hearth-night-ink">
-          Inspiración
+          Descubrir
         </h1>
         <p className="truncate text-[10.5px] font-semibold text-hearth-pebble dark:text-hearth-night-pebble">
           Desliza y decide

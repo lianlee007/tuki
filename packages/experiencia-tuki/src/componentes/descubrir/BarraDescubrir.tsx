@@ -265,10 +265,10 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
               }`
             }
           >
-            Explorar
+            Inicio
           </NavLink>
           <NavLink
-            to="/inspiracion"
+            to="/descubrir"
             className={({ isActive }) =>
               `rounded-xl px-2.5 py-2 text-[13px] font-bold transition-colors ${FOCO} ${
                 isActive
@@ -277,7 +277,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
               }`
             }
           >
-            Inspiración
+            Descubrir
           </NavLink>
           <Link
             to="/para-restaurantes"
