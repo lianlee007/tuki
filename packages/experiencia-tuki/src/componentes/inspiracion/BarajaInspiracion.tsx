@@ -15,6 +15,8 @@ interface BarajaInspiracionProps {
   total: number;
   hayFiltros: boolean;
   onDecidir: (plato: PlatoDescubierto, direccion: DireccionBaraja) => void;
+  /** El primer arrastre retira la pista de gestos. */
+  onInteractuar?: () => void;
   /** Vuelve a pedir platos para el filtro actual. */
   onReintentar: () => void;
   /** Reparte otra vez las cartas que ya están en memoria. */
@@ -24,9 +26,12 @@ interface BarajaInspiracionProps {
 
 /**
  * El alto incluye 24 px de aire arriba: ahí asoman los cantos de las dos
- * tarjetas que esperan detrás, como en una baraja de verdad.
+ * tarjetas que esperan detrás, como en una baraja de verdad. En móvil se calcula
+ * con el alto real de la ventana (dvh) para que la tarjeta y los controles
+ * quepan juntos, sin obligar a hacer scroll antes del primer gesto.
  */
-const ALTO = 'h-[clamp(494px,67vh,604px)]';
+const ALTO =
+  'h-[clamp(340px,calc(100dvh-25rem),540px)] lg:h-[clamp(494px,67vh,604px)]';
 const AREA_CARTA = 'absolute inset-x-0 bottom-0 top-6';
 
 /**
@@ -45,6 +50,7 @@ export const BarajaInspiracion: React.FC<BarajaInspiracionProps> = ({
   total,
   hayFiltros,
   onDecidir,
+  onInteractuar,
   onReintentar,
   onReiniciar,
   onLimpiar,
@@ -121,6 +127,7 @@ export const BarajaInspiracion: React.FC<BarajaInspiracionProps> = ({
                 key={plato.id}
                 plato={plato}
                 posicion={indice}
+                onInteractuar={onInteractuar}
                 onDecidir={onDecidir}
               />
             ))}
@@ -135,7 +142,7 @@ const EsqueletoBaraja: React.FC = () => (
     <div className="absolute inset-x-2 bottom-0 top-1.5 rounded-[26px] bg-hearth-oat/70 dark:bg-hearth-night-oat/70" />
     <div className="absolute inset-x-1 bottom-0 top-[18px] rounded-[26px] bg-hearth-oat dark:bg-hearth-night-oat" />
     <div className={`absolute inset-x-0 bottom-0 top-6 overflow-hidden rounded-[26px] ${TARJETA}`}>
-      <div className="h-[52%] w-full bg-hearth-oat dark:bg-hearth-night-oat sm:h-[54%]" />
+      <div className="h-[60%] w-full bg-hearth-oat dark:bg-hearth-night-oat sm:h-[56%]" />
       <div className="p-5">
         <div className="h-5 w-3/4 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />
         <div className="mt-2.5 h-3 w-1/2 rounded-full bg-hearth-oat dark:bg-hearth-night-oat" />

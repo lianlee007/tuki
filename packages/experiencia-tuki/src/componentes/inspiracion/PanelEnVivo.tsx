@@ -32,9 +32,8 @@ export const PanelEnVivo: React.FC<PanelEnVivoProps> = ({
     <section aria-labelledby="titulo-en-vivo" className={`${TARJETA} p-5`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-hearth-honey-ink dark:text-hearth-night-honey-ink">
+          <p className="flex items-center gap-2 text-[11px] font-bold text-hearth-honey-ink dark:text-hearth-night-honey-ink">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-hearth-honey opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-hearth-honey" />
             </span>
             Inspiración en vivo
