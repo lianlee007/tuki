@@ -395,7 +395,17 @@ const PaginaDescubrir = () => {
   const volver = `${location.pathname}${location.search}`;
   const rutaCuenta =
     rol === 'restaurante' ? '/panel' : user ? '/mi-cuenta' : '/entrar';
-  const ciudad = platos[0]?.ciudad || restaurantes[0]?.ciudad || null;
+  const ciudades = Array.from(
+    new Set(restaurantes.map((local) => local.ciudad).filter(Boolean))
+  ) as string[];
+  const ciudad =
+    ciudades.length === 0
+      ? platos[0]?.ciudad || restaurantes[0]?.ciudad || null
+      : ciudades.length === 1
+        ? ciudades[0]
+        : ciudades.length === 2
+          ? `${ciudades[0]} y ${ciudades[1]}`
+          : 'Varias ciudades';
 
   const totalMostrado = soloFavoritos ? platosVisibles.length : total;
   const etiquetaTotal = primerPintado
