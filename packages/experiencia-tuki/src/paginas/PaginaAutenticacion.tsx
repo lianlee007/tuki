@@ -64,11 +64,11 @@ export default function PaginaAutenticacion() {
         />
       )}
 
-      <p className="mt-8 text-center text-[13px] text-af-ink-secondary">
+      <p className="mt-5 hidden border-t border-black/[0.06] pt-4 text-center text-[12.5px] text-af-ink-secondary sm:block dark:border-white/10">
         {isLogin ? '¿Solo vienes a comer? ' : '¿Vienes a comer, no a vender? '}
         <Link
           to={isLogin ? '/entrar' : '/entrar?modo=registro'}
-          className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
+          className="font-bold text-af-accent-text transition-opacity hover:opacity-70"
         >
           {isLogin ? 'Entra como comensal' : 'Crea tu cuenta de comensal'}
         </Link>

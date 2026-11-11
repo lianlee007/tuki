@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
 import { Boton, Input } from '../ui';
-import { ShieldCheck, AlertTriangle, Mail, Check } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Mail, Check, Eye, EyeOff } from 'lucide-react';
+import { FOCO } from '../descubrir/estilos';
 
 interface FormularioLoginProps {
   cambiarModo: () => void;
@@ -18,15 +19,17 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verClave, setVerClave] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recuerdame, setRecuerdame] = useState(false);
-  const [emailFoco, setEmailFoco] = useState(false);
+  const [emailTocado, setEmailTocado] = useState(false);
   const { iniciarSesion } = useAuth();
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = emailRegex.test(email);
   const formValid = isEmailValid && password.length > 0;
+  const mostrarErrorEmail = emailTocado && email.length > 0 && !isEmailValid;
 
   useEffect(() => {
     // La clave se llamaba `smartfood_email` antes del renombrado a TukiTuki: se lee
@@ -42,7 +45,10 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formValid) return;
+    if (!formValid) {
+      setEmailTocado(true);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -70,80 +76,106 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full">
-      <div className="relative">
+    <form onSubmit={handleSubmit} className="w-full" autoComplete="on">
+      <div className="space-y-3.5">
         <Input
           type="email"
-          placeholder="Correo electrónico"
+          label="Correo electrónico"
+          placeholder="tu@correo.com"
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          onFocus={() => setEmailFoco(true)}
-          onBlur={() => setEmailFoco(false)}
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => setEmailTocado(true)}
           required
           icon={<Mail size={18} />}
           maxLength={100}
+          autoComplete="email"
+          inputMode="email"
+          enterKeyHint="next"
+          aria-invalid={mostrarErrorEmail}
+          helper={mostrarErrorEmail ? 'Revisa el formato del correo.' : undefined}
+          error={mostrarErrorEmail}
         />
-        {email.length > 0 && !isEmailValid && !emailFoco && (
-          <p className="text-[10px] text-af-danger mt-1 ml-1 absolute -bottom-4 animate-fade-in-af">Formato inválido</p>
-        )}
-      </div>
 
-      <Input
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        required
-        icon={<ShieldCheck size={18} />}
-        maxLength={64}
-      />
+        <div>
+          <label htmlFor="clave-acceso" className="mb-1.5 ml-0.5 block text-xs font-semibold text-af-ink-secondary">
+            Contraseña
+          </label>
 
-      <div className="flex items-center gap-2 animate-fade-in-af px-1">
-        <div className="relative flex items-center">
-          <input
-            type="checkbox"
-            id="recuerdame"
-            checked={recuerdame}
-            onChange={e => setRecuerdame(e.target.checked)}
-            className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-af-border bg-af-surface checked:border-af-accent checked:bg-af-accent transition-all"
+          <Input
+            id="clave-acceso"
+            type={verClave ? 'text' : 'password'}
+            placeholder="Tu contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            icon={<ShieldCheck size={18} />}
+            maxLength={64}
+            autoComplete="current-password"
+            enterKeyHint="go"
+            accion={
+              <button
+                type="button"
+                onClick={() => setVerClave((valor) => !valor)}
+                aria-label={verClave ? 'Ocultar la contraseña' : 'Mostrar la contraseña'}
+                aria-pressed={verClave}
+                className={`af-pulsar flex h-10 w-10 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink ${FOCO}`}
+              >
+                {verClave ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+              </button>
+            }
           />
-          <Check size={12} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" />
         </div>
-        <label htmlFor="recuerdame" className="text-sm text-af-ink-secondary cursor-pointer select-none">Recuérdame</label>
       </div>
 
       {error && (
-        <div className="animate-fade-in-af p-3 rounded-xl bg-af-danger/10 border border-af-danger/30 flex items-center gap-3 text-af-danger text-sm font-medium">
-          <AlertTriangle size={18} className="flex-shrink-0" />
+        <div
+          role="alert"
+          className="mt-4 flex animate-fade-in-af items-start gap-2.5 rounded-xl border border-af-danger/30 bg-af-danger/10 p-3 text-[13px] font-medium text-af-danger"
+        >
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="pt-2">
-        <Boton
-          className={`w-full text-lg transition-all duration-200 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
-          type="submit"
-          cargando={loading}
-          disabled={!formValid}
-        >
-          {textoBoton}
-        </Boton>
-      </div>
+      <Boton
+        className="mt-5 w-full !rounded-2xl !py-3.5 !text-[15px] font-bold"
+        type="submit"
+        cargando={loading}
+        disabled={!formValid}
+      >
+        {textoBoton}
+      </Boton>
 
-      <div className="mt-6 text-center">
-        <p className="text-sm text-af-ink-secondary relative z-10">
-          {rol === 'restaurante'
-            ? '¿Todavía no tienes cuenta de restaurante?'
-            : '¿Aún no tienes cuenta de comensal?'}
-          <button
-            type="button"
-            onClick={cambiarModo}
-            className="text-af-accent font-bold hover:opacity-80 transition-colors ml-1"
-          >
-            {rol === 'restaurante' ? 'Crear cuenta de restaurante' : 'Crear cuenta de comensal'}
-          </button>
-        </p>
-      </div>
+      <label className="mt-4 flex cursor-pointer select-none items-center gap-2.5 rounded-xl px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
+        <span className="relative flex items-center">
+          <input
+            type="checkbox"
+            checked={recuerdame}
+            onChange={(e) => setRecuerdame(e.target.checked)}
+            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-black/20 bg-af-ground transition-colors checked:border-af-accent checked:bg-af-accent dark:border-white/20 dark:bg-[#2C2C2E]"
+          />
+          <Check
+            size={13}
+            strokeWidth={3}
+            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100"
+            aria-hidden="true"
+          />
+        </span>
+        Mantener mi correo en este dispositivo
+      </label>
+
+      <p className="mt-5 border-t border-black/[0.06] pt-4 text-center text-[12.5px] text-af-ink-secondary dark:border-white/10">
+        {rol === 'restaurante'
+          ? '¿Todavía no tienes cuenta de restaurante?'
+          : '¿Aún no tienes cuenta de comensal?'}
+        <button
+          type="button"
+          onClick={cambiarModo}
+          className={`ml-1 rounded-md font-bold text-af-accent-text transition-opacity hover:opacity-70 ${FOCO}`}
+        >
+          {rol === 'restaurante' ? 'Crear cuenta de restaurante' : 'Crear cuenta de comensal'}
+        </button>
+      </p>
     </form>
   );
 };

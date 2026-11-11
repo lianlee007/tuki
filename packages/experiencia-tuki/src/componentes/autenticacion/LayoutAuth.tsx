@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeToggle, Logo, PalabraTuki } from '../ui';
+import { FOCO } from '../descubrir/estilos';
 
 interface LayoutAuthProps {
   children: React.ReactNode;
@@ -16,6 +17,14 @@ interface LayoutAuthProps {
   puntos?: string[];
 }
 
+/**
+ * La puerta de acceso.
+ *
+ * En móvil el formulario manda: una cabecera fina con la salida y el tema, una
+ * presentación de tres líneas y el formulario a un toque de distancia. La
+ * composición de dos columnas con la marca grande se reserva para escritorio,
+ * donde sí hay sitio para presentar el producto antes de pedir la contraseña.
+ */
 export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   children,
   titulo,
@@ -25,73 +34,82 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   puntos,
 }) => {
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-af-ground p-4 pt-20 md:p-8">
-      {/* Botón Regresar Absoluto */}
-      <div className="absolute left-6 top-6 z-50">
-        <Link
-          to={volverA}
-          aria-label="Volver"
-          className="af-pulsar flex rounded-full bg-af-surface p-3 text-af-ink-secondary transition-colors hover:text-af-ink"
-        >
-          <ArrowLeft size={20} />
-        </Link>
-      </div>
+    <div className="min-h-dvh bg-af-ground">
+      <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-af-ground/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-white/10 dark:bg-[#161618]/90">
+        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4 md:h-16 md:px-8">
+          <Link
+            to={volverA}
+            aria-label="Volver"
+            title="Volver"
+            className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-af-surface text-af-ink-secondary transition-colors hover:text-af-ink dark:bg-[#2C2C2E] dark:text-[#A1A1A6] dark:hover:text-white ${FOCO}`}
+          >
+            <ArrowLeft size={19} aria-hidden="true" />
+          </Link>
 
-      {/* Toggle Tema Absoluto */}
-      <div className="absolute right-6 top-6 z-50">
-        <ThemeToggle />
-      </div>
+          <Link
+            to="/"
+            aria-label="TukiTuki, ir al inicio"
+            className={`af-pulsar -m-1 flex items-center gap-2 rounded-xl p-1 ${FOCO}`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-af-accent-solid text-white">
+              <Logo size={26} className="h-6 w-6" />
+            </span>
+            <PalabraTuki nombre="TukiTuki" tamano={18} className="text-af-ink" />
+          </Link>
 
-      {/* Contenedor Principal tipo Split en Desktop */}
-      <div className="relative flex w-full max-w-5xl animate-fade-in-af flex-col overflow-hidden rounded-[28px] bg-af-surface/30 md:flex-row">
-        {/* Panel Izquierdo: Branding e Info */}
-        <div className="relative flex flex-col justify-center p-8 md:w-5/12 md:p-12">
-          <div className="relative z-10 text-center md:text-left">
-            <div className="mx-auto mb-8 flex w-fit flex-col items-center gap-3 md:mx-0 md:items-start">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-af-accent-solid text-white">
-                <Logo size={56} />
-              </div>
-              <PalabraTuki
-                nombre="TukiTuki"
-                tamano={27}
-                className="text-af-ink"
-              />
+          <div className="ml-auto">
+            <ThemeToggle compacto />
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-5xl px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 md:px-8 md:py-12">
+        <div className="grid gap-5 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] md:items-center md:gap-12">
+          <section className="min-w-0">
+            <div className="mb-5 hidden flex-col items-start gap-3 md:flex">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-af-accent-solid text-white">
+                <Logo size={44} className="h-11 w-11" />
+              </span>
+              <PalabraTuki nombre="TukiTuki" tamano={26} className="text-af-ink" />
             </div>
+
             {etiqueta && (
-              <p className="mb-4 inline-flex items-center rounded-full bg-af-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-af-accent-text">
+              <p className="mb-2.5 inline-flex items-center rounded-full bg-af-accent/10 px-2.5 py-1 text-[11.5px] font-bold text-af-accent-text">
                 {etiqueta}
               </p>
             )}
-            <h1 className="mb-4 font-title text-3xl font-bold leading-tight text-af-ink md:text-4xl">
+
+            <h1 className="text-balance font-title text-[26px] font-bold leading-[1.12] tracking-[-0.02em] text-af-ink md:text-4xl">
               {titulo}
             </h1>
-            <p className="text-lg leading-relaxed text-af-ink-secondary">
+
+            <p className="mt-2 max-w-[46ch] text-[13.5px] leading-relaxed text-af-ink-secondary md:mt-4 md:text-base">
               {subtitulo}
             </p>
+
             {puntos && puntos.length > 0 && (
-              <ul className="mt-6 space-y-2 text-left">
+              <ul className="mt-6 hidden space-y-2.5 md:block">
                 {puntos.map((punto) => (
                   <li
                     key={punto}
-                    className="flex items-start gap-2 text-sm font-medium text-af-ink-secondary"
+                    className="flex items-start gap-2.5 text-sm font-medium text-af-ink-secondary"
                   >
                     <span
                       aria-hidden="true"
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-af-accent-solid"
+                      className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-af-accent-solid"
                     />
                     {punto}
                   </li>
                 ))}
               </ul>
             )}
-          </div>
-        </div>
+          </section>
 
-        {/* Panel Derecho: Formulario */}
-        <div className="relative flex flex-col justify-center bg-af-ground p-8 md:w-7/12 md:p-12">
-          {children}
+          <section className="min-w-0 rounded-[24px] bg-af-surface p-4 ring-1 ring-black/[0.05] md:rounded-[28px] md:p-8 dark:bg-[#1C1C1E] dark:ring-white/10">
+            {children}
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

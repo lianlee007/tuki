@@ -12,6 +12,8 @@ import {
   Mail,
   ArrowLeft,
   MapPin,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { FormularioDatosEnvio } from '../cuenta/FormularioDatosEnvio';
 import type { DatosEnvio } from '../../modulos/cuenta';
@@ -38,6 +40,7 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
+  const [verClave, setVerClave] = useState(false);
   /** Confirmación en pantalla: una alerta del navegador se pierde y no dice qué sigue. */
   const [exito, setExito] = useState<{ mensaje: string; confirmarCorreo: boolean } | null>(null);
   /** El comensal elige sus datos de entrega antes de crear la cuenta. */
@@ -202,34 +205,37 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 relative z-10 w-full" autoComplete="off">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-af">
+    <form onSubmit={handleSubmit} className="space-y-4 relative z-10 w-full" autoComplete="off">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 animate-fade-in-af">
         <Input
-          placeholder="Nombre"
+          placeholder="Ej. Ana"
+          label="Nombre"
           value={nombre}
           onChange={e => handleNameChange(setNombre, e.target.value)}
           required
           className={nombre.length > 1 ? "border-af-success/30" : ""}
           maxLength={50}
-          autoComplete="off"
+          autoComplete="given-name"
           autoFocus={false}
         />
         <Input
-          placeholder="Apellido"
+          placeholder="Ej. Pérez"
+          label="Apellido"
           value={apellido}
           onChange={e => handleNameChange(setApellido, e.target.value)}
           required
           className={apellido.length > 1 ? "border-af-success/30" : ""}
           maxLength={50}
-          autoComplete="off"
+          autoComplete="family-name"
           autoFocus={false}
         />
       </div>
 
-      <div className="relative">
+      <div>
         <Input
           type="email"
-          placeholder="Correo electrónico"
+          placeholder="tu@correo.com"
+          label="Correo electrónico"
           value={email}
           onChange={e => setEmail(e.target.value)}
           onBlur={() => setEmailTouched(true)}
@@ -237,18 +243,19 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
           icon={<Mail size={18} />}
           className={email.length > 0 ? (isEmailValid ? "border-af-success/50" : (emailTouched ? "border-af-danger/50" : "")) : ""}
           maxLength={100}
-          autoComplete="off"
+          autoComplete="email"
+          inputMode="email"
           autoFocus={false}
+          error={email.length > 0 && !isEmailValid && emailTouched}
+          helper={email.length > 0 && !isEmailValid && emailTouched ? 'Revisa el formato del correo.' : undefined}
         />
-        {email.length > 0 && !isEmailValid && emailTouched && (
-          <p className="text-[10px] text-af-danger mt-1 ml-1 absolute -bottom-4 animate-fade-in-af">Formato inválido</p>
-        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Input
-          type="password"
-          placeholder="Contraseña"
+          type={verClave ? 'text' : 'password'}
+          placeholder="Crea una contraseña"
+          label="Contraseña"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
@@ -257,11 +264,23 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
           maxLength={64}
           autoComplete="new-password"
           autoFocus={false}
+          accion={
+            <button
+              type="button"
+              onClick={() => setVerClave((valor) => !valor)}
+              aria-label={verClave ? 'Ocultar la contraseña' : 'Mostrar la contraseña'}
+              aria-pressed={verClave}
+              className="af-pulsar flex h-10 w-10 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink"
+            >
+              {verClave ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+            </button>
+          }
         />
 
         <Input
-          type="password"
-          placeholder="Confirmar"
+          type={verClave ? 'text' : 'password'}
+          placeholder="Repite la contraseña"
+          label="Confirmar contraseña"
           value={confirmPassword}
           onChange={e => setConfirmPassword(e.target.value)}
           required
@@ -274,53 +293,53 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
       </div>
 
       <div className="animate-fade-in-af space-y-2">
-        <div className="bg-af-surface/30 dark:bg-black/30 p-3 rounded-xl border border-af/20 text-xs flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center justify-between">
-          <span className="font-bold text-af-ink-secondary uppercase flex items-center gap-1 mb-1 sm:mb-0">
-            <AlertCircle size={10} /> Seguridad:
+        <div className="rounded-xl border border-af-border/60 bg-af-ground p-3 dark:border-white/10 dark:bg-[#2C2C2E]">
+          <span className="mb-2 flex items-center gap-1.5 text-[11.5px] font-bold text-af-ink-secondary">
+            <AlertCircle size={12} aria-hidden="true" /> La contraseña necesita
           </span>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11.5px]">
             <div className={`flex items-center gap-1 ${password.length > 0 ? (hasMinLength ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8+ chars
+              <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8 caracteres
             </div>
             <div className={`flex items-center gap-1 ${password.length > 0 ? (hasUpperCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Mayúscula
+              <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Una mayúscula
             </div>
             <div className={`flex items-center gap-1 ${password.length > 0 ? (hasLowerCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Minúscula
+              <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Una minúscula
             </div>
             <div className={`flex items-center gap-1 ${password.length > 0 ? (hasNumber ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasNumber} active={password.length > 0} /> Número
+              <ValidationIcon valid={hasNumber} active={password.length > 0} /> Un número
             </div>
           </div>
         </div>
 
-        <div className="flex items-start gap-3 pt-1">
-          <div className="relative flex items-center pt-1">
+        <label htmlFor="terms" className="flex cursor-pointer items-start gap-3 px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
+          <span className="relative mt-0.5 flex items-center">
             <input
               type="checkbox"
               id="terms"
               checked={aceptaTerminos}
               onChange={e => setAceptaTerminos(e.target.checked)}
-              className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-400 dark:border-white/20 bg-af-surface checked:border-af-accent checked:bg-af-accent transition-all"
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-black/20 bg-af-ground transition-colors checked:border-af-accent checked:bg-af-accent dark:border-white/20 dark:bg-[#2C2C2E]"
             />
-            <Check size={12} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" />
-          </div>
-          <label htmlFor="terms" className="text-xs text-af-ink-secondary cursor-pointer select-none leading-snug">
-            Acepto los <Link to="/terminos" target="_blank" className="text-af-accent hover:opacity-80 font-bold">términos</Link> y la <Link to="/privacidad" target="_blank" className="text-af-accent hover:opacity-80 font-bold">política de privacidad</Link>.
-          </label>
-        </div>
+            <Check size={13} strokeWidth={3} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" aria-hidden="true" />
+          </span>
+          <span>
+            Acepto los <Link to="/terminos" target="_blank" className="font-bold text-af-accent-text hover:opacity-80">términos</Link> y la <Link to="/privacidad" target="_blank" className="font-bold text-af-accent-text hover:opacity-80">política de privacidad</Link>.
+          </span>
+        </label>
       </div>
 
       {error && (
-        <div className="animate-fade-in-af p-3 rounded-xl bg-af-danger/10 border border-af-danger/30 flex items-center gap-3 text-af-danger text-sm font-medium">
-          <AlertTriangle size={18} className="flex-shrink-0" />
+        <div role="alert" className="animate-fade-in-af flex items-start gap-2.5 rounded-xl border border-af-danger/30 bg-af-danger/10 p-3 text-[13px] font-medium text-af-danger">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="pt-2">
+      <div>
         <Boton
-          className={`w-full text-lg transition-all duration-200 py-4 ${!formValid ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+          className="w-full !rounded-2xl !py-3.5 !text-[15px] font-bold"
           type="submit"
           cargando={loading}
           disabled={!formValid}
@@ -329,13 +348,13 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
         </Boton>
       </div>
 
-      <div className="mt-6 text-center">
-        <p className="text-sm text-af-ink-secondary relative z-10">
+      <div className="text-center">
+        <p className="text-[12.5px] text-af-ink-secondary relative z-10">
           {rol === 'restaurante' ? '¿Ya tienes cuenta de restaurante?' : '¿Ya tienes cuenta?'}
           <button
             type="button"
             onClick={cambiarModo}
-            className="text-af-accent font-bold hover:opacity-80 transition-colors ml-1"
+            className="text-af-accent-text font-bold hover:opacity-80 transition-colors ml-1"
           >
             Inicia sesión
           </button>
