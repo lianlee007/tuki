@@ -128,7 +128,7 @@ export const TarjetaPlato: React.FC<TarjetaPlatoProps> = ({
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2B1712]/55 via-transparent to-transparent"
             />
 
-            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-hearth-honey px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#3A2000] shadow-warm">
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-hearth-honey px-2.5 py-1 text-[10.5px] font-extrabold tracking-[0.01em] text-[#3A2000] shadow-warm">
               <Sparkles size={11} aria-hidden="true" />
               Sugerido para ti
             </span>
