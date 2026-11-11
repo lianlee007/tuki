@@ -1,7 +1,7 @@
 import React from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
-import { Compass, Heart, Home, Store, UserRound } from 'lucide-react';
+import { Flame, Heart, Home, Store, UserRound } from 'lucide-react';
 import { FOCO } from './estilos';
 
 interface BarraMovilProps {
@@ -78,7 +78,7 @@ export const BarraMovil: React.FC<BarraMovilProps> = ({
           className={`${item} group text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}
         >
           <span className="-mt-3 flex h-11 w-11 items-center justify-center rounded-full bg-hearth-terracotta-deep text-white shadow-warm-lg ring-4 ring-hearth-card transition-transform group-active:scale-95 dark:bg-hearth-night-terracotta dark:text-hearth-night dark:ring-hearth-night-card">
-            <Compass size={20} aria-hidden="true" />
+            <Flame size={20} aria-hidden="true" className="fill-current" />
           </span>
           <span className="mt-0.5 text-[10px] font-extrabold tracking-[-0.01em]">
             Descubrir

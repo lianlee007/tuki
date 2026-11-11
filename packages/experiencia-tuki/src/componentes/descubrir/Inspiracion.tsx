@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 import { FOCO, TARJETA } from './estilos';
 
 interface InspiracionProps {
@@ -29,7 +29,7 @@ export const Inspiracion: React.FC<InspiracionProps> = ({
     <div className="relative">
       <div className="flex items-center gap-2.5 border-b border-hearth-line/70 pb-3 dark:border-hearth-night-line">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink">
-          <Compass size={17} aria-hidden="true" />
+          <Flame size={17} aria-hidden="true" className="fill-current" />
         </span>
         <div className="min-w-0">
           <h2 className="font-jakarta text-sm font-extrabold leading-snug text-hearth-espresso dark:text-hearth-night-ink">

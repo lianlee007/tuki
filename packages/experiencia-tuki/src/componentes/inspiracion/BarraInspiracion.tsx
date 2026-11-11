@@ -1,7 +1,7 @@
 import React from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Compass, Heart } from 'lucide-react';
+import { ArrowLeft, Flame, Heart } from 'lucide-react';
 import { ThemeToggle } from '../ui';
 import { FOCO } from '../descubrir/estilos';
 
@@ -12,9 +12,9 @@ interface BarraInspiracionProps {
 /**
  * Barra de la página de Descubrir.
  *
- * No repite el buscador del feed: aquí no se escribe, se desliza. La brújula es
- * la marca de este modo —una forma distinta de llegar a la comida— y acompaña
- * al título en móvil, donde la barra se queda en una sola fila.
+ * No repite el buscador del feed: aquí no se escribe, se desliza. La llama de
+ * Tuki es la marca de este modo —una forma distinta de llegar a la comida— y
+ * acompaña al título en móvil, donde la barra se queda en una sola fila.
  */
 export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAntojos }) => (
   <header className="sticky top-0 z-40 border-b border-hearth-line/60 bg-hearth-cream/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-hearth-night-line/80 dark:bg-hearth-night/95">
@@ -28,9 +28,11 @@ export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAnto
         <ArrowLeft size={19} aria-hidden="true" />
       </Link>
 
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-af-accent-solid text-white shadow-warm sm:h-10 sm:w-10">
-        <Compass size={20} aria-hidden="true" className="sm:h-[22px] sm:w-[22px]" />
-      </span>
+      <Flame
+        size={26}
+        aria-hidden="true"
+        className="shrink-0 fill-current text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink"
+      />
 
       <div className="min-w-0 flex-1 leading-tight">
         <h1 className="truncate font-jakarta text-[17px] font-extrabold tracking-[-0.03em] text-hearth-espresso sm:text-lg dark:text-hearth-night-ink">
@@ -55,7 +57,7 @@ export const BarraInspiracion: React.FC<BarraInspiracionProps> = ({ cantidadAnto
         {cantidadAntojos}
       </Link>
 
-      <ThemeToggle compacto />
+      <ThemeToggle conFondo />
     </div>
   </header>
 );

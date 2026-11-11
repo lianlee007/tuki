@@ -624,6 +624,15 @@ button:disabled {
 }
 .af-tema:active { transform: scale(0.97); }
 
+/* El raíl mide 32 px, pero en móvil necesita un objetivo táctil de 44 px.
+   El pseudo-elemento amplía el área sin cambiar el dibujo. */
+.af-tema::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+}
+
 /* Sobre una barra con desenfoque el raíl necesita algo más de cuerpo. */
 .af-tema--fondo {
   --af-tema-riel: 0.18;

@@ -48,7 +48,7 @@ destello de otras marcas de IA.
 | Superficie | Versión | Archivo |
 | --- | --- | --- |
 | Barra de Descubrir | Baldosa 44/48 px + «TukiTuki» 22 px + «Mercado culinario» | `.../componentes/descubrir/BarraDescubrir.tsx` |
-| Descubrir | Compás 20/22 px en baldosa de 36/40 px | `.../componentes/inspiracion/BarraInspiracion.tsx` |
+| Descubrir | Llama 24/26 px, sin baldosa (solo la llama) | `.../componentes/inspiracion/BarraInspiracion.tsx` |
 | Panel, cabecera | `MarcaTuki` 26 px | `.../componentes/panel/BarraLateral.tsx` |
 | Autenticación | Símbolo 46 px en baldosa de 80 px | `.../componentes/autenticacion/LayoutAuth.tsx` |
 | Landing | `MarcaTuki` 26 px | `.../paginas/PaginaParaRestaurantes.tsx` |

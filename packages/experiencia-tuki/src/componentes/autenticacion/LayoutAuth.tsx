@@ -58,7 +58,7 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
           </Link>
 
           <div className="ml-auto">
-            <ThemeToggle compacto />
+            <ThemeToggle conFondo />
           </div>
         </div>
       </header>

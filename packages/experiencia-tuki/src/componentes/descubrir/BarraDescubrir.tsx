@@ -149,7 +149,7 @@ const Acciones: React.FC<AccionesProps> = ({
   onCarrito,
 }) => (
   <div className="flex items-center gap-1.5 sm:gap-2">
-    <ThemeToggle compacto={compacto} conFondo={!compacto} />
+    <ThemeToggle conFondo />
 
     <button
       type="button"
