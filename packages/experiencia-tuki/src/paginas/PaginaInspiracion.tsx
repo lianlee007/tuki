@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Info, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Info, Sparkles } from 'lucide-react';
 import { SEO } from '../componentes/ui';
 import { BarraInspiracion } from '../componentes/inspiracion/BarraInspiracion';
 import { BarajaInspiracion } from '../componentes/inspiracion/BarajaInspiracion';
@@ -57,6 +57,8 @@ const PaginaInspiracion = () => {
 
   const [aprobados, setAprobados] = useState<PlatoDescubierto[]>([]);
   const [aviso, setAviso] = useState<Aviso | null>(null);
+  /** La pista de gestos se retira en cuanto la persona toca la primera carta. */
+  const [pistaVisible, setPistaVisible] = useState(true);
 
   const { esFavorito, alternar } = useFavoritos();
   const { vibrate } = useHaptics();
@@ -197,12 +199,24 @@ const PaginaInspiracion = () => {
     : null;
 
   const antojarActivo = () => {
-    if (activo) decidir(activo, 'derecha');
+    if (!activo) return;
+    setPistaVisible(false);
+    decidir(activo, 'derecha');
   };
 
   const pasarActivo = () => {
-    if (activo) decidir(activo, 'izquierda');
+    if (!activo) return;
+    setPistaVisible(false);
+    decidir(activo, 'izquierda');
   };
+
+  const decidirDesdeTarjeta = useCallback(
+    (plato: PlatoDescubierto, direccion: DecisionBaraja['direccion']) => {
+      setPistaVisible(false);
+      decidir(plato, direccion);
+    },
+    [decidir]
+  );
 
   const quitarAprobado = (plato: PlatoDescubierto) => {
     setAprobados((previos) => previos.filter((guardado) => guardado.id !== plato.id));
@@ -228,41 +242,34 @@ const PaginaInspiracion = () => {
 
       <BarraInspiracion cantidadAntojos={aprobados.length} />
 
-      <main className="mx-auto w-full max-w-[1280px] px-4 pb-24 pt-5 sm:px-6 lg:px-8 lg:pb-16">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className={`${ETIQUETA} flex items-center gap-1.5 text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink`}>
+      <main className="mx-auto w-full max-w-[1280px] px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pt-5 lg:px-8 lg:pb-16">
+        <div className="mb-3 flex items-end justify-between gap-3 lg:mb-5">
+          <div className="min-w-0">
+            <p className={`${ETIQUETA} hidden items-center gap-1.5 text-hearth-terracotta-ink lg:flex dark:text-hearth-night-terracotta-ink`}>
               <Sparkles size={12} aria-hidden="true" />
               Inspiración al paso
             </p>
-            <h2 className="mt-1 font-jakarta text-[clamp(1.55rem,3.6vw,2.05rem)] font-extrabold leading-tight tracking-[-0.03em] text-hearth-espresso dark:text-hearth-night-ink">
+            <h2 className="font-jakarta text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-hearth-espresso sm:text-[clamp(1.55rem,3.6vw,2.05rem)] dark:text-hearth-night-ink">
               ¿Qué se te antoja hoy?
             </h2>
-            <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
-              Una tarjeta a la vez. Desliza a la derecha para guardar el plato en
-              tus favoritos y a la izquierda para dejarlo pasar.
+            <p className="mt-0.5 hidden max-w-xl text-[13px] leading-relaxed text-hearth-pebble sm:block dark:text-hearth-night-pebble">
+              Desliza a la derecha para guardar el plato y a la izquierda para
+              dejarlo pasar.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-hearth-card px-3 py-1.5 text-[11px] font-bold text-hearth-pebble ring-1 ring-hearth-line/70 dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line">
-              {cargando ? (
-                'Repartiendo la baraja…'
-              ) : (
-                <>
-                  <span className="tabular-nums text-hearth-espresso dark:text-hearth-night-ink">
-                    {baraja.length}
-                  </span>
-                  {baraja.length === 1 ? 'carta por decidir' : 'cartas por decidir'}
-                </>
-              )}
-            </span>
-            {total > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-hearth-honey-soft px-3 py-1.5 text-[11px] font-bold text-hearth-honey-ink dark:bg-[#3A2A12] dark:text-[#F5C27A]">
-                {total.toLocaleString('es-CO')} platos en total
-              </span>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-hearth-card px-3 py-1.5 text-[11px] font-bold text-hearth-pebble ring-1 ring-hearth-line/70 dark:bg-hearth-night-card dark:text-hearth-night-pebble dark:ring-hearth-night-line">
+            {cargando ? (
+              'Repartiendo…'
+            ) : (
+              <>
+                <span className="tabular-nums text-hearth-espresso dark:text-hearth-night-ink">
+                  {baraja.length}
+                </span>
+                {baraja.length === 1 ? 'carta' : 'cartas'}
+              </>
             )}
-          </div>
+          </span>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start lg:gap-7">
@@ -286,7 +293,7 @@ const PaginaInspiracion = () => {
 
           {/* Columna central: la baraja. */}
           <section className="min-w-0 lg:col-span-6" aria-label="Baraja de platos">
-            <div className="lg:hidden">
+            <div className="mb-3 lg:hidden">
               <FiltrosInspiracion
                 compacto
                 cocinas={cocinas}
@@ -309,22 +316,42 @@ const PaginaInspiracion = () => {
               error={error}
               total={total}
               hayFiltros={hayFiltros}
-              onDecidir={decidir}
+              onDecidir={decidirDesdeTarjeta}
+              onInteractuar={() => setPistaVisible(false)}
               onReintentar={reintentar}
               onReiniciar={reiniciarBaraja}
               onLimpiar={limpiarFiltros}
             />
 
+            {pistaVisible && !cargando && baraja.length > 0 && (
+              <p
+                aria-hidden="true"
+                className="mt-2.5 flex items-center justify-center gap-3 text-[11px] font-bold text-hearth-pebble lg:hidden dark:text-hearth-night-pebble"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <ArrowLeft size={13} aria-hidden="true" />
+                  Pasar
+                </span>
+                <span className="font-semibold text-hearth-line dark:text-hearth-night-line">
+                  desliza la tarjeta
+                </span>
+                <span className="inline-flex items-center gap-1 text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+                  Guardar
+                  <ArrowRight size={13} aria-hidden="true" />
+                </span>
+              </p>
+            )}
+
             <ControlesBaraja
-              puedeDeshacer={puedeDeshacer}
-              hayActivo={Boolean(activo)}
-              destinoMenu={destinoMenu}
+              puedeDeshacer={puedeDeshacer && !cargando}
+              hayActivo={Boolean(activo) && !cargando}
+              destinoMenu={cargando ? null : destinoMenu}
               onDeshacer={deshacer}
               onPasar={pasarActivo}
               onAntojar={antojarActivo}
             />
 
-            <p className="mt-3 text-center text-[11px] leading-relaxed text-hearth-pebble dark:text-hearth-night-pebble">
+            <p className="mt-3 hidden text-center text-[11px] leading-relaxed text-hearth-pebble lg:block dark:text-hearth-night-pebble">
               También puedes usar las flechas{' '}
               <kbd className="rounded-md bg-hearth-oat px-1.5 py-0.5 font-jakarta text-[10px] font-bold text-hearth-espresso dark:bg-hearth-night-oat dark:text-hearth-night-ink">
                 ←

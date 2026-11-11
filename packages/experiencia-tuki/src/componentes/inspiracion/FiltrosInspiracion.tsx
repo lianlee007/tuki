@@ -64,24 +64,13 @@ export const FiltrosInspiracion: React.FC<FiltrosInspiracionProps> = ({
 
   if (compacto) {
     return (
-      <section aria-label="Filtros rápidos" className="mb-3">
-        <div className="flex items-center justify-between gap-2 px-0.5">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-hearth-pebble dark:text-hearth-night-pebble">
-            <SlidersHorizontal size={12} aria-hidden="true" />
-            Filtros rápidos
-          </span>
-          <button
-            type="button"
-            onClick={onLimpiar}
-            disabled={activos === 0}
-            className={`af-pulsar inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10.5px] font-bold text-hearth-terracotta-ink transition-colors hover:bg-hearth-terracotta-soft disabled:cursor-not-allowed disabled:opacity-40 dark:text-hearth-night-terracotta-ink dark:hover:bg-hearth-night-terracotta-soft ${FOCO}`}
-          >
-            <RotateCcw size={11} aria-hidden="true" />
-            Limpiar
-          </button>
-        </div>
+      <section aria-label="Filtros rápidos" className="relative">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-hearth-cream to-transparent dark:from-hearth-night"
+        />
 
-        <div className="af-sin-scrollbar -mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+        <div className="af-sin-scrollbar -mx-4 flex snap-x gap-2 overflow-x-auto scroll-px-4 px-4 py-0.5 sm:-mx-6 sm:scroll-px-6 sm:px-6">
           <Pastilla activa={activos === 0} onClick={onLimpiar}>
             Todos
           </Pastilla>
@@ -128,6 +117,17 @@ export const FiltrosInspiracion: React.FC<FiltrosInspiracionProps> = ({
               </Pastilla>
             );
           })}
+
+          {activos > 0 && (
+            <button
+              type="button"
+              onClick={onLimpiar}
+              className={`af-pulsar inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-bold text-hearth-terracotta-ink transition-colors hover:bg-hearth-terracotta-soft dark:text-hearth-night-terracotta-ink dark:hover:bg-hearth-night-terracotta-soft ${FOCO}`}
+            >
+              <RotateCcw size={12} aria-hidden="true" />
+              Limpiar
+            </button>
+          )}
         </div>
       </section>
     );
@@ -262,7 +262,7 @@ const Pastilla: React.FC<PastillaProps> = ({ activa, tono = 'terracota', onClick
     type="button"
     aria-pressed={activa}
     onClick={onClick}
-    className={`af-pulsar inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${FOCO} ${
+    className={`af-pulsar inline-flex min-h-11 shrink-0 snap-start items-center gap-1.5 rounded-full px-3 py-2 text-[11.5px] font-bold transition-colors ${FOCO} ${
       activa
         ? tono === 'sage'
           ? 'bg-hearth-sage text-white shadow-warm dark:bg-hearth-night-sage-ink dark:text-hearth-night'
