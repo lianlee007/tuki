@@ -87,7 +87,7 @@ export const PanelFiltros: React.FC<PanelFiltrosProps> = ({
         aria-modal="true"
         aria-labelledby="titulo-filtros"
         tabIndex={-1}
-        className="af-hoja-entrada relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-hearth-cream p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-warm-xl outline-none sm:rounded-[28px] sm:p-6 dark:bg-hearth-night dark:shadow-warm-dark"
+        className="af-hoja-entrada relative max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-[28px] bg-hearth-cream p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-warm-xl outline-none sm:rounded-[28px] sm:p-6 dark:bg-hearth-night dark:shadow-warm-dark"
       >
         <div
           aria-hidden="true"

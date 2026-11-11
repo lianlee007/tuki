@@ -92,7 +92,7 @@ export const Hoja: React.FC<HojaProps> = ({ abierto, onCerrar, tituloId, ancho =
         aria-modal="true"
         aria-labelledby={tituloId}
         tabIndex={-1}
-        className={`af-hoja-entrada relative max-h-[92vh] w-full overflow-y-auto rounded-t-[28px] bg-hearth-cream p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] outline-none shadow-warm-xl sm:rounded-[28px] sm:p-6 dark:bg-hearth-night dark:shadow-warm-dark ${
+        className={`af-hoja-entrada relative max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-[28px] bg-hearth-cream p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] outline-none shadow-warm-xl sm:rounded-[28px] sm:p-6 dark:bg-hearth-night dark:shadow-warm-dark ${
           ancho === 'lg' ? 'sm:max-w-lg' : 'sm:max-w-md'
         }`}
       >

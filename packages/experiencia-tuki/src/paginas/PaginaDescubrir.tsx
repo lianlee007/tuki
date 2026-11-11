@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -135,16 +135,22 @@ const PaginaDescubrir = () => {
   const [restaurantes, setRestaurantes] = useState<RestauranteDescubierto[]>([]);
   const [totalRestaurantes, setTotalRestaurantes] = useState(0);
   const [cargandoRestaurantes, setCargandoRestaurantes] = useState(true);
-  const [restaurantesAbiertos, setRestaurantesAbiertos] = useState(false);
+  const [restaurantesAbiertos, setRestaurantesAbiertos] = useState(
+    () => params.get('locales') === '1'
+  );
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const [conflicto, setConflicto] = useState<PlatoDescubierto | null>(null);
 
   const { favoritos, esFavorito, alternar } = useFavoritos();
-  const [soloFavoritos, setSoloFavoritos] = useState(false);
+  const [soloFavoritos, setSoloFavoritos] = useState(
+    () => params.get('guardados') === '1'
+  );
   const [detalle, setDetalle] = useState<PlatoDescubierto | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  /** El enlace «guardados» del header entra directo a la lista una sola vez. */
+  const yaBajoAGuardados = useRef(false);
 
   /* Un aviso vive lo justo para leerse; no se apila. */
   useEffect(() => {
@@ -342,7 +348,9 @@ const PaginaDescubrir = () => {
   };
 
   const irAInicio = () => {
-    setSoloFavoritos(false);
+    // Volver a casa es volver al feed completo: sin búsqueda, filtros ni la
+    // vista de guardados que se hubiera dejado abierta.
+    limpiar();
     window.scrollTo({ top: 0, behavior: comportamientoDesplazamiento() });
   };
 
@@ -371,6 +379,14 @@ const PaginaDescubrir = () => {
     () => (soloFavoritos ? platos.filter((plato) => esFavorito(plato.id)) : platos),
     [platos, soloFavoritos, esFavorito]
   );
+
+  useEffect(() => {
+    if (!soloFavoritos || cargando || yaBajoAGuardados.current) return;
+    yaBajoAGuardados.current = true;
+    document
+      .getElementById('catalogo-platos')
+      ?.scrollIntoView({ behavior: comportamientoDesplazamiento(), block: 'start' });
+  }, [soloFavoritos, cargando]);
 
   const filtrosActivos = (cocina ? 1 : 0) + (precio ? 1 : 0) + dietas.length;
   const cocinaElegida = cocinas.find((tipo) => tipo.slug === cocina);
