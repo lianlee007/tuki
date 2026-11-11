@@ -248,7 +248,7 @@ const PaginaDescubrir = () => {
     setCargandoRestaurantes(true);
 
     apiDescubrir
-      .restaurantes({ q: consulta, cocina, limite: 12 })
+      .restaurantes({ q: consulta, cocina, limite: 24 })
       .then(({ restaurantes: encontrados, error: fallo }) => {
         if (!vigente) return;
         if (fallo) {
