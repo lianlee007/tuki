@@ -13,6 +13,8 @@ window.__TUKI_CONFIG__ = {
   pedidos: '${TUKI_API_URL}',
   resenas: '${TUKI_API_URL}',
   admin: '${TUKI_API_URL}',
+  adminPanel: '${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}',
+  web: '${TUKI_WEB_URL:-http://tukituki.local}',
   ai: '${TUKI_API_URL}'
 };
 EOF

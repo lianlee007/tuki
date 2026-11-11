@@ -220,6 +220,19 @@ Por defecto crea `admin@tukituki.local` con contraseña `Admin12345`. En
 producción, define `SUPERADMIN_EMAIL` y `SUPERADMIN_PASSWORD` antes de ejecutar
 el comando.
 
+El panel de superadministración se abre en:
+
+| Entorno | URL |
+|---|---|
+| Desarrollo | `http://localhost:5175` |
+| Docker Compose | `http://localhost:8083` |
+| Kubernetes | `https://admin.tukituki.local` |
+
+También puedes entrar desde el buscador público: escribe `patatas321` y
+aparecerá el acceso directo al panel. La URL del atajo se configura con
+`VITE_ADMIN_PANEL_URL` en desarrollo o con la clave `adminPanel` de
+`/config.js` en un despliegue.
+
 ### 5. Arrancar las aplicaciones
 
 Si elegiste solo las dependencias:

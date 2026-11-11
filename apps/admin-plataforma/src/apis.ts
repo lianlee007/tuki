@@ -10,6 +10,13 @@ const runtime =
 const url = (clave: string, variable: string, defecto: string): string =>
   runtime[clave] ?? env[variable] ?? defecto;
 
+/** URL del sitio público para abrir la ficha de un restaurante. */
+export const urlSitioPublico = url(
+  'web',
+  'VITE_WEB_URL',
+  'http://localhost:5173',
+).replace(/\/+$/, '');
+
 /** Cliente único de la app de administración. */
 export const apis = crearApis({
   urls: {
