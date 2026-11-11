@@ -5,12 +5,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   icon?: React.ReactNode;
   prefix?: string;
+  /** Acción a la derecha del campo, como mostrar u ocultar la contraseña. */
+  accion?: React.ReactNode;
   estadoGuardado?: 'cargando' | 'exito' | null;
   error?: boolean;
   helper?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, prefix, estadoGuardado, error, helper, className = '', ...props }, ref) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, prefix, accion, estadoGuardado, error, helper, className = '', ...props }, ref) => {
   /* El hueco de la izquierda lo ocupan el icono y/o el prefijo. Se calcula el
      ancho real de cada uno —no a ojo— porque antes «+57» se montaba encima del
      icono y del número. */
@@ -22,13 +24,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, pr
   return (
     <div className="w-full relative group">
       {label && (
-        <label className="block text-xs font-semibold text-af-ink-secondary mb-1.5 ml-0.5 uppercase tracking-tighter">
+        <label className="mb-1.5 ml-0.5 block text-xs font-semibold text-af-ink-secondary">
           {label}
         </label>
       )}
       <div className="relative flex items-center">
         {icon && (
-          <div className="absolute top-1/2 left-3 -translate-y-1/2 text-af-ink-secondary pointer-events-none z-10 group-focus-within:text-af-accent transition-colors">
+          <div className="absolute top-1/2 left-3 z-10 -translate-y-1/2 text-af-ink-secondary pointer-events-none group-focus-within:text-af-accent transition-colors">
             {icon}
           </div>
         )}
@@ -41,9 +43,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ label, icon, pr
         )}
         <input
           ref={ref}
-          className={`input-af w-full !pr-10 ${paddingLeftClass} ${error ? 'border-af-danger focus:border-af-danger' : ''} ${className}`}
+          className={`input-af w-full ${accion ? '!pr-12' : '!pr-10'} ${paddingLeftClass} ${error ? 'border-af-danger focus:border-af-danger' : ''} ${className}`}
           {...props}
         />
+
+        {accion && (
+          <div className="absolute right-1.5 top-1/2 z-20 -translate-y-1/2">{accion}</div>
+        )}
 
         {estadoGuardado && (
           <div className="absolute right-3 top-0 bottom-0 my-auto h-4 w-4 flex items-center justify-center z-20 pointer-events-none">
@@ -79,7 +85,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label, estadoGuardado, error, helper, className = '', ...props }, ref) => (
   <div className="w-full relative group">
     {label && (
-      <label className="block text-xs font-semibold text-af-ink-secondary mb-1.5 ml-0.5 uppercase tracking-tighter">
+      <label className="mb-1.5 ml-0.5 block text-xs font-semibold text-af-ink-secondary">
         {label}
       </label>
     )}

@@ -444,6 +444,16 @@ button:disabled {
   opacity: 0.7;
 }
 
+/* En iOS, un campo con menos de 16 px hace que Safari amplíe la página al
+   enfocarlo y descoloque el formulario. Los campos de acceso ya son táctiles:
+   solo falta que el texto no dispare ese zoom. */
+@media (max-width: 640px) {
+  .input-af {
+    font-size: 16px;
+    min-height: 48px;
+  }
+}
+
 /* -------------------------------------------------------------------------
    Tarjetas Apple: sin sombra de reposo, solo elevación al hover
    ------------------------------------------------------------------------- */

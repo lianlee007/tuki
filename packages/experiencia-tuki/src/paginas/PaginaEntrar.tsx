@@ -42,7 +42,7 @@ export default function PaginaEntrar() {
         subtitulo={
           isLogin
             ? 'Tu carrito, tus pedidos y tus restaurantes de siempre, en un solo lugar.'
-            : 'Solo necesitas un correo. Al final te pediremos tu dirección de entrega; puedes guardarla ahora o hacerlo más tarde.'
+            : 'Solo necesitas un correo. Puedes guardar tu dirección de entrega ahora o más tarde.'
         }
         puntos={
           isLogin
@@ -70,11 +70,11 @@ export default function PaginaEntrar() {
           />
         )}
 
-        <p className="mt-8 text-center text-[13px] text-af-ink-secondary">
+        <p className="mt-5 hidden border-t border-black/[0.06] pt-4 text-center text-[12.5px] text-af-ink-secondary sm:block dark:border-white/10">
           {isLogin ? '¿Tienes un restaurante? ' : '¿Tienes un restaurante y quieres vender? '}
           <Link
             to={isLogin ? '/auth' : '/auth?modo=registro'}
-            className="font-semibold text-af-accent-text transition-opacity hover:opacity-80"
+            className="font-bold text-af-accent-text transition-opacity hover:opacity-70"
           >
             {isLogin ? 'Entra a tu panel' : 'Crea tu cuenta de restaurante'}
           </Link>
