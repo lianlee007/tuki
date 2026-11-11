@@ -6,19 +6,20 @@
 
 :root {
   color-scheme: light;
-  --admin-bg: #f5f1e8;
+  --admin-bg: #fdfbf7;
   --admin-surface: #ffffff;
-  --admin-surface-suave: #fbf6ef;
+  --admin-surface-suave: #fbf7f2;
   --admin-oat: #f5eee6;
   --admin-oat-fuerte: #ede0db;
   --admin-ink: #2b2421;
   --admin-ink-suave: #786e68;
   --admin-line: #e7dad3;
   --admin-line-fuerte: #d7c4b8;
-  --admin-primario: #ea580c;
+  --admin-primario: #dd6b4d;
   --admin-primario-profundo: #b34a2e;
   --admin-primario-ink: #8a311a;
   --admin-primario-suave: #fdefe9;
+  --admin-marca: #c2410c;
   --admin-miel: #f59e0b;
   --admin-miel-suave: #fef6e7;
   --admin-miel-ink: #92400e;
@@ -36,10 +37,11 @@
   --admin-radio: 20px;
   --admin-radio-sm: 13px;
   --admin-sidebar: 252px;
-  --admin-topbar-bg: rgba(245, 241, 232, 0.88);
-  --admin-glow-a: rgba(234, 88, 12, 0.08);
+  --admin-topbar-bg: rgba(253, 251, 247, 0.9);
+  --admin-glow-a: rgba(221, 107, 77, 0.1);
   --admin-glow-b: rgba(95, 141, 100, 0.06);
-  --admin-foco: 0 0 0 3px rgba(234, 88, 12, 0.22);
+  --admin-foco: 0 0 0 3px rgba(221, 107, 77, 0.24);
+  --admin-muelle: cubic-bezier(0.34, 1.42, 0.48, 1);
 }
 
 html.dark {
@@ -54,9 +56,10 @@ html.dark {
   --admin-line: #3d302b;
   --admin-line-fuerte: #513e36;
   --admin-primario: #f08a6a;
-  --admin-primario-profundo: #f6a184;
-  --admin-primario-ink: #f7b29c;
+  --admin-primario-profundo: #f08a6a;
+  --admin-primario-ink: #f6a184;
   --admin-primario-suave: #3a241d;
+  --admin-marca: #b34a2e;
   --admin-miel: #f7c873;
   --admin-miel-suave: #332615;
   --admin-miel-ink: #f7c873;
@@ -214,13 +217,9 @@ a {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 12px;
-  background: var(--admin-primario);
+  background: var(--admin-marca);
   color: #fff;
-  box-shadow: 0 8px 18px -10px rgba(234, 88, 12, 0.8);
-}
-
-html.dark .admin-marca-simbolo {
-  color: #1f1c1a;
+  box-shadow: 0 8px 18px -10px rgba(179, 74, 46, 0.62);
 }
 
 .admin-marca-texto {
@@ -533,6 +532,95 @@ html.dark .admin-nav-boton[aria-current="page"] .admin-nav-icono {
   background: var(--admin-oat);
 }
 
+/* Interruptor de tema: el mismo raíl deslizante de la app pública. */
+.admin-tema {
+  position: relative;
+  display: flex;
+  width: 56px;
+  height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--admin-line);
+  border-radius: 999px;
+  background: var(--admin-oat);
+  padding: 3px;
+  cursor: pointer;
+  transition:
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-tema:active {
+  transform: scale(0.97);
+}
+
+.admin-tema::after {
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  content: "";
+}
+
+.admin-tema:hover {
+  border-color: var(--admin-line-fuerte);
+}
+
+.admin-tema-bola {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.28s var(--admin-muelle);
+}
+
+.admin-tema[aria-checked="true"] .admin-tema-bola {
+  transform: translateX(24px);
+}
+
+.admin-tema-lado {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--admin-ink-suave);
+  transition:
+    color 0.28s ease,
+    transform 0.28s var(--admin-muelle);
+}
+
+.admin-tema-lado svg {
+  fill: none;
+  transition: fill 0.28s ease;
+}
+
+.admin-tema[aria-checked="false"] .admin-tema-luna,
+.admin-tema[aria-checked="true"] .admin-tema-sol {
+  transform: scale(0.8);
+}
+
+.admin-tema[aria-checked="false"] .admin-tema-sol {
+  color: #d97706;
+}
+
+.admin-tema[aria-checked="false"] .admin-tema-sol svg {
+  fill: currentColor;
+}
+
+.admin-tema[aria-checked="true"] .admin-tema-luna {
+  color: #4f46e5;
+}
+
+.admin-tema[aria-checked="true"] .admin-tema-luna svg {
+  fill: currentColor;
+}
+
 /* Buscador */
 
 .admin-buscador {
@@ -636,13 +724,13 @@ html.dark .admin-nav-boton[aria-current="page"] .admin-nav-icono {
 }
 
 .admin-btn-primario {
-  background: var(--admin-primario);
+  background: var(--admin-primario-profundo);
   color: #fff;
-  box-shadow: 0 10px 22px -14px rgba(234, 88, 12, 0.8);
+  box-shadow: 0 10px 22px -14px rgba(179, 74, 46, 0.55);
 }
 
 .admin-btn-primario:hover {
-  background: var(--admin-primario-profundo);
+  background: var(--admin-primario-ink);
 }
 
 html.dark .admin-btn-primario {
@@ -2087,12 +2175,8 @@ html.dark .admin-modal-fondo {
   height: 40px;
   place-items: center;
   border-radius: 11px;
-  background: var(--admin-primario);
+  background: var(--admin-marca);
   color: #fff;
-}
-
-html.dark .admin-acceso-caja-simbolo {
-  color: #1f1c1a;
 }
 
 .admin-acceso-caja-marca > span:last-child {

@@ -64,14 +64,30 @@ export const BotonTema = ({
 }: {
   tema: Tema;
   alternar: () => void;
-}) => (
-  <BotonIcono
-    etiqueta={tema === 'dark' ? 'Activar el tema claro' : 'Activar el tema oscuro'}
-    onClick={alternar}
-  >
-    {tema === 'dark' ? <IconoSol size={18} /> : <IconoLuna size={18} />}
-  </BotonIcono>
-);
+}) => {
+  const oscuro = tema === 'dark';
+  const etiqueta = oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={oscuro}
+      aria-label={etiqueta}
+      title={etiqueta}
+      onClick={alternar}
+      className="admin-tema"
+    >
+      <span className="admin-tema-bola" aria-hidden="true" />
+      <span className="admin-tema-lado admin-tema-sol" aria-hidden="true">
+        <IconoSol size={14} />
+      </span>
+      <span className="admin-tema-lado admin-tema-luna" aria-hidden="true">
+        <IconoLuna size={14} />
+      </span>
+    </button>
+  );
+};
 
 export const Avatar = ({
   nombre,
