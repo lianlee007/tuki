@@ -1,0 +1,27 @@
+# Proyecto de Argo CD que delimita qué puede desplegar TukiTuki.
+#
+# Sin este AppProject, las aplicaciones usarían `default`, que permite
+# cualquier repositorio y cualquier destino del clúster.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tukituki
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  description: Plataforma TukiTuki (tres frontends, seis servicios y gateway de IA)
+  sourceRepos:
+    - https://github.com/lianlee007/Tuki.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: tukituki
+  # El ApplicationSet usa CreateNamespace=true; el proyecto debe permitirlo.
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

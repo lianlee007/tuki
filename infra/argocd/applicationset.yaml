@@ -1,11 +1,24 @@
-# Un solo ApplicationSet genera las dos aplicaciones de ArgoCD (local y
-# producción). Cada una sincroniza su overlay y se puede sincronizar o
-# revertir por separado.
+# Una sola definición genera una aplicación de Argo CD por clúster destino.
+#
+# En este laboratorio solo existe el clúster local, así que se genera
+# `tukituki-local`. Producción se añade como un elemento más cuando exista su
+# clúster; nunca debe apuntar al mismo namespace del mismo clúster, porque dos
+# Applications pelearían por los mismos objetos (imágenes y réplicas distintas).
+#
+# Requisitos:
+#   1. Instalar Argo CD:     kubectl apply -k infra/argocd/instalacion
+#   2. Crear el AppProject:  kubectl apply -f infra/argocd/appproject.yaml
+#   3. Crear el ApplicationSet: kubectl apply -f infra/argocd/applicationset.yaml
+#
+# El repositorio es la fuente de verdad: los cambios se aplican con commit y
+# push, nunca con `kubectl edit`.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: tukituki
   namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
@@ -13,24 +26,28 @@ spec:
     - list:
         elements:
           - nombre: local
-            rama: feat/migracion-microservicios-desarrollo
             overlay: local
-          - nombre: produccion
-            rama: main
-            overlay: production
+            servidor: https://kubernetes.default.svc
+
+          # Ejemplo para producción (requiere un clúster registrado en Argo CD):
+          # - nombre: produccion
+          #   overlay: production
+          #   servidor: https://produccion.example.com
+
   template:
     metadata:
       name: 'tukituki-{{.nombre}}'
       labels:
         app.kubernetes.io/part-of: tukituki
+        entorno: '{{.overlay}}'
     spec:
-      project: default
+      project: tukituki
       source:
         repoURL: https://github.com/lianlee007/Tuki.git
-        targetRevision: '{{.rama}}'
+        targetRevision: main
         path: 'infra/k8s/overlays/{{.overlay}}'
       destination:
-        server: https://kubernetes.default.svc
+        server: '{{.servidor}}'
         namespace: tukituki
       syncPolicy:
         automated:
@@ -38,3 +55,18 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m
+      # El HPA es dueño del número de réplicas: si Argo también lo gestionara,
+      # cada ajuste del autoscaler aparecería como drift.
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+      revisionHistoryLimit: 10

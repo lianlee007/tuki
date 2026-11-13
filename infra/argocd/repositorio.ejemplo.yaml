@@ -1,0 +1,24 @@
+# Plantilla del secreto de repositorio de Argo CD.
+#
+# NO lo apliques con un token real en el repositorio. Usa el script, que toma
+# el token del entorno y lo envía por stdin:
+#
+#   $env:GITHUB_TOKEN = "github_pat_..."     (PowerShell)
+#   pnpm gitops:credenciales
+#
+# El token debe ser un PAT de solo lectura sobre el contenido del repositorio.
+# Con `kubectl apply --server-side` se evita que el token quede guardado en la
+# anotación `last-applied-configuration`.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tukituki-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+type: Opaque
+stringData:
+  type: git
+  url: https://github.com/lianlee007/Tuki.git
+  username: x-access-token
+  password: "<PEGA_AQUI_EL_TOKEN>"

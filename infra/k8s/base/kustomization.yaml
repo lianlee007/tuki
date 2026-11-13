@@ -5,7 +5,10 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - frontend-config.yaml
-  - secret.example.yaml
+  # `secret.example.yaml` NO se aplica por GitOps: los secretos reales se
+  # crean fuera del repositorio (Sealed Secrets / External Secrets). El archivo
+  # queda como plantilla para un clúster nuevo:
+  #   kubectl apply -f infra/k8s/base/secret.example.yaml
   - postgres.yaml
   - redis.yaml
   - rustfs.yaml
