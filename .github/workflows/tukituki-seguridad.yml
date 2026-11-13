@@ -1,0 +1,334 @@
+# Cadena de suministro de TukiTuki: escaneo, SBOM, firma y procedencia.
+#
+# - En cada push/PR se escanea el repositorio (dependencias, secretos y
+#   configuración insegura) y se publican los hallazgos en Code Scanning.
+# - En push a main y en etiquetas se construyen las diez imágenes, se escanean
+#   con Trivy, se genera un SBOM CycloneDX con Syft, se firman con Cosign
+#   (keyless) y se atestigua la procedencia SLSA.
+# - Los digests quedan como artefacto para fijar las imágenes en los overlays
+#   de Kustomize (GitOps) sin depender de etiquetas mutables.
+name: TukiTuki - cadena de suministro
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+  security-events: write
+
+concurrency:
+  group: tukituki-cadena-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/tukituki
+  TRIVY_VERSION: v0.76.1
+
+jobs:
+  repositorio:
+    name: Escaneo del repositorio
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Trivy
+        uses: aquasecurity/setup-trivy@v0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          cache: true
+
+      - name: Trivy (dependencias, secretos y configuración)
+        run: |
+          trivy fs \
+            --scanners vuln,secret,misconfig \
+            --format sarif \
+            --output trivy-repo.sarif \
+            --no-progress \
+            --skip-dirs node_modules \
+            --skip-dirs .git \
+            --skip-dirs dist \
+            --skip-dirs test-results \
+            .
+        continue-on-error: true
+
+      - name: Publicar hallazgos en Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: trivy-repo.sarif
+          category: trivy-repo
+
+      # Un secreto versionado es un fallo bloqueante y no depende de la base de
+      # datos de CVEs. Gitleaks se ejecuta en su imagen oficial para que la
+      # versión sea reproducible en cualquier runner.
+      - name: Bloquear secretos versionados
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1 detect \
+            --source=/repo \
+            --no-git \
+            --redact \
+            --exit-code=1 \
+            --config=/repo/.gitleaks.toml
+
+  imagenes:
+    name: Imagen ${{ matrix.imagen }}
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - imagen: identidad
+            dockerfile: services/identidad-service/Dockerfile
+            contexto: .
+          - imagen: restaurantes
+            dockerfile: services/restaurantes-service/Dockerfile
+            contexto: .
+          - imagen: media
+            dockerfile: services/media-service/Dockerfile
+            contexto: .
+          - imagen: pedidos
+            dockerfile: services/pedidos-service/Dockerfile
+            contexto: .
+          - imagen: resenas
+            dockerfile: services/resenas-service/Dockerfile
+            contexto: .
+          - imagen: admin-service
+            dockerfile: services/admin-service/Dockerfile
+            contexto: .
+          - imagen: ai-gateway
+            dockerfile: services/ai-gateway/Dockerfile
+            contexto: services/ai-gateway
+          - imagen: web-comensal
+            dockerfile: apps/web-comensal/Dockerfile
+            contexto: .
+          - imagen: web-panel
+            dockerfile: apps/panel-restaurante/Dockerfile
+            contexto: .
+          - imagen: web-admin
+            dockerfile: apps/admin-plataforma/Dockerfile
+            contexto: .
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Autenticarse en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calcular etiquetas
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.imagen }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Construir y publicar
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.contexto }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=${{ matrix.imagen }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.imagen }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            REVISION=${{ github.sha }}
+            WITH_OTEL=true
+
+      - name: Fijar la referencia inmutable
+        id: ref
+        run: |
+          REF="${REGISTRY}/${IMAGE_PREFIX}-${{ matrix.imagen }}@${{ steps.build.outputs.digest }}"
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+          echo "${REF}" > "digest-${{ matrix.imagen }}.txt"
+          echo "Imagen publicada: ${REF}"
+
+      - name: Instalar Trivy
+        uses: aquasecurity/setup-trivy@v0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          cache: true
+
+      - name: Reporte SARIF de la imagen
+        run: |
+          trivy image \
+            --scanners vuln,secret \
+            --format sarif \
+            --output "trivy-${{ matrix.imagen }}.sarif" \
+            --no-progress \
+            --ignore-unfixed \
+            "${{ steps.ref.outputs.ref }}"
+        continue-on-error: true
+
+      - name: Publicar hallazgos en Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: trivy-${{ matrix.imagen }}.sarif
+          category: trivy-${{ matrix.imagen }}
+
+      # Política de aceptación: una imagen con CVE crítico corregible no se
+      # firma ni se considera apta para el overlay de producción.
+      - name: Bloquear vulnerabilidades críticas
+        run: |
+          trivy image \
+            --scanners vuln \
+            --severity CRITICAL \
+            --ignore-unfixed \
+            --exit-code 1 \
+            --no-progress \
+            "${{ steps.ref.outputs.ref }}"
+
+      - name: Generar SBOM CycloneDX
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.ref.outputs.ref }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          format: cyclonedx-json
+          output-file: sbom-${{ matrix.imagen }}.cdx.json
+          artifact-name: sbom-${{ matrix.imagen }}
+          upload-artifact: true
+          dependency-snapshot: false
+
+      - name: Instalar Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Firmar la imagen (keyless)
+        run: cosign sign --yes "${{ steps.ref.outputs.ref }}"
+
+      - name: Atestiguar la procedencia de la construcción
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.imagen }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      # Verificar aquí mismo evita firmar con una identidad y publicar sin
+      # comprobar que la firma y la atestación quedaron legibles.
+      - name: Verificar firma y procedencia
+        run: |
+          cosign verify \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.+" \
+            "${{ steps.ref.outputs.ref }}"
+
+          cosign verify-attestation \
+            --type slsaprovenance \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.+" \
+            "${{ steps.ref.outputs.ref }}"
+
+      - name: Guardar el digest como evidencia
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.imagen }}
+          path: digest-${{ matrix.imagen }}.txt
+          retention-days: 90
+
+  resumen:
+    name: Consolidar digests
+    if: always() && github.event_name != 'pull_request'
+    needs: imagenes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          path: digests
+          merge-multiple: true
+
+      - name: Unir los digests publicados
+        run: |
+          find digests -name 'digest-*.txt' -type f -print0 | xargs -0 cat | sort > digests.txt
+          cat digests.txt
+
+      - name: Publicar la evidencia consolidada
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests
+          path: digests.txt
+          retention-days: 90
+
+  gitops:
+    name: Abrir PR con los digests
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    needs: [imagenes, resumen]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Descargar los digests firmados
+        uses: actions/download-artifact@v4
+        with:
+          name: digests
+          path: digests
+
+      - name: Fijar las imágenes del overlay de producción
+        run: |
+          node scripts/fijar-digests.mjs \
+            --digests digests/digests.txt \
+            --overlay infra/k8s/overlays/production/kustomization.yaml
+
+      # El PR es la promoción a producción: un revisor ve el digest exacto que
+      # Argo CD desplegará y puede revertirlo con un commit.
+      - name: Crear el pull request de promoción
+        uses: peter-evans/create-pull-request@v7
+        with:
+          base: main
+          branch: gitops/digests
+          delete-branch: true
+          title: "chore(gitops): fija las imágenes por digest"
+          commit-message: "chore(gitops): fija las imágenes por digest"
+          labels: gitops, seguridad
+          add-paths: infra/k8s/overlays/production/kustomization.yaml
+          body: |
+            Actualiza el overlay de producción con los digests publicados por
+            la corrida `${{ github.run_id }}`.
+
+            Cada imagen fue escaneada con Trivy, firmada con Cosign y tiene
+            atestación de procedencia SLSA. Al fusionar este PR, Argo CD
+            sincroniza exactamente esos artefactos.
+
+            Evidencia: artefacto `digests` de esta ejecución.
+

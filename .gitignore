@@ -14,6 +14,9 @@ test-results/
 playwright-report/
 blob-report/
 
+# Evidencias de cadena de suministro generadas en local
+evidencias/
+
 # Documentación y rescate locales: no se publican en la rama remota
 rescate/
 

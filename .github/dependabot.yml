@@ -1,0 +1,70 @@
+version: 2
+
+# Actualizaciones semanales, agrupadas para no inundar de PRs.
+# Dependabot también mantiene los digests de las imágenes base (docker) y las
+# versiones de las acciones (github-actions), que es donde vive el riesgo de
+# cadena de suministro.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      produccion:
+        dependency-type: production
+        update-types: [minor, patch]
+      desarrollo:
+        dependency-type: development
+        update-types: [minor, patch]
+    labels: [dependencias, seguridad]
+
+  - package-ecosystem: pip
+    directory: /services/ai-gateway
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:10"
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+    labels: [dependencias, seguridad]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:20"
+      timezone: America/Bogota
+    open-pull-requests-limit: 10
+    groups:
+      acciones:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    labels: [dependencias, seguridad]
+
+  - package-ecosystem: docker
+    directories:
+      - /services/*
+      - /apps/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:30"
+      timezone: America/Bogota
+    open-pull-requests-limit: 10
+    labels: [dependencias, seguridad]
+
+  - package-ecosystem: docker-compose
+    directory: /infra/docker
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:40"
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+    labels: [dependencias, seguridad]

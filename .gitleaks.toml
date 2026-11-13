@@ -1,0 +1,24 @@
+# Configuración de Gitleaks para TukiTuki.
+#
+# Se permiten únicamente los valores de ejemplo y los fixtures de prueba que el
+# repositorio necesita para ser reproducible. Cualquier secreto real sigue
+# bloqueando el pipeline.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders de laboratorio, fixtures y artefactos generados"
+paths = [
+  '''evidencias/''',
+  '''node_modules/''',
+  '''.*\.test\.ts$''',
+  '''infra/k8s/base/secret\.example\.yaml''',
+  '''infra/docker/\.env\.example''',
+  '''infra/docker/\.env\.production\.example''',
+]
+regexes = [
+  '''cambio-este-secreto-en-produccion''',
+  '''tuki_s3_dev''',
+  '''Demo12345''',
+  '''Admin12345''',
+]
