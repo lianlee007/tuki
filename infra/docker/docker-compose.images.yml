@@ -260,6 +260,7 @@ services:
     environment:
       TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
       TUKI_ADMIN_PANEL_URL: ${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}
+      TUKI_WEB_URL: ${TUKI_WEB_URL:-http://tukituki.local}
     entrypoint:
       - /bin/sh
       - -c
@@ -289,6 +290,8 @@ services:
       - "8082:80"
     environment:
       TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
+      TUKI_ADMIN_PANEL_URL: ${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}
+      TUKI_WEB_URL: ${TUKI_WEB_URL:-http://tukituki.local}
     entrypoint:
       - /bin/sh
       - -c
