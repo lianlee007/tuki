@@ -6,7 +6,7 @@
   "description": "Cuentas, credenciales y roles de Tuki.",
   "scripts": {
     "dev": "tsx watch src/servidor.ts",
-    "build": "tsup src/servidor.ts src/db/migrar.ts src/scripts/crear-superadmin.ts --format esm --target node22 --out-dir dist --clean",
+    "build": "tsup src/servidor.ts src/telemetria.ts src/db/migrar.ts src/scripts/crear-superadmin.ts --format esm --target node22 --out-dir dist --clean",
     "start": "node dist/servidor.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -14,6 +14,7 @@
     "db:superadmin": "tsx src/scripts/crear-superadmin.ts"
   },
   "dependencies": {
+    "@tuki/observabilidad-node": "workspace:*",
     "@fastify/cors": "^10.0.2",
     "@fastify/helmet": "^13.0.1",
     "@fastify/rate-limit": "^10.3.0",

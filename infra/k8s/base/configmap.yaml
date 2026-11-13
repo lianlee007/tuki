@@ -22,3 +22,9 @@ data:
   AI_GROQ_MODELS: openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b
   AI_CORS_ORIGINS: >-
     https://tukituki.example.com,https://panel.tukituki.example.com,https://admin.tukituki.example.com
+  # OpenTelemetry: los servicios Node y el AI Gateway envían trazas al
+  # colector; si el endpoint no existe, la instrumentación queda apagada.
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4318
+  OTEL_SERVICE_NAMESPACE: tukituki
+  AI_OTEL_ENABLED: "true"
+  AI_OTEL_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4318/v1/traces

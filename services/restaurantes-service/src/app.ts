@@ -11,6 +11,7 @@ import { registrarRutasPanel } from './entrada/http/panel.rutas.js';
 import { registrarRutasPublicas } from './entrada/http/publico.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
+import { registrarMetricas } from '@tuki/observabilidad-node';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -45,6 +46,8 @@ export const crearApp = async () => {
   await registrarRutasPanel(app, casos);
   await registrarRutasMenu(app, casos);
   await registrarRutasAdminRestaurantes(app, casos);
+
+  await registrarMetricas(app, 'restaurantes-service');
 
   return app;
 };

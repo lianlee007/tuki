@@ -1,0 +1,33 @@
+{
+  "name": "@tuki/observabilidad-node",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Métricas Prometheus y trazas OpenTelemetry para los servicios Node de Tuki.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --target node22 --out-dir dist --clean --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.83.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.301.1",
+    "@opentelemetry/resources": "^3.1.1",
+    "@opentelemetry/sdk-node": "^0.301.1",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "fastify": "^5.4.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.2"
+  }
+}

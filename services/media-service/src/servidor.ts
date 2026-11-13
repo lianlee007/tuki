@@ -1,6 +1,7 @@
 import { crearApp } from './app.js';
 import { cerrarDb } from './adaptadores/postgres/cliente.js';
 import { config } from './config.js';
+import { detenerTrazas } from '@tuki/observabilidad-node';
 
 /** Arranque y apagado ordenado del servicio. */
 const main = async () => {
@@ -10,6 +11,7 @@ const main = async () => {
     app.log.info({ senal }, 'Apagando media-service');
     await app.close();
     await cerrarDb();
+    await detenerTrazas();
     process.exit(0);
   };
 

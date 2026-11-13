@@ -11,6 +11,7 @@ import { config } from './config.js';
 import { registrarRutasMedia } from './entrada/http/media.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
+import { registrarMetricas } from '@tuki/observabilidad-node';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -48,6 +49,8 @@ export const crearApp = async () => {
     almacen: crearAlmacenS3(),
   });
   await registrarRutasMedia(app, servicios);
+
+  await registrarMetricas(app, 'media-service');
 
   return app;
 };

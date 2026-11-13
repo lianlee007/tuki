@@ -3,11 +3,15 @@ kind: Kustomization
 namespace: tukituki
 resources:
   - servicemonitor-ai-gateway.yaml
+  - servicemonitors-servicios.yaml
   - prometheusrule.yaml
+  - prometheusrule-servicios.yaml
+  - grafana-datasources.yaml
 configMapGenerator:
   - name: tukituki-grafana-dashboard
     files:
       - dashboards/tukituki-overview.json
+      - dashboards/tukituki-servicios.json
     options:
       labels:
         grafana_dashboard: "1"

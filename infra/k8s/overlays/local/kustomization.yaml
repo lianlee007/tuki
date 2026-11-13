@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: tukituki
 resources:
   - ../../base
+  - ../../../observability
 images:
   - name: ghcr.io/lianlee007/tukituki-identidad
     newTag: local
@@ -33,3 +34,14 @@ replicas:
     count: 1
   - name: web-comensal
     count: 1
+# Las imágenes `:local` se publican en GHCR para el clúster de laboratorio; con
+# `IfNotPresent` el kubelet reutilizaría una capa vieja. En producción se fija
+# por digest y este parche no aplica.
+patches:
+  - target:
+      kind: Deployment
+      name: ".*-service|ai-gateway"
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always

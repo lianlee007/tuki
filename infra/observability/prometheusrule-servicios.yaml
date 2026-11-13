@@ -1,0 +1,95 @@
+# Registro de SLI y alertas de los servicios.
+#
+# SLO acordado para la demo:
+#   - Disponibilidad: 99.5 % en ventanas de 1 h.
+#   - Latencia: p95 < 500 ms en los endpoints públicos.
+#
+# Las métricas `tuki_http_*` las expone el paquete @tuki/observabilidad-node.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tukituki-servicios
+  namespace: tukituki
+  labels:
+    app.kubernetes.io/part-of: tukituki
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: tukituki.registro
+      interval: 30s
+      rules:
+        - record: tuki:http_requests:rate5m
+          expr: sum by (app) (rate(tuki_http_requests_total[5m]))
+
+        - record: tuki:http_errors:ratio5m
+          expr: |
+            sum by (app) (rate(tuki_http_requests_total{status=~"5.."}[5m]))
+            /
+            clamp_min(sum by (app) (rate(tuki_http_requests_total[5m])), 0.001)
+
+        - record: tuki:http_latency:p95_5m
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (app, le) (rate(tuki_http_request_duration_seconds_bucket[5m]))
+            )
+
+        - record: tuki:slo:availability_1h
+          expr: |
+            1 - (
+              sum(rate(tuki_http_requests_total{status=~"5.."}[1h]))
+              /
+              clamp_min(sum(rate(tuki_http_requests_total[1h])), 0.001)
+            )
+
+    - name: tukituki.slo
+      rules:
+        - alert: TukiServicioCaido
+          expr: up{namespace="tukituki"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: tukituki
+          annotations:
+            summary: "Prometheus no puede raspar un target de Tuki"
+            description: "El target {{ $labels.job }} no responde en /metrics o el pod no está listo."
+
+        - alert: TukiDisponibilidadBaja
+          expr: tuki:slo:availability_1h < 0.995
+          for: 10m
+          labels:
+            severity: critical
+            team: tukituki
+          annotations:
+            summary: "Disponibilidad por debajo del SLO (99.5 % en 1 h)"
+            description: "Se está consumiendo el error budget más rápido de lo aceptado."
+
+        - alert: TukiErrorRateAlta
+          expr: tuki:http_errors:ratio5m > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            team: tukituki
+          annotations:
+            summary: "Más del 5 % de peticiones fallan en {{ $labels.app }}"
+            description: "Revisa logs, base de datos y dependencias del servicio."
+
+        - alert: TukiLatenciaP95Alta
+          expr: tuki:http_latency:p95_5m > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            team: tukituki
+          annotations:
+            summary: "Latencia p95 por encima de 500 ms en {{ $labels.app }}"
+            description: "Revisa CPU, pool de PostgreSQL y llamadas entre servicios."
+
+        - alert: TukiPodReiniciando
+          expr: increase(kube_pod_container_status_restarts_total{namespace="tukituki"}[15m]) > 2
+          for: 5m
+          labels:
+            severity: warning
+            team: tukituki
+          annotations:
+            summary: "Un contenedor de Tuki se reinicia repetidamente"
+            description: "Pod {{ $labels.pod }}: revisa probes, memoria y variables de entorno."

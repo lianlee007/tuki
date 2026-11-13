@@ -10,6 +10,7 @@ import { config } from './config.js';
 import { registrarRutasAdmin } from './entrada/http/admin.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
+import { registrarMetricas } from '@tuki/observabilidad-node';
 
 /** Construye el BFF sin abrir el puerto. */
 export const crearApp = async () => {
@@ -44,6 +45,8 @@ export const crearApp = async () => {
     auditoria: crearRepositorioAuditoria(),
   });
   await registrarRutasAdmin(app, servicios);
+
+  await registrarMetricas(app, 'admin-service');
 
   return app;
 };
