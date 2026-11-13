@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS base
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS base
 RUN corepack enable && corepack prepare pnpm@12.14.0 --activate
 WORKDIR /app
 
@@ -19,7 +19,7 @@ COPY services/restaurantes-service services/restaurantes-service
 RUN pnpm --filter restaurantes-service... build \
     && pnpm --filter restaurantes-service deploy --prod /app/deploy
 
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS runtime
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
