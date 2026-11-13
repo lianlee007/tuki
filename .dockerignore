@@ -36,4 +36,6 @@ playwright-report
 # Material que no interviene en el build
 docs
 e2e
+evidencias
+.github
 *.md

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:22-alpine AS build
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS build
 RUN corepack enable && corepack prepare pnpm@12.14.0 --activate
 WORKDIR /app
 
@@ -22,7 +22,7 @@ ENV VITE_IDENTIDAD_URL=$VITE_IDENTIDAD_URL \
     VITE_RESENAS_URL=$VITE_RESENAS_URL
 RUN pnpm --filter admin-plataforma build
 
-FROM nginx:1.27-alpine
+FROM nginx:1.31.8-alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
 COPY infra/docker/nginx-spa.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/admin-plataforma/dist /usr/share/nginx/html
 EXPOSE 80
