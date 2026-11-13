@@ -98,7 +98,6 @@ services:
   identidad-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-identidad:fase4
-    image: tukituki-production-identidad-service
     container_name: tukituki-prod-identidad
     environment:
       <<: *node-env
@@ -116,7 +115,6 @@ services:
   restaurantes-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-restaurantes:fase4
-    image: tukituki-production-restaurantes-service
     container_name: tukituki-prod-restaurantes
     environment:
       <<: *node-env
@@ -130,7 +128,6 @@ services:
   media-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-media:fase4
-    image: tukituki-production-media-service
     container_name: tukituki-prod-media
     environment:
       <<: *node-env
@@ -150,7 +147,6 @@ services:
   pedidos-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-pedidos:fase4
-    image: tukituki-production-pedidos-service
     container_name: tukituki-prod-pedidos
     environment:
       <<: *node-env
@@ -165,7 +161,6 @@ services:
   resenas-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-resenas:fase4
-    image: tukituki-production-resenas-service
     container_name: tukituki-prod-resenas
     environment:
       <<: *node-env
@@ -180,7 +175,6 @@ services:
   admin-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-admin-service:fase4
-    image: tukituki-production-admin-service
     container_name: tukituki-prod-admin
     environment:
       <<: *node-env
@@ -196,7 +190,6 @@ services:
 
   ai-gateway:
     image: ghcr.io/lianlee007/tukituki-ai-gateway:fase4
-    image: tukituki-production-ai-gateway
     container_name: tukituki-prod-ai-gateway
     environment:
       AI_ENVIRONMENT: production
@@ -260,7 +253,6 @@ services:
         max-file: "3"
 
   web-comensal:
-    image: tukituki-production-web-comensal
     image: ghcr.io/lianlee007/tukituki-web-comensal:fase4
     container_name: tukituki-prod-web-comensal
     ports:
@@ -291,7 +283,6 @@ services:
         max-file: "3"
 
   panel-restaurante:
-    image: tukituki-production-web-panel
     image: ghcr.io/lianlee007/tukituki-web-panel:fase4
     container_name: tukituki-prod-web-panel
     ports:
@@ -321,7 +312,6 @@ services:
         max-file: "3"
 
   admin-plataforma:
-    image: tukituki-production-web-admin
     image: ghcr.io/lianlee007/tukituki-web-admin:fase4
     container_name: tukituki-prod-web-admin
     ports:
