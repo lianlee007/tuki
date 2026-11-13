@@ -251,7 +251,7 @@ jobs:
             "${{ steps.ref.outputs.ref }}"
 
       - name: Guardar el digest como evidencia
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digest-${{ matrix.imagen }}
           path: digest-${{ matrix.imagen }}.txt
@@ -276,7 +276,7 @@ jobs:
           cat digests.txt
 
       - name: Publicar la evidencia consolidada
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digests
           path: digests.txt
