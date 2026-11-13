@@ -1,0 +1,47 @@
+name: OpenTofu - IaC
+
+on:
+  pull_request:
+    paths:
+      - infra/opentofu/**
+      - .github/workflows/iac.yml
+  push:
+    branches: [main]
+    paths:
+      - infra/opentofu/**
+      - .github/workflows/iac.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tofu-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    name: Formato, init y validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: infra/opentofu
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.13.9
+          tofu_wrapper: false
+
+      - name: Verificar formato
+        run: tofu fmt -check -recursive
+
+      - name: Inicializar sin backend
+        run: tofu init -backend=false -input=false
+
+      - name: Validar configuración
+        run: tofu validate
