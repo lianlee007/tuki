@@ -8,7 +8,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/dominio/package.json packages/dominio/
 COPY packages/observabilidad-node/package.json packages/observabilidad-node/
 COPY services/restaurantes-service/package.json services/restaurantes-service/
-RUN pnpm install --filter restaurantes-service... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter restaurantes-service... --frozen-lockfile
 
 FROM deps AS build
 COPY tsconfig.base.json ./
