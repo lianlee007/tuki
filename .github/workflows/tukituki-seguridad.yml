@@ -229,7 +229,7 @@ jobs:
         run: cosign sign --yes "${{ steps.ref.outputs.ref }}"
 
       - name: Atestiguar la procedencia de la construcción
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v4
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.imagen }}
           subject-digest: ${{ steps.build.outputs.digest }}
