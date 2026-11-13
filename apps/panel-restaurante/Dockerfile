@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages packages
 COPY apps/panel-restaurante/package.json apps/panel-restaurante/
-RUN pnpm install --filter panel-restaurante... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter panel-restaurante... --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY apps/panel-restaurante apps/panel-restaurante

@@ -8,7 +8,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/dominio/package.json packages/dominio/
 COPY packages/observabilidad-node/package.json packages/observabilidad-node/
 COPY services/resenas-service/package.json services/resenas-service/
-RUN pnpm install --filter resenas-service... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter resenas-service... --frozen-lockfile
 
 FROM deps AS build
 COPY tsconfig.base.json ./

@@ -1,11 +1,17 @@
 /**
  * Trazas OpenTelemetry con exportación OTLP/HTTP.
  *
+ * Se instrumenta el módulo HTTP de Node, que cubre las peticiones entrantes de
+ * Fastify y las llamadas salientes entre servicios. No se usa
+ * `auto-instrumentations-node`: arrastraba más de doscientas dependencias
+ * (AWS, Mongo, OpenAI, etc.) que no se ejecutan aquí y hacían lentísimo el
+ * build de las imágenes.
+ *
  * Si `OTEL_EXPORTER_OTLP_ENDPOINT` no está definido, la instrumentación queda
- * apagada y el servicio funciona igual: útil en desarrollo y en pruebas.
+ * apagada y el servicio funciona igual.
  */
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 
@@ -27,11 +33,7 @@ export const iniciarTrazas = (servicio: string): void => {
       'deployment.environment': process.env.NODE_ENV ?? 'development',
     }),
     traceExporter: new OTLPTraceExporter({ url }),
-    instrumentations: [
-      getNodeAutoInstrumentations({
-        '@opentelemetry/instrumentation-fs': { enabled: false },
-      }),
-    ],
+    instrumentations: [new HttpInstrumentation()],
   });
 
   try {

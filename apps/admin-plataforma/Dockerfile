@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages packages
 COPY apps/admin-plataforma/package.json apps/admin-plataforma/
-RUN pnpm install --filter admin-plataforma... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter admin-plataforma... --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY apps/admin-plataforma apps/admin-plataforma

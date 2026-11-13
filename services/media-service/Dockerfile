@@ -8,7 +8,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/dominio/package.json packages/dominio/
 COPY packages/observabilidad-node/package.json packages/observabilidad-node/
 COPY services/media-service/package.json services/media-service/
-RUN pnpm install --filter media-service... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter media-service... --frozen-lockfile
 
 FROM deps AS build
 COPY tsconfig.base.json ./

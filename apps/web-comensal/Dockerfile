@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages packages
 COPY apps/web-comensal/package.json apps/web-comensal/
-RUN pnpm install --filter web-comensal... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter web-comensal... --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY apps/web-comensal apps/web-comensal

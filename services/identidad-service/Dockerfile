@@ -10,7 +10,8 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/observabilidad-node/package.json packages/observabilidad-node/
 COPY services/identidad-service/package.json services/identidad-service/
-RUN pnpm install --filter identidad-service... --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --filter identidad-service... --frozen-lockfile
 
 FROM deps AS build
 COPY tsconfig.base.json ./
