@@ -9,6 +9,7 @@ import { registrarRutasIdentidad } from './entrada/http/identidad.rutas.js';
 import { registrarRutasAdminIdentidad } from './entrada/http/identidad.admin.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
+import { registrarMetricas } from '@tuki/observabilidad-node';
 
 /**
  * Construye la aplicación sin escuchar el puerto.
@@ -56,6 +57,8 @@ export const crearApp = async () => {
 
   await registrarRutasIdentidad(app, casos);
   await registrarRutasAdminIdentidad(app, casos);
+
+  await registrarMetricas(app, 'identidad-service');
 
   return app;
 };

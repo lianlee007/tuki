@@ -1,5 +1,6 @@
 import { crearApp } from './app.js';
 import { config } from './config.js';
+import { detenerTrazas } from '@tuki/observabilidad-node';
 import { cerrarDb } from './adaptadores/postgres/cliente.js';
 
 /** Arranque y apagado ordenado del servicio. */
@@ -10,6 +11,7 @@ const main = async () => {
     app.log.info({ senal }, 'Apagando pedidos-service');
     await app.close();
     await cerrarDb();
+    await detenerTrazas();
     process.exit(0);
   };
 

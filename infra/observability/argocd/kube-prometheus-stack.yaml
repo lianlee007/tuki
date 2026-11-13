@@ -1,0 +1,141 @@
+# Prometheus, Grafana, Alertmanager, node-exporter y kube-state-metrics.
+#
+# Se instala con Argo CD desde el chart oficial, con versión fijada. Los
+# selectores se abren (`...NilUsesHelmValues: false`) para que Prometheus
+# descubra los ServiceMonitor y PrometheusRule de cualquier namespace, sin
+# depender de la etiqueta `release`.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  project: monitoring
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 93.2.2
+    helm:
+      releaseName: kube-prometheus-stack
+      valuesObject:
+        grafana:
+          persistence:
+            enabled: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          # Grafana 13 ejecuta migraciones de SQLite al arrancar; con los
+          # valores por defecto el liveness la reiniciaba antes de terminar.
+          livenessProbe:
+            initialDelaySeconds: 180
+            timeoutSeconds: 5
+            failureThreshold: 10
+          readinessProbe:
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 6
+          sidecar:
+            dashboards:
+              searchNamespace: ALL
+            datasources:
+              searchNamespace: ALL
+        prometheus:
+          prometheusSpec:
+            retention: 4h
+            retentionSize: 2GB
+            scrapeInterval: 30s
+            evaluationInterval: 30s
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: "1"
+                memory: 768Mi
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 5Gi
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            probeSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+        alertmanager:
+          alertmanagerSpec:
+            resources:
+              requests:
+                cpu: 20m
+                memory: 48Mi
+              limits:
+                cpu: 150m
+                memory: 192Mi
+        prometheusOperator:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 200m
+              memory: 192Mi
+        kubeStateMetrics:
+          resources:
+            requests:
+              cpu: 20m
+              memory: 48Mi
+            limits:
+              cpu: 100m
+              memory: 96Mi
+        prometheus-node-exporter:
+          resources:
+            requests:
+              cpu: 20m
+              memory: 24Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        # Los exporters del plano de control crean recursos en kube-system y
+        # Docker Desktop no expone métricas útiles de etcd/kube-proxy. Se
+        # desactivan para mantener el AppProject limitado a `monitoring`.
+        kubernetesServiceMonitors:
+          enabled: false
+        kubeApiServer:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        kubeEtcd:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        coreDns:
+          enabled: false
+        kubeDns:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # Los CRDs de Prometheus superan el límite de la anotación de kubectl.
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m

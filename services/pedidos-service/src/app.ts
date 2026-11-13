@@ -10,6 +10,7 @@ import { config } from './config.js';
 import { registrarRutasPedidos } from './entrada/http/pedidos.rutas.js';
 import autenticacion from './plugins/autenticacion.js';
 import errores from './plugins/errores.js';
+import { registrarMetricas } from '@tuki/observabilidad-node';
 
 /** Construye la aplicación sin abrir el puerto. */
 export const crearApp = async () => {
@@ -44,6 +45,8 @@ export const crearApp = async () => {
     restaurantes: crearClienteRestaurantes(),
   });
   await registrarRutasPedidos(app, servicios);
+
+  await registrarMetricas(app, 'pedidos-service');
 
   return app;
 };

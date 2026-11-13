@@ -1,6 +1,7 @@
 import { crearApp } from './app.js';
 import { cerrarDb } from './adaptadores/postgres/cliente.js';
 import { config } from './config.js';
+import { detenerTrazas } from '@tuki/observabilidad-node';
 
 /**
  * Punto de entrada del servicio.
@@ -15,6 +16,7 @@ const main = async () => {
     app.log.info({ senal }, 'Apagando identidad-service');
     await app.close();
     await cerrarDb();
+    await detenerTrazas();
     process.exit(0);
   };
 

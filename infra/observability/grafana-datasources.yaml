@@ -1,0 +1,26 @@
+# Data source de Tempo para Grafana.
+#
+# kube-prometheus-stack ya crea el data source de Prometheus con uid
+# `prometheus`; aquí solo se añade Tempo. El sidecar de Grafana descubre este
+# ConfigMap por la etiqueta `grafana_datasource`.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tukituki-grafana-datasources
+  namespace: tukituki
+  labels:
+    grafana_datasource: "1"
+    app.kubernetes.io/part-of: tukituki
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo.monitoring.svc.cluster.local:3200
+        isDefault: false
+        editable: false
+        jsonData:
+          nodeGraph:
+            enabled: true

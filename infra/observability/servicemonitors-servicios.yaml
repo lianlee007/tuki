@@ -1,0 +1,32 @@
+# Raspa /metrics de los seis servicios Node.
+#
+# El AI Gateway tiene su propio ServiceMonitor porque su métrica y su puerto
+# son distintos. Los frontends nginx no exponen métricas y quedan fuera.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tukituki-servicios
+  namespace: tukituki
+  labels:
+    app.kubernetes.io/part-of: tukituki
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - tukituki
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - identidad-service
+          - restaurantes-service
+          - media-service
+          - pedidos-service
+          - resenas-service
+          - admin-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

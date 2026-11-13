@@ -1,0 +1,27 @@
+# Proyecto de Argo CD para el stack de observabilidad.
+#
+# A diferencia del proyecto `tukituki`, aquí las fuentes son repositorios Helm
+# públicos y se permiten recursos de clúster porque kube-prometheus-stack crea
+# CRDs, ClusterRoles y webhooks de admisión.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: monitoring
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  description: Prometheus, Grafana, Tempo y OpenTelemetry Collector
+  sourceRepos:
+    - https://prometheus-community.github.io/helm-charts
+    - https://grafana.github.io/helm-charts
+    - https://open-telemetry.github.io/opentelemetry-helm-charts
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

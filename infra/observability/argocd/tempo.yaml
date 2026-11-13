@@ -1,0 +1,74 @@
+# Tempo en modo monolítico: recibe trazas OTLP y las guarda en disco.
+#
+# El chart expone 3200 (consulta), 4317 (OTLP gRPC) y 4318 (OTLP HTTP) en el
+# Service `tempo`, que es el destino del OpenTelemetry Collector.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tempo
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  project: monitoring
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: tempo
+    targetRevision: 1.24.4
+    helm:
+      releaseName: tempo
+      valuesObject:
+        tempo:
+          retention: 6h
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 3200
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 6
+            successThreshold: 1
+          metricsGenerator:
+            enabled: false
+          storage:
+            trace:
+              backend: local
+              local:
+                path: /var/tempo/traces
+        persistence:
+          enabled: true
+          size: 5Gi
+        serviceMonitor:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m
