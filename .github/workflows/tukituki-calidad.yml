@@ -123,3 +123,16 @@ jobs:
       - name: Validar el overlay de producción
         run: kubectl kustomize infra/k8s/overlays/production > /dev/null
 
+      - name: Validar las políticas de admisión
+        run: kubectl kustomize infra/politicas/kyverno > /dev/null
+
+      - name: Validar los manifiestos de Argo CD
+        run: |
+          kubectl kustomize infra/argocd > /dev/null
+          kubectl kustomize infra/argocd/instalacion > /dev/null
+
+      - name: Validar observabilidad
+        run: |
+          kubectl kustomize infra/observability > /dev/null
+          kubectl kustomize infra/observability/argocd > /dev/null
+

@@ -1,0 +1,10 @@
+# Políticas de admisión para el namespace tukituki.
+#
+# Requiere Kyverno instalado en el clúster. Se aplican en modo Audit las reglas
+# que hoy incumplen los manifiestos (frontends nginx como root, etiquetas
+# mutables) para no romper el despliegue mientras se corrige; las reglas que ya
+# se cumplen quedan en Enforce.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - politicas.yaml

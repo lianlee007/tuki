@@ -1,0 +1,131 @@
+# Políticas de admisión de TukiTuki (Kyverno).
+#
+# Objetivo: que un manifiesto inseguro no llegue al clúster aunque el pipeline
+# lo haya dejado pasar. Las reglas Enforce bloquean la creación del pod; las
+# Audit solo reportan en PolicyReports.
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tukituki-prohibir-privilegiado
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: prohibir-contenedores-privilegiados
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [tukituki]
+      validate:
+        message: "tukituki no admite contenedores privilegiados ni escalada de privilegios."
+        pattern:
+          spec:
+            containers:
+              # El bloque es opcional: un pod que no declara securityContext
+              # no es privilegiado. Si lo declara, ambos campos deben ser false.
+              - =(securityContext):
+                  =(privileged): "false"
+                  =(allowPrivilegeEscalation): "false"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tukituki-requerir-limites
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: exigir-requests-y-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [tukituki]
+      validate:
+        message: "Cada contenedor debe declarar requests y limits de CPU y memoria."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  requests:
+                    cpu: "?*"
+                    memory: "?*"
+                  limits:
+                    cpu: "?*"
+                    memory: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tukituki-requerir-no-root
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: exigir-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [tukituki]
+      validate:
+        message: "El pod debe ejecutarse como usuario no privilegiado (runAsNonRoot)."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: "true"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tukituki-requerir-rootfs-readonly
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: exigir-read-only-root-filesystem
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [tukituki]
+      validate:
+        message: "El sistema de archivos raíz del contenedor debe ser de solo lectura."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  readOnlyRootFilesystem: "true"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tukituki-requerir-digest
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: exigir-imagen-por-digest
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [tukituki]
+      validate:
+        message: "La imagen debe fijarse por digest sha256 (no por etiqueta mutable)."
+        pattern:
+          spec:
+            containers:
+              - image: "*@sha256:*"
