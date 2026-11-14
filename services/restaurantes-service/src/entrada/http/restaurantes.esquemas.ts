@@ -20,6 +20,8 @@ export const esquemaCrearRestaurante = z.object({
   facebook: texto(200),
   instagram: texto(200),
   twitter: texto(200),
+  imagenLogoUrl: z.string().trim().url().max(500).nullable().optional(),
+  imagenBannerUrl: z.string().trim().url().max(500).nullable().optional(),
   diasAbierto: z.record(z.string(), z.boolean()).optional(),
   cocinas: z.array(z.string().trim().min(2)).max(6).default([]),
 });

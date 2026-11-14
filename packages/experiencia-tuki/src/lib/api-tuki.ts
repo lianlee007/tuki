@@ -30,6 +30,7 @@ import type {
 } from '../tipos/modelos';
 import type { Pedido } from '../modulos/pedidos/dominio/pedido';
 import type { Resena } from '../modulos/resenas/dominio/resenas';
+import { normalizarListaTexto } from './utils';
 
 const entorno = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
 
@@ -266,8 +267,8 @@ export const aPlatillo = (
     descripcion: dto.descripcion ?? '',
     precio: Number(dto.precio),
     imagen_url: dto.imagenUrl ?? '',
-    ingredientes: dto.ingredientes ?? [],
-    alergenos: dto.alergenos ?? [],
+    ingredientes: normalizarListaTexto(dto.ingredientes),
+    alergenos: normalizarListaTexto(dto.alergenos),
     vegetariano: dto.vegetariano,
     vegano: dto.vegano,
     picante: dto.picante,
@@ -297,8 +298,8 @@ export const aPlatoDescubierto = (dto: PlatoDescubierto): PlatoLegado => ({
   vegetariano: dto.vegetariano,
   vegano: dto.vegano,
   picante: dto.picante,
-  ingredientes: dto.ingredientes ?? [],
-  alergenos: dto.alergenos ?? [],
+  ingredientes: normalizarListaTexto(dto.ingredientes),
+  alergenos: normalizarListaTexto(dto.alergenos),
   destacado: dto.destacado ?? false,
   restaurante_id: dto.restauranteId,
   restaurante_nombre: dto.restauranteNombre,

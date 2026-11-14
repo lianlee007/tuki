@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Restaurante } from '../../tipos';
@@ -6,13 +6,21 @@ import { RestauranteSchema, RestauranteFormValues } from '../../tipos/esquemas';
 import { Tarjeta, Input, Textarea, LogoWhatsApp, BotonCTA, BotonTexto } from '../ui';
 import {
     Store, Upload, MapPin, Phone, Mail, Wand2, Clock, CalendarDays, AlertTriangle,
-    SpellCheck, Loader2, CheckCircle2, AlertOctagon, Save, RotateCcw, UtensilsCrossed,
+    SpellCheck, Loader2, CheckCircle2, Save, RotateCcw, UtensilsCrossed,
 } from 'lucide-react';
 import { LIMITES } from '../../constantes';
 import { DEPARTAMENTOS, municipiosDe } from '../../lib/colombia';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 import { SelectorCocina, type SelectorCocinaRef } from './SelectorCocina';
+
+export interface EstadoPublicacion {
+    faltantes: { k: string; l: string }[];
+    completos: number;
+    total: number;
+    estaPublicado: boolean;
+    irA: (campo: string) => void;
+}
 
 interface SeccionInfoProps {
     restaurante: Restaurante;
@@ -21,6 +29,7 @@ interface SeccionInfoProps {
     sugerirIA: (prompt: string, setter: (val: string) => void) => Promise<void>;
     guardando: boolean;
     mostrarMensaje: (tipo: 'exito' | 'error', texto: string) => void;
+    onEstadoPublicacion?: (estado: EstadoPublicacion) => void;
 }
 
 const DIAS_UI = [
@@ -114,6 +123,7 @@ const TituloSeccion: React.FC<{ icono: React.ReactNode; children: React.ReactNod
 
 export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     restaurante, guardarRestaurante, subirImagen, sugerirIA, guardando, mostrarMensaje,
+    onEstadoPublicacion,
 }) => {
     const {
         register, handleSubmit, setValue, watch, reset,
@@ -126,6 +136,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 
     const [direccionParts, setDireccionParts] = useState({ tipo: 'Calle', n1: '', n2: '', n3: '', barrio: '' });
     const [imgLoading, setImgLoading] = useState<{ logo: boolean, banner: boolean }>({ logo: false, banner: false });
+    const [arrastrando, setArrastrando] = useState<{ logo: boolean, banner: boolean }>({ logo: false, banner: false });
     const [loadingAction, setLoadingAction] = useState<string | null>(null);
     const [generandoIA, setGenerandoIA] = useState(false);
     const [mostrarErrores, setMostrarErrores] = useState(false);
@@ -141,8 +152,8 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
        real del restaurante y no de gastronomía en abstracto. */
     const [cocinasElegidas, setCocinasElegidas] = useState<string[]>([]);
 
-    // Las imágenes se suben al CDN al instante, pero solo se enlazan al
-    // restaurante al pulsar "Finalizar y guardar" (igual que el resto de campos).
+    // Las imágenes se suben al CDN y se enlazan al restaurante al instante:
+    // si el dueño se va a otra pestaña, la recarga no las borra.
     const [logoUrl, setLogoUrl] = useState(restaurante.imagen_logo_url || '');
     const [bannerUrl, setBannerUrl] = useState(restaurante.imagen_banner_url || '');
 
@@ -206,11 +217,31 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const tieneError = (campo: string): boolean =>
         mostrarErrores && (Boolean((errors as any)[campo]) || esFaltante(campo, valoresForm));
 
-    const irA = (campo: string) => {
+    const irA = useCallback((campo: string) => {
         setMostrarErrores(true);
         setCampoScroll(campo);
         setOrdenScroll(n => n + 1);
-    };
+    }, []);
+
+    /**
+     * El estado de publicación se pinta en la cabecera junto al asistente de
+     * IA. Se informa al panel solo cuando cambia el conjunto de pendientes, no
+     * en cada tecla: si no, el `setState` del padre re-renderizaría el
+     * formulario en un bucle.
+     */
+    const faltantesRef = useRef(faltantes);
+    faltantesRef.current = faltantes;
+    const faltantesClave = faltantes.map((f) => f.k).join('|');
+
+    useEffect(() => {
+        onEstadoPublicacion?.({
+            faltantes: faltantesRef.current,
+            completos,
+            total: totalCampos,
+            estaPublicado,
+            irA,
+        });
+    }, [faltantesClave, completos, totalCampos, estaPublicado, irA, onEstadoPublicacion]);
 
     // Desplazamiento suave hasta el primer campo con error.
     useEffect(() => {
@@ -325,19 +356,57 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         setValue('dias_abierto', nuevosDias as any, { shouldDirty: true, shouldValidate: true });
     };
 
-    const wrapImagenUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: 'logo' | 'banner') => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    /**
+     * Sube la imagen, la deja enlazada al restaurante al instante y actualiza
+     * el estado local. Antes solo se guardaba al pulsar «Finalizar y guardar»:
+     * si el dueño subía el logo y se iba al menú, la recarga de datos traía
+     * `null` y las fotos desaparecían.
+     */
+    const subirArchivoImagen = async (file: File, tipo: 'logo' | 'banner') => {
+        if (!file.type.startsWith('image/')) {
+            mostrarMensaje('error', 'Elige una imagen: JPG, PNG o WebP.');
+            return;
+        }
+        const anterior = tipo === 'logo' ? logoUrl : bannerUrl;
         setImgLoading(prev => ({ ...prev, [tipo]: true }));
         try {
             const url = await subirImagen(file, 'restaurantes');
             if (tipo === 'logo') setLogoUrl(url); else setBannerUrl(url);
+            await guardarRestaurante({
+                [tipo === 'logo' ? 'imagen_logo_url' : 'imagen_banner_url']: url,
+            } as Partial<Restaurante>);
+            mostrarMensaje('exito', tipo === 'logo' ? 'Logo actualizado.' : 'Banner actualizado.');
         } catch (error: any) {
+            if (tipo === 'logo') setLogoUrl(anterior); else setBannerUrl(anterior);
             mostrarMensaje('error', error?.message || 'No se pudo subir la imagen.');
         } finally {
             setImgLoading(prev => ({ ...prev, [tipo]: false }));
-            e.target.value = '';
         }
+    };
+
+    const wrapImagenUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: 'logo' | 'banner') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await subirArchivoImagen(file, tipo);
+        e.target.value = '';
+    };
+
+    const manejarDragOver = (e: React.DragEvent<HTMLDivElement>, tipo: 'logo' | 'banner') => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        if (!arrastrando[tipo]) setArrastrando(prev => ({ ...prev, [tipo]: true }));
+    };
+
+    const manejarDragLeave = (e: React.DragEvent<HTMLDivElement>, tipo: 'logo' | 'banner') => {
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        setArrastrando(prev => ({ ...prev, [tipo]: false }));
+    };
+
+    const manejarDrop = async (e: React.DragEvent<HTMLDivElement>, tipo: 'logo' | 'banner') => {
+        e.preventDefault();
+        setArrastrando(prev => ({ ...prev, [tipo]: false }));
+        const file = e.dataTransfer.files?.[0];
+        if (file) await subirArchivoImagen(file, tipo);
     };
 
     // --- IA -----------------------------------------------------------------
@@ -442,53 +511,6 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 
     return (
         <div className="space-y-10">
-
-            {/* ---------- Estado de publicación ---------- */}
-            <section className="rounded-[28px] bg-af-surface p-5 sm:p-6">
-                <div className="flex items-start gap-4">
-                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${estaPublicado ? 'bg-af-success/15 text-af-success' : 'bg-af-danger/10 text-af-danger-text'}`}>
-                        {estaPublicado ? <CheckCircle2 size={22} /> : <AlertOctagon size={22} />}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <h2 className="text-base font-bold text-af-ink">
-                            {estaPublicado ? 'Tu sitio está publicado' : 'Tu sitio aún no está publicado'}
-                        </h2>
-                        <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
-                            {estaPublicado
-                                ? 'Todo en orden. Tus clientes ya pueden ver el menú y pedir por WhatsApp.'
-                                : 'Completa los campos obligatorios (*) y elige al menos un día de servicio para que tus clientes puedan entrar.'}
-                        </p>
-
-                        <div className="mt-4 flex items-center gap-3">
-                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-af-ink/10">
-                                <div
-                                    className={`h-full rounded-full transition-transform duration-300 ease-out ${estaPublicado ? 'bg-af-success' : 'bg-af-accent'}`}
-                                    style={{ transform: `scaleX(${completos / totalCampos})`, transformOrigin: 'left' }}
-                                />
-                            </div>
-                            <span className="shrink-0 text-xs font-semibold tabular-nums text-af-ink-secondary">
-                                {completos}/{totalCampos}
-                            </span>
-                        </div>
-
-                        {!estaPublicado && (
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                {faltantes.map(f => (
-                                    <button
-                                        key={f.k}
-                                        type="button"
-                                        onClick={() => irA(f.k)}
-                                        title={`Ir a ${f.l}`}
-                                        className="rounded-full bg-af-danger/10 px-3 py-1.5 text-xs font-semibold text-af-danger-text outline-none transition-colors duration-150 hover:bg-af-danger/20"
-                                    >
-                                        {f.l}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
 
             {/* ---------- Errores de validación ---------- */}
             {erroresVisibles.length > 0 && (
@@ -656,8 +678,19 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                 <section className="mt-10">
                     <TituloSeccion icono={<Upload size={17} />}>Logo y banner</TituloSeccion>
                     <div className="grid gap-6 md:grid-cols-2">
-                        <Tarjeta enlace={false} className={`flex flex-col items-center gap-4 ${tieneError('imagen_logo_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
-                            <div id="campo-imagen_logo_url" className="flex w-full flex-col items-center gap-3">
+                        <div
+                            className="h-full"
+                            onDragOver={(e) => manejarDragOver(e, 'logo')}
+                            onDragLeave={(e) => manejarDragLeave(e, 'logo')}
+                            onDrop={(e) => manejarDrop(e, 'logo')}
+                        >
+                        <Tarjeta enlace={false} className={`flex h-full flex-col items-center gap-4 ${tieneError('imagen_logo_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
+                            <div
+                                id="campo-imagen_logo_url"
+                                className={`flex w-full flex-col items-center gap-3 rounded-2xl p-3 transition-colors ${
+                                    arrastrando.logo ? 'bg-af-accent/10 ring-2 ring-af-accent/50' : ''
+                                }`}
+                            >
                                 <span className="flex items-center gap-1 text-sm font-medium text-af-ink">
                                     Logo <span className="text-af-danger">*</span>
                                 </span>
@@ -669,7 +702,8 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                             alt="Logo del restaurante"
                                         />
                                     ) : (
-                                        <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-dashed border-af/30 text-center text-xs text-af-ink-secondary">
+                                        <div className={`flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed text-center text-xs ${arrastrando.logo ? 'border-af-accent text-af-accent' : 'border-af/30 text-af-ink-secondary'}`}>
+                                            <Upload size={20} />
                                             Sin logo
                                         </div>
                                     )}
@@ -683,12 +717,27 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     <Upload size={15} /> Subir logo
                                     <input type="file" className="sr-only" accept="image/*" onChange={e => wrapImagenUpload(e, 'logo')} />
                                 </label>
+                                <span className="text-center text-xs text-af-ink-secondary">
+                                    {arrastrando.logo ? 'Suelta la imagen aquí' : 'También puedes arrastrar una imagen'}
+                                </span>
                                 {tieneError('imagen_logo_url') && <span className="text-xs font-medium text-af-danger-text">El logo es obligatorio.</span>}
                             </div>
                         </Tarjeta>
+                        </div>
 
-                        <Tarjeta enlace={false} className={`flex flex-col items-center gap-4 ${tieneError('imagen_banner_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
-                            <div id="campo-imagen_banner_url" className="flex w-full flex-col items-center gap-3">
+                        <div
+                            className="h-full"
+                            onDragOver={(e) => manejarDragOver(e, 'banner')}
+                            onDragLeave={(e) => manejarDragLeave(e, 'banner')}
+                            onDrop={(e) => manejarDrop(e, 'banner')}
+                        >
+                        <Tarjeta enlace={false} className={`flex h-full flex-col items-center gap-4 ${tieneError('imagen_banner_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
+                            <div
+                                id="campo-imagen_banner_url"
+                                className={`flex w-full flex-col items-center gap-3 rounded-2xl p-3 transition-colors ${
+                                    arrastrando.banner ? 'bg-af-accent/10 ring-2 ring-af-accent/50' : ''
+                                }`}
+                            >
                                 <span className="flex items-center gap-1 text-sm font-medium text-af-ink">
                                     Banner <span className="text-af-danger">*</span>
                                 </span>
@@ -700,7 +749,8 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                             alt="Banner del restaurante"
                                         />
                                     ) : (
-                                        <div className="flex h-32 w-full items-center justify-center rounded-2xl border-2 border-dashed border-af/30 text-xs text-af-ink-secondary">
+                                        <div className={`flex h-32 w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed text-xs ${arrastrando.banner ? 'border-af-accent text-af-accent' : 'border-af/30 text-af-ink-secondary'}`}>
+                                            <Upload size={20} />
                                             Sin banner
                                         </div>
                                     )}
@@ -714,9 +764,13 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     <Upload size={15} /> Subir banner
                                     <input type="file" className="sr-only" accept="image/*" onChange={e => wrapImagenUpload(e, 'banner')} />
                                 </label>
+                                <span className="text-center text-xs text-af-ink-secondary">
+                                    {arrastrando.banner ? 'Suelta la imagen aquí' : 'También puedes arrastrar una imagen'}
+                                </span>
                                 {tieneError('imagen_banner_url') && <span className="text-xs font-medium text-af-danger-text">El banner es obligatorio.</span>}
                             </div>
                         </Tarjeta>
+                        </div>
                     </div>
                 </section>
 

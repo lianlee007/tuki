@@ -1,4 +1,5 @@
 import { apis, aCategoria, aPlatillo, intentar } from '../../../lib/api-tuki';
+import { normalizarListaTexto } from '../../../lib/utils';
 import type { Categoria, Platillo } from '../../../tipos/modelos';
 
 /**
@@ -74,8 +75,8 @@ export const apiPlatillos = {
       vegetariano: platillo.vegetariano ?? false,
       vegano: platillo.vegano ?? false,
       picante: platillo.picante ?? false,
-      ingredientes: platillo.ingredientes ?? [],
-      alergenos: platillo.alergenos ?? [],
+      ingredientes: normalizarListaTexto(platillo.ingredientes),
+      alergenos: normalizarListaTexto(platillo.alergenos),
       destacado: platillo.destacado ?? false,
       tiempoPreparacion: platillo.tiempo_preparacion ?? null,
     };

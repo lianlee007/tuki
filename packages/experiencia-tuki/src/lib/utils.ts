@@ -56,3 +56,47 @@ export const normalizarTexto = (texto: string): string =>
 export const formatearPrecio = (valor: number): string =>
   `$${Math.round(Number(valor) || 0).toLocaleString('es-CO')}`;
 
+/**
+ * Convierte en lista cualquier forma en la que lleguen los campos de texto
+ * múltiple (`ingredientes`, `alergenos`).
+ *
+ * La base entrega `text[]`, pero una fila antigua o una respuesta intermedia
+ * puede traer un string —incluso con forma de JSON—. Sin esta normalización,
+ * `(valor ?? []).filter(...)` revienta la pantalla con
+ * `filter is not a function`.
+ */
+export const normalizarListaTexto = (valor: unknown): string[] => {
+  const limpiar = (items: unknown[]): string[] =>
+    items
+      .map((item) => String(item ?? '').trim())
+      .filter(Boolean);
+
+  if (Array.isArray(valor)) return limpiar(valor);
+  if (typeof valor !== 'string') return [];
+
+  const texto = valor.trim();
+  if (!texto) return [];
+
+  if (texto.startsWith('[') && texto.endsWith(']')) {
+    try {
+      const parseado = JSON.parse(texto);
+      if (Array.isArray(parseado)) return limpiar(parseado);
+    } catch {
+      // No era JSON válido: se trata como lista separada por comas.
+    }
+  }
+
+  // Literal de arreglo de PostgreSQL (`{Pan,"Carne asada"}`), por si la
+  // columna quedó como `text` en una base antigua.
+  if (texto.startsWith('{') && texto.endsWith('}')) {
+    return limpiar(
+      texto
+        .slice(1, -1)
+        .split(',')
+        .map((item) => item.trim().replace(/^"(.*)"$/, '$1').replace(/\\"/g, '"')),
+    );
+  }
+
+  return limpiar(texto.split(','));
+};
+
