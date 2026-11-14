@@ -123,6 +123,11 @@ interface BarraDescubrirProps {
   cantidadCarrito: number;
   /** El logo vuelve al inicio de la portada y limpia la vista guardada. */
   onInicio?: () => void;
+  /**
+   * La barra queda por encima de las hojas de detalle para que el buscador
+   * siga disponible mientras se mira la ficha de un plato.
+   */
+  elevada?: boolean;
 }
 
 interface AccionesProps {
@@ -209,6 +214,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
   onCarrito,
   cantidadCarrito,
   onInicio,
+  elevada = false,
 }) => {
   const { user, rol, cargandoRol } = useAuth();
 
@@ -227,7 +233,7 @@ export const BarraDescubrir: React.FC<BarraDescubrirProps> = ({
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hearth-line/60 bg-hearth-cream pt-[env(safe-area-inset-top)] dark:border-hearth-night-line/70 dark:bg-hearth-night lg:bg-hearth-cream/85 lg:backdrop-blur-xl lg:dark:bg-hearth-night/85">
+    <header className={`sticky top-0 ${elevada ? 'z-[75]' : 'z-40'} border-b border-hearth-line/60 bg-hearth-cream pt-[env(safe-area-inset-top)] dark:border-hearth-night-line/70 dark:bg-hearth-night lg:bg-hearth-cream/85 lg:backdrop-blur-xl lg:dark:bg-hearth-night/85`}>
       <div className="mx-auto flex max-w-7xl items-center gap-1.5 px-4 py-2 sm:gap-3 sm:px-6 sm:py-2.5 lg:px-8">
         <Link
           to="/"
