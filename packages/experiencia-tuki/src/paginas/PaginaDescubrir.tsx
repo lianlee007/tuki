@@ -435,10 +435,16 @@ const PaginaDescubrir = () => {
 
       <BarraDescubrir
         consulta={texto}
-        onConsulta={setTexto}
+        onConsulta={(valor) => {
+          setTexto(valor);
+          // Buscar desde la ficha de un plato cierra la hoja para mostrar
+          // enseguida los resultados, pero la barra nunca se va.
+          if (detalle) setDetalle(null);
+        }}
         onCarrito={() => setCarritoAbierto(true)}
         cantidadCarrito={cantidadCarrito}
         onInicio={irAInicio}
+        elevada={detalle !== null}
       />
 
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-16">

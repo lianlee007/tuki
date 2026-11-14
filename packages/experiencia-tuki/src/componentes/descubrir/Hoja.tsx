@@ -72,7 +72,14 @@ export const Hoja: React.FC<HojaProps> = ({ abierto, onCerrar, tituloId, ancho =
     return () => {
       document.body.style.overflow = overflowPrevio;
       document.removeEventListener('keydown', alPulsar);
-      disparador?.focus?.();
+      // Si el foco se fue a la barra (por ejemplo, al empezar a buscar desde
+      // la ficha del plato), no se lo devolvemos al disparador: eso cortaría
+      // la escritura en el buscador.
+      const activo = document.activeElement;
+      const focoEnLaPagina = Boolean(
+        activo && activo !== document.body && !panelRef.current?.contains(activo)
+      );
+      if (!focoEnLaPagina) disparador?.focus?.();
     };
   }, [abierto]);
 

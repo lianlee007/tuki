@@ -18,7 +18,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 // @ts-ignore — react-router-dom no publica tipos en este proyecto.
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Restaurante, Tema, Platillo, EstiloPlantilla } from '../../tipos';
 import {
   ShoppingCart,
@@ -31,6 +31,8 @@ import {
   Sparkles,
   Lock,
   ArrowDown,
+  ArrowRight,
+  Search,
   Share2,
   PenLine,
   Check,
@@ -48,6 +50,7 @@ import { useResenas } from '../../modulos/resenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
 import { urlPublica } from '../../lib/urlPublica';
+import { normalizarTexto } from '../../lib/utils';
 
 // Estructuras del menú. Todas comparten `PlantillaMenuProps`, así que el menú
 // se monta desde una tabla: ninguna puede quedarse sin `refs` (seguimiento de
@@ -170,8 +173,10 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
 }) => {
   const { tema: temaGlobal } = useTema();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { carrito, modalAbierto, setModalAbierto, agregarItem, eliminarItem, actualizarCantidad, vaciarCarrito } = useStoreCarrito();
   const [categoriaActiva, setCategoriaActiva] = useState<string>('');
+  const [busquedaMenu, setBusquedaMenu] = useState('');
   const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
   const [platilloSeleccionado, setPlatilloSeleccionado] = useState<Platillo | null>(null);
   const [saludoDinamico, setSaludoDinamico] = useState<string>('');
@@ -291,7 +296,25 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   // Variables scopeadas: toda la interfaz (clases af-*) hereda la paleta del restaurante.
   const variables = variablesAf(base);
 
-  const menuPorCategoria = platillos.reduce((acc, p) => {
+  /**
+   * La búsqueda de la ficha no cambia de página: filtra la carta que ya está
+   * cargada, incluyendo ingredientes, para que el comensal pueda seguir
+   * mirando el plato que abrió y buscar otro sin perder el contexto.
+   */
+  const consultaMenu = normalizarTexto(busquedaMenu.trim());
+  const platillosFiltrados = consultaMenu
+    ? platillos.filter((p) => {
+        const texto = [
+          p.nombre,
+          p.descripcion,
+          p.categoria,
+          ...(Array.isArray(p.ingredientes) ? p.ingredientes : []),
+        ].join(' ');
+        return normalizarTexto(texto).includes(consultaMenu);
+      })
+    : platillos;
+
+  const menuPorCategoria = platillosFiltrados.reduce((acc, p) => {
     const cat = p.categoria || 'Especialidades';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(p);
@@ -299,6 +322,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   }, {} as Record<string, Platillo[]>);
   const categorias = Object.keys(menuPorCategoria);
   const claveCategorias = categorias.join('|');
+  const hayBusquedaMenu = consultaMenu.length > 0;
 
   /** Un solo buscador: unas plantillas registran refs y otras ponen id. */
   const nodoCategoria = (cat: string): HTMLElement | null =>
@@ -316,6 +340,20 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
       block: 'start',
     });
   };
+
+  /**
+   * Enter lleva la misma búsqueda al catálogo completo. La barra nunca
+   * desaparece: primero filtra esta carta y, si lo que se busca no está aquí,
+   * el comensal puede lanzar la búsqueda a todo TukiTuki sin volver atrás.
+   */
+  const buscarEnTukiTuki = (evento: React.FormEvent<HTMLFormElement>) => {
+    evento.preventDefault();
+    const texto = busquedaMenu.trim();
+    if (!texto || modoPreview) return;
+    navigate(`/descubrir?q=${encodeURIComponent(texto)}`);
+  };
+
+  const limpiarBusquedaMenu = () => setBusquedaMenu('');
 
   /** Las reseñas son la segunda parada de la ficha, después de la carta. */
   const irAResenas = () => {
@@ -522,6 +560,57 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
                 <BotonTexto onClick={onClosePreview} className="text-af-danger">Salir</BotonTexto>
               )}
             </div>
+          </div>
+
+          {/* Buscador persistente de la carta. Vive justo encima de las
+              categorías para que el menú y el detalle del plato no obliguen a
+              volver a Descubrir para encontrar otra cosa. */}
+          <div className="pb-2.5">
+            <form role="search" onSubmit={buscarEnTukiTuki} className="relative w-full sm:w-[min(26rem,100%)]">
+              <Search
+                size={16}
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-af-ink-secondary"
+              />
+              <input
+                id="buscador-menu"
+                type="search"
+                value={busquedaMenu}
+                onChange={(evento) => setBusquedaMenu(evento.target.value)}
+                placeholder="Buscar en el menú"
+                aria-label={`Buscar en el menú de ${restaurante.nombre}`}
+                autoComplete="off"
+                enterKeyHint="search"
+                className="h-11 w-full appearance-none rounded-full border border-af/25 bg-af-surface pl-9 pr-10 text-[16px] text-af-ink outline-none transition-colors placeholder:text-af-ink-secondary focus:border-af-accent-text focus:ring-2 focus:ring-af-accent/25 sm:text-[15px] [&::-webkit-search-cancel-button]:appearance-none"
+              />
+              {hayBusquedaMenu && (
+                <button
+                  type="button"
+                  onClick={limpiarBusquedaMenu}
+                  aria-label="Borrar la búsqueda del menú"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-af-ink-secondary transition-colors hover:text-af-ink"
+                >
+                  <X size={15} aria-hidden="true" />
+                </button>
+              )}
+            </form>
+
+            {hayBusquedaMenu && platillosFiltrados.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-af-ink-secondary">
+                <span aria-live="polite">
+                  {platillosFiltrados.length}{' '}
+                  {platillosFiltrados.length === 1 ? 'plato encontrado' : 'platos encontrados'}
+                </span>
+                {!modoPreview && (
+                  <Link
+                    to={`/descubrir?q=${encodeURIComponent(busquedaMenu.trim())}`}
+                    className="inline-flex items-center gap-1 font-semibold text-af-accent-text hover:underline"
+                  >
+                    Buscar en todo TukiTuki <ArrowRight size={13} aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -763,10 +852,37 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
         {categorias.length === 0 ? (
           <div className="max-w-xl mx-auto text-center px-6 py-20">
             <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center bg-af-surface border border-af/20 text-af-ink-secondary">
-              <Clock size={24} />
+              {hayBusquedaMenu ? <Search size={24} /> : <Clock size={24} />}
             </div>
-            <h2 className="text-xl font-bold text-af-ink font-title mb-2">El menú estará disponible pronto</h2>
-            <p className="text-af-ink-secondary">Este restaurante aún no ha publicado sus platillos.</p>
+            <h2 className="text-xl font-bold text-af-ink font-title mb-2">
+              {hayBusquedaMenu ? 'Sin resultados en la carta' : 'El menú estará disponible pronto'}
+            </h2>
+            <p className="text-af-ink-secondary">
+              {hayBusquedaMenu
+                ? `No encontramos «${busquedaMenu.trim()}» en el menú de ${restaurante.nombre}.`
+                : 'Este restaurante aún no ha publicado sus platillos.'}
+            </p>
+            {hayBusquedaMenu && (
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={limpiarBusquedaMenu}
+                  className="px-5 py-2.5 rounded-full text-sm font-bold af-pulsar"
+                  style={{ backgroundColor: c.primario, color: estilos.onPrimary }}
+                >
+                  Limpiar búsqueda
+                </button>
+                {!modoPreview && (
+                  <Link
+                    to={`/descubrir?q=${encodeURIComponent(busquedaMenu.trim())}`}
+                    className="px-5 py-2.5 rounded-full text-sm font-bold af-pulsar border"
+                    style={{ borderColor: paleta.border, color: paleta.text }}
+                  >
+                    Buscar en todo TukiTuki
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <Estructura
