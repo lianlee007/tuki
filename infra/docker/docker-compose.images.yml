@@ -114,6 +114,11 @@ services:
 
   restaurantes-service:
     <<: *node-base
+    # Mientras se valida una rama, este servicio se construye desde el fuente:
+    # la imagen `fase4` no contiene los cambios del panel.
+    build:
+      context: ../..
+      dockerfile: services/restaurantes-service/Dockerfile
     image: ghcr.io/lianlee007/tukituki-restaurantes:fase4
     container_name: tukituki-prod-restaurantesbe
     environment:
@@ -284,6 +289,11 @@ services:
         max-file: "3"
 
   panel-restaurante:
+    # Se compila desde la rama para que el panel refleje los cambios sin
+    # esperar a que CI publique una imagen nueva.
+    build:
+      context: ../..
+      dockerfile: apps/panel-restaurante/Dockerfile
     image: ghcr.io/lianlee007/tukituki-web-panel:fase4
     container_name: tukituki-prod-web-panelfe
     ports:
