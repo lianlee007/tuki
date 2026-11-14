@@ -30,6 +30,7 @@ import type {
 } from '../tipos/modelos';
 import type { Pedido } from '../modulos/pedidos/dominio/pedido';
 import type { Resena } from '../modulos/resenas/dominio/resenas';
+import { normalizarListaTexto } from './utils';
 
 const entorno = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
 
@@ -44,7 +45,8 @@ type ClaveServicio =
   | 'pedidos'
   | 'resenas'
   | 'admin'
-  | 'ai';
+  | 'ai'
+  | 'panel';
 
 const configRuntime = (globalThis as { __TUKI_CONFIG__?: Partial<Record<ClaveServicio, string>> })
   .__TUKI_CONFIG__ ?? {};
@@ -92,6 +94,18 @@ export const urlPanelAdmin = (): string => {
   }
 
   return 'http://localhost:5175';
+};
+
+/** Cliente único de los servicios, con el token de la sesión actual. */
+export const urlPanelRestaurante = (): string => {
+  const delRuntime = (configRuntime as Record<string, string | undefined>).panel;
+  if (delRuntime) return delRuntime.replace(/\/+$/, '');
+
+  const delBuild = entorno.VITE_PANEL_URL;
+  if (delBuild && delBuild !== '') return delBuild.replace(/\/+$/, '');
+
+  // En local el panel es otro servidor de Vite.
+  return 'http://localhost:5174';
 };
 
 /** Cliente único de los servicios, con el token de la sesión actual. */
@@ -266,8 +280,8 @@ export const aPlatillo = (
     descripcion: dto.descripcion ?? '',
     precio: Number(dto.precio),
     imagen_url: dto.imagenUrl ?? '',
-    ingredientes: dto.ingredientes ?? [],
-    alergenos: dto.alergenos ?? [],
+    ingredientes: normalizarListaTexto(dto.ingredientes),
+    alergenos: normalizarListaTexto(dto.alergenos),
     vegetariano: dto.vegetariano,
     vegano: dto.vegano,
     picante: dto.picante,
@@ -297,8 +311,8 @@ export const aPlatoDescubierto = (dto: PlatoDescubierto): PlatoLegado => ({
   vegetariano: dto.vegetariano,
   vegano: dto.vegano,
   picante: dto.picante,
-  ingredientes: dto.ingredientes ?? [],
-  alergenos: dto.alergenos ?? [],
+  ingredientes: normalizarListaTexto(dto.ingredientes),
+  alergenos: normalizarListaTexto(dto.alergenos),
   destacado: dto.destacado ?? false,
   restaurante_id: dto.restauranteId,
   restaurante_nombre: dto.restauranteNombre,

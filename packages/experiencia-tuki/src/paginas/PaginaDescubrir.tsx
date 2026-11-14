@@ -23,6 +23,7 @@ import { Inspiracion } from '../componentes/descubrir/Inspiracion';
 import { ModalPlato } from '../componentes/descubrir/ModalPlato';
 import { AvisoCuenta, AvisoOtroRestaurante } from '../componentes/descubrir/AvisosDescubrir';
 import { TarjetaPlato } from '../componentes/descubrir/TarjetaPlato';
+import { urlPanelRestaurante } from '../lib/api-tuki';
 import {
   DIETAS,
   RANGOS_PRECIO,
@@ -394,7 +395,7 @@ const PaginaDescubrir = () => {
   const primerPintado = cargando && platos.length === 0;
   const volver = `${location.pathname}${location.search}`;
   const rutaCuenta =
-    rol === 'restaurante' ? '/panel' : user ? '/mi-cuenta' : '/entrar';
+    rol === 'restaurante' ? urlPanelRestaurante() : user ? '/mi-cuenta' : '/entrar';
   const ciudades = Array.from(
     new Set(restaurantes.map((local) => local.ciudad).filter(Boolean))
   ) as string[];

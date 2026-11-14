@@ -1,8 +1,9 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useEffect } from 'react';
 // @ts-ignore
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
 import { Logo } from '../ui';
+import { urlPanelRestaurante } from '../../lib/api-tuki';
 
 const PantallaCarga = () => (
   <div className="flex min-h-screen items-center justify-center bg-af-ground">
@@ -15,7 +16,23 @@ const PantallaCarga = () => (
   </div>
 );
 
-const inicioDe = (rol: Rol) => (rol === 'restaurante' ? '/panel' : '/');
+const inicioDe = (rol: Rol) => {
+  if (rol !== 'restaurante') return '/';
+
+  const panel = urlPanelRestaurante();
+  if (typeof window !== 'undefined') {
+    try {
+      // En el propio panel la ruta es interna; en el sitio público es otro
+      // origen y hay que salir con una recarga completa.
+      if (new URL(panel, window.location.origin).origin === window.location.origin) {
+        return '/panel';
+      }
+    } catch {
+      // Si la URL configurada no es válida, se devuelve tal cual.
+    }
+  }
+  return panel;
+};
 
 /**
  * A dónde vuelve una cuenta recién autenticada. `?volver=` solo acepta rutas
@@ -64,6 +81,13 @@ export const RutaCuenta = RutaConSesion;
  * Páginas de acceso. Si ya hay sesión no se muestra el formulario: cada papel
  * va a su casa (el panel o la portada) o a la ruta de la que venía.
  */
+const RedireccionExterna: React.FC<{ url: string }> = ({ url }) => {
+  useEffect(() => {
+    window.location.replace(url);
+  }, [url]);
+  return <PantallaCarga />;
+};
+
 export function RutaAuth({ children }: PropsWithChildren) {  const { user, loading, rol, cargandoRol } = useAuth();
   const location = useLocation();
 
@@ -71,5 +95,8 @@ export function RutaAuth({ children }: PropsWithChildren) {  const { user, loadi
   if (!user) return <>{children}</>;
   if (cargandoRol || rol === null) return <PantallaCarga />;
 
-  return <Navigate to={destino(location.search, rol)} replace />;
+  const irA = destino(location.search, rol);
+  if (/^https?:\/\//i.test(irA)) return <RedireccionExterna url={irA} />;
+
+  return <Navigate to={irA} replace />;
 }

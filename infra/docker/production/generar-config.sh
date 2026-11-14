@@ -14,6 +14,7 @@ window.__TUKI_CONFIG__ = {
   resenas: '${TUKI_API_URL}',
   admin: '${TUKI_API_URL}',
   adminPanel: '${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}',
+  panel: '${TUKI_PANEL_URL:-http://localhost:5174}',
   web: '${TUKI_WEB_URL:-http://tukituki.local}',
   ai: '${TUKI_API_URL}'
 };
