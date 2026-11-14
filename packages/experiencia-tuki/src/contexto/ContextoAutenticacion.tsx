@@ -33,7 +33,15 @@ interface AuthContextType {
   cargandoRol: boolean;
   avatarUrl: string | null;
   guardarAvatar: (url: string | null) => Promise<string | null>;
-  iniciarSesion: (email: string, password: string) => Promise<void>;
+  /**
+   * Inicia sesión solo si la cuenta puede navegar este frontend. `rolEsperado`
+   * evita que un superadmin o el rol contrario entren por la puerta equivocada.
+   */
+  iniciarSesion: (
+    email: string,
+    password: string,
+    rolEsperado?: Rol,
+  ) => Promise<Usuario | null>;
   registrar: (entrada: {
     email: string;
     password: string;
@@ -52,12 +60,15 @@ const AuthContext = createContext<AuthContextType>({
   cargandoRol: false,
   avatarUrl: null,
   guardarAvatar: async () => null,
-  iniciarSesion: async () => {},
+  iniciarSesion: async () => null,
   registrar: async () => null,
   cerrarSesion: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
+
+/** Roles que pueden navegar la interfaz pública y el panel del restaurante. */
+const ROLES_NAVEGABLES: Usuario['rol'][] = ['cliente', 'dueno'];
 
 const aHeredado = (usuario: Usuario | null): UsuarioHeredado | null =>
   usuario
@@ -77,22 +88,31 @@ const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { usuario, cargando, entrar, registrar, salir } = usarAuth();
   const [avatar, setAvatar] = useState<string | null>(usuario?.avatarUrl ?? null);
 
+  /**
+   * Comensal y restaurante son las dos únicas puertas de esta interfaz. Un
+   * superadmin se administra desde su consola; si llega con una sesión guardada,
+   * se descarta para que no quede atrapado en una vista que no le corresponde.
+   */
+  const rolValido: Rol | null =
+    usuario?.rol === 'cliente' ? 'cliente' : usuario?.rol === 'dueno' ? 'restaurante' : null;
+  const usuarioValido = rolValido ? usuario : null;
+
   useEffect(() => {
     setAvatar(usuario?.avatarUrl ?? null);
   }, [usuario?.id, usuario?.avatarUrl]);
 
   const valor = useMemo<AuthContextType>(() => {
-    const user = aHeredado(usuario);
+    const user = aHeredado(usuarioValido);
 
     return {
       user,
       session: user ? { user } : null,
       loading: cargando,
-      rol: usuario ? (usuario.rol === 'cliente' ? 'cliente' : 'restaurante') : null,
+      rol: rolValido,
       cargandoRol: false,
       avatarUrl: avatar,
       guardarAvatar: async (url) => {
-        if (!usuario) return 'Entra a tu cuenta para cambiar la foto.';
+        if (!usuarioValido) return 'Entra a tu cuenta para cambiar la foto.';
         try {
           const { usuario: actualizado } = await apis.identidad.actualizarPerfil({
             avatarUrl: url,
@@ -103,15 +123,33 @@ const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           return 'No pudimos guardar tu foto. Inténtalo otra vez.';
         }
       },
-      iniciarSesion: async (email, password) => {
-        await entrar({ email, password });
+      iniciarSesion: async (email, password, rolEsperado) => {
+        const esperado =
+          rolEsperado === 'cliente' ? 'cliente' : rolEsperado === 'restaurante' ? 'dueno' : null;
+
+        return entrar(
+          { email, password },
+          {
+            validar: (cuenta) => {
+              if (cuenta.rol === 'superadmin') {
+                return 'Esta cuenta es de administración de la plataforma. Entra desde la consola de superadministrador.';
+              }
+              if (esperado && cuenta.rol !== esperado) {
+                return esperado === 'cliente'
+                  ? 'Esta cuenta es de restaurante. Entra desde el acceso de restaurantes.'
+                  : 'Esta cuenta es de comensal. Entra desde el acceso de comensales.';
+              }
+              return null;
+            },
+          },
+        );
       },
       registrar: async (entrada) => {
         return registrar(entrada);
       },
       cerrarSesion: salir,
     };
-  }, [usuario, cargando, avatar, entrar, registrar, salir]);
+  }, [usuarioValido, rolValido, cargando, avatar, entrar, registrar, salir]);
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
 };
@@ -119,7 +157,7 @@ const Puente: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export const ProveedorAutenticacion: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
-  <ProveedorAuth apis={apis}>
+  <ProveedorAuth apis={apis} rolesPermitidos={ROLES_NAVEGABLES}>
     <Puente>{children}</Puente>
   </ProveedorAuth>
 );

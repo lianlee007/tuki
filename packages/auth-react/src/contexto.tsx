@@ -7,13 +7,21 @@ import React, {
   useState,
 } from 'react';
 import type { Apis } from '@tuki/api-cliente';
-import type { EntradaLogin, EntradaRegistro, Usuario } from '@tuki/dominio';
+import type { EntradaLogin, EntradaRegistro, Rol, Usuario } from '@tuki/dominio';
 import { guardarTokens, leerTokens, limpiarTokens } from './almacen.js';
+
+interface OpcionesEntrada {
+  /**
+   * Valida la cuenta antes de guardar la sesión. Si devuelve un mensaje, el
+   * acceso se rechaza y no queda ningún token en el navegador.
+   */
+  validar?: (usuario: Usuario) => string | null;
+}
 
 interface ContextoAuth {
   usuario: Usuario | null;
   cargando: boolean;
-  entrar: (entrada: EntradaLogin) => Promise<Usuario>;
+  entrar: (entrada: EntradaLogin, opciones?: OpcionesEntrada) => Promise<Usuario>;
   registrar: (entrada: EntradaRegistro) => Promise<Usuario>;
   salir: () => Promise<void>;
 }
@@ -24,12 +32,21 @@ const Contexto = createContext<ContextoAuth | null>(null);
 export const ProveedorAuth: React.FC<{
   apis: Apis;
   children: React.ReactNode;
-}> = ({ apis, children }) => {
+  /**
+   * Roles que pueden conservar una sesión en este frontend. Al recuperar una
+   * sesión guardada, un rol fuera de la lista se descarta sin entrar en un
+   * bucle de redirecciones.
+   */
+  rolesPermitidos?: Rol[];
+}> = ({ apis, children, rolesPermitidos }) => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     let vigente = true;
+
+    const permitido = (cuenta: Usuario) =>
+      !rolesPermitidos || rolesPermitidos.includes(cuenta.rol);
 
     const recuperar = async () => {
       const { accessToken, refreshToken } = leerTokens();
@@ -40,13 +57,21 @@ export const ProveedorAuth: React.FC<{
 
       try {
         const perfil = await apis.identidad.perfil();
-        if (vigente) setUsuario(perfil.usuario);
+        if (!permitido(perfil.usuario)) {
+          limpiarTokens();
+        } else if (vigente) {
+          setUsuario(perfil.usuario);
+        }
       } catch {
         try {
           if (refreshToken) {
             const sesion = await apis.identidad.refrescar(refreshToken);
-            guardarTokens(sesion);
-            if (vigente) setUsuario(sesion.usuario);
+            if (!permitido(sesion.usuario)) {
+              limpiarTokens();
+            } else {
+              guardarTokens(sesion);
+              if (vigente) setUsuario(sesion.usuario);
+            }
           } else {
             limpiarTokens();
           }
@@ -62,16 +87,29 @@ export const ProveedorAuth: React.FC<{
     return () => {
       vigente = false;
     };
-  }, [apis]);
+  }, [apis, rolesPermitidos]);
 
   const entrar = useCallback(
-    async (entrada: EntradaLogin) => {
+    async (entrada: EntradaLogin, opciones?: OpcionesEntrada) => {
       const sesion = await apis.identidad.login(entrada);
+      const rechazo =
+        opciones?.validar?.(sesion.usuario) ??
+        (rolesPermitidos && !rolesPermitidos.includes(sesion.usuario.rol)
+          ? 'Esta cuenta no puede navegar en esta aplicación.'
+          : null);
+
+      if (rechazo) {
+        // La sesión se creó en el servidor, pero este frontend no la admite:
+        // se cierra para no dejar tokens de un rol que no puede navegar aquí.
+        await apis.identidad.cerrarSesion(sesion.refreshToken).catch(() => undefined);
+        throw new Error(rechazo);
+      }
+
       guardarTokens(sesion);
       setUsuario(sesion.usuario);
       return sesion.usuario;
     },
-    [apis],
+    [apis, rolesPermitidos],
   );
 
   const registrar = useCallback(

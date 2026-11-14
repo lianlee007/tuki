@@ -60,7 +60,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
         localStorage.removeItem('tuki_email');
       }
 
-      await iniciarSesion(email, password);
+      await iniciarSesion(email, password, rol);
     } catch (error: any) {
       const mensaje = String(error?.message || '');
       if (/credenciales|invalid login|incorrect/i.test(mensaje)) {
