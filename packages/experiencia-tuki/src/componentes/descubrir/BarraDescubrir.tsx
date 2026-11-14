@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { LogOut, Search, ShieldCheck, ShoppingBag, Store, UserRound, X, ArrowUpRight } from 'lucide-react';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
-import { urlPanelAdmin } from '../../lib/api-tuki';
+import { urlPanelAdmin, urlPanelRestaurante } from '../../lib/api-tuki';
 import { PalabraTuki, SimboloTuki, ThemeToggle } from '../ui';
 import { FOCO } from './estilos';
 
@@ -89,14 +89,14 @@ const MenuCuenta: React.FC = () => {
           </Link>
 
           {rol === 'restaurante' && (
-            <Link
-              to="/panel"
+            <a
+              href={urlPanelRestaurante()}
               role="menuitem"
               onClick={() => setAbierto(false)}
               className={`${fila} text-hearth-espresso hover:bg-hearth-oat dark:text-hearth-night-ink dark:hover:bg-hearth-night-oat`}
             >
               <Store size={16} aria-hidden="true" /> Mi panel
-            </Link>
+            </a>
           )}
 
           <button
@@ -180,12 +180,12 @@ const Acciones: React.FC<AccionesProps> = ({
     ) : (
       <>
         {rol === 'restaurante' && (
-          <Link
-            to="/panel"
+          <a
+            href={urlPanelRestaurante()}
             className={`af-pulsar inline-flex items-center gap-2 rounded-xl bg-hearth-oat px-4 py-2.5 text-[13px] font-bold text-hearth-espresso transition-colors hover:text-hearth-terracotta-ink dark:bg-hearth-night-oat dark:text-hearth-night-ink dark:hover:text-hearth-night-terracotta ${FOCO}`}
           >
             Mi panel
-          </Link>
+          </a>
         )}
 
         <MenuCuenta />

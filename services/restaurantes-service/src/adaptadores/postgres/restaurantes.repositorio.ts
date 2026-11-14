@@ -94,7 +94,8 @@ const crearConBase = async (
       insert into restaurantes (
         dueno_id, slug, nombre, descripcion, eslogan, telefono, whatsapp, email,
         direccion, ciudad, departamento, horario_apertura, horario_cierre,
-        facebook, instagram, twitter, dias_abierto
+        facebook, instagram, twitter, imagen_logo_url, imagen_banner_url,
+        dias_abierto
       ) values (
         ${entrada.duenoId}, ${entrada.slug}, ${entrada.nombre},
         ${entrada.descripcion ?? null}, ${entrada.eslogan ?? null},
@@ -104,6 +105,7 @@ const crearConBase = async (
         ${entrada.horarioApertura ?? '09:00'}, ${entrada.horarioCierre ?? '22:00'},
         ${entrada.facebook ?? null}, ${entrada.instagram ?? null},
         ${entrada.twitter ?? null},
+        ${entrada.imagenLogoUrl ?? null}, ${entrada.imagenBannerUrl ?? null},
         ${JSON.stringify(entrada.diasAbierto ?? DIAS_POR_DEFECTO)}::jsonb
       )
       returning *
@@ -158,6 +160,8 @@ const actualizar = async (
     facebook: resto.facebook,
     instagram: resto.instagram,
     twitter: resto.twitter,
+    imagen_logo_url: resto.imagenLogoUrl,
+    imagen_banner_url: resto.imagenBannerUrl,
   });
 
   if (Object.keys(cambios).length > 0) {

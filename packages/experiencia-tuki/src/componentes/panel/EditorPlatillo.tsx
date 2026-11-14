@@ -23,7 +23,7 @@ import {
   Undo2,
 } from 'lucide-react';
 import { LIMITES } from '../../constantes';
-import { prefiereMenosMovimiento } from '../../lib/utils';
+import { prefiereMenosMovimiento, normalizarListaTexto } from '../../lib/utils';
 import { EstadoPlatillo, ESTADOS, estadoDe, camposDeEstado, definicionEstado } from '../../modulos/menu';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 
@@ -194,7 +194,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
       precio: platillo.precio || 0,
       categoria: platillo.categoria || '',
       imagen_url: platillo.imagen_url || '',
-      ingredientes: platillo.ingredientes || [],
+      ingredientes: normalizarListaTexto(platillo.ingredientes),
       visible: platillo.visible !== false,
       disponible: platillo.disponible !== false,
       destacado: platillo.destacado || false,
@@ -205,7 +205,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
   const nombre = (valores.nombre || '').trim();
   const estado = estadoDe({ disponible: !!valores.disponible, visible: !!valores.visible });
 
-  const [ingredientesTemp, setIngredientesTemp] = useState(platillo.ingredientes?.join(', ') || '');
+  const [ingredientesTemp, setIngredientesTemp] = useState(normalizarListaTexto(platillo.ingredientes).join(', '));
   const [precioDisplay, setPrecioDisplay] = useState(platillo.precio ? platillo.precio.toLocaleString('es-CO') : '');
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(false);
@@ -218,7 +218,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
   const puedeGenerar = nombre.length >= 3 && !ocupado;
   const haySenalesParaCategoria = nombre.length > 2 || (valores.descripcion || '').length > 5 || ingredientesTemp.length > 0;
 
-  const ingredientes = (valores.ingredientes ?? []).filter(Boolean);
+  const ingredientes = normalizarListaTexto(valores.ingredientes ?? ingredientesTemp);
 
   useEffect(() => {
     if (platillo.imagen_url) setValue('imagen_url', platillo.imagen_url);
@@ -471,7 +471,6 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
           <Textarea
             id={`${id}-ingredientes`}
             data-campo="ingredientes"
-            {...register('ingredientes')}
             value={ingredientesTemp}
             onChange={handleIngredientesChange}
             placeholder="Pan artesanal, carne 100% de res, queso cheddar, tomate"

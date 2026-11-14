@@ -97,6 +97,8 @@ export interface EntradaCrearRestaurante {
   facebook?: string;
   instagram?: string;
   twitter?: string;
+  imagenLogoUrl?: string | null;
+  imagenBannerUrl?: string | null;
   diasAbierto?: Record<string, boolean>;
   cocinas: string[];
 }
