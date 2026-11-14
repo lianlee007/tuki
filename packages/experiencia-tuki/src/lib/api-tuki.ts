@@ -31,6 +31,7 @@ import type {
 import type { Pedido } from '../modulos/pedidos/dominio/pedido';
 import type { Resena } from '../modulos/resenas/dominio/resenas';
 import { normalizarListaTexto } from './utils';
+import { resolverUrlMedios } from './urlMedios';
 
 const entorno = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
 
@@ -121,6 +122,20 @@ export const apis = crearApis({
   obtenerToken: () => leerTokens().accessToken,
 });
 
+/**
+ * URL de imagen lista para pintar.
+ *
+ * Los datos importados guardan el host del momento (`http://IP:8084/...`);
+ * sobre una página HTTPS el navegador bloquea esas peticiones por contenido
+ * mixto. Se reescribe el origen del bucket al API configurado y se dejan
+ * intactas las fotos de terceros.
+ */
+export const urlImagen = (url?: string | null): string =>
+  resolverUrlMedios(url, {
+    protocolo: typeof window !== 'undefined' ? window.location.protocol : 'http:',
+    origenMedios: servicio('media', 'VITE_MEDIA_URL', 'http://localhost:3003'),
+  });
+
 /** Error con la forma que espera la interfaz heredada (`message` y `code`). */
 export interface ErrorUi {
   message: string;
@@ -201,8 +216,8 @@ export const aRestaurante = (dto: RestauranteDto & { duenoId?: string }): Restau
   horario_apertura: dto.horarioApertura ?? '09:00',
   horario_cierre: dto.horarioCierre ?? '22:00',
   dias_abierto: { ...diasPorDefecto, ...diasDe(dto.diasAbierto) },
-  imagen_logo_url: dto.imagenLogoUrl ?? '',
-  imagen_banner_url: dto.imagenBannerUrl ?? '',
+  imagen_logo_url: urlImagen(dto.imagenLogoUrl),
+  imagen_banner_url: urlImagen(dto.imagenBannerUrl),
   moneda: 'COP',
   idioma: 'es',
   activo: dto.activo,
@@ -279,7 +294,7 @@ export const aPlatillo = (
     nombre: dto.nombre,
     descripcion: dto.descripcion ?? '',
     precio: Number(dto.precio),
-    imagen_url: dto.imagenUrl ?? '',
+    imagen_url: urlImagen(dto.imagenUrl),
     ingredientes: normalizarListaTexto(dto.ingredientes),
     alergenos: normalizarListaTexto(dto.alergenos),
     vegetariano: dto.vegetariano,
@@ -306,7 +321,7 @@ export const aPlatoDescubierto = (dto: PlatoDescubierto): PlatoLegado => ({
   nombre: dto.nombre,
   descripcion: dto.descripcion,
   precio: Number(dto.precio),
-  imagen_url: dto.imagenUrl,
+  imagen_url: urlImagen(dto.imagenUrl),
   categoria: null,
   vegetariano: dto.vegetariano,
   vegano: dto.vegano,
@@ -332,8 +347,8 @@ export const aRestauranteDescubierto = (
   nombre: dto.nombre,
   eslogan: dto.eslogan,
   descripcion: dto.descripcion,
-  imagen_banner_url: dto.imagenBannerUrl,
-  imagen_logo_url: dto.imagenLogoUrl,
+  imagen_banner_url: urlImagen(dto.imagenBannerUrl),
+  imagen_logo_url: urlImagen(dto.imagenLogoUrl),
   ciudad: dto.ciudad,
   departamento: dto.departamento ?? null,
   tipo_cocina: null,
@@ -378,7 +393,7 @@ export const aResena = (dto: ResenaDto): Resena => ({
   platillo_id: dto.platilloId,
   aprobado: true,
   visible: true,
-  foto_url: dto.fotoUrl,
+  foto_url: urlImagen(dto.fotoUrl),
   foto_autor_url: null,
   utiles: dto.utiles,
   respuesta_dueno: dto.respuestaDueno,
