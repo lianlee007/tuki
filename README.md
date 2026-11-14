@@ -328,12 +328,22 @@ un API Gateway con Nginx y los tres frontends.
 
 El compose publica:
 
-| Servicio | URL local del host |
-|---|---|
-| Comensal | `http://<host>:8081` |
-| Panel | `http://<host>:8082` |
-| Administración | `http://<host>:8083` |
-| API | `http://<host>:8084` |
+| Servicio | URL local del host | URL pública con nip.io |
+|---|---|---|
+| Comensal | `http://<host>:8081` | `https://tuki.<host>.nip.io` |
+| Panel | `http://<host>:8082` | `https://panel.<host>.nip.io` |
+| Administración | `http://<host>:8083` | `https://admin.<host>.nip.io` |
+| API | `http://<host>:8084` | `https://api.<host>.nip.io` |
+
+`nip.io` resuelve cada subdominio al IP del host sin comprar ni configurar DNS,
+y Dokploy emite el certificado Let's Encrypt. Para un dominio propio basta con
+cambiar las cuatro URLs y crear los registros `A` correspondientes.
+
+En Dokploy, los dominios se agregan desde **Domains** del servicio Compose
+(servicios `web-comensal`, `panel-restaurante`, `admin-plataforma` y `api-gateway`,
+puerto `80`). Después de agregarlos hay que actualizar `TUKI_API_URL`,
+`TUKI_WEB_URL`, `TUKI_ADMIN_PANEL_URL` y `CORS_ORIGENES` en las variables de
+entorno y redesplegar.
 
 PostgreSQL, RustFS y la red interna no se exponen. Las migraciones se ejecutan
 al arrancar cada servicio y las imágenes de los frontends reciben la URL del API
