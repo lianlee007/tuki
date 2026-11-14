@@ -65,14 +65,19 @@ La capa se reconoce por el nombre, sin abrir el `docker-compose.yml`:
 
 | Capa | Patrón | Ejemplo |
 |---|---|---|
-| Servicio de negocio | `tukituki-<servicio>-service` | `tukituki-pedidos-service` |
-| Frontend | `tukituki-web-<rol>` | `tukituki-web-panel` |
-| Infraestructura | `tukituki-<pieza>` | `tukituki-postgres` |
+| Base de datos | `tukituki-<pieza>db` | `tukituki-postgresdb` |
+| Infraestructura | `tukituki-<pieza><etiqueta>` | `tukituki-rustfsstorage` |
+| Servicio backend | `tukituki-<servicio>be` | `tukituki-pedidosbe` |
+| Gateway | `tukituki-<nombre>gw` | `tukituki-apigw` |
+| Frontend | `tukituki-<rol>fe` | `tukituki-web-panelfe` |
+| Tarea efímera | `tukituki-<nombre>job` | `tukituki-importadorjob` |
 | Imagen en GHCR | `ghcr.io/<owner>/tukituki-<nombre>` | `ghcr.io/lianlee007/tukituki-web-admin` |
 
-Los frontends usan `web-` para agruparse en `docker ps` y distinguirse de los
-servicios, que terminan en `-service`. Las carpetas de las apps conservan su
-nombre de producto (`web-comensal`, `panel-restaurante`, `admin-plataforma`).
+El sufijo indica de un vistazo el tipo de contenedor: `db` (base de datos),
+`cache`, `storage`, `smtp`, `proxy`, `be` (backend), `gw` (gateway), `fe`
+(frontend) y `job` (tarea que termina). En producción se antepone `prod-`:
+`tukituki-prod-<pieza><etiqueta>`. Los nombres de imagen y de servicio interno
+no cambian; solo se decora `container_name`.
 
 ## Commits
 
