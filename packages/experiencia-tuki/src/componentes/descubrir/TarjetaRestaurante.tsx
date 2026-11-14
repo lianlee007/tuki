@@ -78,7 +78,7 @@ export const TarjetaRestaurante: React.FC<TarjetaRestauranteProps> = ({
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col px-3 pb-3 sm:px-3.5 sm:pb-3.5">
+      <div className="relative z-10 flex flex-1 flex-col px-3 pb-3 sm:px-3.5 sm:pb-3.5">
         <div className="-mt-4 flex items-end justify-between gap-2">
           <AvatarRestaurante
             nombre={restaurante.nombre}
