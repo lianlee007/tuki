@@ -14,7 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { PlantillaRestaurante } from '../componentes/restaurante/PlantillaRestaurante';
 import { BarraLateral } from '../componentes/panel/BarraLateral';
 import { SeccionDifusion } from '../componentes/panel/SeccionDifusion';
-import { SeccionInfo } from '../componentes/panel/SeccionInfo';
+import { SeccionInfo, type EstadoPublicacion } from '../componentes/panel/SeccionInfo';
+import { BarraPendientes } from '../componentes/panel/BarraPendientes';
 import { SeccionDiseno } from '../componentes/panel/SeccionDiseno';
 import { SeccionMenu } from '../componentes/panel/SeccionMenu';
 import { SeccionResenas } from '../componentes/panel/SeccionResenas';
@@ -91,6 +92,7 @@ export default function PanelControl() {
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [editandoPlatillo, setEditandoPlatillo] = useState<Partial<Platillo> | null>(null);
   const [idEliminar, setIdEliminar] = useState<string | null>(null);
+  const [estadoPublicacion, setEstadoPublicacion] = useState<EstadoPublicacion | null>(null);
 
   /**
    * El cajón móvil se cierra con Escape y devuelve el foco al botón que lo
@@ -308,7 +310,8 @@ export default function PanelControl() {
                 ><Menu size={24} /></button>
                 <div className="min-w-0"><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex shrink-0 items-center gap-2 md:gap-3">
+                <BarraPendientes estado={estadoPublicacion} visible={tabActiva === 'info' && !editandoPlatillo} />
                 <div className="hidden items-center gap-2 rounded-full bg-af-accent/10 px-3 py-1.5 text-xs font-semibold text-af-accent-text md:flex" title="La IA puede redactar textos y completar platillos">
                   <RobotIA size={14} /> Asistente IA
                 </div>
@@ -337,7 +340,7 @@ export default function PanelControl() {
                 que nacer a ras del borde desplazable para no moverse ni un píxel al hacer scroll. */}
             {restaurante && (
               <div hidden={!(tabActiva === 'info' && !editandoPlatillo)}>
-                <SeccionInfo restaurante={restaurante} guardarRestaurante={guardarRestaurante} subirImagen={subirImagen} sugerirIA={sugerirIA} guardando={guardando} mostrarMensaje={mostrarMensaje} />
+                <SeccionInfo restaurante={restaurante} guardarRestaurante={guardarRestaurante} subirImagen={subirImagen} sugerirIA={sugerirIA} guardando={guardando} mostrarMensaje={mostrarMensaje} onEstadoPublicacion={setEstadoPublicacion} />
               </div>
             )}
             {tabActiva === 'tema' && tema && !editandoPlatillo && <SeccionDiseno tema={tema} aplicarTema={aplicarTema} guardando={guardando} />}

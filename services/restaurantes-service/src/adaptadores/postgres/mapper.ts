@@ -29,6 +29,43 @@ const aDiasAbierto = (valor: unknown): Record<string, boolean> => {
   return {};
 };
 
+/**
+ * `text[]` debería llegar como arreglo, pero una columna antigua o un valor
+ * importado puede llegar como texto. Así el contrato de salida siempre es
+ * `string[]` y el cliente no tiene que defenderse campo por campo.
+ */
+const aListaTexto = (valor: unknown): string[] => {
+  if (Array.isArray(valor)) {
+    return valor.map((item) => String(item ?? '').trim()).filter(Boolean);
+  }
+  if (typeof valor !== 'string') return [];
+
+  const texto = valor.trim();
+  if (!texto) return [];
+  if (texto.startsWith('[') && texto.endsWith(']')) {
+    try {
+      const parseado = JSON.parse(texto);
+      if (Array.isArray(parseado)) {
+        return parseado.map((item) => String(item ?? '').trim()).filter(Boolean);
+      }
+    } catch {
+      // Sigue como lista separada por comas.
+    }
+  }
+
+  // Literal de arreglo de PostgreSQL (`{Pan,"Carne asada"}`), por si la
+  // columna quedó como `text` en una base antigua.
+  if (texto.startsWith('{') && texto.endsWith('}')) {
+    return texto
+      .slice(1, -1)
+      .split(',')
+      .map((item) => item.trim().replace(/^"(.*)"$/, '$1').replace(/\\"/g, '"'))
+      .filter(Boolean);
+  }
+
+  return texto.split(',').map((item) => item.trim()).filter(Boolean);
+};
+
 /** Traduce filas de PostgreSQL al modelo de dominio en camelCase. */
 export const aRestaurante = (fila: FilaRestaurante): Restaurante => ({
   id: fila.id,
@@ -100,8 +137,8 @@ export const aPlatillo = (fila: FilaPlatillo): Platillo => ({
   vegetariano: fila.vegetariano,
   vegano: fila.vegano,
   picante: fila.picante,
-  ingredientes: fila.ingredientes ?? [],
-  alergenos: fila.alergenos ?? [],
+  ingredientes: aListaTexto(fila.ingredientes),
+  alergenos: aListaTexto(fila.alergenos),
   destacado: fila.destacado,
   tiempoPreparacion: fila.tiempo_preparacion,
   orden: fila.orden,

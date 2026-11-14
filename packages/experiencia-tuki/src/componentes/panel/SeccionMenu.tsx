@@ -16,7 +16,7 @@ import {
 import {
   EstadoPlatillo, ESTADOS, estadoDe, contarEstados, DefinicionEstado,
 } from '../../modulos/menu';
-import { formatearPrecio, normalizarTexto, prefiereMenosMovimiento } from '../../lib/utils';
+import { formatearPrecio, normalizarTexto, prefiereMenosMovimiento, normalizarListaTexto } from '../../lib/utils';
 
 interface SeccionMenuProps {
   platillos: Platillo[];
@@ -86,7 +86,7 @@ const FilaPlatillo: React.FC<{
   onEliminar: () => void;
 }> = ({ platillo, onEditar, onEstado, onEliminar }) => {
   const estado = estadoDe(platillo);
-  const ingredientes = (platillo.ingredientes ?? []).filter(Boolean).join(', ');
+  const ingredientes = normalizarListaTexto(platillo.ingredientes).join(', ');
   const apoyo = ingredientes || platillo.descripcion || 'Sin ingredientes todavía';
   const precio = formatearPrecio(platillo.precio);
 
@@ -184,7 +184,7 @@ export const SeccionMenu: React.FC<SeccionMenuProps> = ({
       if (filtro === 'destacado' && !p.destacado) return false;
       if (!consulta) return true;
       const pajar = normalizarTexto(
-        [p.nombre, p.categoria, (p.ingredientes ?? []).join(' '), p.descripcion].filter(Boolean).join(' '),
+        [p.nombre, p.categoria, normalizarListaTexto(p.ingredientes).join(' '), p.descripcion].filter(Boolean).join(' '),
       );
       return pajar.includes(consulta);
     });
