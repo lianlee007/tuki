@@ -120,6 +120,9 @@ services:
       <<: *node-env
       PUERTO: "3002"
       DATABASE_URL: postgres://tuki_restaurantes:${RESTAURANTES_DB_PASSWORD}@postgres:5432/tuki_restaurantes
+      # Reescribe las URLs heredadas del bucket para que el navegador no las
+      # bloquee por contenido mixto al publicar el sitio por HTTPS.
+      MEDIA_PUBLIC_URL: ${TUKI_API_URL:?Define TUKI_API_URL}/tuki-media
     command: ["sh", "-c", "node dist/db/migrar.js && node dist/servidor.js"]
     healthcheck:
       <<: *healthcheck-node
