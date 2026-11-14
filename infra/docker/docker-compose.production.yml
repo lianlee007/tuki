@@ -381,7 +381,16 @@ services:
       PGDATABASE: postgres
     volumes:
       - ../../db/importacion/importar-produccion.sql:/importar.sql:ro
-    command: ["psql", "-v", "ON_ERROR_STOP=1", "-f", "/importar.sql"]
+    # Las URLs de las imágenes se construyen con el dominio público del API,
+    # no con el host interno: el navegador las carga desde el frontend HTTPS.
+    command:
+      - psql
+      - -v
+      - ON_ERROR_STOP=1
+      - -v
+      - tuki_media_url=${TUKI_API_URL:?Define TUKI_API_URL}/tuki-media
+      - -f
+      - /importar.sql
     depends_on:
       identidad-service:
         condition: service_healthy

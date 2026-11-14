@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 // @ts-ignore
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronRight, MapPin, UtensilsCrossed } from 'lucide-react';
-import { apis, intentar } from '../../lib/api-tuki';
+import { apis, intentar, urlImagen } from '../../lib/api-tuki';
 import { Contenedor, ImagenInteligente, Seccion } from '../ui';
 import { EncabezadoSeccion } from './EncabezadoSeccion';
 
@@ -49,8 +49,8 @@ export const SeccionPortafolio: React.FC = () => {
               nombre: restaurante.nombre,
               eslogan: restaurante.eslogan,
               municipio: restaurante.ciudad,
-              logo: restaurante.imagenLogoUrl,
-              banner: restaurante.imagenBannerUrl,
+              logo: urlImagen(restaurante.imagenLogoUrl),
+              banner: urlImagen(restaurante.imagenBannerUrl),
               platos: restaurante.platosCantidad,
             })),
         );
