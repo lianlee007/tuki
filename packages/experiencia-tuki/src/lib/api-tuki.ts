@@ -45,7 +45,8 @@ type ClaveServicio =
   | 'pedidos'
   | 'resenas'
   | 'admin'
-  | 'ai';
+  | 'ai'
+  | 'panel';
 
 const configRuntime = (globalThis as { __TUKI_CONFIG__?: Partial<Record<ClaveServicio, string>> })
   .__TUKI_CONFIG__ ?? {};
@@ -93,6 +94,18 @@ export const urlPanelAdmin = (): string => {
   }
 
   return 'http://localhost:5175';
+};
+
+/** Cliente único de los servicios, con el token de la sesión actual. */
+export const urlPanelRestaurante = (): string => {
+  const delRuntime = (configRuntime as Record<string, string | undefined>).panel;
+  if (delRuntime) return delRuntime.replace(/\/+$/, '');
+
+  const delBuild = entorno.VITE_PANEL_URL;
+  if (delBuild && delBuild !== '') return delBuild.replace(/\/+$/, '');
+
+  // En local el panel es otro servidor de Vite.
+  return 'http://localhost:5174';
 };
 
 /** Cliente único de los servicios, con el token de la sesión actual. */

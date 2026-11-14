@@ -111,22 +111,33 @@ export const BarraMovil: React.FC<BarraMovilProps> = ({
           Guardados
         </button>
 
-        <Link
-          to={rutaCuenta}
-          aria-label={
+        {(() => {
+          const cuentaExterna = /^https?:\/\//i.test(rutaCuenta);
+          const etiquetaCuenta =
             rutaCuenta === '/entrar'
               ? 'Entrar a tu cuenta'
-              : rutaCuenta === '/panel'
+              : cuentaExterna
                 ? 'Abrir el panel del restaurante'
-                : 'Abrir tu cuenta'
-          }
-          className={`${item} ${apagado}`}
-        >
-          <span className={icono}>
-            <UserRound size={20} aria-hidden="true" />
-          </span>
-          Cuenta
-        </Link>
+                : 'Abrir tu cuenta';
+          const contenidoCuenta = (
+            <>
+              <span className={icono}>
+                <UserRound size={20} aria-hidden="true" />
+              </span>
+              Cuenta
+            </>
+          );
+
+          return cuentaExterna ? (
+            <a href={rutaCuenta} aria-label={etiquetaCuenta} className={`${item} ${apagado}`}>
+              {contenidoCuenta}
+            </a>
+          ) : (
+            <Link to={rutaCuenta} aria-label={etiquetaCuenta} className={`${item} ${apagado}`}>
+              {contenidoCuenta}
+            </Link>
+          );
+        })()}
       </div>
     </nav>
   );

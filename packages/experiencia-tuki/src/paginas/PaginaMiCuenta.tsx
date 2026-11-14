@@ -23,6 +23,7 @@ import { SeccionDatosEnvio } from '../componentes/cuenta/SeccionDatosEnvio';
 import { useDatosEnvio } from '../modulos/cuenta';
 import { subirImagen } from '../lib/servicios';
 import { validarFoto } from '../lib/imagenes';
+import { urlPanelRestaurante } from '../lib/api-tuki';
 
 type Seccion = 'resenas' | 'pedidos' | 'envio';
 
@@ -204,12 +205,12 @@ export default function PaginaMiCuenta() {
 
               <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-col">
                 {rol === 'restaurante' && (
-                  <Link
-                    to="/panel"
+                  <a
+                    href={urlPanelRestaurante()}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-af-accent-solid px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 af-pulsar"
                   >
                     <Store size={16} /> Ir a mi panel
-                  </Link>
+                  </a>
                 )}
                 <button
                   type="button"
