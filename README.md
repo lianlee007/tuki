@@ -206,7 +206,7 @@ psql "postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_r
   -f db/seeds/restaurantes-demo.sql
 ```
 
-Si no tienes `psql` instalado, puedes usar `docker exec -i tukituki-postgres` o
+Si no tienes `psql` instalado, puedes usar `docker exec -i tukituki-postgresdb` o
 ejecutar los archivos desde el contenedor. El detalle está en
 [`db/seeds/README.md`](db/seeds/README.md).
 

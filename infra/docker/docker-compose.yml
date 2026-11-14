@@ -11,7 +11,7 @@ x-cors-origenes: &cors-origenes "http://localhost:5173,http://localhost:5174,htt
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tukituki-postgres
+    container_name: tukituki-postgresdb
     environment:
       POSTGRES_USER: tuki_admin
       POSTGRES_PASSWORD: tuki_admin_dev
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: tukituki-redis
+    container_name: tukituki-rediscache
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -48,7 +48,7 @@ services:
   # API; el código del media-service no cambia.
   rustfs:
     image: rustfs/rustfs:1.0.4
-    container_name: tukituki-rustfs
+    container_name: tukituki-rustfsstorage
     command: ["/data"]
     environment:
       RUSTFS_ACCESS_KEY: tuki_s3
@@ -72,14 +72,14 @@ services:
 
   mailpit:
     image: axllent/mailpit:v1.21
-    container_name: tukituki-mailpit
+    container_name: tukituki-mailpitsmtp
     ports:
       - "8025:8025"
       - "1025:1025"
 
   traefik:
     image: traefik:v3.1
-    container_name: tukituki-traefik
+    container_name: tukituki-traefikproxy
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -96,7 +96,7 @@ services:
     build:
       context: ../..
       dockerfile: services/identidad-service/Dockerfile
-    container_name: tukituki-identidad-service
+    container_name: tukituki-identidadbe
     environment:
       NODE_ENV: development
       PUERTO: "3001"
@@ -120,7 +120,7 @@ services:
     build:
       context: ../..
       dockerfile: services/restaurantes-service/Dockerfile
-    container_name: tukituki-restaurantes-service
+    container_name: tukituki-restaurantesbe
     environment:
       NODE_ENV: development
       PUERTO: "3002"
@@ -144,7 +144,7 @@ services:
     build:
       context: ../..
       dockerfile: services/media-service/Dockerfile
-    container_name: tukituki-media-service
+    container_name: tukituki-mediabe
     environment:
       NODE_ENV: development
       PUERTO: "3003"
@@ -176,7 +176,7 @@ services:
     build:
       context: ../..
       dockerfile: services/pedidos-service/Dockerfile
-    container_name: tukituki-pedidos-service
+    container_name: tukituki-pedidosbe
     environment:
       NODE_ENV: development
       PUERTO: "3004"
@@ -203,7 +203,7 @@ services:
     build:
       context: ../..
       dockerfile: services/resenas-service/Dockerfile
-    container_name: tukituki-resenas-service
+    container_name: tukituki-resenasbe
     environment:
       NODE_ENV: development
       PUERTO: "3005"
@@ -230,7 +230,7 @@ services:
     build:
       context: ../..
       dockerfile: services/admin-service/Dockerfile
-    container_name: tukituki-admin-service
+    container_name: tukituki-adminbe
     environment:
       NODE_ENV: development
       PUERTO: "3006"
@@ -257,7 +257,7 @@ services:
     build:
       context: ../../services/ai-gateway
       dockerfile: Dockerfile
-    container_name: tukituki-ai-gateway
+    container_name: tukituki-ai-gatewaybe
     environment:
       AI_ENVIRONMENT: development
       AI_AUTH_MODE: local
@@ -282,7 +282,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/web-comensal/Dockerfile
-    container_name: tukituki-web-comensal
+    container_name: tukituki-web-comensalfe
     ports:
       - "8081:80"
     labels:
@@ -296,7 +296,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/panel-restaurante/Dockerfile
-    container_name: tukituki-web-panel
+    container_name: tukituki-web-panelfe
     ports:
       - "8082:80"
     labels:
@@ -310,7 +310,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/admin-plataforma/Dockerfile
-    container_name: tukituki-web-admin
+    container_name: tukituki-web-adminfe
     ports:
       - "8083:80"
     labels:

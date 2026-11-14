@@ -42,7 +42,7 @@ x-healthcheck-node: &healthcheck-node
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tukituki-prod-postgres
+    container_name: tukituki-prod-postgresdb
     environment:
       POSTGRES_USER: tuki_admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
@@ -70,7 +70,7 @@ services:
 
   rustfs:
     image: rustfs/rustfs:1.0.4
-    container_name: tukituki-prod-rustfs
+    container_name: tukituki-prod-rustfsstorage
     command: ["/data"]
     environment:
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?Define S3_ACCESS_KEY}
@@ -98,7 +98,7 @@ services:
   identidad-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-identidad:fase4
-    container_name: tukituki-prod-identidad
+    container_name: tukituki-prod-identidadbe
     environment:
       <<: *node-env
       PUERTO: "3001"
@@ -115,7 +115,7 @@ services:
   restaurantes-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-restaurantes:fase4
-    container_name: tukituki-prod-restaurantes
+    container_name: tukituki-prod-restaurantesbe
     environment:
       <<: *node-env
       PUERTO: "3002"
@@ -128,7 +128,7 @@ services:
   media-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-media:fase4
-    container_name: tukituki-prod-media
+    container_name: tukituki-prod-mediabe
     environment:
       <<: *node-env
       PUERTO: "3003"
@@ -147,7 +147,7 @@ services:
   pedidos-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-pedidos:fase4
-    container_name: tukituki-prod-pedidos
+    container_name: tukituki-prod-pedidosbe
     environment:
       <<: *node-env
       PUERTO: "3004"
@@ -161,7 +161,7 @@ services:
   resenas-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-resenas:fase4
-    container_name: tukituki-prod-resenas
+    container_name: tukituki-prod-resenasbe
     environment:
       <<: *node-env
       PUERTO: "3005"
@@ -175,7 +175,7 @@ services:
   admin-service:
     <<: *node-base
     image: ghcr.io/lianlee007/tukituki-admin-service:fase4
-    container_name: tukituki-prod-admin
+    container_name: tukituki-prod-adminbe
     environment:
       <<: *node-env
       PUERTO: "3006"
@@ -190,7 +190,7 @@ services:
 
   ai-gateway:
     image: ghcr.io/lianlee007/tukituki-ai-gateway:fase4
-    container_name: tukituki-prod-ai-gateway
+    container_name: tukituki-prod-ai-gatewaybe
     environment:
       AI_ENVIRONMENT: production
       AI_AUTH_MODE: local
@@ -217,7 +217,7 @@ services:
 
   api-gateway:
     image: nginx:1.27-alpine
-    container_name: tukituki-prod-api
+    container_name: tukituki-prod-apigw
     ports:
       - "8084:80"
     volumes:
@@ -254,7 +254,7 @@ services:
 
   web-comensal:
     image: ghcr.io/lianlee007/tukituki-web-comensal:fase4
-    container_name: tukituki-prod-web-comensal
+    container_name: tukituki-prod-web-comensalfe
     ports:
       - "8081:80"
     environment:
@@ -285,7 +285,7 @@ services:
 
   panel-restaurante:
     image: ghcr.io/lianlee007/tukituki-web-panel:fase4
-    container_name: tukituki-prod-web-panel
+    container_name: tukituki-prod-web-panelfe
     ports:
       - "8082:80"
     environment:
@@ -316,7 +316,7 @@ services:
 
   admin-plataforma:
     image: ghcr.io/lianlee007/tukituki-web-admin:fase4
-    container_name: tukituki-prod-web-admin
+    container_name: tukituki-prod-web-adminfe
     ports:
       - "8083:80"
     environment:
@@ -346,7 +346,7 @@ services:
 
   importador:
     image: postgres:16-alpine
-    container_name: tukituki-prod-importador
+    container_name: tukituki-prod-importadorjob
     environment:
       PGHOST: postgres
       PGPORT: "5432"
