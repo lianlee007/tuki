@@ -17,6 +17,9 @@ const esquema = z.object({
   CORS_ORIGENES: z
     .string()
     .default('http://localhost:5173,http://localhost:5174,http://localhost:5175'),
+  // Base pública de las imágenes (`https://api/tuki-media`). Si falta se
+  // respetan las URLs guardadas, como en el entorno local con RustFS.
+  MEDIA_PUBLIC_URL: z.string().url().optional(),
 });
 
 const variables = esquema.parse(process.env);

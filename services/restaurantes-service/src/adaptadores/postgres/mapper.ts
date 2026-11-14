@@ -6,12 +6,18 @@ import type {
   Tema,
   TipoCocina,
 } from '../../dominio/restaurante.js';
+import { config } from '../../config.js';
 import type {
   FilaCategoria,
   FilaPlatillo,
   FilaRestaurante,
   FilaTema,
 } from './tipos.js';
+import { normalizarUrlMedios } from './urlMedios.js';
+
+/** Imagen del bucket público lista para que el navegador la cargue. */
+const urlMedios = (url: string | null): string | null =>
+  normalizarUrlMedios(url, config.MEDIA_PUBLIC_URL);
 
 /** PostgreSQL devuelve `jsonb` como texto; aquí se normaliza a objeto. */
 const aDiasAbierto = (valor: unknown): Record<string, boolean> => {
@@ -80,8 +86,8 @@ export const aRestaurante = (fila: FilaRestaurante): Restaurante => ({
   ciudad: fila.ciudad,
   departamento: fila.departamento,
   pais: fila.pais,
-  imagenLogoUrl: fila.imagen_logo_url,
-  imagenBannerUrl: fila.imagen_banner_url,
+  imagenLogoUrl: urlMedios(fila.imagen_logo_url),
+  imagenBannerUrl: urlMedios(fila.imagen_banner_url),
   horarioApertura: fila.horario_apertura,
   horarioCierre: fila.horario_cierre,
   facebook: fila.facebook,
@@ -131,7 +137,7 @@ export const aPlatillo = (fila: FilaPlatillo): Platillo => ({
   nombre: fila.nombre,
   descripcion: fila.descripcion,
   precio: Number(fila.precio),
-  imagenUrl: fila.imagen_url,
+  imagenUrl: urlMedios(fila.imagen_url),
   disponible: fila.disponible,
   activo: fila.activo,
   vegetariano: fila.vegetariano,
