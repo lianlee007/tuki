@@ -330,10 +330,10 @@ El compose publica:
 
 | Servicio | URL local del host | URL pública con nip.io |
 |---|---|---|
-| Comensal | `http://<host>:8081` | `https://tuki.<host>.nip.io` |
-| Panel | `http://<host>:8082` | `https://panel.<host>.nip.io` |
-| Administración | `http://<host>:8083` | `https://admin.<host>.nip.io` |
-| API | `http://<host>:8084` | `https://api.<host>.nip.io` |
+| Comensal | `http://<host>:8081` | `https://tukituki.<host>.nip.io` |
+| Panel | `http://<host>:8082` | `https://tukipanel.<host>.nip.io` |
+| Administración | `http://<host>:8083` | `https://tukiadmin.<host>.nip.io` |
+| API | `http://<host>:8084` | `https://tukiapi.<host>.nip.io` |
 
 `nip.io` resuelve cada subdominio al IP del host sin comprar ni configurar DNS,
 y Dokploy emite el certificado Let's Encrypt. Para un dominio propio basta con
