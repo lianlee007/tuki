@@ -216,7 +216,7 @@ services:
         max-file: "3"
 
   api-gateway:
-    image: nginx:1.27-alpine
+    image: nginx:1.29-alpine
     container_name: tukituki-prod-apigw
     ports:
       - "8084:80"
