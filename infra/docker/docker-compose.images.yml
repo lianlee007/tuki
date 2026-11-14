@@ -265,6 +265,7 @@ services:
     environment:
       TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
       TUKI_ADMIN_PANEL_URL: ${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}
+      TUKI_PANEL_URL: ${TUKI_PANEL_URL:-http://localhost:5174}
       TUKI_WEB_URL: ${TUKI_WEB_URL:-http://tukituki.local}
     entrypoint:
       - /bin/sh
@@ -301,6 +302,7 @@ services:
     environment:
       TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
       TUKI_ADMIN_PANEL_URL: ${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}
+      TUKI_PANEL_URL: ${TUKI_PANEL_URL:-http://localhost:5174}
       TUKI_WEB_URL: ${TUKI_WEB_URL:-http://tukituki.local}
     entrypoint:
       - /bin/sh
@@ -332,6 +334,7 @@ services:
     environment:
       TUKI_API_URL: ${TUKI_API_URL:?Define TUKI_API_URL}
       TUKI_ADMIN_PANEL_URL: ${TUKI_ADMIN_PANEL_URL:-http://admin.tukituki.local}
+      TUKI_PANEL_URL: ${TUKI_PANEL_URL:-http://localhost:5174}
       TUKI_WEB_URL: ${TUKI_WEB_URL:-http://tukituki.local}
     entrypoint:
       - /bin/sh
