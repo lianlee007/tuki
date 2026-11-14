@@ -14,8 +14,18 @@ import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 import { SelectorCocina, type SelectorCocinaRef } from './SelectorCocina';
 
+/** Un dato obligatorio y el bloque del formulario al que pertenece. */
+export interface CampoPublicacion {
+    k: string;
+    l: string;
+    grupo: string;
+}
+
 export interface EstadoPublicacion {
-    faltantes: { k: string; l: string }[];
+    /** Datos obligatorios que aún están vacíos. */
+    faltantes: CampoPublicacion[];
+    /** Los mismos datos ya completos, para poder celebrarlos en el resumen. */
+    listos: CampoPublicacion[];
     completos: number;
     total: number;
     estaPublicado: boolean;
@@ -48,23 +58,27 @@ const SISTEMA_IA =
     '(ingredientes, platos y tradición), no una frase genérica que valdría para cualquier restaurante. ' +
     'Nunca usas comillas ni markdown: respondes solo con el texto pedido.';
 
-/** Campos que deben estar completos para publicar el sitio. */
-const CAMPOS_OBLIGATORIOS: { k: string; l: string }[] = [
-    { k: 'nombre', l: 'Nombre' },
-    { k: 'eslogan', l: 'Eslogan' },
-    { k: 'descripcion', l: 'Descripción' },
-    { k: 'imagen_logo_url', l: 'Logo' },
-    { k: 'imagen_banner_url', l: 'Banner' },
-    { k: 'telefono', l: 'Teléfono' },
-    { k: 'email', l: 'Email' },
-    { k: 'direccion', l: 'Dirección' },
-    { k: 'departamento', l: 'Departamento' },
-    { k: 'municipio', l: 'Municipio' },
-    { k: 'ciudad', l: 'Ciudad' },
-    { k: 'whatsapp', l: 'WhatsApp' },
-    { k: 'horario_apertura', l: 'Horario de apertura' },
-    { k: 'horario_cierre', l: 'Horario de cierre' },
-    { k: 'dias_abierto', l: 'Días de servicio' },
+/**
+ * Campos que deben estar completos para publicar el sitio. El `grupo` es el
+ * bloque del formulario: la barra de progreso de la cabecera agrupa con él los
+ * datos que faltan, para que el resumen se lea como el propio formulario.
+ */
+const CAMPOS_OBLIGATORIOS: CampoPublicacion[] = [
+    { k: 'nombre', l: 'Nombre', grupo: 'Información básica' },
+    { k: 'eslogan', l: 'Eslogan', grupo: 'Información básica' },
+    { k: 'descripcion', l: 'Descripción', grupo: 'Información básica' },
+    { k: 'imagen_logo_url', l: 'Logo', grupo: 'Logo y banner' },
+    { k: 'imagen_banner_url', l: 'Banner', grupo: 'Logo y banner' },
+    { k: 'telefono', l: 'Teléfono', grupo: 'Ubicación y contacto' },
+    { k: 'email', l: 'Email', grupo: 'Ubicación y contacto' },
+    { k: 'direccion', l: 'Dirección', grupo: 'Ubicación y contacto' },
+    { k: 'departamento', l: 'Departamento', grupo: 'Ubicación y contacto' },
+    { k: 'municipio', l: 'Municipio', grupo: 'Ubicación y contacto' },
+    { k: 'ciudad', l: 'Ciudad', grupo: 'Ubicación y contacto' },
+    { k: 'whatsapp', l: 'WhatsApp', grupo: 'Ubicación y contacto' },
+    { k: 'horario_apertura', l: 'Horario de apertura', grupo: 'Horarios' },
+    { k: 'horario_cierre', l: 'Horario de cierre', grupo: 'Horarios' },
+    { k: 'dias_abierto', l: 'Días de servicio', grupo: 'Horarios' },
 ];
 
 /** Campos que validamos con zod (tienen un control en el formulario). */
@@ -186,6 +200,8 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 
     const valoresForm = watch();
     const faltantes = CAMPOS_OBLIGATORIOS.filter(c => esFaltante(c.k, valoresForm));
+    const clavesFaltantes = new Set(faltantes.map((f) => f.k));
+    const listos = CAMPOS_OBLIGATORIOS.filter(c => !clavesFaltantes.has(c.k));
     const estaPublicado = faltantes.length === 0;
     const totalCampos = CAMPOS_OBLIGATORIOS.length;
     const completos = totalCampos - faltantes.length;
@@ -231,11 +247,14 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
      */
     const faltantesRef = useRef(faltantes);
     faltantesRef.current = faltantes;
+    const listosRef = useRef(listos);
+    listosRef.current = listos;
     const faltantesClave = faltantes.map((f) => f.k).join('|');
 
     useEffect(() => {
         onEstadoPublicacion?.({
             faltantes: faltantesRef.current,
+            listos: listosRef.current,
             completos,
             total: totalCampos,
             estaPublicado,
