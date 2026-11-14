@@ -34,7 +34,7 @@ x-healthcheck-node: &healthcheck-node
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tukituki-prod-postgres
+    container_name: tukituki-prod-postgresdb
     environment:
       POSTGRES_USER: tuki_admin
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
@@ -62,7 +62,7 @@ services:
 
   rustfs:
     image: rustfs/rustfs:1.0.4
-    container_name: tukituki-prod-rustfs
+    container_name: tukituki-prod-rustfsstorage
     command: ["/data"]
     environment:
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?Define S3_ACCESS_KEY}
@@ -93,7 +93,7 @@ services:
       context: ../..
       dockerfile: services/identidad-service/Dockerfile
     image: tukituki-production-identidad-service
-    container_name: tukituki-prod-identidad
+    container_name: tukituki-prod-identidadbe
     environment:
       <<: *node-env
       PUERTO: "3001"
@@ -113,7 +113,7 @@ services:
       context: ../..
       dockerfile: services/restaurantes-service/Dockerfile
     image: tukituki-production-restaurantes-service
-    container_name: tukituki-prod-restaurantes
+    container_name: tukituki-prod-restaurantesbe
     environment:
       <<: *node-env
       PUERTO: "3002"
@@ -129,7 +129,7 @@ services:
       context: ../..
       dockerfile: services/media-service/Dockerfile
     image: tukituki-production-media-service
-    container_name: tukituki-prod-media
+    container_name: tukituki-prod-mediabe
     environment:
       <<: *node-env
       PUERTO: "3003"
@@ -151,7 +151,7 @@ services:
       context: ../..
       dockerfile: services/pedidos-service/Dockerfile
     image: tukituki-production-pedidos-service
-    container_name: tukituki-prod-pedidos
+    container_name: tukituki-prod-pedidosbe
     environment:
       <<: *node-env
       PUERTO: "3004"
@@ -168,7 +168,7 @@ services:
       context: ../..
       dockerfile: services/resenas-service/Dockerfile
     image: tukituki-production-resenas-service
-    container_name: tukituki-prod-resenas
+    container_name: tukituki-prod-resenasbe
     environment:
       <<: *node-env
       PUERTO: "3005"
@@ -185,7 +185,7 @@ services:
       context: ../..
       dockerfile: services/admin-service/Dockerfile
     image: tukituki-production-admin-service
-    container_name: tukituki-prod-admin
+    container_name: tukituki-prod-adminbe
     environment:
       <<: *node-env
       PUERTO: "3006"
@@ -203,7 +203,7 @@ services:
       context: ../../services/ai-gateway
       dockerfile: Dockerfile
     image: tukituki-production-ai-gateway
-    container_name: tukituki-prod-ai-gateway
+    container_name: tukituki-prod-ai-gatewaybe
     environment:
       AI_ENVIRONMENT: production
       AI_AUTH_MODE: local
@@ -230,7 +230,7 @@ services:
 
   api-gateway:
     image: nginx:1.27-alpine
-    container_name: tukituki-prod-api
+    container_name: tukituki-prod-apigw
     ports:
       - "8084:80"
     volumes:
@@ -270,7 +270,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/web-comensal/Dockerfile
-    container_name: tukituki-prod-web-comensal
+    container_name: tukituki-prod-web-comensalfe
     ports:
       - "8081:80"
     environment:
@@ -304,7 +304,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/panel-restaurante/Dockerfile
-    container_name: tukituki-prod-web-panel
+    container_name: tukituki-prod-web-panelfe
     ports:
       - "8082:80"
     environment:
@@ -338,7 +338,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/admin-plataforma/Dockerfile
-    container_name: tukituki-prod-web-admin
+    container_name: tukituki-prod-web-adminfe
     ports:
       - "8083:80"
     environment:
@@ -369,7 +369,7 @@ services:
 
   importador:
     image: postgres:16-alpine
-    container_name: tukituki-prod-importador
+    container_name: tukituki-prod-importadorjob
     environment:
       PGHOST: postgres
       PGPORT: "5432"
