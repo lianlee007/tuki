@@ -64,6 +64,9 @@ services:
     image: grafana/loki:3.6.0
     container_name: tukituki-mon-loki
     restart: unless-stopped
+    # La imagen corre como UID 10001 y el volumen nombrado nace propiedad de
+    # root. Sin esto Loki no puede crear /loki/chunks en el primer arranque.
+    user: "0:0"
     command: ["-config.file=/etc/loki/loki.yml"]
     volumes:
       - ./loki/loki.yml:/etc/loki/loki.yml:ro
