@@ -27,7 +27,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-helmet-async": "2.0.4",
-    "react-hook-form": "7.51.3",
+    "react-hook-form": "7.92.0",
     "react-router-dom": "^7.18.4",
     "zod": "^4.0.17",
     "zustand": "^5.0.0"
