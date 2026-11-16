@@ -1,0 +1,48 @@
+# Prometheus del stack de Dokploy.
+#
+# Los targets son los nombres de servicio del compose de producción: ambos
+# stacks comparten la red `tuki-tuki-mcftoo_default`, así que el DNS interno de
+# Docker los resuelve sin publicar puertos en el host.
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    entorno: production
+    plataforma: dokploy
+
+rule_files:
+  - /etc/prometheus/alertas.yml
+
+scrape_configs:
+  - job_name: tukituki-servicios
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - identidad-service:3001
+          - restaurantes-service:3002
+          - media-service:3003
+          - pedidos-service:3004
+          - resenas-service:3005
+          - admin-service:3006
+
+  - job_name: ai-gateway
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - ai-gateway:8000
+
+  - job_name: cadvisor
+    static_configs:
+      - targets:
+          - cadvisor:8080
+
+  - job_name: node
+    static_configs:
+      - targets:
+          - node-exporter:9100
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

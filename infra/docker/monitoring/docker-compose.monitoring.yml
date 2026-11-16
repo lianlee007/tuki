@@ -1,0 +1,128 @@
+name: tukituki-monitoring
+
+# Observabilidad de TukiTuki sobre el host Docker de Dokploy.
+#
+# Se despliega como una aplicación Compose independiente que comparte la red
+# del stack de producción (`tuki-tuki-mcftoo_default`). Así Prometheus raspa
+# /metrics por DNS interno y Grafana queda detrás de Traefik, sin publicar
+# ningún puerto de métricas ni de bases de datos.
+#
+# Variables:
+#   GRAFANA_ADMIN_PASSWORD  obligatoria
+#   GRAFANA_ROOT_URL        URL pública de Grafana (para enlaces y OAuth)
+#   TUKI_DOCKER_NETWORK     red del stack de producción
+#   PROMETHEUS_RETENTION    retención temporal (por defecto 15d)
+#   PROMETHEUS_RETENTION_SIZE retención por tamaño (por defecto 2GB)
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    container_name: tukituki-mon-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
+      - --storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-2GB}
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alertas.yml:/etc/prometheus/alertas.yml:ro
+      - prometheus_data:/prometheus
+    logging: *logging
+
+  grafana:
+    image: grafana/grafana:13.2.4
+    container_name: tukituki-mon-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Define GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - default
+    logging: *logging
+
+  loki:
+    image: grafana/loki:3.6.0
+    container_name: tukituki-mon-loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+    logging: *logging
+
+  alloy:
+    image: grafana/alloy:v1.22.0
+    container_name: tukituki-mon-alloy
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+    depends_on:
+      - loki
+    logging: *logging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    container_name: tukituki-mon-cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    command:
+      - --housekeeping_interval=15s
+      - --docker_only=true
+    logging: *logging
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    container_name: tukituki-mon-node-exporter
+    restart: unless-stopped
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - --path.rootfs=/host
+    logging: *logging
+
+networks:
+  default:
+    external: true
+    name: ${TUKI_DOCKER_NETWORK:-tuki-tuki-mcftoo_default}
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  alloy_data:
