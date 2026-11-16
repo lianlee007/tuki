@@ -45,6 +45,7 @@ loki.source.docker "tuki" {
   targets       = discovery.docker.tuki.targets
   relabel_rules = discovery.relabel.tuki.rules
   labels        = { job = "docker", entorno = "production" }
+  forward_to    = [loki.write.loki.receiver]
 }
 
 loki.write "loki" {
