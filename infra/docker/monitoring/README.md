@@ -98,5 +98,14 @@ docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml config
 curl -X POST http://127.0.0.1:9090/-/reload
 ```
 
+Docker Compose no recrea un contenedor cuando solo cambia un archivo montado.
+Después de editar `prometheus.yml`, `alertas.yml` o el provisioning de Grafana,
+reinicia el contenedor correspondiente:
+
+```bash
+docker compose -p tuki-monitoring restart prometheus
+docker compose -p tuki-monitoring restart grafana
+```
+
 Los límites de memoria (`mem_limit`) evitan que la observabilidad vuelva a
 dejar sin RAM al panel de Dokploy.
