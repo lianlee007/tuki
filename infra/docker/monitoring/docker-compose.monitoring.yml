@@ -5,14 +5,19 @@ name: tukituki-monitoring
 # Se despliega como una aplicación Compose independiente que comparte la red
 # del stack de producción (`tuki-tuki-mcftoo_default`). Así Prometheus raspa
 # /metrics por DNS interno y Grafana queda detrás de Traefik, sin publicar
-# ningún puerto de métricas ni de bases de datos.
+# ningún puerto de métricas.
+#
+# El host también ejecuta Dokploy y otros proyectos, así que esta pila es
+# deliberadamente mínima: métricas de aplicación + métricas del host. cAdvisor
+# y Loki se descartaron porque el host de 8 GB se quedó sin memoria y el panel
+# de Dokploy dejó de responder.
 #
 # Variables:
-#   GRAFANA_ADMIN_PASSWORD  obligatoria
-#   GRAFANA_ROOT_URL        URL pública de Grafana (para enlaces y OAuth)
-#   TUKI_DOCKER_NETWORK     red del stack de producción
-#   PROMETHEUS_RETENTION    retención temporal (por defecto 15d)
-#   PROMETHEUS_RETENTION_SIZE retención por tamaño (por defecto 2GB)
+#   GRAFANA_ADMIN_PASSWORD    obligatoria
+#   GRAFANA_ROOT_URL          URL pública de Grafana (para enlaces y OAuth)
+#   TUKI_DOCKER_NETWORK       red del stack de producción
+#   PROMETHEUS_RETENTION      retención temporal (por defecto 7d)
+#   PROMETHEUS_RETENTION_SIZE retención por tamaño (por defecto 1GB)
 
 x-logging: &logging
   driver: json-file
@@ -28,16 +33,16 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
-      - --storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-2GB}
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-7d}
+      - --storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-1GB}
       - --web.enable-lifecycle
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alertas.yml:/etc/prometheus/alertas.yml:ro
       - prometheus_data:/prometheus
-    # Límites para que el stack de observabilidad no compita con Dokploy ni con
-    # los demás proyectos del host. Docker lo reinicia si supera el tope.
-    mem_limit: 640m
+    # Límites para que la observabilidad no compita con Dokploy ni con los
+    # demás proyectos del host.
+    mem_limit: 384m
     logging: *logging
 
   grafana:
@@ -58,64 +63,8 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
-      - loki
     networks:
       - default
-    mem_limit: 448m
-    logging: *logging
-
-  loki:
-    image: grafana/loki:3.6.0
-    container_name: tukituki-mon-loki
-    restart: unless-stopped
-    # La imagen corre como UID 10001 y el volumen nombrado nace propiedad de
-    # root. Sin esto Loki no puede crear /loki/chunks en el primer arranque.
-    user: "0:0"
-    command: ["-config.file=/etc/loki/loki.yml"]
-    volumes:
-      - ./loki/loki.yml:/etc/loki/loki.yml:ro
-      - loki_data:/loki
-    mem_limit: 320m
-    logging: *logging
-
-  alloy:
-    image: grafana/alloy:v1.22.0
-    container_name: tukituki-mon-alloy
-    restart: unless-stopped
-    command:
-      - run
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-      - /etc/alloy/config.alloy
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy/data
-    depends_on:
-      - loki
-    mem_limit: 160m
-    logging: *logging
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.55.1
-    container_name: tukituki-mon-cadvisor
-    restart: unless-stopped
-    privileged: true
-    devices:
-      - /dev/kmsg
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    # El host comparte decenas de contenedores: escanear el filesystem de cada
-    # uno bloquea el endpoint /metrics durante minutos. El disco del host lo
-    # mide node-exporter, así que aquí solo se recogen CPU, memoria y red.
-    command:
-      - --housekeeping_interval=30s
-      - --docker_only=true
-      - --disable_metrics=disk,diskIO
     mem_limit: 384m
     logging: *logging
 
@@ -128,7 +77,7 @@ services:
       - /:/host:ro,rslave
     command:
       - --path.rootfs=/host
-    mem_limit: 96m
+    mem_limit: 64m
     logging: *logging
 
 networks:
@@ -139,5 +88,3 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
-  loki_data:
-  alloy_data:

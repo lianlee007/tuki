@@ -1,8 +1,8 @@
 # Observabilidad en Dokploy
 
-Stack de métricas, logs y dashboards para el despliegue de TukiTuki en un host
-Docker gestionado por Dokploy. Es el equivalente a `infra/observability`, que
-está pensado para Kubernetes.
+Stack mínimo de métricas y dashboards para el despliegue de TukiTuki en un
+host Docker gestionado por Dokploy. Es el equivalente a `infra/observability`,
+que está pensado para Kubernetes.
 
 ```
 Dokploy
@@ -11,20 +11,34 @@ Dokploy
 │
 └── aplicación "tuki-monitoring"      infra/docker/monitoring/docker-compose.monitoring.yml
     ├── prometheus      métricas de los 6 servicios y del AI Gateway
-    ├── cadvisor        CPU, memoria y red por contenedor
     ├── node-exporter   CPU, memoria y disco del host
-    ├── loki            almacén de logs (7 días)
-    ├── alloy           recolector de logs de Docker
-    └── grafana         dashboards y datasource Prometheus + Loki
+    └── grafana         dashboards con Prometheus como datasource
 ```
 
 ## Por qué una aplicación aparte
 
 - Desplegar Tuki no reinicia Grafana y viceversa.
-- Prometheus entra por la red interna de Docker: no se publica `9090`, `3100`
-  ni `3000`. Solo Grafana queda detrás de Traefik con HTTPS.
+- Prometheus entra por la red interna de Docker: no se publica `9090` ni
+  `3000`. Solo Grafana queda detrás de Traefik con HTTPS.
 - La aplicación de producción no cambia; el stack de monitoreo se une a su red
   como red externa.
+
+## Por qué no hay cAdvisor ni Loki
+
+La primera versión incluía cAdvisor, Loki y Alloy. En este host (8 GB de RAM y
+más de 70 contenedores de varios proyectos) cAdvisor llegó a consumir ~870 MB
+escaneando los filesystems y el conjunto completo superó los 1,8 GB. El panel
+de Dokploy se quedó sin memoria y dejó de responder en dos ocasiones.
+
+Por eso esta pila solo recoge:
+
+- métricas RED de los servicios (`/metrics` de `@tuki/observabilidad-node`);
+- métricas del AI Gateway;
+- CPU, memoria, disco y red del host con `node-exporter`.
+
+Los **logs en tiempo real** se consultan en Dokploy → servicio → *Logs*. Si más
+adelante se amplía la RAM del host, se puede añadir Loki + Alloy y cAdvisor con
+límites estrictos de memoria.
 
 ## Variables
 
@@ -33,8 +47,8 @@ Dokploy
 | `GRAFANA_ADMIN_PASSWORD` | sí | contraseña del usuario `admin` |
 | `GRAFANA_ROOT_URL` | recomendada | `https://grafana.<host>.nip.io` |
 | `TUKI_DOCKER_NETWORK` | recomendada | red del compose de producción; por defecto `tuki-tuki-mcftoo_default` |
-| `PROMETHEUS_RETENTION` | no | retención temporal; por defecto `15d` |
-| `PROMETHEUS_RETENTION_SIZE` | no | retención por tamaño; por defecto `2GB` |
+| `PROMETHEUS_RETENTION` | no | retención temporal; por defecto `7d` |
+| `PROMETHEUS_RETENTION_SIZE` | no | retención por tamaño; por defecto `1GB` |
 
 `TUKI_DOCKER_NETWORK` debe coincidir con la red real. Se puede comprobar con:
 
@@ -63,26 +77,13 @@ Los targets de Prometheus son nombres de servicio (`identidad-service:3001`,
 ## Dashboards
 
 - **Tuki · Servicios y SLO (Docker):** disponibilidad 1 h, peticiones, 5xx,
-  p95, peticiones en curso, CPU/memoria/reinicios por contenedor y estado de
-  los targets.
+  p95, peticiones en curso y estado de los targets.
 - **Tuki · API e infraestructura (Docker):** rutas y latencia del AI Gateway,
   rate limit, tokens, llamadas a Groq y CPU/RAM/disco del host.
 
 Las alertas de `prometheus/alertas.yml` se evalúan en Prometheus. Para recibir
 notificaciones hace falta un Alertmanager o configurar Grafana Alerting; el
 stack actual solo las muestra como `pending`/`firing`.
-
-## Logs
-
-Alloy lee el socket de Docker y envía a Loki los contenedores cuyo nombre
-empieza por `tukituki-prod-`. En Grafana → *Explore* → datasource **Loki**:
-
-```logql
-{container="tukituki-prod-pedidosbe"}
-{service="identidad-service"} |= "error"
-```
-
-Dokploy también muestra los logs en vivo en la pestaña *Logs* de cada servicio.
 
 ## Operación
 
@@ -97,5 +98,5 @@ docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml config
 curl -X POST http://127.0.0.1:9090/-/reload
 ```
 
-`cadvisor` requiere `privileged: true` para leer las métricas del kernel. Es el
-mismo esquema que usa la plantilla *Container Monitoring* de Dokploy.
+Los límites de memoria (`mem_limit`) evitan que la observabilidad vuelva a
+dejar sin RAM al panel de Dokploy.
