@@ -1,0 +1,105 @@
+# Registro de SLI y alertas del stack de Dokploy.
+#
+# Es el equivalente a infra/observability/prometheusrule-servicios.yaml, pero
+# sin kube-state-metrics: los reinicios se detectan con cAdvisor y los targets
+# con la etiqueta `job` en lugar de `namespace`/`pod`.
+
+groups:
+  - name: tukituki.registro
+    interval: 30s
+    rules:
+      - record: tuki:http_requests:rate5m
+        expr: sum by (app) (rate(tuki_http_requests_total[5m]))
+
+      - record: tuki:http_errors:ratio5m
+        expr: |
+          sum by (app) (rate(tuki_http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum by (app) (rate(tuki_http_requests_total[5m])), 0.001)
+
+      - record: tuki:http_latency:p95_5m
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (app, le) (rate(tuki_http_request_duration_seconds_bucket[5m]))
+          )
+
+      - record: tuki:slo:availability_1h
+        expr: |
+          1 - (
+            sum(rate(tuki_http_requests_total{status=~"5.."}[1h]))
+            /
+            clamp_min(sum(rate(tuki_http_requests_total[1h])), 0.001)
+          )
+
+  - name: tukituki.slo
+    rules:
+      - alert: TukiServicioCaido
+        expr: up{job=~"tukituki-servicios|ai-gateway"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: tukituki
+        annotations:
+          summary: "Prometheus no puede raspar un servicio de Tuki"
+          description: "El target {{ $labels.instance }} no responde en /metrics."
+
+      - alert: TukiDisponibilidadBaja
+        expr: tuki:slo:availability_1h < 0.995
+        for: 10m
+        labels:
+          severity: critical
+          team: tukituki
+        annotations:
+          summary: "Disponibilidad por debajo del SLO (99.5 % en 1 h)"
+          description: "Se está consumiendo el error budget más rápido de lo aceptado."
+
+      - alert: TukiErrorRateAlta
+        expr: tuki:http_errors:ratio5m > 0.05
+        for: 10m
+        labels:
+          severity: warning
+          team: tukituki
+        annotations:
+          summary: "Más del 5 % de peticiones fallan en {{ $labels.app }}"
+          description: "Revisa logs, base de datos y dependencias del servicio."
+
+      - alert: TukiLatenciaP95Alta
+        expr: tuki:http_latency:p95_5m > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: tukituki
+        annotations:
+          summary: "Latencia p95 por encima de 500 ms en {{ $labels.app }}"
+          description: "Revisa CPU, pool de PostgreSQL y llamadas entre servicios."
+
+      - alert: TukiContenedorReiniciando
+        expr: |
+          sum by (container_label_com_docker_compose_service) (
+            changes(container_start_time_seconds{
+              container_label_com_docker_compose_service=~"identidad-service|restaurantes-service|media-service|pedidos-service|resenas-service|admin-service|ai-gateway|api-gateway|web-comensal|panel-restaurante|admin-plataforma|postgres|rustfs"
+            }[15m])
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: tukituki
+        annotations:
+          summary: "Un contenedor de Tuki se reinicia repetidamente"
+          description: "Contenedor {{ $labels.container_label_com_docker_compose_service }}: revisa logs, memoria y variables de entorno."
+
+      - alert: TukiDiscoBajo
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+            /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+          ) < 0.10
+        for: 15m
+        labels:
+          severity: warning
+          team: tukituki
+        annotations:
+          summary: "Queda menos del 10 % de disco en el host"
+          description: "Prometheus, Loki e imágenes de Docker comparten el disco del host."
