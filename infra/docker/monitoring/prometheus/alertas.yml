@@ -74,21 +74,6 @@ groups:
           summary: "Latencia p95 por encima de 500 ms en {{ $labels.app }}"
           description: "Revisa CPU, pool de PostgreSQL y llamadas entre servicios."
 
-      - alert: TukiContenedorReiniciando
-        expr: |
-          sum by (container_label_com_docker_compose_service) (
-            changes(container_start_time_seconds{
-              container_label_com_docker_compose_service=~"identidad-service|restaurantes-service|media-service|pedidos-service|resenas-service|admin-service|ai-gateway|api-gateway|web-comensal|panel-restaurante|admin-plataforma|postgres|rustfs"
-            }[15m])
-          ) > 2
-        for: 5m
-        labels:
-          severity: warning
-          team: tukituki
-        annotations:
-          summary: "Un contenedor de Tuki se reinicia repetidamente"
-          description: "Contenedor {{ $labels.container_label_com_docker_compose_service }}: revisa logs, memoria y variables de entorno."
-
       - alert: TukiDiscoBajo
         expr: |
           (
