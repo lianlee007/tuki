@@ -35,6 +35,9 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alertas.yml:/etc/prometheus/alertas.yml:ro
       - prometheus_data:/prometheus
+    # Límites para que el stack de observabilidad no compita con Dokploy ni con
+    # los demás proyectos del host. Docker lo reinicia si supera el tope.
+    mem_limit: 640m
     logging: *logging
 
   grafana:
@@ -58,6 +61,7 @@ services:
       - loki
     networks:
       - default
+    mem_limit: 448m
     logging: *logging
 
   loki:
@@ -71,6 +75,7 @@ services:
     volumes:
       - ./loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
+    mem_limit: 320m
     logging: *logging
 
   alloy:
@@ -88,6 +93,7 @@ services:
       - alloy_data:/var/lib/alloy/data
     depends_on:
       - loki
+    mem_limit: 160m
     logging: *logging
 
   cadvisor:
@@ -110,6 +116,7 @@ services:
       - --housekeeping_interval=30s
       - --docker_only=true
       - --disable_metrics=disk,diskIO
+    mem_limit: 384m
     logging: *logging
 
   node-exporter:
@@ -121,6 +128,7 @@ services:
       - /:/host:ro,rslave
     command:
       - --path.rootfs=/host
+    mem_limit: 96m
     logging: *logging
 
 networks:
