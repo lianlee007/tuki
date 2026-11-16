@@ -100,9 +100,13 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    # El host comparte decenas de contenedores: escanear el filesystem de cada
+    # uno bloquea el endpoint /metrics durante minutos. El disco del host lo
+    # mide node-exporter, así que aquí solo se recogen CPU, memoria y red.
     command:
-      - --housekeeping_interval=15s
+      - --housekeeping_interval=30s
       - --docker_only=true
+      - --disable_metrics=disk,diskIO
     logging: *logging
 
   node-exporter:
