@@ -76,10 +76,20 @@ Los targets de Prometheus son nombres de servicio (`identidad-service:3001`,
 
 ## Dashboards
 
-- **Tuki · Servicios y SLO (Docker):** disponibilidad 1 h, peticiones, 5xx,
-  p95, peticiones en curso y estado de los targets.
-- **Tuki · API e infraestructura (Docker):** rutas y latencia del AI Gateway,
-  rate limit, tokens, llamadas a Groq y CPU/RAM/disco del host.
+- **Tuki · Aplicación** (dashboard inicial): SLO, peticiones por segundo, 5xx,
+  latencia p95, peticiones por servicio, por método y por ruta, errores por
+  código HTTP, peticiones en curso, heap, RSS, CPU, event loop y GC de cada
+  servicio Node.js. Tiene un selector `Servicio` para filtrar los seis
+  microservicios.
+- **Tuki · Servicios y SLO (Docker):** vista resumida de disponibilidad 1 h,
+  peticiones, 5xx, p95, peticiones en curso y estado de los targets.
+- **Tuki · API e infraestructura (Docker):** tráfico y latencia del AI Gateway,
+  rate limit, tokens, llamadas a Groq, CPU/RAM/disco del host y métricas de
+  proceso del gateway. Los contadores del gateway se muestran en cero mientras
+  no reciba tráfico de IA.
+
+`GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH` hace que al iniciar sesión se abra
+**Tuki · Aplicación**.
 
 Las alertas de `prometheus/alertas.yml` se evalúan en Prometheus. Para recibir
 notificaciones hace falta un Alertmanager o configurar Grafana Alerting; el
