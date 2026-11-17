@@ -59,6 +59,14 @@ services:
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
       # Al iniciar sesión se abre el dashboard de la aplicación.
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/tukituki-aplicacion.json
+      # Grafana 13 consume ~330 MB en reposo: con 384 MB el contenedor moría al
+      # navegar entre dashboards. Se apaga el trabajo en segundo plano que no
+      # se usa y se deja margen de memoria.
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
+      GF_ANALYTICS_CHECK_FOR_PLUGINS_UPDATES: "false"
+      GF_NEWS_NEWSFEED_ENABLED: "false"
+      # WAL reduce los bloqueos de SQLite cuando hay varias consultas a la vez.
+      GF_DATABASE_WAL: "true"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
@@ -67,7 +75,9 @@ services:
       - prometheus
     networks:
       - default
-    mem_limit: 384m
+    # 768 MB: el proceso usa ~330 MB en reposo y necesita margen al abrir
+    # dashboards. Con 384 MB el OOM killer lo reiniciaba y Traefik devolvía 502.
+    mem_limit: 768m
     logging: *logging
 
   node-exporter:

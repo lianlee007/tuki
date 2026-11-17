@@ -118,4 +118,12 @@ docker compose -p tuki-monitoring restart grafana
 ```
 
 Los límites de memoria (`mem_limit`) evitan que la observabilidad vuelva a
-dejar sin RAM al panel de Dokploy.
+dejar sin RAM al panel de Dokploy: Prometheus 384 MB, Grafana 768 MB y
+node-exporter 64 MB.
+
+Grafana 13 consume ~330 MB en reposo. Con un límite de 384 MB el OOM killer lo
+reiniciaba al navegar entre dashboards y Traefik devolvía **502 Bad Gateway**,
+por eso el límite es 768 MB y se desactivó la instalación de plugins en segundo
+plano (`GF_PLUGINS_PREINSTALL_DISABLED`). Prometheus también raspa `/metrics`
+de Grafana para vigilar su memoria y su disponibilidad con las alertas
+`ObservabilidadGrafanaCaida` y `ObservabilidadGrafanaMemoriaAlta`.

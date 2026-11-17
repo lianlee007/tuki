@@ -87,4 +87,24 @@ groups:
           team: tukituki
         annotations:
           summary: "Queda menos del 10 % de disco en el host"
-          description: "Prometheus, Loki e imágenes de Docker comparten el disco del host."
+          description: "Prometheus y las imágenes de Docker comparten el disco del host."
+
+      - alert: ObservabilidadGrafanaCaida
+        expr: up{job="grafana"} == 0
+        for: 3m
+        labels:
+          severity: critical
+          team: tukituki
+        annotations:
+          summary: "Grafana no responde"
+          description: "Traefik devuelve 502 mientras Grafana está caído o reiniciándose."
+
+      - alert: ObservabilidadGrafanaMemoriaAlta
+        expr: process_resident_memory_bytes{job="grafana"} > 640 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: warning
+          team: tukituki
+        annotations:
+          summary: "Grafana usa más de 640 MB"
+          description: "El límite del contenedor es 768 MB; cerca del tope vuelve el riesgo de OOM."
