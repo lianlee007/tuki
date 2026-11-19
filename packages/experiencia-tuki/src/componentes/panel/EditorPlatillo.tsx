@@ -184,7 +184,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
 }) => {
   const id = useId();
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<PlatilloFormValues>({
+  const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<PlatilloFormValues>({
     resolver: zodResolver(PlatilloSchema),
     // Los avisos aparecen al salir del campo, no mientras se escribe.
     mode: 'onTouched',
@@ -534,6 +534,11 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
             inputMode="numeric"
             value={precioDisplay}
             onChange={handlePrecioChange}
+            // El precio se guarda como número (`setValue`), pero el campo muestra
+            // el texto con separadores. Sin este onBlur, React Hook Form lee el
+            // valor del input ("250.000") y la validación lo rechaza por no ser
+            // un número.
+            onBlur={() => { void trigger('precio'); }}
             icon={<DollarSign size={16} />}
             placeholder="0"
             autoComplete="off"
