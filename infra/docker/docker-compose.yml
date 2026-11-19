@@ -159,6 +159,8 @@ services:
       S3_ACCESS_KEY: tuki_s3
       S3_SECRET_KEY: tuki_s3_dev
       S3_PUBLIC_URL: http://localhost:9000/tuki-media
+      # Revisor de fotos: el servicio de visión decide si la imagen es comida.
+      VISION_URL: http://vision:8000
     ports:
       - "3003:3003"
     depends_on:
@@ -166,10 +168,30 @@ services:
         condition: service_healthy
       rustfs:
         condition: service_started
+      vision:
+        condition: service_started
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.media.rule=Host(`media.tukituki.local`)"
       - "traefik.http.services.media.loadbalancer.server.port=3003"
+    restart: unless-stopped
+
+  # Visión: clasificador local (Ultralytics YOLO11n-cls) que revisa las fotos
+  # de platos antes de guardarlas. No llama a Internet: los pesos van en la
+  # imagen. `media-service` lo consulta por VISION_URL.
+  vision:
+    build:
+      context: ../../services/vision-service
+      dockerfile: Dockerfile
+    container_name: tukituki-visionbe
+    environment:
+      VISION_ENVIRONMENT: development
+      VISION_MODEL_PATH: /app/modelos/comida-v1.pt
+      VISION_UMBRAL_COMIDA: ${VISION_UMBRAL_COMIDA:-0.3}
+      VISION_DEVICE: cpu
+      YOLO_OFFLINE: "true"
+    ports:
+      - "8002:8000"
     restart: unless-stopped
 
   pedidos-service:

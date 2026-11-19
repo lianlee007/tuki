@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { errorProhibido, errorValidacion } from '../dominio/errores.js';
+import {
+  errorImagenNoComida,
+  errorProhibido,
+  errorValidacion,
+} from '../dominio/errores.js';
 import {
   extensionDe,
   puedeSubir,
@@ -9,21 +13,28 @@ import {
 } from '../dominio/media.js';
 import type { ContextoAutenticacion } from '../dominio/usuario.js';
 import type { AlmacenObjetos } from '../puertos/almacen.objetos.js';
+import type { ClasificadorImagenes } from '../puertos/clasificador.imagenes.js';
 import type { MediaRepositorio } from '../puertos/media.repositorio.js';
 
 interface Dependencias {
   media: MediaRepositorio;
   almacen: AlmacenObjetos;
+  clasificador?: ClasificadorImagenes;
 }
 
 /**
  * Caso de uso: subir una imagen.
  *
- * Valida el rol y el archivo, guarda el objeto en el almacén y registra los
- * metadatos. La URL se construye con el puerto de almacenamiento.
+ * Valida el rol y el archivo, revisa que las fotos de platos sean comida,
+ * guarda el objeto en el almacén y registra los metadatos. La URL se construye
+ * con el puerto de almacenamiento.
+ *
+ * El revisor de fotos falla abierto: si el servicio de visión no responde, la
+ * subida continúa. Solo se bloquea cuando la respuesta es un "no es comida"
+ * con confianza suficiente, que el servicio ya resolvió con su umbral.
  */
 export const subirMedia =
-  ({ media, almacen }: Dependencias) =>
+  ({ media, almacen, clasificador }: Dependencias) =>
   async (
     usuario: ContextoAutenticacion,
     archivo: ArchivoParaSubir,
@@ -34,6 +45,18 @@ export const subirMedia =
 
     const problema = validarArchivo(archivo);
     if (problema) throw errorValidacion(problema);
+
+    if (archivo.destino === 'platillos' && clasificador) {
+      const esComida = await clasificador.esComida(
+        archivo.contenido,
+        archivo.contentType,
+      );
+      if (esComida === false) {
+        throw errorImagenNoComida(
+          'Esa foto no parece un plato de comida. Sube una foto del platillo.',
+        );
+      }
+    }
 
     const key = `${archivo.destino}/${usuario.usuarioId}/${randomUUID()}.${extensionDe(
       archivo.contentType,

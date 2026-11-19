@@ -24,6 +24,22 @@ El repositorio PostgreSQL **no construye URLs de RustFS**. Devuelve
 `MediaRegistro` sin URL y el caso de uso añade `url` con `AlmacenObjetos`.
 Así el almacenamiento se puede cambiar sin tocar la persistencia.
 
+## Revisor de fotos
+
+Las fotos de `platillos` pasan antes por `vision-service` (Ultralytics,
+`comida-v1.pt`): si el clasificador responde que la imagen no es comida, la
+subida se rechaza con `422 imagen_no_comida`. El resto de destinos no se
+revisan.
+
+La revisión **falla abierto**: si el servicio está caído o tarda más de
+`VISION_TIMEOUT_MS`, la foto se guarda igual. Un fallo de infraestructura no
+debe impedir que un dueño publique su menú.
+
+| Variable | Por defecto | Uso |
+| --- | --- | --- |
+| `VISION_URL` | `http://127.0.0.1:8002` | Base del servicio de visión |
+| `VISION_TIMEOUT_MS` | `8000` | Corte de la consulta; al vencer, se deja pasar |
+
 ```text
 entrada/http -> aplicacion -> puertos <- adaptadores
                                  |

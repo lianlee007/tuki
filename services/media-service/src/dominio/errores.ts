@@ -4,6 +4,7 @@ export type CodigoError =
   | 'no_autorizado'
   | 'prohibido'
   | 'validacion'
+  | 'imagen_no_comida'
   | 'servicio_no_disponible';
 
 /** Error de negocio. La capa de entrada decide qué código HTTP le corresponde. */
@@ -29,6 +30,9 @@ export const errorProhibido = (mensaje: string) =>
 
 export const errorValidacion = (mensaje: string) =>
   new ErrorDominio('validacion', mensaje);
+
+export const errorImagenNoComida = (mensaje: string) =>
+  new ErrorDominio('imagen_no_comida', mensaje);
 
 export const errorServicioNoDisponible = (mensaje: string) =>
   new ErrorDominio('servicio_no_disponible', mensaje);

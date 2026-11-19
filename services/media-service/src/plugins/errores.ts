@@ -8,6 +8,7 @@ const ESTADOS: Record<CodigoError, number> = {
   no_autorizado: 401,
   prohibido: 403,
   validacion: 400,
+  imagen_no_comida: 422,
   servicio_no_disponible: 503,
 };
 
