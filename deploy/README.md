@@ -26,14 +26,17 @@ Ingress (ingress-nginx + cert-manager)
   │
   └─ Nginx /api/ ──► backend:8000 ──► api.groq.com:443
                                    └► Supabase JWKS:443
+
+     Nginx /vision/ ──► vision:8000 ──► Ultralytics (en el pod, sin salida)
 ```
 
-Dos contenedores propios:
+Tres contenedores propios:
 
 | Servicio | Imagen | Responsabilidad |
 | --- | --- | --- |
-| `frontend` | `ghcr.io/lianlee007/tuki` | Sirve `dist/` de Vite y hace de proxy `/api` en Compose/K8s local |
+| `frontend` | `ghcr.io/lianlee007/tuki` | Sirve `dist/` de Vite y hace de proxy `/api` y `/vision` |
 | `backend` | `ghcr.io/lianlee007/tuki-ai-gateway` | AI Gateway: auth Supabase, cuotas, reintentos y llamada a Groq |
+| `vision` | `ghcr.io/lianlee007/tuki-vision` | Clasificador local (Ultralytics) comida / no comida |
 
 Los nombres de servicio son `frontend` y `backend`; el nombre del componente y
 de la imagen del gateway (`tuki-ai-gateway`) se mantiene para no romper la
@@ -51,6 +54,9 @@ Decisiones clave:
   token inválido devuelve `401`, nunca se degrada a anónimo.
 - **Servicios gestionados fuera del clúster.** Supabase (Postgres, Auth, Storage) y Groq Cloud
   no se containerizan (ver `docs/adr/0003-servicios-gestionados.md`).
+- **La visión es local.** `vision` carga los pesos desde su propia imagen, no
+  llama a Internet y solo acepta tráfico del pod web (NetworkPolicy). Si no
+  está listo, el panel permite subir la foto igual.
 
 ---
 
@@ -61,6 +67,7 @@ Dockerfile                                  Imagen web multi-etapa (Node → Ngi
 docker-compose.yml                          Stack local frontend + backend
 docker/nginx/                               Configuración de Nginx y cabeceras
 services/ai-gateway/                        Código, Dockerfile, tests y lockfiles
+services/vision-service/                    Clasificador Ultralytics, dataset y pesos
 deploy/k8s/base/                            Manifiestos comunes
 deploy/k8s/overlays/local/                  Docker Desktop / kind / k3d
 deploy/k8s/overlays/production/             Dominio, TLS, réplicas y auth Supabase
@@ -108,6 +115,7 @@ catalog-info.yaml                           Catálogo mínimo de Backstage
 | `VITE_SUPABASE_URL` | Sí | URL del proyecto Supabase |
 | `VITE_SUPABASE_ANON_KEY` | Sí | Clave anónima (pública por diseño) |
 | `VITE_AI_GATEWAY_URL` | No | Prefijo del gateway; por defecto `/api` |
+| `VITE_VISION_URL` | No | Prefijo del revisor de fotos; por defecto `/vision` |
 
 `VITE_*` se resuelve al compilar: cambiar una exige reconstruir la imagen. El
 build falla si falta una obligatoria.
@@ -132,7 +140,22 @@ build falla si falta una obligatoria.
 | `AI_CORS_ORIGINS` | vacío | Solo si el gateway vive en otro origen |
 | `AI_OTEL_ENABLED` | `false` | Trazas OTel (imagen con `--build-arg WITH_OTEL=true` o `AI_WITH_OTEL=true` en Compose) |
 
-Plantillas: `.env.example` (raíz) y `services/ai-gateway/.env.example`.
+Plantillas: `.env.example` (raíz), `services/ai-gateway/.env.example` y
+`services/vision-service/.env.example`.
+
+### 4.3 Runtime de visión
+
+| Variable | Defecto | Uso |
+| --- | --- | --- |
+| `VISION_MODEL_PATH` | `/app/modelos/comida-v1.pt` | Pesos de Ultralytics (van en la imagen) |
+| `VISION_UMBRAL_COMIDA` | `0.3` | Probabilidad mínima de comida para aceptar |
+| `VISION_ETIQUETA_COMIDA` | `comida` | Clase positiva del modelo |
+| `VISION_IMGSZ` | `224` | Resolución de inferencia |
+| `VISION_DEVICE` | `cpu` | `cpu` o el id de una GPU |
+| `VISION_MAX_IMAGEN_BYTES` | `8388608` | Tope de la foto (8 MB) |
+
+Si el modelo no existe, el pod arranca pero `/readyz` devuelve `503` y el panel
+sigue permitiendo subir fotos.
 
 > **Nunca** subas `.env.local`, secretos de Kubernetes ni claves a Git. El
 > `.dockerignore` excluye `.env*` del contexto de build.
@@ -155,6 +178,8 @@ Servicios:
   usuario `101:101`, límites de CPU/memoria y logs rotados.
 - **backend** accesible solo en `127.0.0.1:8001`, usuario `10001:10001`,
   también con rootfs de solo lectura y `/tmp` efímero.
+- **vision** accesible solo en `127.0.0.1:8002`, usuario `10001:10001`, límite
+  de 1 CPU y 1 GB. El modelo se carga al arrancar y `start_period` es de 60 s.
 
 Comprobaciones:
 
@@ -163,6 +188,10 @@ curl http://localhost:8080/healthz                    # ok
 curl http://localhost:8080/api/healthz                # gateway vía Nginx
 curl http://localhost:8080/api/readyz                 # incluye GROQ_API_KEY
 curl http://localhost:8080/api/v1/ai/models
+curl http://localhost:8080/vision/api/healthz         # visión vía Nginx
+curl http://localhost:8080/vision/api/readyz          # 503 si falta el modelo
+curl -X POST http://localhost:8080/vision/api/v1/vision/clasificar \
+  -F "imagen=@plato.jpg"
 curl -s http://localhost:8080/api/v1/ai/chat \
   -H 'Content-Type: application/json' \
   -d '{"prompt":"Devuelve exactamente: hola"}'

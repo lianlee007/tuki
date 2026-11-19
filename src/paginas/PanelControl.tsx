@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexto/ContextoAutenticacion';
 import { useTema } from '../contexto/ContextoTema';
 import { subirImagen, generarContenidoIA } from '../lib/servicios';
+import { mensajeFotoRechazada, revisarFotoComida } from '../lib/vision';
 import { acentoPanel, acentoRecordado, recordarAcento } from '../lib/color';
 import { Restaurante, Tema, Platillo } from '../tipos';
 import { Menu, ArrowLeft, Trash2, AlertTriangle, Check, LogOut } from 'lucide-react';
@@ -140,12 +141,27 @@ export default function PanelControl() {
 
   // Sube la imagen del platillo a Storage y vuelca la URL en el formulario.
   // El guardado real ocurre al pulsar "Crear / Guardar" en el editor.
+  // Antes de subir, el clasificador local verifica que la foto sea comida.
   const handleImagenUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !editandoPlatillo) return;
+
+    const revision = await revisarFotoComida(file);
+    if (revision.revisada && !revision.esComida) {
+      mostrarMensaje('error', mensajeFotoRechazada(revision));
+      return;
+    }
+    if (!revision.revisada) {
+      // Si el servicio de visión está caído, el dueño puede seguir subiendo.
+      console.warn(`Revisión de foto omitida: ${revision.mensaje}`);
+    }
+
     try {
       const url = await subirImagen(file, 'platillos');
       setEditandoPlatillo({ ...editandoPlatillo, imagen_url: url });
+      if (revision.revisada) {
+        mostrarMensaje('exito', 'La IA confirmó que la foto es de comida.');
+      }
     } catch (error: any) { mostrarMensaje('error', formatError(error)); }
   };
 

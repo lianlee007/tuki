@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/component: web
     app.kubernetes.io/part-of: tuki
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "64k"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"

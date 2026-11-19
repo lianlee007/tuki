@@ -4,8 +4,8 @@ kind: Kustomization
 # Overlay para Docker Desktop, kind o k3d.
 #
 # A diferencia de producción:
-#   - usa las imágenes locales `tuki:local-0.3.0` y
-#     `tuki-ai-gateway:local-0.3.0`;
+#   - usa las imágenes locales `tuki:local-0.3.0`,
+#     `tuki-ai-gateway:local-0.3.0` y `tuki-vision:local-0.3.0`;
 #   - deja los Services como ClusterIP y se accede con `kubectl port-forward`;
 #   - deja fuera Ingress, HPA, PDB y NetworkPolicy, porque dependen de
 #     controladores (ingress-nginx, metrics-server, CNI con políticas) que un
@@ -20,9 +20,11 @@ kind: Kustomization
 # Uso:
 #   docker build ... -t tuki:local-0.3.0 .
 #   docker build -t tuki-ai-gateway:local-0.3.0 services/ai-gateway
+#   docker build -t tuki-vision:local-0.3.0 services/vision-service
 #   kubectl apply -k deploy/k8s/overlays/local
 #   kubectl port-forward -n tuki svc/tuki 8080:80
 #   kubectl port-forward -n tuki svc/backend 8001:8000
+#   kubectl port-forward -n tuki svc/vision 8002:8000
 #   curl http://localhost:8080/healthz
 #   curl http://localhost:8080/api/healthz
 namespace: tuki
@@ -37,11 +39,16 @@ images:
   - name: ghcr.io/lianlee007/tuki-ai-gateway
     newName: tuki-ai-gateway
     newTag: local-0.3.0
+  - name: ghcr.io/lianlee007/tuki-vision
+    newName: tuki-vision
+    newTag: local-0.3.0
 
 replicas:
   - name: tuki
     count: 1
   - name: tuki-ai-gateway
+    count: 1
+  - name: tuki-vision
     count: 1
 
 patches:
@@ -105,6 +112,16 @@ patches:
       kind: NetworkPolicy
       metadata:
         name: tuki-ai-gateway
+
+  - target:
+      kind: NetworkPolicy
+      name: tuki-vision
+    patch: |-
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: tuki-vision
 
   # En local no hay Supabase JWKS: se confía en la red del clúster y la cuota
   # por IP. Nunca uses este modo en producción.

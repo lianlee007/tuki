@@ -31,6 +31,7 @@ Engineering y DevSecOps.
 - [Configuración](#configuración)
 - [Base de datos](#base-de-datos)
 - [AI Gateway](#ai-gateway)
+- [Visión local (comida / no comida)](#visión-local-comida--no-comida)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Scripts](#scripts)
 - [Calidad y pruebas](#calidad-y-pruebas)
@@ -53,6 +54,8 @@ La aplicación está operativa en local y en el clúster de demostración:
 - Pedidos guardados en Supabase además del mensaje de WhatsApp, con bandeja y
   cambio de estado para el restaurante.
 - AI Gateway propio para que la clave de Groq nunca llegue al navegador.
+- Revisor local de fotos: un clasificador Ultralytics verifica que la imagen de
+  un plato sea comida antes de publicarla.
 - Empaquetado Docker, manifiestos de Kubernetes con Kustomize, GitOps con
   ArgoCD, observabilidad y cadena de suministro firmada.
 
@@ -113,6 +116,8 @@ Estado de la entrega de los módulos 1–3, evidencias y pendientes:
 - El gateway valida el JWT de Supabase, aplica cuotas por IP y por cuenta,
   reintenta con backoff y hace fallback entre modelos.
 - Expone logs JSON, métricas Prometheus y trazas OpenTelemetry opcionales.
+- Clasificador local de fotos (Ultralytics): el dueño no puede publicar una
+  imagen que no parezca comida.
 
 ### Seguridad
 
@@ -284,6 +289,23 @@ La guía completa —autenticación, cuotas, Docker, Kubernetes y observabilidad
 está en [deploy/README.md](deploy/README.md). Las decisiones de diseño están en
 [docs/adr/](docs/adr/).
 
+## Visión local (comida / no comida)
+
+`services/vision-service` es un servicio FastAPI con Ultralytics que clasifica
+la foto de un plato antes de subirla a Storage. La inferencia es local: la
+imagen no sale a ningún proveedor externo.
+
+- Dataset de Label Studio: 997 fotos etiquetadas (500 comida / 497 no comida).
+- Modelo: `yolo11n-cls` afinado a 224 px; pesos en
+  `services/vision-service/modelos/comida-v1.pt`.
+- Contrato: `POST /api/v1/vision/clasificar` devuelve `es_comida`,
+  `probabilidad_comida` y el umbral aplicado.
+- Si el servicio no está disponible, el panel permite subir la foto igual.
+
+Pipeline de datos, métricas, umbral y operación:
+[docs/producto/vision-comida.md](docs/producto/vision-comida.md) y
+[services/vision-service/README.md](services/vision-service/README.md).
+
 ## Estructura del proyecto
 
 ```text
@@ -312,6 +334,8 @@ tuki/
 ├── tests/frontend/             # Pruebas de Vitest
 ├── db/                         # Scripts SQL
 ├── services/ai-gateway/        # FastAPI: auth, cuotas, Groq y métricas
+├── services/vision-service/    # FastAPI + Ultralytics: comida / no comida
+├── datos/etiquetas/            # Manifiesto de Label Studio (sin fotos)
 ├── deploy/                     # Docker, Kubernetes, ArgoCD y observabilidad
 ├── docs/                       # Producto, arquitectura, seguridad y runbook
 ├── scripts/                    # Verificación y utilidades

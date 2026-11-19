@@ -52,12 +52,14 @@ construir_imagenes() {
   echo "== Imágenes locales =="
   docker build -t "tuki:${TAG}" .
   docker build -t "tuki-ai-gateway:${TAG}" services/ai-gateway
+  docker build -t "tuki-vision:${TAG}" services/vision-service
 
   if kube config current-context | grep -q '^kind-'; then
     local cluster
     cluster="$(kube config current-context | sed 's/^kind-//')"
     kind load docker-image "tuki:${TAG}" --name "${cluster}"
     kind load docker-image "tuki-ai-gateway:${TAG}" --name "${cluster}"
+    kind load docker-image "tuki-vision:${TAG}" --name "${cluster}"
   fi
 }
 
@@ -66,6 +68,7 @@ desplegar_app() {
   kube apply -k deploy/k8s/overlays/local-plataforma
   kube -n "${NS}" rollout status deployment/tuki --timeout=180s
   kube -n "${NS}" rollout status deployment/tuki-ai-gateway --timeout=180s
+  kube -n "${NS}" rollout status deployment/tuki-vision --timeout=180s
   kube -n "${NS}" get pods,svc,ingress,hpa
 }
 

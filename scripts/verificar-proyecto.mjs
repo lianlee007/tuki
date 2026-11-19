@@ -15,6 +15,7 @@ import { resolve } from 'node:path';
 const RAIZ = resolve(import.meta.dirname, '..');
 const WIN = process.platform === 'win32';
 const VENV = resolve(RAIZ, 'services', 'ai-gateway', '.venv', WIN ? 'Scripts/python.exe' : 'bin/python');
+const VENV_VISION = resolve(RAIZ, 'services', 'vision-service', '.venv', WIN ? 'Scripts/python.exe' : 'bin/python');
 
 const resultados = [];
 
@@ -44,6 +45,8 @@ const pnpm = WIN ? 'pnpm.cmd' : 'pnpm';
 const pythonSistema = WIN ? 'python' : 'python3';
 const pythonGateway = existsSync(VENV) ? VENV : pythonSistema;
 const gateway = resolve(RAIZ, 'services', 'ai-gateway');
+const pythonVision = existsSync(VENV_VISION) ? VENV_VISION : pythonSistema;
+const vision = resolve(RAIZ, 'services', 'vision-service');
 
 console.log('== Frontend ==');
 correr('tipos (tsc)', pnpm, ['typecheck']);
@@ -55,6 +58,10 @@ correr('build (vite)', pnpm, ['build']);
 console.log('== AI Gateway ==');
 correr('lint (ruff)', pythonGateway, ['-m', 'ruff', 'check', 'app', 'tests'], { cwd: gateway });
 correr('pruebas (pytest)', pythonGateway, ['-m', 'pytest', '-q', '--tb=no'], { cwd: gateway });
+
+console.log('== Visión ==');
+correr('lint (ruff)', pythonVision, ['-m', 'ruff', 'check', 'app', 'entrenamiento', 'tests'], { cwd: vision });
+correr('pruebas (pytest)', pythonVision, ['-m', 'pytest', '-q', '--tb=no'], { cwd: vision });
 
 console.log('== Manifiestos ==');
 if (!disponible('kubectl', ['version', '--client'])) {

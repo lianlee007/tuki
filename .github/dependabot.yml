@@ -29,6 +29,16 @@ updates:
       - dependencias
       - gateway
 
+  # Dependencias del servicio de visión (incluye torch y ultralytics).
+  - package-ecosystem: pip
+    directory: "/services/vision-service"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    labels:
+      - dependencias
+      - vision
+
   # Las acciones están fijadas por SHA: sin este bloque se quedarían congeladas.
   - package-ecosystem: github-actions
     directory: "/"
@@ -50,6 +60,14 @@ updates:
 
   - package-ecosystem: docker
     directory: "/services/ai-gateway"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencias
+      - contenedores
+
+  - package-ecosystem: docker
+    directory: "/services/vision-service"
     schedule:
       interval: monthly
     labels:

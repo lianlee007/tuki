@@ -579,7 +579,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
                   disabled={loadingImage}
                 />
               </label>
-              <p className="mt-2 text-xs text-af-ink-secondary">JPG o PNG. Se recorta como cuadrada.</p>
+              <p className="mt-2 text-xs text-af-ink-secondary">JPG o PNG. Se recorta como cuadrada y la IA verifica que sea comida.</p>
             </div>
           </div>
         </Campo>

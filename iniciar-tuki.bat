@@ -8,8 +8,8 @@ rem ============================================================================
 rem  Arranca Tuki en local. Dos modos:
 rem
 rem    iniciar-tuki.bat          Docker Compose -> contenedores visibles en
-rem                              Docker Desktop: tuki-frontend y tuki-backend.
-rem                              App en http://localhost:8080
+rem                              Docker Desktop: tuki-frontend, tuki-backend y
+rem                              tuki-vision. App en http://localhost:8080
 rem
 rem    iniciar-tuki.bat /k8s     Kubernetes -> pods en el cluster + port-forward.
 rem                              App en http://localhost:8081
@@ -140,12 +140,15 @@ rem  2. Imagenes locales
 rem ---------------------------------------------------------------------------
 set "WEB_IMAGE=tuki:local-0.3.0"
 set "GW_IMAGE=tuki-ai-gateway:local-0.3.0"
+set "VISION_IMAGE=tuki-vision:local-0.3.0"
 
 echo [2/4] Comprobando imagenes...
 set "NEED_BUILD=%REBUILD%"
 docker image inspect "%WEB_IMAGE%" >nul 2>&1
 if errorlevel 1 set "NEED_BUILD=1"
 docker image inspect "%GW_IMAGE%" >nul 2>&1
+if errorlevel 1 set "NEED_BUILD=1"
+docker image inspect "%VISION_IMAGE%" >nul 2>&1
 if errorlevel 1 set "NEED_BUILD=1"
 
 if "%NEED_BUILD%"=="0" (
@@ -174,6 +177,13 @@ if errorlevel 1 (
   goto :error
 )
 
+echo       Construyendo %VISION_IMAGE% ^(incluye torch; la primera vez tarda^)...
+docker build -t "%VISION_IMAGE%" services\vision-service
+if errorlevel 1 (
+  echo [ERROR] Fallo el build de la imagen de vision.
+  goto :error
+)
+
 :imagenes_listas
 echo.
 if /i "%MODO%"=="k8s" goto :modo_k8s
@@ -183,7 +193,7 @@ rem ---------------------------------------------------------------------------
 rem  3a. Docker Compose: contenedores visibles en Docker Desktop
 rem ---------------------------------------------------------------------------
 :modo_compose
-echo [3/4] Levantando contenedores tuki-frontend y tuki-backend...
+echo [3/4] Levantando contenedores tuki-frontend, tuki-backend y tuki-vision...
 
 docker compose version >nul 2>&1
 if errorlevel 1 (
@@ -196,6 +206,7 @@ rem Las etiquetas del compose son <imagen>:<TUKI_VERSION>.
 set "TUKI_VERSION=local-0.3.0"
 set "TUKI_IMAGE=tuki"
 set "AI_GATEWAY_IMAGE=tuki-ai-gateway"
+set "VISION_IMAGE=tuki-vision"
 
 docker compose --env-file .env.local up -d --remove-orphans --no-build
 if errorlevel 1 (
@@ -212,6 +223,12 @@ call :esperar_contenedor tuki-backend 180
 if errorlevel 1 (
   echo [ERROR] tuki-backend no llego a healthy.
   echo Revisa: docker logs tuki-backend
+  goto :error
+)
+call :esperar_contenedor tuki-vision 180
+if errorlevel 1 (
+  echo [ERROR] tuki-vision no llego a healthy.
+  echo Revisa: docker logs tuki-vision
   goto :error
 )
 call :esperar_contenedor tuki-frontend 180
@@ -242,12 +259,12 @@ echo   Tuki esta en marcha
 echo ============================================================
 echo   URL:          http://localhost:%TUKI_PORT%
 echo   Modo:         Docker Compose
-echo   Contenedores: tuki-frontend, tuki-backend
+echo   Contenedores: tuki-frontend, tuki-backend, tuki-vision
 echo.
 echo   Se ven en Docker Desktop ^> Containers y en:
 echo     docker ps
 echo     docker compose --env-file .env.local ps
-echo     docker compose --env-file .env.local logs -f frontend backend
+echo     docker compose --env-file .env.local logs -f frontend backend vision
 echo.
 echo   Para detener todo:
 echo     iniciar-tuki.bat /stop
@@ -309,6 +326,11 @@ if /i "%TUKI_CONTEXT:~0,5%"=="kind-" (
     echo [ERROR] No se pudieron cargar las imagenes en kind.
     goto :error
   )
+  kind load docker-image "%VISION_IMAGE%" --name "%KIND_CLUSTER%"
+  if errorlevel 1 (
+    echo [ERROR] No se pudieron cargar las imagenes en kind.
+    goto :error
+  )
 )
 
 echo       Preparando el namespace y el secreto...
@@ -348,6 +370,7 @@ rem Si se reconstruyeron las imagenes, reinicia para no quedarse con el pod viej
 if "%NEED_BUILD%"=="1" (
   kubectl rollout restart deployment/tuki -n %TUKI_NAMESPACE% >nul 2>&1
   kubectl rollout restart deployment/tuki-ai-gateway -n %TUKI_NAMESPACE% >nul 2>&1
+  kubectl rollout restart deployment/tuki-vision -n %TUKI_NAMESPACE% >nul 2>&1
 )
 
 echo       Esperando a que los pods esten listos...
@@ -361,6 +384,12 @@ kubectl rollout status deployment/tuki-ai-gateway -n %TUKI_NAMESPACE% --timeout=
 if errorlevel 1 (
   echo [ERROR] El deployment tuki-ai-gateway no llego a Ready.
   echo Revisa: kubectl describe pod -n %TUKI_NAMESPACE% -l app.kubernetes.io/name=tuki-ai-gateway
+  goto :error
+)
+kubectl rollout status deployment/tuki-vision -n %TUKI_NAMESPACE% --timeout=240s
+if errorlevel 1 (
+  echo [ERROR] El deployment tuki-vision no llego a Ready.
+  echo Revisa: kubectl describe pod -n %TUKI_NAMESPACE% -l app.kubernetes.io/name=tuki-vision
   goto :error
 )
 echo [OK] Despliegue listo.
@@ -422,7 +451,7 @@ rem  Detener todo
 rem ---------------------------------------------------------------------------
 :detener
 echo [1/3] Deteniendo contenedores de Docker Compose...
-docker rm -f tuki-frontend tuki-backend >nul 2>&1
+docker rm -f tuki-frontend tuki-backend tuki-vision >nul 2>&1
 echo [2/3] Cerrando port-forward...
 call :cerrar_port_forward
 ping -n 2 127.0.0.1 >nul
@@ -439,8 +468,8 @@ if errorlevel 1 goto :detener_listo
 rem Se borran solo los recursos de la app: el namespace y el secreto del
 rem gateway se conservan para que el proximo arranque sea mas rapido.
 kubectl delete ^
-  deployment/tuki deployment/tuki-ai-gateway ^
-  service/tuki service/backend ^
+  deployment/tuki deployment/tuki-ai-gateway deployment/tuki-vision ^
+  service/tuki service/backend service/vision ^
   hpa/tuki hpa/tuki-ai-gateway ^
   pdb/tuki pdb/tuki-ai-gateway ^
   --namespace %TUKI_NAMESPACE% --ignore-not-found --wait=false >nul 2>&1

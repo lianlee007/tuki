@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuki-vision
+  labels:
+    app.kubernetes.io/name: tuki-vision
+    app.kubernetes.io/component: vision
+    app.kubernetes.io/part-of: tuki
+    backstage.io/kubernetes-id: tuki-vision
+spec:
+  # Una réplica: la inferencia es local y el panel tolera que el clasificador
+  # no esté disponible (la subida sigue). Si hace falta más capacidad, sube
+  # réplicas y recursos; no hay estado compartido.
+  replicas: 1
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tuki-vision
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tuki-vision
+        app.kubernetes.io/component: vision
+        app.kubernetes.io/part-of: tuki
+        backstage.io/kubernetes-id: tuki-vision
+      annotations:
+        prometheus.io/scrape: "false"
+    spec:
+      serviceAccountName: tuki
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: tuki-vision
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: tuki-vision
+
+      containers:
+        - name: vision
+          image: ghcr.io/lianlee007/tuki-vision:0.1.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: vision-config
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            privileged: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+          # El arranque carga torch y los pesos: puede tardar unos segundos.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 30
+
+          # /readyz devuelve 503 mientras no haya modelo cargado.
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 512Mi

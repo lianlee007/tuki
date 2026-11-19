@@ -12,6 +12,8 @@ tuki/
 ├── tests/frontend/         Pruebas unitarias de la SPA (Vitest)
 ├── db/                     SQL aplicado a mano en Supabase
 ├── services/ai-gateway/    Servicio Python (FastAPI) que habla con Groq
+├── services/vision-service/ Servicio Python (FastAPI + Ultralytics) de visión
+├── datos/etiquetas/        Exportación de Label Studio y manifiesto
 ├── deploy/                 Kubernetes, ArgoCD, políticas y scripts
 ├── docker/                 Configuración de Nginx
 ├── scripts/                Utilidades de desarrollo y verificación
@@ -39,6 +41,8 @@ tuki/
 | `tests/frontend/` | Pruebas de la SPA | Pruebas del gateway (están en `services/ai-gateway/tests`) |
 | `db/` | Cambios de esquema y datos de Supabase | Migraciones automáticas (no hay runner) |
 | `services/ai-gateway/` | Servicio que protege la clave de Groq, autentica y limita | Código del navegador |
+| `services/vision-service/` | Clasificador local de fotos (comida / no comida) y su entrenamiento | Lógica de la SPA |
+| `datos/etiquetas/` | Exportación de Label Studio y manifiesto reproducible | Imágenes (no se versionan) |
 | `deploy/` | Manifiestos, overlays, políticas y scripts de operación | Lógica de la aplicación |
 | `docs/` | Decisiones y evidencia | Código ejecutable |
 | `scripts/` | Automatización de desarrollo y verificación | Dependencias de producción |

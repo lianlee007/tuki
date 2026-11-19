@@ -53,6 +53,15 @@ spec:
         - protocol: TCP
           port: 8000
 
+    # Revisor local de fotos: Nginx proxya /vision/ a este Service.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tuki-vision
+      ports:
+        - protocol: TCP
+          port: 8000
+
     - to:
         - namespaceSelector:
             matchLabels:
@@ -119,3 +128,42 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+
+---
+# Servicio de visión: solo la SPA (Nginx) lo llama. No necesita salir a
+# Internet: la inferencia y los pesos viven en el pod.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tuki-vision
+  labels:
+    app.kubernetes.io/name: tuki-vision
+    app.kubernetes.io/component: network
+    app.kubernetes.io/part-of: tuki
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: tuki-vision
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tuki
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

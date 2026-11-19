@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vision-config
+  labels:
+    app.kubernetes.io/name: tuki-vision
+    app.kubernetes.io/component: vision
+    app.kubernetes.io/part-of: tuki
+data:
+  VISION_ENVIRONMENT: "production"
+  VISION_LOG_LEVEL: "INFO"
+  VISION_MODEL_PATH: "/app/modelos/comida-v1.pt"
+  VISION_UMBRAL_COMIDA: "0.3"
+  VISION_ETIQUETA_COMIDA: "comida"
+  VISION_IMGSZ: "224"
+  # CPU: el modelo es pequeño (~1,5 M de parámetros) y evita pedir GPU al
+  # clúster. Cámbialo a "0" en un nodo con GPU.
+  VISION_DEVICE: "cpu"
+  VISION_MAX_IMAGEN_BYTES: "8388608"
+  # Sin salida a Internet: no buscar actualizaciones ni autoinstalar deps.
+  YOLO_OFFLINE: "true"
+  YOLO_AUTOINSTALL: "false"

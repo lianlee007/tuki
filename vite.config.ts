@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
     // En desarrollo el navegador habla con Vite y este redirige al gateway.
     // En Docker/Kubernetes sirve Nginx/Ingress por el mismo origen.
     const gateway = env.AI_GATEWAY_DEV_URL || 'http://localhost:8001';
+    // El servicio de visión escucha en 8002; /vision se recorta antes de
+    // reenviar porque el servicio expone /api/v1/vision/... .
+    const vision = env.VISION_DEV_URL || 'http://localhost:8002';
     return {
       server: {
         port: 3000,
@@ -16,6 +19,11 @@ export default defineConfig(({ mode }) => {
           '/api': {
             target: gateway,
             changeOrigin: false,
+          },
+          '/vision': {
+            target: vision,
+            changeOrigin: false,
+            rewrite: (ruta) => ruta.replace(/^\/vision/, ''),
           },
         },
       },

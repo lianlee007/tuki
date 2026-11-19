@@ -129,6 +129,7 @@ spec:
     - resource:supabase
     - resource:supabase-storage
     - component:tuki-ai-gateway
+    - component:tuki-vision
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -158,6 +159,37 @@ metadata:
   dependsOn:
     - resource:supabase
     - resource:groq
+spec:
+  type: service
+  lifecycle: production
+  owner: tuki-team
+  system: tuki
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: tuki-vision
+  description: Clasificador local (Ultralytics) que verifica si la foto de un plato es comida antes de publicarla.
+  annotations:
+    backstage.io/kubernetes-id: tuki-vision
+    backstage.io/kubernetes-namespace: tuki
+    github.com/project-slug: lianlee007/tuki
+  tags:
+    - fastapi
+    - python
+    - ultralytics
+    - vision
+  links:
+    - url: https://github.com/lianlee007/tuki/tree/main/services/vision-service
+      title: Código fuente
+      icon: github
+    - url: https://github.com/lianlee007/tuki/blob/main/docs/producto/vision-comida.md
+      title: Documentación del clasificador
+      icon: docs
+    - url: https://github.com/lianlee007/tuki/blob/main/docs/adr/0009-clasificador-local-comida.md
+      title: ADR del clasificador
+      icon: docs
 spec:
   type: service
   lifecycle: production

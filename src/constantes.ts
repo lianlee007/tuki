@@ -26,7 +26,11 @@ export const ENV = {
   // Ruta del AI Gateway. Por defecto es el mismo origen (`/api`), que Vite
   // redirige en desarrollo y Nginx/Ingress en Docker y Kubernetes. La clave de
   // Groq vive solo en el servidor.
-  AI_GATEWAY_URL: getEnv("VITE_AI_GATEWAY_URL", "/api")
+  AI_GATEWAY_URL: getEnv("VITE_AI_GATEWAY_URL", "/api"),
+
+  // Revisor local de fotos (servicio de visión con Ultralytics). Igual que el
+  // gateway, se consume por el mismo origen: Vite/Nginx quitan el prefijo.
+  VISION_URL: getEnv("VITE_VISION_URL", "/vision")
 };
 
 // Límites de caracteres estandarizados para todos los formularios

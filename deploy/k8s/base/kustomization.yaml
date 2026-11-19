@@ -12,6 +12,9 @@ resources:
   - ai-gateway-configmap.yaml
   - ai-gateway-deployment.yaml
   - ai-gateway-service.yaml
+  - vision-configmap.yaml
+  - vision-deployment.yaml
+  - vision-service.yaml
   - ingress.yaml
   - hpa.yaml
   - pdb.yaml
@@ -24,4 +27,6 @@ images:
   - name: ghcr.io/lianlee007/tuki
     newTag: "0.1.0"
   - name: ghcr.io/lianlee007/tuki-ai-gateway
+    newTag: "0.1.0"
+  - name: ghcr.io/lianlee007/tuki-vision
     newTag: "0.1.0"

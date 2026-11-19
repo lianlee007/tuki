@@ -1,0 +1,8 @@
+# Dependencias directas del servicio de visión.
+# Ultralytics arrastra torch y torchvision; en CPU la instalación ronda 1 GB.
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic-settings==2.16.3
+python-multipart==0.0.34
+Pillow==13.0.0
+ultralytics==8.4.215

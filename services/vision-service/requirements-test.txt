@@ -1,0 +1,10 @@
+# Dependencias mínimas para CI: no incluyen ultralytics/torch.
+# Las pruebas inyectan un clasificador falso y nunca cargan pesos.
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic-settings==2.16.3
+python-multipart==0.0.34
+Pillow==13.0.0
+pytest==9.2.0
+httpx==0.28.1
+ruff==0.17.5

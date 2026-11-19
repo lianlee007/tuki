@@ -22,11 +22,16 @@ images:
   - name: ghcr.io/lianlee007/tuki-ai-gateway
     newName: tuki-ai-gateway
     newTag: local-0.3.0
+  - name: ghcr.io/lianlee007/tuki-vision
+    newName: tuki-vision
+    newTag: local-0.3.0
 
 replicas:
   - name: tuki
     count: 1
   - name: tuki-ai-gateway
+    count: 1
+  - name: tuki-vision
     count: 1
 
 patches:

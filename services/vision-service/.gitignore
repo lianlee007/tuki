@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Dataset generado (fotos con derechos de sus autores; no se versiona).
+datos/
+# Artefactos de entrenamiento y pesos preentrenados descargados por Ultralytics.
+modelos/entrenamientos/
+runs/
+yolo*-cls.pt
+*.onnx
+
+# Entorno local.
+.env
+.env.local

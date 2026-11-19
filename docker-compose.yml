@@ -26,6 +26,7 @@ services:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Define VITE_SUPABASE_URL en el archivo de entorno}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?Define VITE_SUPABASE_ANON_KEY en el archivo de entorno}
         VITE_AI_GATEWAY_URL: ${VITE_AI_GATEWAY_URL:-/api}
+        VITE_VISION_URL: ${VITE_VISION_URL:-/vision}
         VERSION: ${TUKI_VERSION:-local}
         REVISION: ${TUKI_REVISION:-local}
 
@@ -37,6 +38,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      vision:
+        condition: service_started
 
     # El proceso corre sin privilegios y no necesita escribir en el rootfs.
     user: "101:101"
@@ -142,6 +145,77 @@ services:
         reservations:
           cpus: "0.05"
           memory: 64M
+
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Visión: clasificador local (Ultralytics) que revisa las fotos de platos.
+  # No llama a Internet: los pesos viajan en la imagen.
+  vision:
+    container_name: tuki-vision
+    build:
+      context: ./services/vision-service
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${TUKI_VERSION:-local}
+        REVISION: ${TUKI_REVISION:-local}
+
+    image: ${VISION_IMAGE:-tuki-vision}:${TUKI_VERSION:-local}
+
+    # Solo para probar el servicio directamente; Nginx lo consume por la red
+    # interna. En producción este puerto no se publica.
+    ports:
+      - "127.0.0.1:${VISION_PORT:-8002}:8000"
+
+    environment:
+      VISION_ENVIRONMENT: ${VISION_ENVIRONMENT:-development}
+      VISION_LOG_LEVEL: ${VISION_LOG_LEVEL:-INFO}
+      VISION_MODEL_PATH: /app/modelos/comida-v1.pt
+      VISION_UMBRAL_COMIDA: ${VISION_UMBRAL_COMIDA:-0.3}
+      VISION_ETIQUETA_COMIDA: ${VISION_ETIQUETA_COMIDA:-comida}
+      VISION_IMGSZ: ${VISION_IMGSZ:-224}
+      VISION_DEVICE: ${VISION_DEVICE:-cpu}
+      VISION_MAX_IMAGEN_BYTES: ${VISION_MAX_IMAGEN_BYTES:-8388608}
+      YOLO_OFFLINE: "true"
+      YOLO_AUTOINSTALL: "false"
+
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3).status == 200 else 1)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # torch y los pesos tardan en cargar en el primer arranque.
+      start_period: 60s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.10"
+          memory: 384M
 
     restart: unless-stopped
     stop_grace_period: 20s

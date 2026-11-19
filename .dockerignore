@@ -32,6 +32,7 @@ deploy
 scripts
 services
 db/
+datos/
 sql-*.sql
 opencode.json
 **/__pycache__

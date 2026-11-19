@@ -1,0 +1,11 @@
+# Dependencias de ejecución del servicio de visión.
+#
+# Se fijan las directas; ultralytics resuelve su árbol (torch, torchvision,
+# numpy, opencv). Para regenerar el archivo:
+#   pip install -r requirements.in
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+pydantic-settings==2.16.3
+python-multipart==0.0.34
+Pillow==13.0.0
+ultralytics==8.4.215
