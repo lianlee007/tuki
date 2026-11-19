@@ -1,14 +1,14 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import { z } from 'zod';
 
-/** Configuración validada del servicio de pedidos. */
+/** ConfiguraciÃ³n validada del servicio de pedidos. */
 const esquema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PUERTO: z.coerce.number().int().positive().default(3004),
   DATABASE_URL: z
     .string()
     .min(1)
-    .default('postgres://tuki_pedidos:tuki_pedidos_dev@localhost:5432/tuki_pedidos'),
+    .default('postgres://tuki_pedidos:tuki_pedidos_dev@127.0.0.1:5432/tuki_pedidos'),
   JWT_SECRETO: z.string().min(32).default('desarrollo-secreto-de-32-caracteres!!'),
   JWT_EMISOR: z.string().min(1).default('tuki-identidad'),
   JWT_AUDIENCIA: z.string().min(1).default('tuki'),
@@ -22,7 +22,7 @@ const variables = esquema.parse(process.env);
 const secretoDeDesarrollo = 'desarrollo-secreto-de-32-caracteres!!';
 
 if (variables.NODE_ENV === 'production' && variables.JWT_SECRETO === secretoDeDesarrollo) {
-  throw new Error('JWT_SECRETO debe cambiarse en producción.');
+  throw new Error('JWT_SECRETO debe cambiarse en producciÃ³n.');
 }
 
 export const config = {

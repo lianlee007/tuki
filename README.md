@@ -82,6 +82,7 @@ identidad restaurantes pedidos resenas media admin-service
 | `resenas-service` | Reseñas, respuestas y votos de utilidad | `3005` | [README](services/resenas-service/README.md) |
 | `admin-service` | BFF de superadministración y auditoría | `3006` | [README](services/admin-service/README.md) |
 | `ai-gateway` | Gateway de IA con Groq y métricas | `8000` | [Código](services/ai-gateway) |
+| `vision-service` | Revisor de fotos: ¿es comida? (Ultralytics) | `8002` | [README](services/vision-service/README.md) |
 
 ### Servicios de apoyo
 

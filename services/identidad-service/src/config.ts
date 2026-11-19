@@ -1,11 +1,11 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import { z } from 'zod';
 
 /**
- * Configuración del servicio.
+ * ConfiguraciÃ³n del servicio.
  *
- * Se valida una sola vez al arrancar: si falta una variable crítica, el proceso
- * falla antes de aceptar peticiones. En producción no se permite el secreto de
+ * Se valida una sola vez al arrancar: si falta una variable crÃ­tica, el proceso
+ * falla antes de aceptar peticiones. En producciÃ³n no se permite el secreto de
  * desarrollo.
  */
 const esquema = z.object({
@@ -14,7 +14,7 @@ const esquema = z.object({
   DATABASE_URL: z
     .string()
     .min(1)
-    .default('postgres://tuki_identidad:tuki_identidad_dev@localhost:5432/tuki_identidad'),
+    .default('postgres://tuki_identidad:tuki_identidad_dev@127.0.0.1:5432/tuki_identidad'),
   JWT_SECRETO: z.string().min(32).default('desarrollo-secreto-de-32-caracteres!!'),
   JWT_EMISOR: z.string().min(1).default('tuki-identidad'),
   JWT_AUDIENCIA: z.string().min(1).default('tuki'),
@@ -27,7 +27,7 @@ const variables = esquema.parse(process.env);
 const secretoDeDesarrollo = 'desarrollo-secreto-de-32-caracteres!!';
 
 if (variables.NODE_ENV === 'production' && variables.JWT_SECRETO === secretoDeDesarrollo) {
-  throw new Error('JWT_SECRETO debe cambiarse en producción.');
+  throw new Error('JWT_SECRETO debe cambiarse en producciÃ³n.');
 }
 
 export const config = {

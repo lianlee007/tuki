@@ -1,11 +1,13 @@
 import { listarMisMedia } from './listar-mis-media.js';
 import { subirMedia } from './subir-media.js';
 import type { AlmacenObjetos } from '../puertos/almacen.objetos.js';
+import type { ClasificadorImagenes } from '../puertos/clasificador.imagenes.js';
 import type { MediaRepositorio } from '../puertos/media.repositorio.js';
 
 interface Dependencias {
   media: MediaRepositorio;
   almacen: AlmacenObjetos;
+  clasificador?: ClasificadorImagenes;
 }
 
 /** Contrato que consume la capa HTTP. */

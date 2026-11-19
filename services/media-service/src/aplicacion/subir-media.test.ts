@@ -37,6 +37,16 @@ const cliente = {
   email: 'ana@tukituki.local',
 };
 
+const dueno = {
+  usuarioId: 'usuario-2',
+  rol: 'dueno' as const,
+  email: 'dueno@tukituki.local',
+};
+
+const clasificadorFalso = (respuesta: boolean | null) => ({
+  esComida: vi.fn(async () => respuesta),
+});
+
 describe('subirMedia', () => {
   it('impide que un cliente suba imágenes de menú', async () => {
     const almacen = almacenFalso();
@@ -73,5 +83,60 @@ describe('subirMedia', () => {
         destino: 'resenas',
       }),
     ).rejects.toMatchObject({ codigo: 'validacion' });
+  });
+
+  it('bloquea la foto de un plato cuando el clasificador dice que no es comida', async () => {
+    const almacen = almacenFalso();
+    const clasificador = clasificadorFalso(false);
+    const subir = subirMedia({
+      media: repositorioFalso(),
+      almacen,
+      clasificador,
+    });
+
+    await expect(
+      subir(dueno, { ...archivo, destino: 'platillos' }),
+    ).rejects.toMatchObject({ codigo: 'imagen_no_comida' });
+    expect(clasificador.esComida).toHaveBeenCalledOnce();
+    expect(almacen.subir).not.toHaveBeenCalled();
+  });
+
+  it('acepta la foto cuando el clasificador confirma que es comida', async () => {
+    const almacen = almacenFalso();
+    const subir = subirMedia({
+      media: repositorioFalso(),
+      almacen,
+      clasificador: clasificadorFalso(true),
+    });
+
+    await subir(dueno, { ...archivo, destino: 'platillos' });
+
+    expect(almacen.subir).toHaveBeenCalled();
+  });
+
+  it('deja pasar la foto si el clasificador no responde', async () => {
+    const almacen = almacenFalso();
+    const subir = subirMedia({
+      media: repositorioFalso(),
+      almacen,
+      clasificador: clasificadorFalso(null),
+    });
+
+    await subir(dueno, { ...archivo, destino: 'platillos' });
+
+    expect(almacen.subir).toHaveBeenCalled();
+  });
+
+  it('no revisa las fotos de reseñas: solo las del menú', async () => {
+    const clasificador = clasificadorFalso(false);
+    const subir = subirMedia({
+      media: repositorioFalso(),
+      almacen: almacenFalso(),
+      clasificador,
+    });
+
+    await subir(cliente, { ...archivo, destino: 'resenas' });
+
+    expect(clasificador.esComida).not.toHaveBeenCalled();
   });
 });

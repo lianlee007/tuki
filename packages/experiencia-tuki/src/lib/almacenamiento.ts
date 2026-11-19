@@ -10,6 +10,7 @@
  *   - `resenas`       fotos que adjunta un comensal
  */
 import { apis } from './api-tuki';
+import { ErrorHttp } from '@tuki/api-cliente';
 
 export const BUCKETS = {
   platillos: 'platillos',
@@ -118,6 +119,10 @@ export const subirImagen = async (
     const subida = await apis.media.subir(optimizada, destino);
     return subida.url;
   } catch (error) {
+    // El revisor de fotos ya trae un mensaje pensado para el dueño.
+    if (error instanceof ErrorHttp && error.codigo === 'imagen_no_comida') {
+      throw new Error(error.message);
+    }
     const mensaje = error instanceof Error ? error.message : 'error desconocido';
     throw new Error(`No se pudo subir la imagen: ${mensaje}`);
   }

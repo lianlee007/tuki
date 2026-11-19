@@ -4,6 +4,7 @@ import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import { crearAlmacenS3 } from './adaptadores/s3/almacen.js';
+import { crearClasificadorVision } from './adaptadores/vision/clasificador.js';
 import { crearRepositorioMedia } from './adaptadores/postgres/media.repositorio.js';
 import { sql } from './adaptadores/postgres/cliente.js';
 import { crearCasosDeUsoMedia } from './aplicacion/casos-uso.js';
@@ -47,6 +48,7 @@ export const crearApp = async () => {
   const servicios = crearCasosDeUsoMedia({
     media: crearRepositorioMedia(),
     almacen: crearAlmacenS3(),
+    clasificador: crearClasificadorVision(),
   });
   await registrarRutasMedia(app, servicios);
 
