@@ -376,7 +376,10 @@ export const ModalCarrito: React.FC<Props> = ({
 
   // ---------- Sub-componentes ----------
 
-  const CarritoItem: React.FC<{ item: { platillo: Platillo; cantidad: number } }> = ({ item }) => (
+  // Funciones de render, no componentes: al estar definidas dentro de
+  // `ModalCarrito`, cada render crearía un tipo nuevo y React desmontaría el
+  // subárbol (los campos perdían el foco a cada tecla).
+  const CarritoItem = ({ item }: { item: { platillo: Platillo; cantidad: number } }) => (
     <div className="flex gap-4 p-3 rounded-[16px] items-center relative"
       style={{
         backgroundColor: e.surface,
@@ -416,7 +419,7 @@ export const ModalCarrito: React.FC<Props> = ({
     </div>
   );
 
-  const DireccionItem: React.FC<{ dir: DireccionEstructurada }> = ({ dir }) => {
+  const DireccionItem = ({ dir }: { dir: DireccionEstructurada }) => {
     const elegida = direccionSeleccionadaId === dir.id;
     return (
       <div
@@ -482,7 +485,9 @@ export const ModalCarrito: React.FC<Props> = ({
       ) : (
         <div>
           <div className="space-y-3">
-            {carrito.map((item) => <CarritoItem key={item.platillo.id} item={item} />)}
+            {carrito.map((item) => (
+              <React.Fragment key={item.platillo.id}>{CarritoItem({ item })}</React.Fragment>
+            ))}
           </div>
           <div className="flex justify-center mt-8">
             <button
@@ -571,7 +576,9 @@ export const ModalCarrito: React.FC<Props> = ({
               </button>
             )}
 
-            {direccionesGuardadas.map((dir) => <DireccionItem key={dir.id} dir={dir} />)}
+            {direccionesGuardadas.map((dir) => (
+              <React.Fragment key={dir.id}>{DireccionItem({ dir })}</React.Fragment>
+            ))}
             {!direccionCuenta && direccionesGuardadas.length === 0 && (
               <div className="text-center py-6 text-sm rounded-xl border border-dashed" style={{ color: e.muted, borderColor: e.border }}>
                 No tienes direcciones guardadas.
@@ -579,7 +586,7 @@ export const ModalCarrito: React.FC<Props> = ({
             )}
           </div>
         ) : (
-          <FormaDireccionVista />
+          <>{FormaDireccionVista()}</>
         )}
       </div>
     </div>
@@ -720,10 +727,10 @@ export const ModalCarrito: React.FC<Props> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 relative af-sin-scrollbar">
-          {paso === 'resumen' ? <ResumenVista /> : <DatosVista />}
+          {paso === 'resumen' ? <>{ResumenVista()}</> : <>{DatosVista()}</>}
         </div>
 
-        {carrito.length > 0 && <FooterVista />}
+        {carrito.length > 0 && <>{FooterVista()}</>}
       </div>
     </div>,
     document.body,
