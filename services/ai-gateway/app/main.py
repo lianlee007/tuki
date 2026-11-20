@@ -1,7 +1,9 @@
 """Punto de entrada del AI Gateway de Tuki.
 
 Expone:
-- ``POST /api/v1/ai/chat``: generación de texto con Groq.
+- ``POST /api/v1/ai/chat``: generación de texto con el modelo local de Ollama.
+- ``POST /api/v1/ai/recomendar``: chatbot con RAG sobre el catálogo real.
+- ``GET  /api/v1/ai/conocimiento``: estado del índice gastronómico.
 - ``GET  /api/v1/ai/models``: modelos configurados.
 - ``GET  /healthz`` y ``/readyz``: sondas.
 - ``GET  /metrics``: métricas Prometheus (red interna).

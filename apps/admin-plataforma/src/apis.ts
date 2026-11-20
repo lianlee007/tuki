@@ -42,6 +42,7 @@ export const apis = crearApis({
     pedidos: url('pedidos', 'VITE_PEDIDOS_URL', 'http://localhost:3004'),
     resenas: url('resenas', 'VITE_RESENAS_URL', 'http://localhost:3005'),
     admin: url('admin', 'VITE_ADMIN_URL', 'http://localhost:3006'),
+    ai: url('ai', 'VITE_AI_GATEWAY_URL', 'http://localhost:8000'),
   },
   obtenerToken: () => localStorage.getItem('tuki.access'),
 });

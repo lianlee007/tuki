@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import {
+  ChatRecomendador,
   ErrorBoundary,
   Logo,
   PaginaAutenticacion,
@@ -75,6 +76,7 @@ export default function App() {
             <Suspense fallback={<PantallaCarga />}>
               <ContenidoAnimado />
             </Suspense>
+            <ChatRecomendador />
           </Router>
         </ProveedorTema>
       </ProveedorAutenticacion>

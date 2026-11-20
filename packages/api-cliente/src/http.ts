@@ -54,10 +54,25 @@ export const crearHttp = (opciones: OpcionesHttp): ClienteHttp => {
       | null;
 
     if (!respuesta.ok) {
-      const error = (datos as RespuestaError | null)?.error ?? {
-        codigo: 'error_http',
-        mensaje: `La petición falló con estado ${respuesta.status}.`,
-      };
+      const cuerpo = datos as
+        | (RespuestaError & { detail?: unknown })
+        | null;
+      const detalle = cuerpo?.detail;
+      const error =
+        cuerpo?.error ??
+        (detalle && typeof detalle === 'object'
+          ? {
+              codigo: String((detalle as { code?: string }).code ?? 'error_http'),
+              mensaje: String((detalle as { message?: string }).message ?? ''),
+              detalles: detalle,
+            }
+          : detalle && typeof detalle === 'string'
+            ? { codigo: 'error_http', mensaje: detalle, detalles: detalle }
+            : {
+                codigo: 'error_http',
+                mensaje: `La petición falló con estado ${respuesta.status}.`,
+                detalles: undefined,
+              });
       throw new ErrorHttp(respuesta.status, error.codigo, error.mensaje, error.detalles);
     }
 

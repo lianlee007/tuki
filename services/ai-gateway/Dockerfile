@@ -42,7 +42,7 @@ ARG VERSION=0.0.0-dev
 ARG REVISION=unknown
 
 LABEL org.opencontainers.image.title="Tuki AI Gateway" \
-      org.opencontainers.image.description="Gateway de IA de Tuki: Groq, auth Supabase, rate limit y métricas" \
+      org.opencontainers.image.description="Gateway de IA local de Tuki: RAG, auth Supabase, rate limit y métricas" \
       org.opencontainers.image.vendor="Tuki" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tuki-ai-gateway"
 version = "1.0.0"
-description = "AI Gateway de Tuki: protege la clave de Groq, autentica y limita el uso."
+description = "AI Gateway de Tuki: RAG local con Ollama sobre el catálogo de restaurantes."
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]

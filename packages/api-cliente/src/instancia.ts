@@ -1,3 +1,4 @@
+import { crearApiIa } from './ai.api.js';
 import { crearApiIdentidad } from './identidad.api.js';
 import { crearApiAdmin } from './admin.api.js';
 import { crearApiMedia } from './media.api.js';
@@ -13,6 +14,7 @@ export interface UrlsServicios {
   pedidos: string;
   resenas: string;
   admin: string;
+  ai: string;
 }
 
 export interface OpcionesApis {
@@ -32,6 +34,7 @@ export const crearApis = (opciones: OpcionesApis) => {
     pedidos: crearApiPedidos(http(opciones.urls.pedidos)),
     resenas: crearApiResenas(http(opciones.urls.resenas)),
     admin: crearApiAdmin(http(opciones.urls.admin)),
+    ia: crearApiIa(http(opciones.urls.ai)),
   };
 };
 

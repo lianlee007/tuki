@@ -57,18 +57,18 @@ HTTP_INFLIGHT = Gauge(
 )
 UPSTREAM_REQUESTS = Counter(
     "ai_gateway_upstream_requests_total",
-    "Intentos contra Groq por modelo y resultado.",
+    "Intentos contra Ollama por modelo y resultado.",
     ["model", "outcome"],
 )
 UPSTREAM_DURATION = Histogram(
     "ai_gateway_upstream_duration_seconds",
-    "Latencia de las llamadas a Groq.",
+    "Latencia de las llamadas a Ollama.",
     ["model"],
-    buckets=(0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 30, 60),
+    buckets=(0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 30, 60, 120),
 )
 TOKENS = Counter(
     "ai_gateway_tokens_total",
-    "Tokens consumidos en Groq.",
+    "Tokens consumidos en Ollama.",
     ["model", "kind"],
 )
 RATE_LIMITED = Counter(

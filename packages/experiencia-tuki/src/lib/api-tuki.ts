@@ -133,6 +133,7 @@ export const apis = crearApis({
     pedidos: servicio('pedidos', 'VITE_PEDIDOS_URL', 'http://localhost:3004'),
     resenas: servicio('resenas', 'VITE_RESENAS_URL', 'http://localhost:3005'),
     admin: servicio('admin', 'VITE_ADMIN_URL', 'http://localhost:3006'),
+    ai: urlGatewaysIa(),
   },
   obtenerToken: () => leerTokens().accessToken,
 });

@@ -4,7 +4,7 @@ from conftest import make_client
 from prometheus_client import REGISTRY
 
 
-async def test_healthz_no_depende_de_groq():
+async def test_healthz_no_depende_del_modelo():
     async with make_client() as client:
         response = await client.get("/healthz")
         assert response.status_code == 200
@@ -12,18 +12,21 @@ async def test_healthz_no_depende_de_groq():
         assert response.headers["x-content-type-options"] == "nosniff"
 
 
-async def test_readyz_ok_con_clave():
+async def test_readyz_ok_e_informa_modelos():
     async with make_client() as client:
         response = await client.get("/readyz")
         assert response.status_code == 200
-        assert response.json()["checks"]["groq_api_key"] is True
+        checks = response.json()["checks"]
+        assert checks["modelo_chat"] == "tuki-chef"
+        assert checks["modelo_embeddings"] == "nomic-embed-text"
+        assert checks["ollama_url"] is True
 
 
-async def test_readyz_503_sin_clave(settings_factory):
-    async with make_client(settings_factory(groq_api_key="")) as client:
+async def test_readyz_sin_conocimiento_sigue_arriba():
+    async with make_client() as client:
         response = await client.get("/readyz")
-        assert response.status_code == 503
-        assert "GROQ_API_KEY" in " ".join(response.json()["errors"])
+        assert response.status_code == 200
+        assert response.json()["checks"]["documentos_conocimiento"] == 0
 
 
 async def test_alias_api_healthz():
@@ -58,13 +61,13 @@ async def test_metrics_expone_contadores():
         assert "ai_gateway_upstream_requests_total" in response.text
 
 
-async def test_root_no_expone_secretos():
+async def test_root_no_expone_detalles_del_proveedor():
     async with make_client() as client:
         response = await client.get("/")
         assert response.status_code == 200
         body = response.text
-        assert "test-key" not in body
         assert "groq" not in body.lower()
+        assert "test-key" not in body
 
 
 def test_registry_tiene_metricas_esperadas():
