@@ -183,6 +183,15 @@ Si es la primera vez y las imágenes no existen:
 docker compose -f infra/docker/docker-compose.yml up -d --build
 ```
 
+Ese primer arranque construye también `vision-service` (Ultralytics + torch,
+~2 GB). Es el que revisa que las fotos del menú sean comida: si no está
+levantado, `media-service` deja pasar las subidas (falla abierto). Para
+trabajar con `pnpm dev:all` conviene tenerlo arriba:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d vision
+```
+
 ### 4. Migrar y cargar datos
 
 Con PostgreSQL en marcha, aplica las migraciones de cada servicio:
