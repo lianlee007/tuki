@@ -109,6 +109,21 @@ export const urlPanelRestaurante = (): string => {
   return 'http://localhost:5174';
 };
 
+/**
+ * URL de la aplicación pública (comensal). El panel la usa para devolver a su
+ * sitio a una cuenta que no es de restaurante.
+ */
+export const urlComensal = (): string => {
+  const delRuntime = (configRuntime as Record<string, string | undefined>).comensal;
+  if (delRuntime) return delRuntime.replace(/\/+$/, '');
+
+  const delBuild = entorno.VITE_COMENSAL_URL;
+  if (delBuild && delBuild !== '') return delBuild.replace(/\/+$/, '');
+
+  // En local el comensal es otro servidor de Vite.
+  return 'http://localhost:5173';
+};
+
 /** Cliente único de los servicios, con el token de la sesión actual. */
 export const apis = crearApis({
   urls: {

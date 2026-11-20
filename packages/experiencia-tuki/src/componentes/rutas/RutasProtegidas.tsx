@@ -3,7 +3,7 @@ import React, { PropsWithChildren, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, type Rol } from '../../contexto/ContextoAutenticacion';
 import { Logo } from '../ui';
-import { urlPanelRestaurante } from '../../lib/api-tuki';
+import { urlComensal, urlPanelRestaurante } from '../../lib/api-tuki';
 
 const PantallaCarga = () => (
   <div className="flex min-h-screen items-center justify-center bg-af-ground">
@@ -44,6 +44,48 @@ const destino = (busqueda: string, rol: Rol) => {
   return inicioDe(rol);
 };
 
+/**
+ * Pantalla para quien entró al panel con una cuenta que no gestiona un
+ * restaurante. Antes se redirigía a «/», que en el panel vuelve al mismo
+ * guardia y termina en un bucle de navegación.
+ */
+const CuentaSinPanel: React.FC<{ rol: Rol | null }> = ({ rol }) => {
+  const { cerrarSesion } = useAuth();
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-af-ground px-6 text-center">
+      <span className="rounded-2xl bg-af-accent-solid p-3 text-white">
+        <Logo size={22} />
+      </span>
+      <h1 className="text-lg font-bold text-af-ink">
+        Esta cuenta no gestiona un restaurante
+      </h1>
+      <p className="max-w-sm text-[13px] leading-relaxed text-af-ink-secondary">
+        {rol === 'cliente'
+          ? 'Entraste con una cuenta de comensal.'
+          : 'Esta cuenta no tiene acceso al panel.'}{' '}
+        Para pedir comida sigue en TukiTuki; para administrar un menú entra con la
+        cuenta del restaurante.
+      </p>
+      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+        <a
+          href={urlComensal()}
+          className="rounded-xl bg-af-accent-solid px-4 py-2.5 text-[13px] font-bold text-white"
+        >
+          Ir a TukiTuki
+        </a>
+        <button
+          type="button"
+          onClick={() => void cerrarSesion()}
+          className="rounded-xl border border-black/10 bg-af-surface px-4 py-2.5 text-[13px] font-bold text-af-ink"
+        >
+          Entrar con otra cuenta
+        </button>
+      </div>
+    </div>
+  );
+};
+
 /** Solo el dueño de un restaurante entra al panel. Un comensal vuelve a la portada. */
 export function RutaPanel({ children }: PropsWithChildren) {
   const { user, loading, rol, cargandoRol } = useAuth();
@@ -51,7 +93,10 @@ export function RutaPanel({ children }: PropsWithChildren) {
   if (loading) return <PantallaCarga />;
   if (!user) return <Navigate to="/auth" replace />;
   if (cargandoRol || rol === null) return <PantallaCarga />;
-  if (rol !== 'restaurante') return <Navigate to="/" replace />;
+  // Un comensal aquí no tiene a dónde ir: redirigir a «/» lo devolvía a esta
+  // misma ruta y el navegador acababa bloqueando la navegación (pantalla en
+  // blanco). Se le muestra la salida y no se mueve de sitio.
+  if (rol !== 'restaurante') return <CuentaSinPanel rol={rol} />;
 
   return <>{children}</>;
 }
