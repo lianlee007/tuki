@@ -13,7 +13,7 @@ from app.dominio.modelos import Identity, RateDecision, ResultadoIA
 
 
 class ProveedorIA(Protocol):
-    """Proveedor de generación de texto (Groq u otro intercambiable)."""
+    """Proveedor de generación de texto (Ollama u otro intercambiable)."""
 
     async def generate(
         self,
@@ -24,6 +24,12 @@ class ProveedorIA(Protocol):
         max_tokens: int,
         request_id: str,
     ) -> ResultadoIA: ...
+
+
+class ProveedorEmbeddings(Protocol):
+    """Convierte textos en vectores para la búsqueda semántica."""
+
+    async def embed(self, textos: list[str]) -> list[list[float]]: ...
 
 
 class Limitador(Protocol):

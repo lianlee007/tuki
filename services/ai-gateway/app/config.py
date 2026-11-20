@@ -1,8 +1,9 @@
 """Configuración del AI Gateway, validada al arrancar.
 
-Todas las variables usan el prefijo ``AI_`` salvo las credenciales, que se leen
-con su nombre estándar para integrarse con los secretos de Docker/Kubernetes:
-``GROQ_API_KEY`` y ``SUPABASE_URL``.
+Todas las variables usan el prefijo ``AI_`` salvo las credenciales de Supabase,
+que se leen con su nombre estándar para integrarse con los secretos de
+Docker/Kubernetes. El proveedor de IA es Ollama, que corre en la misma máquina:
+no hay claves de terceros ni llamadas a Groq.
 """
 
 from __future__ import annotations
@@ -68,18 +69,39 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("JWT_AUDIENCIA", "AI_JWT_AUDIENCIA"),
     )
 
-    # --- Groq --------------------------------------------------------------
-    groq_api_key: SecretStr = Field(
-        default=SecretStr(""),
-        validation_alias=AliasChoices("GROQ_API_KEY", "AI_GROQ_API_KEY"),
-    )
-    groq_base_url: str = "https://api.groq.com/openai/v1"
-    groq_models: str = "openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b"
-    groq_timeout_seconds: float = 30.0
-    groq_total_timeout_seconds: float = 40.0
-    groq_max_attempts: int = 3
-    groq_backoff_seconds: float = 0.5
-    groq_max_backoff_seconds: float = 4.0
+    # --- Ollama (modelo local) --------------------------------------------
+    # El chat y los embeddings viven en el mismo Ollama. El modelo de chat se
+    # crea con el Modelfile del repositorio (`ollama create tuki-chef ...`).
+    ollama_url: str = "http://localhost:11434"
+    ollama_modelo_chat: str = "tuki-chef"
+    # Si `tuki-chef` aún no se ha creado, el gateway usa el modelo base. Así el
+    # chat funciona desde el primer arranque y el Modelfile es una mejora, no
+    # un requisito para levantar el servicio.
+    ollama_modelo_respaldo: str = "qwen2.5:1.5b-instruct"
+    ollama_modelo_embeddings: str = "nomic-embed-text"
+    ollama_timeout_seconds: float = 120.0
+    ollama_total_timeout_seconds: float = 180.0
+    ollama_max_attempts: int = 2
+    ollama_backoff_seconds: float = 0.5
+    ollama_max_backoff_seconds: float = 4.0
+    ollama_keep_alive: str = "15m"
+    ollama_num_ctx: int = 3072
+
+    # --- RAG ---------------------------------------------------------------
+    # El gateway no consulta PostgreSQL: pide el catálogo al servicio de
+    # restaurantes, que es el dueño de esas tablas.
+    restaurantes_url: str = "http://localhost:3002"
+    resenas_url: str = "http://localhost:3005"
+    conocimiento_ttl_seconds: int = 300
+    conocimiento_max_restaurantes: int = 200
+    conocimiento_directorio: str = ""
+    rag_chunk_tokens: int = 220
+    rag_chunk_overlap: int = 40
+    rag_candidatos: int = 20
+    rag_top_k: int = 6
+    rag_contexto_max_tokens: int = 1100
+    rag_mmr_lambda: float = 0.72
+    rag_umbral_semantico: float = 0.22
 
     # --- Límites de la API -------------------------------------------------
     request_max_chars: int = 4000
@@ -95,7 +117,12 @@ class Settings(BaseSettings):
     otel_service_name: str = "tuki-ai-gateway"
     otel_endpoint: str = ""
 
-    @field_validator("groq_base_url", "supabase_url")
+    @field_validator(
+        "ollama_url",
+        "restaurantes_url",
+        "resenas_url",
+        "supabase_url",
+    )
     @classmethod
     def _strip_trailing_slash(cls, value: str) -> str:
         return value.strip().rstrip("/")
@@ -119,7 +146,16 @@ class Settings(BaseSettings):
 
     @property
     def models(self) -> list[str]:
-        return [item.strip() for item in self.groq_models.split(",") if item.strip()]
+        modelo = self.ollama_modelo_chat.strip()
+        return [modelo] if modelo else []
+
+    @property
+    def modelo_chat(self) -> str:
+        return self.ollama_modelo_chat.strip()
+
+    @property
+    def modelo_embeddings(self) -> str:
+        return self.ollama_modelo_embeddings.strip()
 
     @property
     def algorithms(self) -> list[str]:
@@ -128,10 +164,6 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
-
-    @property
-    def groq_key_configured(self) -> bool:
-        return bool(self.groq_api_key.get_secret_value().strip())
 
     @property
     def supabase_anon_configured(self) -> bool:
@@ -155,19 +187,35 @@ class Settings(BaseSettings):
             "rate_limit_auth_burst",
             "request_max_chars",
             "max_output_tokens",
+            "conocimiento_ttl_seconds",
+            "conocimiento_max_restaurantes",
+            "rag_chunk_tokens",
+            "rag_candidatos",
+            "rag_top_k",
+            "rag_contexto_max_tokens",
         ):
             if getattr(self, name) < 1:
                 errors.append(f"{name} debe ser mayor que cero")
-        if not self.models:
-            errors.append("AI_GROQ_MODELS no puede estar vacío")
+        if self.rag_chunk_overlap < 0:
+            errors.append("rag_chunk_overlap no puede ser negativo")
+        if self.rag_chunk_overlap >= self.rag_chunk_tokens:
+            errors.append("rag_chunk_overlap debe ser menor que rag_chunk_tokens")
+        if not 0.0 <= self.rag_mmr_lambda <= 1.0:
+            errors.append("rag_mmr_lambda debe estar entre 0 y 1")
+        if not self.modelo_chat:
+            errors.append("AI_OLLAMA_MODELO_CHAT no puede estar vacío")
+        if not self.modelo_embeddings:
+            errors.append("AI_OLLAMA_MODELO_EMBEDDINGS no puede estar vacío")
+        if not self.ollama_url:
+            errors.append("AI_OLLAMA_URL no puede estar vacío")
+        if not self.restaurantes_url:
+            errors.append("AI_RESTAURANTES_URL no puede estar vacío")
         if errors:
             raise RuntimeError("Configuración inválida: " + "; ".join(errors))
 
     def readiness_errors(self) -> list[str]:
         """Comprobaciones que no deben tumbar el proceso, solo quitar readiness."""
         errors: list[str] = []
-        if not self.groq_key_configured:
-            errors.append("GROQ_API_KEY no configurada")
         if self.auth_mode == "supabase" and not self.supabase_jwks_url:
             errors.append("JWKS de Supabase no configurado")
         if self.auth_mode == "local" and not self.jwt_secreto.get_secret_value().strip():

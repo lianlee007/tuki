@@ -8,7 +8,7 @@ from app.servicios.chat import ServicioChat
 
 
 class ProveedorFalso:
-    """Implementa el puerto ``ProveedorIA`` sin conocer Groq."""
+    """Implementa el puerto ``ProveedorIA`` sin conocer Ollama."""
 
     def __init__(self) -> None:
         self.llamadas: list[dict] = []
@@ -26,7 +26,7 @@ class ProveedorFalso:
         )
 
 
-async def test_el_servicio_depende_del_puerto_y_no_de_groq():
+async def test_el_servicio_depende_del_puerto_y_no_de_ollama():
     proveedor = ProveedorFalso()
     servicio = ServicioChat(proveedor, max_chars=100)
 

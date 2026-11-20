@@ -2,7 +2,7 @@
 
 Todos los errores salen con la misma forma:
 ``{"detail": {"code", "message"}, "request_id"}`` para que la SPA no tenga que
-distinguir entre un fallo de validación, de cuota o de Groq.
+distinguir entre un fallo de validación, de cuota o del modelo local.
 """
 
 from __future__ import annotations

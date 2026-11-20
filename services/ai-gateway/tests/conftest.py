@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 from contextlib import asynccontextmanager
 
 import httpx
@@ -15,9 +16,16 @@ def build_settings(**overrides) -> Settings:
         "auth_mode": "disabled",
         "environment": "test",
         "log_level": "WARNING",
-        "groq_api_key": "test-key",
-        "groq_backoff_seconds": 0.0,
-        "groq_max_backoff_seconds": 0.0,
+        "ollama_url": "http://ollama.test",
+        "ollama_modelo_chat": "tuki-chef",
+        "ollama_modelo_respaldo": "qwen2.5:1.5b-instruct",
+        "ollama_modelo_embeddings": "nomic-embed-text",
+        "ollama_max_attempts": 2,
+        "ollama_backoff_seconds": 0.0,
+        "ollama_max_backoff_seconds": 0.0,
+        "restaurantes_url": "http://restaurantes.test",
+        "resenas_url": "http://resenas.test",
+        "conocimiento_directorio": tempfile.mkdtemp(prefix="tuki-rag-test-"),
         "rate_limit_anon_per_minute": 1000,
         "rate_limit_anon_burst": 1000,
         "rate_limit_auth_per_minute": 1000,

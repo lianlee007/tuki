@@ -17,8 +17,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.adaptadores.groq import GroqClient
 from app.adaptadores.memoria import RateLimiter
+from app.adaptadores.ollama import OllamaClient
+from app.adaptadores.restaurantes import ExtractorRestaurantes
 from app.config import Settings, get_settings
 from app.entrada.errores import register_exception_handlers
 from app.entrada.middleware import register_middleware
@@ -30,6 +31,8 @@ from app.observability import (
     setup_telemetry,
 )
 from app.servicios.chat import ServicioChat
+from app.servicios.conocimiento import ServicioConocimiento
+from app.servicios.recomendador import ServicioRecomendador
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +44,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="Tuki AI Gateway",
         version=settings.version,
-        description="Gateway que protege la clave de Groq de Tuki.",
+        description="Gateway de IA local de Tuki con RAG sobre el catálogo real.",
         docs_url="/docs" if settings.environment != "production" else None,
         redoc_url=None,
         openapi_url="/openapi.json" if settings.environment != "production" else None,
@@ -67,31 +70,36 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         timeout = httpx.Timeout(
             connect=5.0,
-            read=settings.groq_timeout_seconds,
-            write=10.0,
+            read=settings.ollama_timeout_seconds,
+            write=30.0,
             pool=5.0,
         )
         client = httpx.AsyncClient(
             timeout=timeout,
             limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
             headers={"User-Agent": f"{settings.app_name}/{settings.version}"},
+            # Ollama y los servicios de Tuki son locales. Ignorar ALL_PROXY
+            # evita que un proxy SOCKS del sistema tumbe el arranque.
+            trust_env=False,
         )
         application.state.http = client
+        proveedor = OllamaClient(settings, client)
+        extractor = ExtractorRestaurantes(settings, client)
+        conocimiento = ServicioConocimiento(extractor, proveedor, settings)
         application.state.chat = ServicioChat(
-            GroqClient(settings, client),
+            proveedor,
             max_chars=settings.request_max_chars,
+        )
+        application.state.conocimiento = conocimiento
+        application.state.recomendador = ServicioRecomendador(
+            conocimiento,
+            proveedor,
+            proveedor,
+            settings,
         )
         if telemetry_ready:
             instrument_httpx(client)
 
-        if not settings.groq_key_configured:
-            logger.error(
-                "groq_key_missing",
-                extra={
-                    "event": "startup_error",
-                    "detail": "GROQ_API_KEY no configurada; /readyz devolverá 503.",
-                },
-            )
         logger.info(
             "gateway_started",
             extra={
@@ -99,7 +107,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "environment": settings.environment,
                 "auth_mode": settings.auth_mode,
                 "allow_anon": settings.allow_anon,
-                "models": ",".join(settings.models),
+                "modelo_chat": settings.modelo_chat,
+                "modelo_embeddings": settings.modelo_embeddings,
             },
         )
         try:

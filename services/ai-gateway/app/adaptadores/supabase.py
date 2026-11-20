@@ -14,7 +14,7 @@ Política:
 
 La clave ``anon`` de Supabase es pública por diseño y ya viaja en el bundle,
 así que permitir tráfico anónimo no añade exposición nueva; el objetivo real es
-sacar ``GROQ_API_KEY`` del navegador y poder limitar el abuso por IP.
+sacar la clave de IA del navegador y poder limitar el abuso por IP.
 """
 
 from __future__ import annotations

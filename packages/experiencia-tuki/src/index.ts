@@ -25,6 +25,7 @@ export {
 } from './contexto/ContextoAutenticacion';
 export { ProveedorTema } from './contexto/ContextoTema';
 export { SincronizacionCarrito } from './componentes/SincronizacionCarrito';
+export { ChatRecomendador } from './componentes/chat/ChatRecomendador';
 export { ErrorBoundary } from './componentes/sistema-diseno/ErrorBoundary';
 export { TransicionPagina } from './componentes/sistema-diseno/TransicionPagina';
 export { RutaAuth, RutaConSesion, RutaPanel } from './componentes/rutas/RutasProtegidas';

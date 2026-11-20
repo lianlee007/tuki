@@ -58,8 +58,9 @@ identidad restaurantes pedidos resenas media admin-service
   frontend y de nuevo en cada servicio con `exigirRol`.
 - **Medios:** los archivos viven en RustFS (API compatible con S3); en la base
   solo se guardan los metadatos.
-- **IA:** `ai-gateway` es un servicio FastAPI hexagonal que habla con Groq y
-  expone métricas Prometheus.
+- **IA:** `ai-gateway` es un servicio FastAPI hexagonal que ejecuta un modelo
+  local en Ollama y expone un chatbot RAG sobre el catálogo real de restaurantes.
+  No usa Groq ni claves de terceros.
 
 ## Aplicaciones y servicios
 
@@ -81,8 +82,27 @@ identidad restaurantes pedidos resenas media admin-service
 | `pedidos-service` | Pedidos, ítems, totales y estados | `3004` | [README](services/pedidos-service/README.md) |
 | `resenas-service` | Reseñas, respuestas y votos de utilidad | `3005` | [README](services/resenas-service/README.md) |
 | `admin-service` | BFF de superadministración y auditoría | `3006` | [README](services/admin-service/README.md) |
-| `ai-gateway` | Gateway de IA con Groq y métricas | `8000` | [Código](services/ai-gateway) |
+| `ai-gateway` | Chatbot RAG local con Ollama y métricas | `8000` | [Código](services/ai-gateway) |
 | `vision-service` | Revisor de fotos: ¿es comida? (Ultralytics) | `8002` | [README](services/vision-service/README.md) |
+
+### Chatbot RAG local
+
+El comensal puede abrir el botón **Pregúntale a Tuki** en `web-comensal`. El
+gateway extrae restaurantes y platos por HTTP desde `restaurantes-service`,
+construye un índice híbrido (BM25 + embeddings de `nomic-embed-text`), recupera
+los platos relevantes y responde con el modelo local `tuki-chef`. Cada respuesta
+devuelve las fuentes reales (plato, restaurante, precio y alérgenos).
+
+La guía completa —estrategia de corte, prompt system, hiperparámetros, comandos
+y evaluación— está en [`docs/rag-local.md`](docs/rag-local.md). El Golden Dataset
+de 52 casos y el evaluador viven en
+[`services/ai-gateway/evaluacion`](services/ai-gateway/evaluacion).
+
+El informe de la actividad está en
+[`docs/informe-rag/Informe-modelo-rag-TukiTuki.docx`](docs/informe-rag/Informe-modelo-rag-TukiTuki.docx)
+(editable) y en
+[`docs/informe-rag/Informe-modelo-rag-TukiTuki.pdf`](docs/informe-rag/Informe-modelo-rag-TukiTuki.pdf).
+La última evaluación completa dio **51/52 casos (98.08 %)**.
 
 ### Servicios de apoyo
 
@@ -103,7 +123,7 @@ identidad restaurantes pedidos resenas media admin-service
 | Backend | Fastify 5, Zod, Postgres.js, JWT con `jose`, Argon2 |
 | Frontend | React 19, Vite 6, React Router 7, Tailwind CSS, Zustand |
 | Datos | PostgreSQL 16, Redis 7, RustFS / S3 |
-| IA | FastAPI, Groq, Prometheus |
+| IA | FastAPI, Ollama, Prometheus |
 | Pruebas | Vitest, Playwright, Pytest y Ruff |
 | Infraestructura | Docker Compose, Kubernetes, Kustomize, ArgoCD, GitHub Actions |
 
@@ -122,7 +142,7 @@ identidad restaurantes pedidos resenas media admin-service
 │   ├── pedidos-service/
 │   ├── resenas-service/
 │   ├── admin-service/
-│   └── ai-gateway/          FastAPI + Groq
+│   └── ai-gateway/          FastAPI + Ollama + RAG
 ├── packages/                Código compartido
 │   ├── api-cliente/         URLs, cabeceras y llamadas HTTP
 │   ├── auth-react/          Sesión, guards y contexto de usuario

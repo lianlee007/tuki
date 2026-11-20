@@ -39,7 +39,7 @@ def supabase_settings(settings_factory, **overrides):
 def test_modo_disabled_identifica_por_ip(settings_factory):
     from app.config import Settings
 
-    settings = Settings(auth_mode="disabled", groq_api_key="x")
+    settings = Settings(auth_mode="disabled", ollama_modelo_chat="tuki-chef")
     identity = resolve_identity(make_request(ip="10.0.0.5"), None, settings)
     assert identity.kind == "anon"
     assert identity.key == "ip:10.0.0.5"
@@ -51,7 +51,7 @@ def test_prefiere_x_real_ip_sobre_x_forwarded_for(settings_factory):
     request = make_request()
     request.scope["headers"].append((b"x-real-ip", b"192.0.2.50"))
     request.scope["headers"].append((b"x-forwarded-for", b"6.6.6.6, 192.0.2.50"))
-    settings = Settings(auth_mode="disabled", groq_api_key="x")
+    settings = Settings(auth_mode="disabled", ollama_modelo_chat="tuki-chef")
     identity = resolve_identity(request, None, settings)
     assert identity.key == "ip:192.0.2.50"
 
