@@ -89,7 +89,7 @@ const buscarRefreshVigente = async (
   tokenHash: string,
 ): Promise<RefreshVigente | null> => {
   const [fila] = await sql<(FilaRefresh & FilaUsuario)[]>`
-    select t.id, t.usuario_id, t.token_hash, t.expira_en, t.revocado_en,
+    select u.id, t.usuario_id, t.token_hash, t.expira_en, t.revocado_en,
            t.user_agent, t.ip,
            u.email, u.password_hash, u.nombre, u.apellido, u.rol,
            u.email_verificado_en, u.creado_en, u.avatar_url
