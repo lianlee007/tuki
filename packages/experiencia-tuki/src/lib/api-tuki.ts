@@ -114,7 +114,9 @@ export const urlPanelRestaurante = (): string => {
  * sitio a una cuenta que no es de restaurante.
  */
 export const urlComensal = (): string => {
-  const delRuntime = (configRuntime as Record<string, string | undefined>).comensal;
+  // `comensal` es la clave nueva; `web` la usaban los despliegues anteriores.
+  const runtime = configRuntime as Record<string, string | undefined>;
+  const delRuntime = runtime.comensal ?? runtime.web;
   if (delRuntime) return delRuntime.replace(/\/+$/, '');
 
   const delBuild = entorno.VITE_COMENSAL_URL;

@@ -16,8 +16,9 @@ import { SelectorTipoCuenta } from '../componentes/autenticacion/SelectorTipoCue
  */
 interface PaginaAutenticacionProps {
   /**
-   * Destino de la flecha «Volver». El sitio público la manda a la landing de
-   * restaurantes; la app del panel no tiene esa ruta y la manda a `/panel`.
+   * Destino de la flecha «Volver». El sitio público la manda a su landing de
+   * restaurantes; la app del panel apunta a esa misma landing en la URL
+   * pública del sitio (por ejemplo `http://localhost:8081/para-restaurantes`).
    */
   volverA?: string;
 }

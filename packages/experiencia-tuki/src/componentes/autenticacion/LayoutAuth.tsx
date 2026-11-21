@@ -33,18 +33,35 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   etiqueta,
   puntos,
 }) => {
+  const esUrlExterna = /^https?:\/\//i.test(volverA);
+  const clasesVolver = `af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-af-surface text-af-ink-secondary transition-colors hover:text-af-ink dark:bg-[#2C2C2E] dark:text-[#A1A1A6] dark:hover:text-white ${FOCO}`;
+  const iconoVolver = <ArrowLeft size={19} aria-hidden="true" />;
+
   return (
     <div className="min-h-dvh bg-af-ground">
       <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-af-ground/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-white/10 dark:bg-[#161618]/90">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4 md:h-16 md:px-8">
-          <Link
-            to={volverA}
-            aria-label="Volver"
-            title="Volver"
-            className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-af-surface text-af-ink-secondary transition-colors hover:text-af-ink dark:bg-[#2C2C2E] dark:text-[#A1A1A6] dark:hover:text-white ${FOCO}`}
-          >
-            <ArrowLeft size={19} aria-hidden="true" />
-          </Link>
+          {/* Un destino absoluto (el sitio público del panel) necesita un
+              enlace normal: `Link` lo trataría como una ruta interna. */}
+          {esUrlExterna ? (
+            <a
+              href={volverA}
+              aria-label="Volver"
+              title="Volver"
+              className={clasesVolver}
+            >
+              {iconoVolver}
+            </a>
+          ) : (
+            <Link
+              to={volverA}
+              aria-label="Volver"
+              title="Volver"
+              className={clasesVolver}
+            >
+              {iconoVolver}
+            </Link>
+          )}
 
           <Link
             to="/"
