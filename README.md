@@ -191,16 +191,32 @@ Para desarrollo local, levanta solo las dependencias:
 docker compose -f infra/docker/docker-compose.yml up -d postgres redis rustfs mailpit traefik
 ```
 
-Para levantar el stack completo (servicios y frontends incluidos):
+Para levantar el stack completo (servicios, frontends y observabilidad):
 
 ```bash
 pnpm infra:up
 ```
 
+Esto deja:
+
+| Servicio | URL local |
+|---|---|
+| Comensal | `http://localhost:8081` |
+| Panel del restaurante | `http://localhost:8082` |
+| Administración | `http://localhost:8083` |
+| API Gateway (todos los servicios) | `http://localhost:8084` |
+| Grafana | `http://localhost:3000` |
+| Prometheus | `http://localhost:9090` |
+
+Los frontends reciben la URL del API Gateway en `/config.js` al arrancar, así
+que llaman a los servicios y a las imágenes por `http://localhost:8084`. El
+usuario y la contraseña iniciales de Grafana son `admin` / `admin`.
+
 Si es la primera vez y las imágenes no existen:
 
 ```bash
 docker compose -f infra/docker/docker-compose.yml up -d --build
+pnpm infra:monitoring:up
 ```
 
 Ese primer arranque construye también `vision-service` (Ultralytics + torch,
@@ -213,6 +229,10 @@ docker compose -f infra/docker/docker-compose.yml up -d vision
 ```
 
 ### 4. Migrar y cargar datos
+
+Si usas el stack completo de Docker (`pnpm infra:up`), las migraciones se
+ejecutan solas al arrancar cada servicio. Los comandos siguientes son para
+desarrollo con `pnpm dev:all` o para migrar a mano:
 
 Con PostgreSQL en marcha, aplica las migraciones de cada servicio:
 
@@ -302,9 +322,11 @@ El seed de identidad también crea las cuentas `dueno3@tukituki.local` a
 | `pnpm test` | Ejecuta las pruebas unitarias |
 | `pnpm test:e2e` | Ejecuta Playwright contra los tres frontends |
 | `pnpm build` | Compila aplicaciones, servicios y paquetes |
-| `pnpm infra:up` | Levanta el stack completo con Docker Compose |
-| `pnpm infra:down` | Detiene el stack local |
-| `pnpm infra:logs` | Sigue los logs de los contenedores |
+| `pnpm infra:up` | Levanta el stack completo (incluye Grafana y Prometheus) |
+| `pnpm infra:down` | Detiene el stack completo |
+| `pnpm infra:logs` | Sigue los logs de los contenedores principales |
+| `pnpm infra:monitoring:up` | Levanta solo Grafana, Prometheus y node-exporter |
+| `pnpm infra:monitoring:down` | Detiene solo la observabilidad |
 | `node scripts/humo.mjs` | Prueba de humo contra el stack real |
 | `k6 run scripts/carga.k6.js` | Prueba de carga con k6 |
 
@@ -346,44 +368,52 @@ kubectl kustomize infra/k8s/overlays/production
 La observabilidad está en `infra/observability`: ServiceMonitor, alertas de
 Prometheus y un dashboard de Grafana para el panorama de TukiTuki.
 
-### Dokploy (host Docker único)
+### Stack local completo (Docker Compose)
 
-`infra/docker/docker-compose.production.yml` despliega el monorepo completo en
-un host Docker: PostgreSQL, RustFS, los seis servicios Node, el gateway de IA,
-un API Gateway con Nginx y los tres frontends.
+`infra/docker/docker-compose.yml` levanta el monorepo completo en local:
+PostgreSQL, Redis, RustFS, Mailpit, Traefik, los seis servicios Node, el gateway
+de IA, el revisor de imágenes, un API Gateway con Nginx y los tres frontends.
 
-1. Copia `infra/docker/.env.production.example` y completa los secretos.
-2. Configura esas variables en el servicio de Dokploy.
-3. Apunta el *Compose Path* a `infra/docker/docker-compose.production.yml`.
+1. Copia `infra/docker/.env.example` a `infra/docker/.env` y ajusta los secretos
+   que quieras cambiar (`JWT_SECRETO`, claves de IA, etc.).
+2. Ejecuta `pnpm infra:up`.
 
-El compose publica:
+| Servicio | URL local |
+|---|---|
+| Comensal | `http://localhost:8081` |
+| Panel | `http://localhost:8082` |
+| Administración | `http://localhost:8083` |
+| API Gateway | `http://localhost:8084` |
+| Grafana | `http://localhost:3000` |
+| Prometheus | `http://localhost:9090` |
 
-| Servicio | URL local del host | URL pública con nip.io |
-|---|---|---|
-| Comensal | `http://<host>:8081` | `https://tukituki.<host>.nip.io` |
-| Panel | `http://<host>:8082` | `https://tukipanel.<host>.nip.io` |
-| Administración | `http://<host>:8083` | `https://tukiadmin.<host>.nip.io` |
-| API | `http://<host>:8084` | `https://tukiapi.<host>.nip.io` |
+El API Gateway expone una sola URL para los seis servicios, el gateway de IA y
+las imágenes (`/tuki-media`). Los frontends no llevan las URLs compiladas: al
+arrancar, `infra/docker/gateway/generar-config.sh` escribe `/config.js` con
+`http://localhost:8084`, así que la misma imagen sirve para cualquier entorno.
 
-`nip.io` resuelve cada subdominio al IP del host sin comprar ni configurar DNS,
-y Dokploy emite el certificado Let's Encrypt. Para un dominio propio basta con
-cambiar las cuatro URLs y crear los registros `A` correspondientes.
+Las migraciones se ejecutan al arrancar cada servicio. Todos los puertos que se
+publican en el host están declarados en el compose.
 
-En Dokploy, los dominios se agregan desde **Domains** del servicio Compose
-(servicios `web-comensal`, `panel-restaurante`, `admin-plataforma` y `api-gateway`,
-puerto `80`). Después de agregarlos hay que actualizar `TUKI_API_URL`,
-`TUKI_WEB_URL`, `TUKI_ADMIN_PANEL_URL` y `CORS_ORIGENES` en las variables de
-entorno y redesplegar.
+La observabilidad se levanta junto con el stack (`pnpm infra:up`) y también se
+puede controlar aparte:
 
-PostgreSQL, RustFS y la red interna no se exponen. Las migraciones se ejecutan
-al arrancar cada servicio y las imágenes de los frontends reciben la URL del API
-en tiempo de ejecución mediante `/config.js`.
+```bash
+pnpm infra:monitoring:up
+pnpm infra:monitoring:down
+```
+
+El detalle de dashboards, credenciales y variables está en
+[`infra/docker/monitoring/README.md`](infra/docker/monitoring/README.md).
 
 El servicio `importador` aplica
 [`db/importacion/importar-produccion.sql`](db/importacion/importar-produccion.sql)
-de forma idempotente después de las migraciones. Ese archivo contiene los datos
-rescatados del Tuki original: 7 restaurantes, 61 platos, 23 cocinas y 5 reseñas.
-Las 70 imágenes se cargaron en RustFS y las URLs públicas apuntan al API Gateway.
+de forma idempotente. No arranca con el stack; se ejecuta cuando se quieren
+cargar los datos rescatados del Tuki original:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml --profile importar run --rm importador
+```
 
 ## Convenciones
 

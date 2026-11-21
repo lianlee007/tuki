@@ -13,7 +13,7 @@ set client_encoding = 'UTF8';
 -- archivo a mano.
 \if :{?tuki_media_url}
 \else
-\set tuki_media_url 'https://tukiapi.169.58.151.195.nip.io/tuki-media'
+\set tuki_media_url 'http://localhost:8084/tuki-media'
 \endif
 
 \connect tuki_identidad
