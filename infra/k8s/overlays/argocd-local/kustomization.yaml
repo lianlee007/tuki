@@ -53,14 +53,35 @@ patches:
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: IfNotPresent
 
-  # Una sola réplica del comensal: el HPA base arranca en 2.
+  # En el clúster local no hay metrics-server, así que los HPA quedan siempre
+  # en Degraded. Se eliminan: el laboratorio corre con una réplica fija.
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: restaurantes-service
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: restaurantes-service
+      $patch: delete
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: pedidos-service
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: pedidos-service
+      $patch: delete
   - target:
       kind: HorizontalPodAutoscaler
       name: web-comensal
     patch: |-
-      - op: replace
-        path: /spec/minReplicas
-        value: 1
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: web-comensal
+      $patch: delete
 
   # Los navegadores entran por tukituki.127.0.0.1.nip.io:8091.
   - target:
