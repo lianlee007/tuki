@@ -40,8 +40,11 @@ const ContenidoAnimado = () => {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Navigate to="/panel" replace />} />
-          <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion /></TransicionPagina></RutaAuth>} />
-          <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar /></TransicionPagina></RutaAuth>} />
+          {/* Enlaces antiguos del sitio público que llegaban a la landing de
+              restaurantes: en el panel no existe, así que vuelven a su inicio. */}
+          <Route path="/para-restaurantes" element={<Navigate to="/panel" replace />} />
+          <Route path="/auth" element={<RutaAuth><TransicionPagina><PaginaAutenticacion volverA="/panel" /></TransicionPagina></RutaAuth>} />
+          <Route path="/entrar" element={<RutaAuth><TransicionPagina><PaginaEntrar volverA="/panel" /></TransicionPagina></RutaAuth>} />
           <Route path="/panel" element={<RutaPanel><TransicionPagina><PanelControl /></TransicionPagina></RutaPanel>} />
           <Route path="/restaurante/:slug" element={<TransicionPagina><VistaPublica /></TransicionPagina>} />
           <Route path="*" element={<Pagina404 />} />

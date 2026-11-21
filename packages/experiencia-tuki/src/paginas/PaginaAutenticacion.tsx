@@ -14,7 +14,17 @@ import { SelectorTipoCuenta } from '../componentes/autenticacion/SelectorTipoCue
  * servir para comensales y dueños, y quien venía a pedir podía crear la cuenta
  * equivocada sin darse cuenta.
  */
-export default function PaginaAutenticacion() {
+interface PaginaAutenticacionProps {
+  /**
+   * Destino de la flecha «Volver». El sitio público la manda a la landing de
+   * restaurantes; la app del panel no tiene esa ruta y la manda a `/panel`.
+   */
+  volverA?: string;
+}
+
+export default function PaginaAutenticacion({
+  volverA = '/para-restaurantes',
+}: PaginaAutenticacionProps) {
   const [params, setParams] = useSearchParams();
   // `?mode=register` es el enlace histórico de la landing; `?modo=` es el
   // formato nuevo. Se aceptan los dos para no romper enlaces ya compartidos.
@@ -38,7 +48,7 @@ export default function PaginaAutenticacion() {
 
   return (
     <LayoutAuth
-      volverA="/para-restaurantes"
+      volverA={volverA}
       etiqueta="Cuenta de restaurante"
       titulo={isLogin ? 'Panel de tu restaurante' : 'Publica el menú de tu restaurante'}
       subtitulo={
