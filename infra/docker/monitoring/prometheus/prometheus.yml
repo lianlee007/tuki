@@ -1,15 +1,15 @@
-# Prometheus del stack de Dokploy.
+# Prometheus del stack local de TukiTuki.
 #
-# Los targets son los nombres de servicio del compose de producción: ambos
-# stacks comparten la red `tuki-tuki-mcftoo_default`, así que el DNS interno de
-# Docker los resuelve sin publicar puertos en el host.
+# Los targets son los nombres de servicio del compose principal. Ambos stacks
+# comparten la red `tukituki_default`, así que el DNS interno de Docker los
+# resuelve sin publicar puertos de métricas en el host.
 
 global:
   scrape_interval: 30s
   evaluation_interval: 30s
   external_labels:
-    entorno: production
-    plataforma: dokploy
+    entorno: local
+    plataforma: docker
 
 rule_files:
   - /etc/prometheus/alertas.yml
