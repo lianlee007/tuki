@@ -31,4 +31,4 @@ export { TransicionPagina } from './componentes/sistema-diseno/TransicionPagina'
 export { RutaAuth, RutaConSesion, RutaPanel } from './componentes/rutas/RutasProtegidas';
 export { Logo } from './componentes/ui';
 export { apiDescubrir } from './api/apiDescubrir';
-export { apis } from './lib/api-tuki';
+export { apis, urlComensal } from './lib/api-tuki';

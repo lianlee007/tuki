@@ -16,7 +16,7 @@ import { SelectorTipoCuenta } from '../componentes/autenticacion/SelectorTipoCue
  * Restaurante" vacío en el panel.
  */
 interface PaginaEntrarProps {
-  /** Destino de la flecha «Volver». En el panel regresa a `/panel`. */
+  /** Destino de la flecha «Volver». En el panel apunta al sitio público. */
   volverA?: string;
 }
 
