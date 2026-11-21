@@ -368,6 +368,33 @@ kubectl kustomize infra/k8s/overlays/production
 La observabilidad está en `infra/observability`: ServiceMonitor, alertas de
 Prometheus y un dashboard de Grafana para el panorama de TukiTuki.
 
+### ArgoCD en local (kind)
+
+Para probar GitOps sin un clúster remoto, el repo incluye:
+
+- `infra/k8s/overlays/argocd-local`: overlay con URLs `nip.io` en el puerto
+  `8091`, sin los CRD de Prometheus y con las imágenes locales.
+- `infra/argocd/local-app.yaml`: `AppProject` y `ApplicationSet` que apuntan a
+  ese overlay por SSH.
+- `infra/argocd/local-ingress.yaml`: UI de ArgoCD en el Ingress local.
+
+Con el clúster y ArgoCD instalados, las URLs son:
+
+| Servicio | URL |
+|---|---|
+| ArgoCD | `http://argocd.127.0.0.1.nip.io:8091` |
+| Comensal | `http://tukituki.127.0.0.1.nip.io:8091` |
+| Panel | `http://panel.127.0.0.1.nip.io:8091` |
+| Administración | `http://admin.127.0.0.1.nip.io:8091` |
+| API | `http://api.127.0.0.1.nip.io:8091` |
+
+El usuario de ArgoCD es `admin`; la contraseña inicial se obtiene con:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d
+```
+
 ### Stack local completo (Docker Compose)
 
 `infra/docker/docker-compose.yml` levanta el monorepo completo en local:
