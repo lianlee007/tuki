@@ -35,7 +35,9 @@ resource "kubernetes_resource_quota_v1" "tukituki" {
     name      = "tukituki-cuota"
     namespace = local.namespace
     labels = {
-      "app.kubernetes.io/part-of" = "tukituki"
+      "app.kubernetes.io/part-of"    = "tukituki"
+      "app.kubernetes.io/managed-by" = "opentofu"
+      "tukituki.io/environment"      = var.environment
     }
   }
 
@@ -55,7 +57,9 @@ resource "kubernetes_limit_range_v1" "tukituki" {
     name      = "tukituki-limites"
     namespace = local.namespace
     labels = {
-      "app.kubernetes.io/part-of" = "tukituki"
+      "app.kubernetes.io/part-of"    = "tukituki"
+      "app.kubernetes.io/managed-by" = "opentofu"
+      "tukituki.io/environment"      = var.environment
     }
   }
 
