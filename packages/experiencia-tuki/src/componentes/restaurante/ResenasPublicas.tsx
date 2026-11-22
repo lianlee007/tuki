@@ -206,7 +206,10 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
       <div className={ANCHO}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h2 className="text-2xl font-bold tracking-tight text-af-ink font-title sm:text-3xl">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-af-accent-text">
+              Reseñas
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-af-ink font-title sm:text-4xl">
               Lo que dice la gente
             </h2>
 
@@ -458,7 +461,13 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
                             className={misUtiles.has(resena.id) ? 'fill-current' : ''}
                           />
                         )}
-                        {textoUtiles(conteos[resena.id] ?? resena.utiles ?? 0)}
+                        Es útil
+                        <span
+                          aria-hidden="true"
+                          className="ml-0.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-af-surface px-1 py-0.5 text-[10px] font-bold tabular-nums ring-1 ring-inset ring-af/15"
+                        >
+                          {conteos[resena.id] ?? resena.utiles ?? 0}
+                        </span>
                       </button>
 
                       {plato && onAgregarAlCarrito && (

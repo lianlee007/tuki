@@ -27,7 +27,7 @@ import {
 } from '@tuki/experiencia';
 import './estilos.css';
 import '@tuki/experiencia/estilos/tokens.css';
-import '@tuki/experiencia/estilos/apple-tokens.css';
+import '@tuki/experiencia/estilos/sistema-visual.css';
 
 const PantallaCarga = () => (
   <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4 animate-fadeIn">

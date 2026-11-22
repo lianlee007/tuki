@@ -11,7 +11,7 @@
     "./componentes/*": "./src/componentes/*",
     "./contexto/*": "./src/contexto/*",
     "./estilos/tokens.css": "./estilos/tokens.css",
-    "./estilos/apple-tokens.css": "./estilos/apple-tokens.css",
+    "./estilos/sistema-visual.css": "./estilos/sistema-visual.css",
     "./tailwind-preset": "./tailwind-preset.cjs"
   },
   "scripts": {

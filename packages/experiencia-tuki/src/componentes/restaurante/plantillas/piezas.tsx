@@ -60,11 +60,11 @@ export const ChipDestacado: React.FC<{ estilos: EstilosComunes; className?: stri
   </span>
 );
 
-/** Aviso de agotado para las estructuras que van sobre fotografía. */
+/** Aviso de agotado. Superficie clara, no un velo negro sobre la foto. */
 export const ChipAgotado: React.FC<{ className?: string; texto?: string }> = ({ className = '', texto = 'Agotado' }) => (
   <span
-    className={`pointer-events-none inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-white border border-white/25 ${className}`}
-    style={{ backgroundColor: 'rgba(12,12,12,0.72)', backdropFilter: 'blur(8px)' }}
+    className={`pointer-events-none inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border border-af/25 ${className}`}
+    style={{ backgroundColor: 'rgb(var(--af-surface-rgb) / 0.96)', color: 'rgb(var(--af-ink-rgb))' }}
   >
     <Lock size={12} /> {texto}
   </span>

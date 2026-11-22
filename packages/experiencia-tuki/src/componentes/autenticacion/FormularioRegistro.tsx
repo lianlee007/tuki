@@ -33,13 +33,13 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
+  const [claveTocada, setClaveTocada] = useState(false);
   const [verClave, setVerClave] = useState(false);
   /** Confirmación en pantalla: una alerta del navegador se pierde y no dice qué sigue. */
   const [exito, setExito] = useState<{ mensaje: string; confirmarCorreo: boolean } | null>(null);
@@ -50,12 +50,12 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   useEffect(() => {
     setEmail('');
     setPassword('');
-    setConfirmPassword('');
     setNombre('');
     setApellido('');
     setAceptaTerminos(false);
     setError(null);
     setEmailTouched(false);
+    setClaveTocada(false);
     setPaso('cuenta');
     setExito(null);
   }, []);
@@ -68,12 +68,14 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
 
   const isEmailValid = emailRegex.test(email);
   const isStrongPassword = hasMinLength && hasUpperCase && hasLowerCase && hasNumber;
-  const passwordsMatch = password === confirmPassword && password !== '';
+  const mostrarErrorClave = claveTocada && password.length > 0 && !isStrongPassword;
 
-  const formValid = isEmailValid && isStrongPassword && passwordsMatch && nombre.length > 0 && apellido.length > 0 && aceptaTerminos;
+  const formValid = isEmailValid && isStrongPassword && nombre.length > 0 && apellido.length > 0 && aceptaTerminos;
 
+  /* Los nombres no son solo latinos: `\p{L}` acepta cualquier letra Unicode y
+     evita rechazar a quien se llame, por ejemplo, 李 o Iñaki. */
   const handleNameChange = (setter: (val: string) => void, value: string) => {
-    if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value) && value.length <= 50) {
+    if (/^[\p{L}\p{M}\s'’-]*$/u.test(value) && value.length <= 50) {
       setter(value);
     }
   };
@@ -205,9 +207,11 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 relative z-10 w-full" autoComplete="off">
-      <div className="grid grid-cols-2 gap-3 md:gap-4 animate-fade-in-af">
+    <form onSubmit={handleSubmit} className="space-y-4 relative z-10 w-full" autoComplete="on">
+      <div className="grid grid-cols-1 gap-3 animate-fade-in-af sm:grid-cols-2 md:gap-4">
         <Input
+          id="registro-nombre"
+          name="given-name"
           placeholder="Ej. Ana"
           label="Nombre"
           value={nombre}
@@ -216,9 +220,12 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
           className={nombre.length > 1 ? "border-af-success/30" : ""}
           maxLength={50}
           autoComplete="given-name"
+          enterKeyHint="next"
           autoFocus={false}
         />
         <Input
+          id="registro-apellido"
+          name="family-name"
           placeholder="Ej. Pérez"
           label="Apellido"
           value={apellido}
@@ -227,12 +234,15 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
           className={apellido.length > 1 ? "border-af-success/30" : ""}
           maxLength={50}
           autoComplete="family-name"
+          enterKeyHint="next"
           autoFocus={false}
         />
       </div>
 
       <div>
         <Input
+          id="registro-email"
+          name="email"
           type="email"
           placeholder="tu@correo.com"
           label="Correo electrónico"
@@ -243,84 +253,88 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
           icon={<Mail size={18} />}
           className={email.length > 0 ? (isEmailValid ? "border-af-success/50" : (emailTouched ? "border-af-danger/50" : "")) : ""}
           maxLength={100}
-          autoComplete="email"
+          autoComplete="username"
           inputMode="email"
+          enterKeyHint="next"
+          spellCheck={false}
+          autoCapitalize="none"
           autoFocus={false}
+          aria-invalid={emailTouched && email.length > 0 && !isEmailValid}
           error={email.length > 0 && !isEmailValid && emailTouched}
           helper={email.length > 0 && !isEmailValid && emailTouched ? 'Revisa el formato del correo.' : undefined}
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div id="reglas-clave" className="animate-fade-in-af rounded-[14px] border border-[#E7DAD3] bg-white/70 p-3.5 dark:border-white/10 dark:bg-white/[0.04]">
+        <span className="mb-2.5 flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em] text-af-ink-secondary">
+          <AlertCircle size={12} aria-hidden="true" /> La contraseña necesita
+        </span>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-[11.5px]">
+          <div className={`flex items-center gap-1 ${password.length > 0 ? (hasMinLength ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+            <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8 caracteres
+          </div>
+          <div className={`flex items-center gap-1 ${password.length > 0 ? (hasUpperCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+            <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Una mayúscula
+          </div>
+          <div className={`flex items-center gap-1 ${password.length > 0 ? (hasLowerCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+            <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Una minúscula
+          </div>
+          <div className={`flex items-center gap-1 ${password.length > 0 ? (hasNumber ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
+            <ValidationIcon valid={hasNumber} active={password.length > 0} /> Un número
+          </div>
+        </div>
+      </div>
+
+      <div>
         <Input
+          id="registro-password"
+          name="password"
           type={verClave ? 'text' : 'password'}
           placeholder="Crea una contraseña"
           label="Contraseña"
           value={password}
           onChange={e => setPassword(e.target.value)}
+          onBlur={() => setClaveTocada(true)}
           required
+          minLength={8}
+          /* Las mismas reglas que la lista de arriba, para que el navegador
+             bloquee el envío sin depender solo de JavaScript. */
+          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
           icon={<ShieldCheck size={18} />}
           className={password.length > 0 ? (isStrongPassword ? "border-af-success/50" : "border-amber-500/50") : ""}
           maxLength={64}
           autoComplete="new-password"
+          enterKeyHint="go"
           autoFocus={false}
+          aria-describedby="reglas-clave"
+          aria-invalid={mostrarErrorClave}
+          error={mostrarErrorClave}
+          helper={mostrarErrorClave ? 'La contraseña no cumple todos los requisitos de la lista.' : undefined}
           accion={
             <button
               type="button"
               onClick={() => setVerClave((valor) => !valor)}
               aria-label={verClave ? 'Ocultar la contraseña' : 'Mostrar la contraseña'}
               aria-pressed={verClave}
-              className="af-pulsar flex h-10 w-10 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink"
+              className="af-pulsar flex h-12 w-12 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink"
             >
               {verClave ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
             </button>
           }
         />
-
-        <Input
-          type={verClave ? 'text' : 'password'}
-          placeholder="Repite la contraseña"
-          label="Confirmar contraseña"
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
-          required
-          icon={<ShieldCheck size={18} />}
-          className={confirmPassword.length > 0 ? (passwordsMatch ? "border-af-success/50" : "border-af-danger/50") : ""}
-          maxLength={64}
-          autoComplete="new-password"
-          autoFocus={false}
-        />
       </div>
 
-      <div className="animate-fade-in-af space-y-2">
-        <div className="rounded-xl border border-af-border/60 bg-af-ground p-3 dark:border-white/10 dark:bg-[#2C2C2E]">
-          <span className="mb-2 flex items-center gap-1.5 text-[11.5px] font-bold text-af-ink-secondary">
-            <AlertCircle size={12} aria-hidden="true" /> La contraseña necesita
-          </span>
-          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11.5px]">
-            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasMinLength ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasMinLength} active={password.length > 0} /> 8 caracteres
-            </div>
-            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasUpperCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasUpperCase} active={password.length > 0} /> Una mayúscula
-            </div>
-            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasLowerCase ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasLowerCase} active={password.length > 0} /> Una minúscula
-            </div>
-            <div className={`flex items-center gap-1 ${password.length > 0 ? (hasNumber ? 'text-af-success' : 'text-af-danger') : 'text-af-ink-secondary'}`}>
-              <ValidationIcon valid={hasNumber} active={password.length > 0} /> Un número
-            </div>
-          </div>
-        </div>
-
-        <label htmlFor="terms" className="flex cursor-pointer items-start gap-3 px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
+      <div className="space-y-2">
+        <label htmlFor="terms" className="flex min-h-[3rem] cursor-pointer items-start gap-3 px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
           <span className="relative mt-0.5 flex items-center">
             <input
               type="checkbox"
               id="terms"
+              name="terms"
               checked={aceptaTerminos}
               onChange={e => setAceptaTerminos(e.target.checked)}
-              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-black/20 bg-af-ground transition-colors checked:border-af-accent checked:bg-af-accent dark:border-white/20 dark:bg-[#2C2C2E]"
+              required
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-[6px] border border-[#D9CBC3] bg-white transition-colors checked:border-[#B34A2E] checked:bg-[#B34A2E] dark:border-[#5A4A43] dark:bg-[#1F1C1A]"
             />
             <Check size={13} strokeWidth={3} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" aria-hidden="true" />
           </span>
@@ -339,22 +353,21 @@ export const FormularioRegistro: React.FC<FormularioRegistroProps> = ({
 
       <div>
         <Boton
-          className="w-full !rounded-2xl !py-3.5 !text-[15px] font-bold"
+          className="w-full !rounded-[14px] !bg-[#B34A2E] !py-4 !text-[14.5px] !font-semibold tracking-[0.01em] !shadow-[0_18px_34px_-18px_rgba(179,74,46,0.75)] transition-colors hover:!bg-[#9C3E27] dark:!bg-[#C4562F] dark:hover:!bg-[#B34A2E]"
           type="submit"
           cargando={loading}
-          disabled={!formValid}
         >
           {textoBoton}
         </Boton>
       </div>
 
       <div className="text-center">
-        <p className="text-[12.5px] text-af-ink-secondary relative z-10">
+        <p className="text-[12px] text-af-ink-secondary relative z-10">
           {rol === 'restaurante' ? '¿Ya tienes cuenta de restaurante?' : '¿Ya tienes cuenta?'}
           <button
             type="button"
             onClick={cambiarModo}
-            className="text-af-accent-text font-bold hover:opacity-80 transition-colors ml-1"
+            className="ml-1 font-bold text-[#8A311A] underline decoration-[#DD6B4D]/40 decoration-2 underline-offset-4 transition-colors hover:decoration-[#DD6B4D] dark:text-[#F7B29C]"
           >
             Inicia sesión
           </button>

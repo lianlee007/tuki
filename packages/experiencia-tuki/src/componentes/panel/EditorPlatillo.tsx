@@ -6,7 +6,7 @@
  * de IA siempre a la vista y la barra de guardado pegada abajo para no tener
  * que buscarla al final de un formulario largo.
  */
-import React, { useState, useEffect, useId, Dispatch, SetStateAction } from 'react';
+import React, { useState, useEffect, useId, useRef, Dispatch, SetStateAction } from 'react';
 import { useForm } from 'react-hook-form';
 import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -183,6 +183,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
   platillo, guardar, cancelar, sugerirIA, handleImagenUpload, guardando, restauranteNombre,
 }) => {
   const id = useId();
+  const inputFotoRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<PlatilloFormValues>({
     resolver: zodResolver(PlatilloSchema),
@@ -568,21 +569,23 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <label
-                className={`btn-af h-11 cursor-pointer px-5 text-sm ${
-                  loadingImage ? 'pointer-events-none opacity-60' : ''
-                }`}
+              <button
+                type="button"
+                onClick={() => inputFotoRef.current?.click()}
+                disabled={loadingImage}
+                className="btn-af h-11 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loadingImage ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {loadingImage ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Upload size={16} aria-hidden="true" />}
                 {loadingImage ? 'Subiendo…' : valores.imagen_url ? 'Cambiar la foto' : 'Subir una foto'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={onImageWrapperChange}
-                  disabled={loadingImage}
-                />
-              </label>
+              </button>
+              <input
+                ref={inputFotoRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onImageWrapperChange}
+                disabled={loadingImage}
+              />
               <p className="mt-2 text-xs text-af-ink-secondary">JPG o PNG. Se recorta como cuadrada.</p>
             </div>
           </div>

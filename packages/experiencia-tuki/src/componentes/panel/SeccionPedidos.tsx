@@ -9,6 +9,8 @@ import {
   RefreshCw,
   Truck,
   XCircle,
+  ChefHat,
+  Wallet,
 } from 'lucide-react';
 import {
   apiPedidos,
@@ -157,47 +159,54 @@ export const SeccionPedidos: React.FC<Props> = ({ restaurante, mostrarMensaje })
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-af-ink">Pedidos</h2>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-af-ink-secondary">
-            Los pedidos que tus clientes hicieron con su cuenta. El mensaje de
-            WhatsApp sigue siendo el canal de contacto; aquí ves el detalle y
-            mueves el estado.
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <button
           type="button"
           onClick={cargar}
-          className="inline-flex items-center gap-2 self-start rounded-xl bg-af-surface px-3.5 py-2 text-xs font-semibold text-af-ink-secondary transition-colors hover:text-af-ink af-pulsar"
+          className="af-pulsar inline-flex items-center gap-2 rounded-xl border border-af/15 bg-af-surface px-3.5 py-2 text-xs font-semibold text-af-ink-secondary transition-colors hover:text-af-ink"
         >
-          <RefreshCw size={15} />
+          <RefreshCw size={15} aria-hidden="true" />
           Actualizar
         </button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl bg-af-surface p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
-            Por confirmar
-          </p>
-          <p className="mt-2 text-2xl font-bold tabular-nums text-af-ink">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="rounded-2xl border border-af/10 bg-af-surface p-3 sm:p-5">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[9px] font-semibold uppercase leading-tight tracking-wide text-af-ink-secondary sm:text-xs">
+              Por confirmar
+            </p>
+            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-af-accent/10 text-af-accent-text sm:flex">
+              <Clock size={15} aria-hidden="true" />
+            </span>
+          </div>
+          <p className="mt-1.5 text-lg font-bold tabular-nums text-af-ink sm:mt-2 sm:text-2xl">
             {pendientes.length}
           </p>
         </div>
-        <div className="rounded-2xl bg-af-surface p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
-            En curso
-          </p>
-          <p className="mt-2 text-2xl font-bold tabular-nums text-af-ink">
+        <div className="rounded-2xl border border-af/10 bg-af-surface p-3 sm:p-5">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[9px] font-semibold uppercase leading-tight tracking-wide text-af-ink-secondary sm:text-xs">
+              En curso
+            </p>
+            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-af-accent/10 text-af-accent-text sm:flex">
+              <ChefHat size={15} aria-hidden="true" />
+            </span>
+          </div>
+          <p className="mt-1.5 text-lg font-bold tabular-nums text-af-ink sm:mt-2 sm:text-2xl">
             {activos.length}
           </p>
         </div>
-        <div className="rounded-2xl bg-af-surface p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-af-ink-secondary">
-            Ventas de hoy
-          </p>
-          <p className="mt-2 text-2xl font-bold tabular-nums text-af-ink">
+        <div className="rounded-2xl border border-af/10 bg-af-surface p-3 sm:p-5">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[9px] font-semibold uppercase leading-tight tracking-wide text-af-ink-secondary sm:text-xs">
+              Ventas de hoy
+            </p>
+            <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-af-success/10 text-af-success sm:flex">
+              <Wallet size={15} aria-hidden="true" />
+            </span>
+          </div>
+          <p className="mt-1.5 text-lg font-bold tabular-nums text-af-ink sm:mt-2 sm:text-2xl">
             {dinero(ventasDeHoy)}
           </p>
         </div>

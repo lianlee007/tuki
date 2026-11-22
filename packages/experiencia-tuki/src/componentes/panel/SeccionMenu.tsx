@@ -257,7 +257,7 @@ export const SeccionMenu: React.FC<SeccionMenuProps> = ({
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar plato o ingrediente"
               aria-label="Buscar plato o ingrediente"
-              className="input-af h-11 pl-9 pr-9 text-sm"
+              className="input-af h-11 !pl-9 !pr-9 text-sm"
             />
             {busqueda !== '' && (
               <button

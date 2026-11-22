@@ -58,12 +58,7 @@ export const EstiloModerno: React.FC<PlantillaMenuProps> = ({
                     )}
 
                     {!p.disponible && (
-                      <div
-                        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-                      >
-                        <ChipAgotado texto="Agotado hoy" />
-                      </div>
+                      <ChipAgotado texto="Agotado hoy" className="absolute top-3 right-3" />
                     )}
                   </div>
 

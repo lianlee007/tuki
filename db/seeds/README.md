@@ -16,6 +16,11 @@ psql postgresql://tuki_identidad:tuki_identidad_dev@localhost:5432/tuki_identida
 
 psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
   -f db/seeds/restaurantes-demo.sql
+
+# Reseñas demo: idempotente (UUID fijos). Incluye respuestas del dueño y fotos
+# reales de los platos ya alojadas en el almacén local.
+psql postgresql://tuki_resenas:tuki_resenas_dev@localhost:5432/tuki_resenas \
+  -f db/seeds/resenas-demo.sql
 ```
 
 ## Aplicar en Kubernetes

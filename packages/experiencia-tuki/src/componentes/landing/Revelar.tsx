@@ -21,7 +21,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
  * Es a prueba de fallos, además: los hijos se pintan visibles y solo se esconden
  * si hay JS. Si el script no corre, el contenido se ve igual.
  *
- * `prefers-reduced-motion` quita el desplazamiento (ver `apple-tokens.css`), así
+ * `prefers-reduced-motion` quita el desplazamiento (ver `sistema-visual.css`), así
  * que en ese caso queda un fundido corto en vez de un movimiento.
  */
 
@@ -112,7 +112,7 @@ export const Revelar: React.FC<{
   const clases = [
     'af-revelar',
     /* Solo con este marcador se arman las transiciones: evita el fundido de
-       1 a 0 del primer render (ver `apple-tokens.css`). */
+       1 a 0 del primer render (ver `sistema-visual.css`). */
     estado === 'oculto' ? 'af-revelar--listo' : '',
     estado === 'visible' ? 'es-visible' : '',
     className,

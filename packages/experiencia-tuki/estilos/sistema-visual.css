@@ -421,6 +421,44 @@ button:disabled {
 }
 
 /* -------------------------------------------------------------------------
+   Panel del restaurante: mismos neutros cálidos que la puerta de acceso.
+   Las tarjetas quedan en blanco sobre papel crema para que la marca del
+   restaurante (que llega por estilo en línea) sea siempre la protagonista.
+   ------------------------------------------------------------------------- */
+.panel-tema {
+  --af-ground-rgb: 251 248 244;
+  --af-surface-rgb: 255 253 251;
+  --af-ink-rgb: 43 36 33;
+  --af-ink-secondary-rgb: 107 97 91;
+  --af-border-rgb: 231 218 211;
+  --af-danger-rgb: 190 30 30;
+  --af-danger-text-rgb: 175 26 26;
+}
+
+.dark .panel-tema {
+  --af-ground-rgb: 19 17 16;
+  --af-surface-rgb: 31 28 26;
+  --af-ink-rgb: 246 235 230;
+  --af-ink-secondary-rgb: 185 168 161;
+  --af-border-rgb: 61 48 43;
+  --af-danger-rgb: 255 92 76;
+  --af-danger-text-rgb: 255 120 106;
+}
+
+/* Capa del diálogo nativo: `::backdrop` no lo genera Tailwind, así que se
+   declara aquí una sola vez para los diálogos del panel. */
+.dialogo-panel:modal {
+  overscroll-behavior: contain;
+}
+.dialogo-panel::backdrop {
+  background-color: rgb(0 0 0 / 0.45);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* -------------------------------------------------------------------------
    Inputs Apple: borde sutil, focus con anillo de acento
    ------------------------------------------------------------------------- */
 .input-af {
@@ -439,6 +477,11 @@ button:disabled {
   border-color: rgb(var(--af-accent-rgb));
   box-shadow: 0 0 0 3px rgb(var(--af-accent-rgb) / 0.18);
 }
+/* El estado de error se ata al mismo atributo que anuncia el lector de
+   pantalla, y gana al borde base y al de foco. */
+.input-af[aria-invalid="true"] {
+  border-color: rgb(var(--af-danger-rgb));
+}
 .input-af::placeholder {
   color: rgb(var(--af-ink-secondary-rgb));
   opacity: 0.7;
@@ -447,11 +490,46 @@ button:disabled {
 /* En iOS, un campo con menos de 16 px hace que Safari amplíe la página al
    enfocarlo y descoloque el formulario. Los campos de acceso ya son táctiles:
    solo falta que el texto no dispare ese zoom. */
-@media (max-width: 640px) {
+@media (max-width: 640px), (pointer: coarse) {
   .input-af {
     font-size: 16px;
     min-height: 48px;
   }
+}
+/* Un dedo no es un puntero fino: el objetivo táctil cómodo es mayor. */
+@media (pointer: coarse) {
+  .input-af {
+    min-height: 52px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Acceso: campos más cálidos y aireados que en el resto del panel
+   ------------------------------------------------------------------------- */
+.auth-acceso .input-af {
+  border-radius: 0.875rem;
+  border-color: #E7DAD3;
+  background-color: #FFFDFB;
+  color: #2B2421;
+}
+.auth-acceso .input-af::placeholder {
+  color: #8B7F79;
+}
+.auth-acceso .input-af:focus,
+.auth-acceso .input-af:focus-within {
+  border-color: #B34A2E;
+  box-shadow: 0 0 0 4px rgb(179 74 46 / 0.12);
+}
+.auth-acceso .input-af[aria-invalid="true"] {
+  border-color: #B3261E;
+}
+.dark .auth-acceso .input-af {
+  border-color: #3D302B;
+  background-color: #1F1C1A;
+  color: #F6EBE6;
+}
+.dark .auth-acceso .input-af::placeholder {
+  color: #9C8D86;
 }
 
 /* -------------------------------------------------------------------------

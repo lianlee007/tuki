@@ -43,7 +43,7 @@ reutilizan la interfaz original de la versión anterior de Tuki a través de
 La capa de datos de la interfaz heredada vive en
 `packages/experiencia-tuki/src/lib/api-tuki.ts`: traduce los modelos en
 camelCase de los servicios al modelo en snake_case que esperan los componentes.
-Tailwind y los tokens visuales (`tokens.css`, `apple-tokens.css`) también se
+Tailwind y los tokens visuales (`tokens.css`, `sistema-visual.css`) también se
 heredaron para conservar el diseño.
 
 Cada frontend carga `/config.js` al arrancar. Ese archivo define las URLs de los

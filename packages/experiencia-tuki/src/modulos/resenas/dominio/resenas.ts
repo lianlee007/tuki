@@ -77,14 +77,12 @@ export const resumenDe = (resenas: Resena[]): ResumenResenas => {
 };
 
 /**
- * El promedio del restaurante es el de las reseñas del local, no el de los
- * platos sueltos. Si no hay ninguna del local, se usa el total para no mostrar
- * un «0.0» cuando la ficha ya tiene opiniones de platos.
+ * Promedio del restaurante sobre todas sus reseñas: las del local y las de
+ * platos concretos. La ficha muestra esa misma lista completa, así que el
+ * número del encabezado y el de las tarjetas siempre coincide.
  */
-export const resumenRestaurante = (resenas: Resena[]): ResumenResenas => {
-  const delLocal = resenas.filter((resena) => resena.platillo_id === null);
-  return resumenDe(delLocal.length > 0 ? delLocal : resenas);
-};
+export const resumenRestaurante = (resenas: Resena[]): ResumenResenas =>
+  resumenDe(resenas);
 
 /** «12 de octubre de 2026». Una fecha inválida no rompe la ficha. */
 export const fechaResena = (iso: string | null): string => {

@@ -38,61 +38,71 @@ const MAX_BYTES = 5 * 1024 * 1024;
  * - Intenta WebP; si el navegador no lo soporta, cae a JPEG 0.82.
  * - Si algo falla devuelve el original: subir lento es mejor que no subir.
  */
-export const comprimirImagen = (file: File): Promise<File> => {
-  if (!file.type.startsWith('image/')) return Promise.resolve(file);
+export const comprimirImagen = async (file: File): Promise<File> => {
+  if (!file.type.startsWith('image/')) return file;
 
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+  /* Decodificar con `createImageBitmap` (fuera del hilo principal) y sin pasar
+     por un data URL: una foto de 12 MP en un móvil podía reventar la pestaña
+     entre la cadena base64 y el `<img>` a tamaño completo. El canvas final
+     nunca pasa de 1600 px por el lado largo. */
+  let bitmap: ImageBitmap | null = null;
+  try {
+    if (typeof createImageBitmap === 'function') bitmap = await createImageBitmap(file);
+  } catch {
+    bitmap = null;
+  }
 
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
+  let url: string | null = null;
+  let imagen: HTMLImageElement | null = null;
+  try {
+    if (!bitmap) {
+      url = URL.createObjectURL(file);
+      imagen = await new Promise<HTMLImageElement | null>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = url as string;
+      });
+    }
 
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let { width, height } = img;
+    const fuente: CanvasImageSource | null = bitmap ?? imagen;
+    const anchoFuente = bitmap?.width ?? imagen?.naturalWidth ?? 0;
+    const altoFuente = bitmap?.height ?? imagen?.naturalHeight ?? 0;
+    if (!fuente || !anchoFuente || !altoFuente) return file;
 
-        if (width > height && width > MAX_LADO_PX) {
-          height = Math.round((height * MAX_LADO_PX) / width);
-          width = MAX_LADO_PX;
-        } else if (height > MAX_LADO_PX) {
-          width = Math.round((width * MAX_LADO_PX) / height);
-          height = MAX_LADO_PX;
-        }
+    let ancho = anchoFuente;
+    let alto = altoFuente;
+    if (ancho > alto && ancho > MAX_LADO_PX) {
+      alto = Math.round((alto * MAX_LADO_PX) / ancho);
+      ancho = MAX_LADO_PX;
+    } else if (alto > MAX_LADO_PX) {
+      ancho = Math.round((ancho * MAX_LADO_PX) / alto);
+      alto = MAX_LADO_PX;
+    }
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return resolve(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = ancho;
+    canvas.height = alto;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
 
-        ctx.drawImage(img, 0, 0, width, height);
+    ctx.drawImage(fuente, 0, 0, ancho, alto);
 
-        const terminar = (blob: Blob | null, tipo: string, extension: string) => {
-          if (!blob) return resolve(file);
-          resolve(
-            new File([blob], file.name.replace(/\.[^/.]+$/, '') + extension, {
-              type: tipo,
-              lastModified: Date.now(),
-            })
-          );
-        };
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/webp', CALIDAD);
+    });
+    if (!blob) return file;
 
-        canvas.toBlob((webp) => {
-          if (webp) return terminar(webp, 'image/webp', '.webp');
-          canvas.toBlob(
-            (jpeg) => terminar(jpeg, 'image/jpeg', '.jpg'),
-            'image/jpeg',
-            CALIDAD
-          );
-        }, 'image/webp', CALIDAD);
-      };
-
-      img.onerror = () => resolve(file);
-    };
-
-    reader.onerror = () => resolve(file);
-  });
+    return new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.webp', {
+      type: 'image/webp',
+      lastModified: Date.now(),
+    });
+  } catch {
+    return file;
+  } finally {
+    bitmap?.close();
+    if (url) URL.revokeObjectURL(url);
+  }
 };
 
 /** Nombre único y estable dentro del bucket: `<carpeta>/<uuid>.<ext>`. */

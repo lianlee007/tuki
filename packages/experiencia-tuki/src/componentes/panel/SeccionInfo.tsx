@@ -3,16 +3,20 @@ import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Restaurante } from '../../tipos';
 import { RestauranteSchema, RestauranteFormValues } from '../../tipos/esquemas';
-import { Tarjeta, Input, Textarea, LogoWhatsApp, BotonCTA, BotonTexto } from '../ui';
+import { Input, Textarea, LogoWhatsApp, BotonCTA, BotonTexto } from '../ui';
 import {
     Store, Upload, MapPin, Phone, Mail, Wand2, Clock, CalendarDays, AlertTriangle,
     SpellCheck, Loader2, CheckCircle2, Save, RotateCcw, UtensilsCrossed,
+    ExternalLink, ImagePlus, CircleDashed, ChevronRight,
 } from 'lucide-react';
 import { LIMITES } from '../../constantes';
 import { DEPARTAMENTOS, municipiosDe } from '../../lib/colombia';
 import { generarContenidoGroq } from '../../lib/servicioGroq';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 import { SelectorCocina, type SelectorCocinaRef } from './SelectorCocina';
+import { AnilloProgreso, Chip, FilaDato, TarjetaSeccion } from './PanelUI';
+import { generarSlugUnico } from '../../lib/utils';
+import { urlPublica } from '../../lib/urlPublica';
 
 /** Un dato obligatorio y el bloque del formulario al que pertenece. */
 export interface CampoPublicacion {
@@ -100,18 +104,28 @@ const DIAS_VACIOS = {
  * punto de entrada, para que ningún `input` reciba `null` y para que la
  * validación no confunda "vacío" con "dato roto".
  */
+/**
+ * Teléfonos guardados por versiones anteriores traen «+57 300 000 0004».
+ * El campo muestra el prefijo aparte y valida 10 dígitos, así que se normaliza
+ * al entrar: sin esto, un dato legacy impedía guardar cualquier cambio.
+ */
+const soloDigitos10 = (valor?: string | null): string => {
+    const digitos = String(valor ?? '').replace(/\D/g, '');
+    return digitos.length > 10 ? digitos.slice(-10) : digitos;
+};
+
 const valoresIniciales = (restaurante: Restaurante): RestauranteFormValues => ({
     ...restaurante,
     nombre: restaurante.nombre ?? '',
     eslogan: restaurante.eslogan ?? '',
     descripcion: restaurante.descripcion ?? '',
-    telefono: restaurante.telefono ?? '',
+    telefono: soloDigitos10(restaurante.telefono),
     email: restaurante.email ?? '',
     direccion: restaurante.direccion ?? '',
     departamento: restaurante.departamento ?? '',
     municipio: restaurante.municipio ?? '',
     ciudad: restaurante.ciudad ?? '',
-    whatsapp: restaurante.whatsapp ?? '',
+    whatsapp: soloDigitos10(restaurante.whatsapp),
     facebook: restaurante.facebook ?? '',
     instagram: restaurante.instagram ?? '',
     horario_apertura: restaurante.horario_apertura ?? '',
@@ -120,20 +134,6 @@ const valoresIniciales = (restaurante: Restaurante): RestauranteFormValues => ({
     imagen_banner_url: restaurante.imagen_banner_url ?? '',
     dias_abierto: restaurante.dias_abierto ?? DIAS_VACIOS,
 });
-
-/**
- * Título de grupo del formulario. Un icono pequeño con el tinte de marca
- * delante de la tinta, para que cada bloque se reconozca de un vistazo sin que
- * el color de marca inunde los encabezados.
- */
-const TituloSeccion: React.FC<{ icono: React.ReactNode; children: React.ReactNode }> = ({ icono, children }) => (
-    <h2 className="mb-5 flex items-center gap-3 text-base font-bold text-af-ink">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-af-accent/10 text-af-accent">
-            {icono}
-        </span>
-        {children}
-    </h2>
-);
 
 export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     restaurante, guardarRestaurante, subirImagen, sugerirIA, guardando, mostrarMensaje,
@@ -170,6 +170,11 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     // si el dueño se va a otra pestaña, la recarga no las borra.
     const [logoUrl, setLogoUrl] = useState(restaurante.imagen_logo_url || '');
     const [bannerUrl, setBannerUrl] = useState(restaurante.imagen_banner_url || '');
+    /* El disparador es un botón y el input vive oculto: un `<label>` envolviendo
+       el file input se comportaba distinto en cada navegador móvil (y podía
+       arrastrar el foco fuera del panel). */
+    const inputLogoRef = useRef<HTMLInputElement>(null);
+    const inputBannerRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (restaurante?.direccion) {
@@ -207,14 +212,14 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     const completos = totalCampos - faltantes.length;
     const nombreActual = String(valoresForm?.nombre ?? '').trim();
 
-    /** Fallos que el usuario puede ver ahora mismo, con su etiqueta legible. */
+    /** Fallos de formato que el usuario puede ver ahora mismo. */
     const erroresVisibles = mostrarErrores
         ? CAMPOS_OBLIGATORIOS
-            .filter(c => Boolean((errors as any)[c.k]) || esFaltante(c.k, valoresForm))
+            .filter(c => Boolean((errors as any)[c.k]))
             .map(c => ({
                 k: c.k,
                 l: c.l,
-                mensaje: String((errors as any)[c.k]?.message || 'Falta completar este campo.'),
+                mensaje: String((errors as any)[c.k]?.message || 'Revisa este dato.'),
             }))
         : [];
 
@@ -230,8 +235,65 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
 
     const hayCambios = isDirty || imagenCambiada || cocinasCambiadas;
 
+    /* --- Resumen en vivo ---------------------------------------------------
+       El panel enseña el estado del sitio mientras se escribe: progreso,
+       enlaces que ya funcionan y una miniatura de cómo lo verá el comensal.
+       Todo sale del formulario, sin pedir nada más al servidor. */
+    const formRef = useRef<HTMLFormElement>(null);
+    const pct = totalCampos > 0 ? Math.round((completos / totalCampos) * 100) : 0;
+    const diasActivos = DIAS_UI.filter((dia) => Boolean((valoresForm.dias_abierto as any)?.[dia.key]));
+    const resumenDias =
+        diasActivos.length === 7
+            ? 'Todos los días'
+            : diasActivos.length === 0
+                ? 'Sin días aún'
+                : diasActivos.map((dia) => dia.label).join(' · ');
+    const resumenHorario =
+        valoresForm.horario_apertura && valoresForm.horario_cierre
+            ? `${valoresForm.horario_apertura} – ${valoresForm.horario_cierre}`
+            : 'Horario por definir';
+    const enlaceSitio = nombreActual
+        ? urlPublica(`/restaurante/${generarSlugUnico(nombreActual, restaurante.id)}`)
+        : '';
+    const textoMapa = [valoresForm.direccion, valoresForm.municipio, valoresForm.departamento]
+        .map((parte) => String(parte ?? '').trim())
+        .filter(Boolean)
+        .join(', ');
+    const enlaceMapa = textoMapa
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(textoMapa)}`
+        : '';
+    const numeroWhatsApp = String(valoresForm.whatsapp ?? '').replace(/\D/g, '');
+    const enlaceWhatsApp =
+        numeroWhatsApp.length === 10 ? `https://wa.me/57${numeroWhatsApp}` : '';
+    const esloganValor = String(valoresForm.eslogan ?? '');
+    const descripcionValor = String(valoresForm.descripcion ?? '');
+
+    /** Ctrl/⌘ + S guarda sin soltar el teclado. */
+    useEffect(() => {
+        const alPulsar = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                formRef.current?.requestSubmit();
+            }
+        };
+        window.addEventListener('keydown', alPulsar);
+        return () => window.removeEventListener('keydown', alPulsar);
+    }, []);
+
+    /** Cerrar o recargar con cambios sin guardar pide confirmación. */
+    useEffect(() => {
+        if (!hayCambios) return;
+        const aviso = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', aviso);
+        return () => window.removeEventListener('beforeunload', aviso);
+    }, [hayCambios]);
+
+
     const tieneError = (campo: string): boolean =>
-        mostrarErrores && (Boolean((errors as any)[campo]) || esFaltante(campo, valoresForm));
+        mostrarErrores && Boolean((errors as any)[campo]);
 
     const irA = useCallback((campo: string) => {
         setMostrarErrores(true);
@@ -284,51 +346,55 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         const conError = Object.keys(errores);
         // Orden del formulario, no orden en que zod encontró el fallo: así el
         // primer scroll lleva al campo más arriba, que es lo que espera quien
-        // acaba de pulsar "Finalizar y guardar".
+        // acaba de pulsar "Guardar cambios".
         const primero = CAMPOS_OBLIGATORIOS
             .map(c => c.k)
-            .find(k => conError.includes(k) || esFaltante(k, valoresForm))
+            .find(k => conError.includes(k))
             || conError[0]
             || 'nombre';
         irA(primero);
         const etiqueta = CAMPOS_OBLIGATORIOS.find(c => c.k === primero)?.l || 'el formulario';
         const detalle = (errores as any)[primero]?.message;
-        const pendientes = CAMPOS_OBLIGATORIOS.filter(
-            c => conError.includes(c.k) || esFaltante(c.k, valoresForm)
-        ).length;
-        const restantes = pendientes > 1 ? ` Quedan ${pendientes} campos por revisar.` : '';
+        const restantes = conError.length > 1
+            ? ` Revisa ${conError.length - 1} ${conError.length - 1 === 1 ? 'campo más' : 'campos más'}.`
+            : '';
         mostrarMensaje(
             'error',
             detalle
                 ? `${etiqueta}: ${detalle}.${restantes}`
-                : `${etiqueta}: falta completarlo o tiene un dato inválido.${restantes}`
+                : `${etiqueta}: revisa este dato.${restantes}`
         );
     };
 
     const handleFinalizar = async (data: RestauranteFormValues) => {
-        const pendientes = CAMPOS_OBLIGATORIOS.filter(c => esFaltante(c.k, data));
-        if (pendientes.length > 0) {
-            irA(pendientes[0].k);
-            mostrarMensaje(
-                'error',
-                pendientes.length === 1
-                    ? `Falta completar: ${pendientes[0].l}.`
-                    : `Faltan ${pendientes.length} campos por completar (marcados en rojo).`
-            );
-            return;
-        }
-
+        /* Guardar no exige tener el 100 %: el dueño puede ir por partes y la
+           tarjeta de publicación le dice qué falta. Antes un logo pendiente
+           bloqueaba también el eslogan, la dirección o los horarios. Los
+           formatos inválidos sí se bloquean antes, en `manejarInvalido`. */
         const datosCompletos = {
             ...data,
+            // `direccion` y `ciudad` se componen con `setValue` y no tienen un
+            // input registrado: en el submit pueden llegar vacíos aunque el
+            // formulario los tenga. Se toman del estado actual.
+            direccion: String(data.direccion ?? valoresForm.direccion ?? ''),
+            ciudad: String(data.ciudad ?? valoresForm.ciudad ?? ''),
             imagen_logo_url: logoUrl,
             imagen_banner_url: bannerUrl,
         };
+        const pendientes = CAMPOS_OBLIGATORIOS.filter(c => esFaltante(c.k, datosCompletos));
         try {
             await guardarRestaurante(datosCompletos as Partial<Restaurante>);
             await cocinaRef.current?.guardar();
             reset(valoresIniciales({ ...restaurante, ...datosCompletos } as Restaurante));
             setMostrarErrores(false);
-            mostrarMensaje('exito', 'Restaurante guardado. Tus cambios ya se ven en tu sitio.');
+            mostrarMensaje(
+                'exito',
+                pendientes.length === 0
+                    ? 'Restaurante guardado. Tus cambios ya se ven en tu sitio.'
+                    : pendientes.length === 1
+                        ? 'Cambios guardados. Te falta 1 dato para publicar tu menú.'
+                        : `Cambios guardados. Te faltan ${pendientes.length} datos para publicar tu menú.`
+            );
         } catch (e: any) {
             mostrarMensaje('error', e?.message || 'No se pudo guardar. Revisa tu conexión.');
         }
@@ -485,7 +551,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
             ]);
             if (eslogan) setValue('eslogan', eslogan, { shouldDirty: true, shouldValidate: true });
             if (descripcion) setValue('descripcion', descripcion, { shouldDirty: true, shouldValidate: true });
-            mostrarMensaje('exito', 'Texto generado. Revísalo y pulsa Finalizar y guardar.');
+            mostrarMensaje('exito', 'Texto generado. Revísalo y pulsa Guardar cambios.');
         } catch (e: any) {
             mostrarMensaje('error', `IA: ${e?.message || 'no se pudo generar el texto.'}`);
         } finally {
@@ -529,19 +595,20 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     /* ------------------------------------------------------------------ */
 
     return (
-        <div className="space-y-10">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_312px] xl:grid-cols-[minmax(0,1fr)_336px]">
+            <div className="min-w-0 space-y-5">
 
             {/* ---------- Errores de validación ---------- */}
             {erroresVisibles.length > 0 && (
-                <section className="rounded-[24px] bg-af-danger/10 p-5">
+                <section className="rounded-[20px] border border-af-danger/20 bg-af-danger/[0.07] p-4 md:p-5" role="alert">
                     <div className="flex items-start gap-3">
-                        <AlertTriangle className="mt-0.5 shrink-0 text-af-danger-text" size={20} />
+                        <AlertTriangle className="mt-0.5 shrink-0 text-af-danger-text" size={19} aria-hidden="true" />
                         <div className="min-w-0">
-                            <h3 className="font-bold text-af-ink">Revisa estos campos</h3>
-                            <p className="mt-1 text-sm text-af-ink-secondary">
+                            <h3 className="text-sm font-bold text-af-ink">Revisa estos campos</h3>
+                            <p className="mt-1 text-xs leading-relaxed text-af-ink-secondary">
                                 Toca uno para ir directo a corregirlo.
                             </p>
-                            <ul className="mt-2 space-y-1 text-sm text-af-ink-secondary">
+                            <ul className="mt-2 space-y-1 text-xs text-af-ink-secondary">
                                 {erroresVisibles.map((e) => (
                                     <li key={e.k}>
                                         <button
@@ -559,59 +626,99 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                 </section>
             )}
 
-            <form onSubmit={handleSubmit(handleFinalizar, manejarInvalido)} noValidate>
+            {/* ---------- Progreso (móvil) ----------
+                En escritorio el resumen vive en la columna derecha; en móvil se
+                adelanta aquí para que el dueño sepa qué falta sin abrir nada. */}
+            <div className="lg:hidden">
+                <div className="flex items-center gap-4 rounded-[20px] border border-af/15 bg-af-surface p-4">
+                    <AnilloProgreso
+                        valor={pct}
+                        tamano={58}
+                        etiqueta={`${completos} de ${totalCampos} datos completos`}
+                    />
+                    <div className="min-w-0">
+                        <p className="text-[13px] font-bold text-af-ink">
+                            {completos} de {totalCampos} datos
+                        </p>
+                        <p className="mt-0.5 text-xs leading-snug text-af-ink-secondary">
+                            {estaPublicado
+                                ? 'Tu sitio está publicado. Puedes seguir ajustando lo que quieras.'
+                                : faltantes.length === 1
+                                    ? 'Te falta 1 dato para publicar tu menú.'
+                                    : `Te faltan ${faltantes.length} datos para publicar tu menú.`}
+                        </p>
+                        {!estaPublicado && faltantes.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => irA(faltantes[0].k)}
+                                className="mt-1.5 text-xs font-bold text-af-accent-text underline decoration-af-accent/30 underline-offset-4 hover:decoration-af-accent"
+                            >
+                                Completar ahora
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <form ref={formRef} onSubmit={handleSubmit(handleFinalizar, manejarInvalido)} noValidate className="space-y-5">
 
                 {/* ---------- Nombre ---------- */}
-                <section>
-                    <TituloSeccion icono={<Store size={17} />}>Información básica</TituloSeccion>
-                    <Tarjeta enlace={false}>
-                        <div id="campo-nombre" className="max-w-xl">
-                            <div className="mb-2 flex items-center justify-between gap-3">
-                                <label htmlFor="rest-nombre" className="text-sm font-medium text-af-ink">
-                                    Nombre <span className="text-af-danger">*</span>
-                                </label>
-                                <BotonIA
-                                    onClick={iaOrtografiaNombre}
-                                    cargando={loadingAction === 'ortografia_nombre'}
-                                    disabled={loadingAction !== null || guardando || nombreActual.length < 2}
-                                    icono={<SpellCheck size={13} />}
-                                >
-                                    Corregir
-                                </BotonIA>
-                            </div>
-                            <Input
-                                id="rest-nombre"
-                                {...register('nombre')}
-                                placeholder="Ej. La Sazón de la Abuela"
-                                maxLength={LIMITES.REST_NOMBRE}
-                                className={claseError('nombre')}
-                            />
-                            {tieneError('nombre')
-                                ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.nombre?.message as string) || 'Escribe el nombre de tu restaurante.'}</p>
-                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Aparece como título de tu menú.</p>}
+                <TarjetaSeccion
+                    id="info-identidad"
+                    icono={<Store size={17} />}
+                    titulo="Identidad"
+                    descripcion="El nombre con el que te encuentran y el que encabeza tu menú."
+                >
+                    <div id="campo-nombre" className="max-w-xl">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <label htmlFor="rest-nombre" className="text-sm font-medium text-af-ink">
+                                Nombre <span className="text-af-danger">*</span>
+                            </label>
+                            <BotonIA
+                                onClick={iaOrtografiaNombre}
+                                cargando={loadingAction === 'ortografia_nombre'}
+                                disabled={loadingAction !== null || guardando || nombreActual.length < 2}
+                                icono={<SpellCheck size={13} />}
+                            >
+                                Corregir
+                            </BotonIA>
                         </div>
-                    </Tarjeta>
-                </section>
+                        <Input
+                            id="rest-nombre"
+                            {...register('nombre')}
+                            placeholder="Ej. La Sazón de la Abuela"
+                            maxLength={LIMITES.REST_NOMBRE}
+                            className={claseError('nombre')}
+                        />
+                        {tieneError('nombre')
+                            ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.nombre?.message as string) || 'Escribe el nombre de tu restaurante.'}</p>
+                            : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">Aparece como título de tu menú.</p>}
+                    </div>
+                </TarjetaSeccion>
 
                 {/* ---------- Tipo de cocina (Descubrir) ----------
                     Va justo después del nombre: es el contexto con el que la IA
                     redacta el eslogan y la descripción. */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<UtensilsCrossed size={17} />}>Tipo de cocina</TituloSeccion>
-                    <Tarjeta enlace={false}>
-                        <SelectorCocina
-                            ref={cocinaRef}
-                            restauranteId={restaurante.id}
-                            onCambios={setCocinasCambiadas}
-                            onSeleccion={setCocinasElegidas}
-                        />
-                    </Tarjeta>
-                </section>
+                <TarjetaSeccion
+                    icono={<UtensilsCrossed size={17} />}
+                    titulo="Tipo de cocina"
+                    descripcion="Con esto te encuentran en Descubrir y la IA escribe con tu acento."
+                    desborde
+                >
+                    <SelectorCocina
+                        ref={cocinaRef}
+                        restauranteId={restaurante.id}
+                        onCambios={setCocinasCambiadas}
+                        onSeleccion={setCocinasElegidas}
+                    />
+                </TarjetaSeccion>
 
                 {/* ---------- Eslogan y descripción ---------- */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<Wand2 size={17} />}>Eslogan y descripción</TituloSeccion>
-
+                <TarjetaSeccion
+                    icono={<Wand2 size={17} />}
+                    titulo="Eslogan y descripción"
+                    descripcion="Dos frases que venden: la que se lee en la tarjeta y la que recibe al comensal."
+                >
                     <AsistenteIA
                         titulo="Textos con IA"
                         descripcion={
@@ -634,7 +741,7 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                         }
                     />
 
-                    <Tarjeta enlace={false} className="mt-5 space-y-6">
+                    <div className="mt-5 space-y-6">
                         <div id="campo-eslogan">
                             <div className="mb-2 flex items-center justify-between gap-3">
                                 <label htmlFor="rest-eslogan" className="text-sm font-medium text-af-ink">
@@ -658,8 +765,9 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                             />
                             {tieneError('eslogan')
                                 ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.eslogan?.message as string) || 'Añade un eslogan.'}</p>
-                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">
-                                    Una frase corta que resume tu cocina{tipoCocina ? ` (${tipoCocina})` : ''}.
+                                : <p className="ml-1 mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-af-ink-secondary">
+                                    <span>Una frase corta que resume tu cocina{tipoCocina ? ` (${tipoCocina})` : ''}.</span>
+                                    <span className="tabular-nums text-[11px] text-af-ink-secondary/70">{esloganValor.length}/{LIMITES.REST_ESLOGAN}</span>
                                 </p>}
                         </div>
 
@@ -686,117 +794,152 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                             />
                             {tieneError('descripcion')
                                 ? <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.descripcion?.message as string) || 'Añade una descripción.'}</p>
-                                : <p className="ml-1 mt-2 text-xs text-af-ink-secondary">
-                                    Se muestra en la cabecera de tu menú. La IA la escribe según tu tipo de cocina.
+                                : <p className="ml-1 mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-af-ink-secondary">
+                                    <span>Se muestra en la cabecera de tu menú. La IA la escribe según tu tipo de cocina.</span>
+                                    <span className="tabular-nums text-[11px] text-af-ink-secondary/70">{descripcionValor.length}/{LIMITES.REST_DESC}</span>
                                 </p>}
                         </div>
-                    </Tarjeta>
-                </section>
+                    </div>
+                </TarjetaSeccion>
 
                 {/* ---------- Imágenes ---------- */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<Upload size={17} />}>Logo y banner</TituloSeccion>
-                    <div className="grid gap-6 md:grid-cols-2">
+                <TarjetaSeccion
+                    icono={<ImagePlus size={17} />}
+                    titulo="Logo y banner"
+                    descripcion="El logo te representa en la ficha y en el círculo de tu marca; el banner abre tu menú."
+                >
+                    <div className="grid items-stretch gap-4 md:grid-cols-2">
                         <div
-                            className="h-full"
                             onDragOver={(e) => manejarDragOver(e, 'logo')}
                             onDragLeave={(e) => manejarDragLeave(e, 'logo')}
                             onDrop={(e) => manejarDrop(e, 'logo')}
+                            className={`flex flex-col rounded-2xl border-2 border-dashed p-4 text-center transition-colors md:h-full ${
+                                arrastrando.logo
+                                    ? 'border-af-accent bg-af-accent/10'
+                                    : tieneError('imagen_logo_url')
+                                        ? 'border-af-danger bg-af-danger/[0.06]'
+                                        : 'border-af/25 bg-af-ground/50'
+                            }`}
                         >
-                        <Tarjeta enlace={false} className={`flex h-full flex-col items-center gap-4 ${tieneError('imagen_logo_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
                             <div
                                 id="campo-imagen_logo_url"
-                                className={`flex w-full flex-col items-center gap-3 rounded-2xl p-3 transition-colors ${
-                                    arrastrando.logo ? 'bg-af-accent/10 ring-2 ring-af-accent/50' : ''
-                                }`}
+                                className="flex w-full flex-col items-center gap-3 md:h-full md:justify-between"
                             >
-                                <span className="flex items-center gap-1 text-sm font-medium text-af-ink">
+                                <span className="flex h-4 items-center gap-1 text-[11px] font-bold uppercase tracking-[0.14em] text-af-ink-secondary">
                                     Logo <span className="text-af-danger">*</span>
                                 </span>
-                                <div className="relative">
+                                <div className="relative flex h-32 w-full items-center justify-center">
                                     {logoUrl ? (
                                         <img
                                             src={logoUrl}
-                                            className="h-32 w-32 rounded-full border border-af/20 object-cover"
+                                            className="h-28 w-28 rounded-full border border-af/15 object-cover shadow-sm"
                                             alt="Logo del restaurante"
                                         />
                                     ) : (
-                                        <div className={`flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed text-center text-xs ${arrastrando.logo ? 'border-af-accent text-af-accent' : 'border-af/30 text-af-ink-secondary'}`}>
-                                            <Upload size={20} />
-                                            Sin logo
+                                        <div className="flex h-28 w-28 flex-col items-center justify-center gap-1.5 rounded-full border border-dashed border-af/30 bg-af-surface text-af-ink-secondary">
+                                            <Upload size={20} aria-hidden="true" />
+                                            <span className="text-[10px] font-medium">Sin logo</span>
                                         </div>
                                     )}
                                     {imgLoading.logo && (
-                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/25 dark:bg-white/20">
-                                            <Loader2 size={30} className="animate-spin text-white" />
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/35">
+                                            <Loader2 size={26} className="animate-spin text-white" aria-hidden="true" />
                                         </div>
                                     )}
                                 </div>
-                                <label className="btn-af h-10 cursor-pointer px-4 text-sm">
-                                    <Upload size={15} /> Subir logo
-                                    <input type="file" className="sr-only" accept="image/*" onChange={e => wrapImagenUpload(e, 'logo')} />
-                                </label>
-                                <span className="text-center text-xs text-af-ink-secondary">
-                                    {arrastrando.logo ? 'Suelta la imagen aquí' : 'También puedes arrastrar una imagen'}
+                                <button
+                                    type="button"
+                                    onClick={() => inputLogoRef.current?.click()}
+                                    className="btn-af h-10 w-full max-w-[11rem] justify-center px-4 text-xs"
+                                >
+                                    <Upload size={14} aria-hidden="true" /> {logoUrl ? 'Cambiar logo' : 'Subir logo'}
+                                </button>
+                                <input
+                                    ref={inputLogoRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={e => wrapImagenUpload(e, 'logo')}
+                                />
+                                <span className="flex items-start justify-center text-[11px] leading-snug text-af-ink-secondary md:min-h-[2.25rem]">
+                                    {arrastrando.logo ? 'Suelta la imagen aquí' : 'Arrastra una imagen o elige un archivo · JPG, PNG o WebP'}
                                 </span>
-                                {tieneError('imagen_logo_url') && <span className="text-xs font-medium text-af-danger-text">El logo es obligatorio.</span>}
+                                <span className="flex items-center justify-center text-xs font-medium text-af-danger-text md:min-h-[1rem]">
+                                    {tieneError('imagen_logo_url') ? 'El logo es obligatorio.' : ''}
+                                </span>
                             </div>
-                        </Tarjeta>
                         </div>
 
                         <div
-                            className="h-full"
                             onDragOver={(e) => manejarDragOver(e, 'banner')}
                             onDragLeave={(e) => manejarDragLeave(e, 'banner')}
                             onDrop={(e) => manejarDrop(e, 'banner')}
+                            className={`flex flex-col rounded-2xl border-2 border-dashed p-4 text-center transition-colors md:h-full ${
+                                arrastrando.banner
+                                    ? 'border-af-accent bg-af-accent/10'
+                                    : tieneError('imagen_banner_url')
+                                        ? 'border-af-danger bg-af-danger/[0.06]'
+                                        : 'border-af/25 bg-af-ground/50'
+                            }`}
                         >
-                        <Tarjeta enlace={false} className={`flex h-full flex-col items-center gap-4 ${tieneError('imagen_banner_url') ? 'bg-af-danger/10 ring-1 ring-af-danger/40' : ''}`}>
                             <div
                                 id="campo-imagen_banner_url"
-                                className={`flex w-full flex-col items-center gap-3 rounded-2xl p-3 transition-colors ${
-                                    arrastrando.banner ? 'bg-af-accent/10 ring-2 ring-af-accent/50' : ''
-                                }`}
+                                className="flex w-full flex-col items-center gap-3 md:h-full md:justify-between"
                             >
-                                <span className="flex items-center gap-1 text-sm font-medium text-af-ink">
+                                <span className="flex h-4 items-center gap-1 text-[11px] font-bold uppercase tracking-[0.14em] text-af-ink-secondary">
                                     Banner <span className="text-af-danger">*</span>
                                 </span>
-                                <div className="relative w-full">
+                                <div className="relative flex h-32 w-full items-center justify-center">
                                     {bannerUrl ? (
                                         <img
                                             src={bannerUrl}
-                                            className="h-32 w-full rounded-2xl border border-af/20 object-cover"
+                                            className="h-32 w-full rounded-xl border border-af/15 object-cover shadow-sm"
                                             alt="Banner del restaurante"
                                         />
                                     ) : (
-                                        <div className={`flex h-32 w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed text-xs ${arrastrando.banner ? 'border-af-accent text-af-accent' : 'border-af/30 text-af-ink-secondary'}`}>
-                                            <Upload size={20} />
-                                            Sin banner
+                                        <div className="flex h-32 w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-af/30 bg-af-surface text-af-ink-secondary">
+                                            <Upload size={20} aria-hidden="true" />
+                                            <span className="text-[10px] font-medium">Sin banner</span>
                                         </div>
                                     )}
                                     {imgLoading.banner && (
-                                        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/25 dark:bg-white/20">
-                                            <Loader2 size={30} className="animate-spin text-white" />
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/35">
+                                            <Loader2 size={26} className="animate-spin text-white" aria-hidden="true" />
                                         </div>
                                     )}
                                 </div>
-                                <label className="btn-af h-10 cursor-pointer px-4 text-sm">
-                                    <Upload size={15} /> Subir banner
-                                    <input type="file" className="sr-only" accept="image/*" onChange={e => wrapImagenUpload(e, 'banner')} />
-                                </label>
-                                <span className="text-center text-xs text-af-ink-secondary">
-                                    {arrastrando.banner ? 'Suelta la imagen aquí' : 'También puedes arrastrar una imagen'}
+                                <button
+                                    type="button"
+                                    onClick={() => inputBannerRef.current?.click()}
+                                    className="btn-af h-10 w-full max-w-[11rem] justify-center px-4 text-xs"
+                                >
+                                    <Upload size={14} aria-hidden="true" /> {bannerUrl ? 'Cambiar banner' : 'Subir banner'}
+                                </button>
+                                <input
+                                    ref={inputBannerRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={e => wrapImagenUpload(e, 'banner')}
+                                />
+                                <span className="flex items-start justify-center text-[11px] leading-snug text-af-ink-secondary md:min-h-[2.25rem]">
+                                    {arrastrando.banner ? 'Suelta la imagen aquí' : 'Horizontal, mínimo 1200 px de ancho · JPG, PNG o WebP'}
                                 </span>
-                                {tieneError('imagen_banner_url') && <span className="text-xs font-medium text-af-danger-text">El banner es obligatorio.</span>}
+                                <span className="flex items-center justify-center text-xs font-medium text-af-danger-text md:min-h-[1rem]">
+                                    {tieneError('imagen_banner_url') ? 'El banner es obligatorio.' : ''}
+                                </span>
                             </div>
-                        </Tarjeta>
                         </div>
                     </div>
-                </section>
+                </TarjetaSeccion>
 
                 {/* ---------- Ubicación y contacto ---------- */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<MapPin size={17} />}>Ubicación y contacto</TituloSeccion>
-                    <Tarjeta enlace={false} className="space-y-6">
+                <TarjetaSeccion
+                    icono={<MapPin size={17} />}
+                    titulo="Ubicación y contacto"
+                    descripcion="Así te encuentran y te escriben. El WhatsApp abre el pedido del comensal."
+                >
+                    <div className="space-y-6">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div id="campo-telefono">
                                 <label htmlFor="rest-telefono" className="mb-2 block text-sm font-medium text-af-ink">
@@ -885,6 +1028,17 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 />
                             </div>
                             {tieneError('direccion') && <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">{(errors.direccion?.message as string) || 'Completa la dirección: tipo de vía, números y barrio.'}</p>}
+                            {enlaceMapa && !tieneError('direccion') && (
+                                <a
+                                    href={enlaceMapa}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="ml-1 mt-2 inline-flex items-center gap-1 text-xs font-semibold text-af-accent-text underline decoration-af-accent/30 underline-offset-4 hover:decoration-af-accent"
+                                >
+                                    <MapPin size={13} aria-hidden="true" /> Ver la dirección en el mapa
+                                    <ExternalLink size={12} aria-hidden="true" />
+                                </a>
+                            )}
                         </div>
 
                         <div className="grid gap-6 md:grid-cols-2">
@@ -954,15 +1108,29 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                     error={tieneError('whatsapp')}
                                     helper={tieneError('whatsapp') ? ((errors.whatsapp?.message as string) || 'Debe tener 10 dígitos.') : undefined}
                                 />
+                                {!tieneError('whatsapp') && enlaceWhatsApp && (
+                                    <a
+                                        href={enlaceWhatsApp}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="ml-1 mt-2 inline-flex items-center gap-1 text-xs font-semibold text-af-success underline decoration-af-success/30 underline-offset-4 hover:decoration-af-success"
+                                    >
+                                        <LogoWhatsApp className="h-3.5 w-3.5" /> Probar el enlace de WhatsApp
+                                    </a>
+                                )}
                             </div>
                         </div>
-                    </Tarjeta>
-                </section>
+                    </div>
+                </TarjetaSeccion>
 
                 {/* ---------- Horarios ---------- */}
-                <section className="mt-10">
-                    <TituloSeccion icono={<Clock size={17} />}>Horarios</TituloSeccion>
-                    <Tarjeta enlace={false} className="space-y-6">
+                <TarjetaSeccion
+                    icono={<Clock size={17} />}
+                    titulo="Horarios"
+                    descripcion="Cuándo abres y qué días. Se muestra en tu ficha y en el menú."
+                    acciones={<Chip tono="marca">{resumenHorario}</Chip>}
+                >
+                    <div className="space-y-6">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div id="campo-horario_apertura">
                                 <label htmlFor="rest-apertura" className="mb-2 block text-sm font-medium text-af-ink">
@@ -1019,49 +1187,183 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
                                 })}
                             </div>
                             {tieneError('dias_abierto') && <p className="ml-1 mt-2 text-xs font-medium text-af-danger-text">Selecciona al menos un día.</p>}
+                            {!tieneError('dias_abierto') && diasActivos.length > 0 && (
+                                <p className="ml-1 mt-2 text-xs text-af-ink-secondary">
+                                    Abres {resumenDias.toLowerCase()} · {resumenHorario}
+                                </p>
+                            )}
                         </div>
-                    </Tarjeta>
-                </section>
+                    </div>
+                </TarjetaSeccion>
 
                 {/* ---------- Finalizar ----------
                     La misma banda que el editor de platillos: pegada abajo y
                     difuminada, para que guardar esté siempre a la vista sin
                     tapar el formulario. Sin relleno inferior en los ancestros
                     se ancla al borde mismo de la pantalla al llegar al final. */}
-                <div className="sticky bottom-0 z-20 mt-10 flex items-center gap-2 bg-af-ground/85 px-4 py-3 backdrop-blur-xl sm:gap-3 sm:px-6 sm:py-4">
-                    <p className="mr-auto hidden items-center gap-2 text-sm text-af-ink-secondary sm:flex">
+                <div className="sticky bottom-2 z-20 mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-af/15 bg-af-surface/95 px-2.5 py-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:flex-nowrap sm:px-3">
+                    <p className="hidden items-center gap-2 text-xs text-af-ink-secondary sm:flex">
                         {hayCambios ? (
                             <>
-                                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden="true" />
                                 Tienes cambios sin guardar
                             </>
                         ) : (
                             <>
-                                <CheckCircle2 size={16} className="shrink-0 text-af-success" />
+                                <CheckCircle2 size={15} className="shrink-0 text-af-success" aria-hidden="true" />
                                 Todo guardado
                             </>
                         )}
+                        <span className="ml-2 hidden items-center gap-1 text-[10px] text-af-ink-secondary/60 md:flex" aria-hidden="true">
+                            <kbd className="rounded border border-af/20 bg-af-surface px-1.5 py-0.5 font-sans text-[10px] leading-none">Ctrl</kbd>
+                            <span>+</span>
+                            <kbd className="rounded border border-af/20 bg-af-surface px-1.5 py-0.5 font-sans text-[10px] leading-none">S</kbd>
+                        </span>
                     </p>
-                    <div className="ml-auto flex flex-1 items-center gap-2 sm:flex-none sm:gap-3">
+                    <div className="ml-auto flex w-full items-center gap-2 sm:w-auto">
                         <BotonTexto
                             onClick={descartarCambios}
                             disabled={!hayCambios || guardando}
-                            className="flex-1 justify-center sm:flex-none"
+                            className="flex-1 justify-center whitespace-nowrap sm:flex-none"
                         >
-                            <RotateCcw size={14} /> Descartar
+                            <RotateCcw size={14} aria-hidden="true" /> Descartar
                         </BotonTexto>
                         <BotonCTA
                             type="submit"
                             cargando={guardando}
                             disabled={guardando || !hayCambios}
-                            iconoDerecho={hayCambios ? <Save size={17} /> : <CheckCircle2 size={17} />}
-                            className="flex-1 sm:flex-none"
+                            iconoDerecho={hayCambios ? <Save size={16} aria-hidden="true" /> : <CheckCircle2 size={16} aria-hidden="true" />}
+                            className="flex-[1.35] justify-center whitespace-nowrap !text-[13px] sm:flex-none sm:!text-[14px]"
+                            title="Guardar los cambios (Ctrl+S)"
                         >
-                            {hayCambios ? 'Finalizar y guardar' : 'Todo guardado'}
+                            {hayCambios ? 'Guardar cambios' : 'Todo guardado'}
                         </BotonCTA>
                     </div>
                 </div>
             </form>
+            </div>
+
+            {/* Resumen en vivo: estado de publicación y miniatura de la ficha. */}
+            <aside className="hidden lg:block">
+                <div className="sticky top-24 space-y-4">
+                    <div className="card-af border border-af/10 !p-5">
+                        <div className="flex items-center gap-3">
+                            <AnilloProgreso
+                                valor={pct}
+                                tamano={64}
+                                etiqueta={`${pct}% de los datos completos`}
+                            />
+                            <div className="min-w-0">
+                                <p className="text-[13px] font-bold leading-tight text-af-ink">
+                                    {estaPublicado
+                                        ? 'Sitio publicado'
+                                        : faltantes.length === 1
+                                            ? '1 dato por completar'
+                                            : `${faltantes.length} datos por completar`}
+                                </p>
+                                <p className="mt-1 text-[11.5px] leading-snug text-af-ink-secondary">
+                                    {completos} de {totalCampos} obligatorios listos
+                                </p>
+                            </div>
+                        </div>
+
+                        {estaPublicado ? (
+                            <a
+                                href={enlaceSitio}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-af-success/10 px-3 py-2.5 text-xs font-bold text-af-success transition-colors hover:bg-af-success/15"
+                            >
+                                Ver mi sitio <ExternalLink size={13} aria-hidden="true" />
+                            </a>
+                        ) : (
+                            <ul className="mt-4 space-y-0.5 border-t border-af/10 pt-3">
+                                {faltantes.slice(0, 7).map((campo) => (
+                                    <li key={campo.k}>
+                                        <button
+                                            type="button"
+                                            onClick={() => irA(campo.k)}
+                                            className="group flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-left outline-none transition-colors hover:bg-af-accent/[0.07] focus-visible:bg-af-accent/[0.07]"
+                                        >
+                                            <CircleDashed size={13} className="shrink-0 text-af-danger-text" aria-hidden="true" />
+                                            <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-af-ink">
+                                                {campo.l}
+                                            </span>
+                                            <ChevronRight
+                                                size={13}
+                                                className="shrink-0 text-af-ink-secondary/60 transition-transform group-hover:translate-x-0.5"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    </li>
+                                ))}
+                                {faltantes.length > 7 && (
+                                    <li className="px-1.5 pt-1 text-[11px] text-af-ink-secondary">
+                                        y {faltantes.length - 7} más…
+                                    </li>
+                                )}
+                            </ul>
+                        )}
+
+                        <p className="mt-3 border-t border-af/10 pt-3 text-[10.5px] leading-relaxed text-af-ink-secondary/80">
+                            Los campos con <span className="text-af-danger">*</span> son obligatorios para publicar tu sitio.
+                        </p>
+                    </div>
+
+                    <div className="card-af overflow-hidden border border-af/10 !p-0">
+                        <div className="relative h-24 bg-af-accent/10">
+                            {bannerUrl ? (
+                                <img src={bannerUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                                <div className="flex h-full items-center justify-center text-[10px] font-semibold uppercase tracking-[0.16em] text-af-ink-secondary/60">
+                                    Tu banner
+                                </div>
+                            )}
+                            <span className="absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                                Vista previa
+                            </span>
+                        </div>
+                        <div className="relative px-4 pb-4 pt-9">
+                            <div className="absolute -top-7 left-4 h-14 w-14 overflow-hidden rounded-full border-4 border-af-surface bg-af-surface shadow-sm">
+                                {logoUrl ? (
+                                    <img src={logoUrl} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-af-accent/10 text-af-accent-text">
+                                        <Store size={20} aria-hidden="true" />
+                                    </div>
+                                )}
+                            </div>
+                            <p className="truncate text-[15px] font-bold text-af-ink">
+                                {nombreActual || 'Tu restaurante'}
+                            </p>
+                            <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-af-ink-secondary">
+                                {esloganValor || 'Tu eslogan aparecerá aquí.'}
+                            </p>
+                            <div className="mt-3 space-y-1.5 border-t border-af/10 pt-3">
+                                <FilaDato icono={<MapPin size={13} aria-hidden="true" />}>
+                                    {[valoresForm.municipio, valoresForm.departamento].filter(Boolean).join(', ') || 'Ciudad por definir'}
+                                </FilaDato>
+                                <FilaDato icono={<Clock size={13} aria-hidden="true" />}>
+                                    {resumenHorario}
+                                </FilaDato>
+                                <FilaDato icono={<CalendarDays size={13} aria-hidden="true" />}>
+                                    {resumenDias}
+                                </FilaDato>
+                            </div>
+                            {enlaceSitio && (
+                                <a
+                                    href={enlaceSitio}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="mt-3 flex items-center justify-between rounded-xl border border-af/15 px-3 py-2 text-[11px] font-bold text-af-ink-secondary transition-colors hover:border-af-accent/40 hover:text-af-accent-text"
+                                >
+                                    Ver la ficha pública <ExternalLink size={13} aria-hidden="true" />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
     );
 };

@@ -2,15 +2,13 @@ import React from 'react';
 import type { PlantillaMenuProps } from './tipos';
 import { AbrirPlatillo, BotonAgregar, ChipAgotado, ChipDestacado, FotoPlatillo } from './piezas';
 
-const VELO = 'linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.86) 38%, rgba(0,0,0,0.52) 66%, rgba(0,0,0,0.12) 86%, rgba(0,0,0,0) 100%)';
-
 /**
  * Mosaico: un muro de fotos sin canalillos, donde cada seis piezas una ocupa el
  * doble. El reparto lo resuelve `grid-auto-flow: dense`, así que no quedan
  * huecos por mucho que el número de platos no sea redondo.
  *
- * Se diferencia de Editorial en que aquí no hay tarjetas ni ritmo de rejilla
- * uniforme: la foto es el píxel y el texto se apoya en el velo.
+ * El texto va en una tarjeta de superficie al pie de cada pieza: la foto queda
+ * limpia, sin velo.
  */
 export const EstiloMosaico: React.FC<PlantillaMenuProps> = ({
   categorias,
@@ -84,38 +82,40 @@ export const EstiloMosaico: React.FC<PlantillaMenuProps> = ({
                     <div className="absolute inset-0">
                       <FotoPlatillo platillo={p} estilos={estilos} clase="w-full h-full" icono={grande ? 34 : 22} />
                     </div>
-                    <div className="pointer-events-none absolute inset-0" style={{ background: VELO }} />
 
                     <div className="absolute top-2.5 left-2.5 right-2.5 flex items-start justify-between gap-2">
                       {p.destacado && p.disponible ? <ChipDestacado estilos={estilos} texto={grande ? 'Destacado' : 'Top'} /> : <span />}
                       {!p.disponible && <ChipAgotado className="ml-auto" />}
                     </div>
 
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col p-2.5 sm:p-3.5">
-                      <h3
-                        className={`text-white font-bold font-title leading-snug line-clamp-2 ${grande ? 'text-lg sm:text-2xl' : 'text-[13px] sm:text-[15px]'}`}
-                      >
-                        {p.nombre}
-                      </h3>
-                      {grande && p.descripcion && (
-                        <p className="text-white/85 text-[13px] mt-1.5 line-clamp-2 leading-relaxed max-w-xl">{p.descripcion}</p>
-                      )}
-                      <div className="mt-2 flex items-center justify-between gap-2">
-                        <span
-                          className={`shrink-0 rounded-full font-bold tabular-nums ${grande ? 'px-2.5 py-1 text-base sm:text-lg' : 'px-2 py-0.5 text-[13px] sm:text-sm'}`}
-                          style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                    <div className="pointer-events-none absolute inset-x-1.5 bottom-1.5 z-10">
+                      <div className={`rounded-[10px] ${grande ? 'p-3' : 'p-2'}`} style={{ backgroundColor: estilos.cardBg, border: estilos.cardBorder }}>
+                        <h3
+                          className={`font-bold font-title leading-snug line-clamp-2 ${grande ? 'text-lg sm:text-2xl' : 'text-[12px] sm:text-[15px]'}`}
+                          style={{ color: estilos.title }}
                         >
-                          ${p.precio.toLocaleString()}
-                        </span>
-                        <div className="pointer-events-auto relative z-20">
-                          <BotonAgregar
-                            platillo={p}
-                            estilos={estilos}
-                            localAbierto={localAbierto}
-                            variante="cristal"
-                            soloIconoEnMovil
-                            onAgregar={(e) => onAgregarAlCarrito(p, e)}
-                          />
+                          {p.nombre}
+                        </h3>
+                        {grande && p.descripcion && (
+                          <p className="text-[13px] mt-1.5 line-clamp-2 leading-relaxed max-w-xl" style={{ color: estilos.muted }}>{p.descripcion}</p>
+                        )}
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <span
+                            className={`shrink-0 rounded-full font-bold tabular-nums ${grande ? 'px-2.5 py-1 text-base sm:text-lg' : 'px-2 py-0.5 text-[13px] sm:text-sm'}`}
+                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                          >
+                            ${p.precio.toLocaleString()}
+                          </span>
+                          <div className="pointer-events-auto relative z-20">
+                            <BotonAgregar
+                              platillo={p}
+                              estilos={estilos}
+                              localAbierto={localAbierto}
+                              variante="suave"
+                              soloIconoEnMovil
+                              onAgregar={(e) => onAgregarAlCarrito(p, e)}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
