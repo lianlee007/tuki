@@ -91,6 +91,10 @@ services:
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_CONSOLE_ENABLE: "true"
+      # El panel dibuja la tarjeta del QR en un lienzo y recorta el logo dentro.
+      # Un `<img>` normal no necesita CORS, pero leer los píxeles de otro origen
+      # para convertirlos en PNG sí: sin esto el logo no se puede incrustar.
+      RUSTFS_CORS_ALLOWED_ORIGINS: *cors-origenes
       RUSTFS_OBS_LOGGER_LEVEL: error
       RUSTFS_OBS_LOG_DIRECTORY: /var/log/rustfs/
     ports:

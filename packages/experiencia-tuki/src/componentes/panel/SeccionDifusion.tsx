@@ -98,6 +98,18 @@ const cargarImagen = (url: string) =>
     img.src = url;
   });
 
+/**
+ * El mismo logo se muestra antes en un `<img>` normal (sin CORS), y el
+ * navegador guarda esa copia en caché. Al pedirlo después con `crossOrigin`
+ * reutiliza la copia sin cabeceras CORS y falla. Una URL distinta para el
+ * lienzo esquiva esa entrada envenenada; los parámetros de más los ignora el
+ * almacenamiento de objetos.
+ */
+const urlParaLienzo = (url: string) => {
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}tuki=qr`;
+};
+
 const recortarNombre = (nombre: string, maximo = 26) =>
   nombre.length <= maximo ? nombre : `${nombre.slice(0, maximo - 1).trimEnd()}.`;
 
@@ -227,7 +239,7 @@ const dibujarTarjeta = async (
     // El logo solo se puede recortar en el lienzo si su servidor manda CORS (o
     // si es del mismo origen, como en el clúster). Cuando no llega, el centro
     // no se queda vacío: va la inicial del restaurante, dibujada aquí mismo.
-    const marca = logoUrl ? await cargarImagen(logoUrl).catch(() => null) : null;
+    const marca = logoUrl ? await cargarImagen(urlParaLienzo(logoUrl)).catch(() => null) : null;
 
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
