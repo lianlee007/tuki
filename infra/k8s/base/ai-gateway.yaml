@@ -36,11 +36,6 @@ spec:
                 secretKeyRef:
                   name: tukituki-secrets
                   key: jwt-secreto
-            - name: GROQ_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: tukituki-secrets
-                  key: groq-api-key
           readinessProbe:
             httpGet:
               path: /readyz
