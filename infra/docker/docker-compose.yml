@@ -335,15 +335,15 @@ services:
       AI_AUTH_MODE: local
       AI_ALLOW_ANON: "true"
       AI_LOG_LEVEL: INFO
-      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      AI_OLLAMA_URL: ${AI_OLLAMA_URL:-http://host.docker.internal:11434}
+      AI_OLLAMA_MODELO_CHAT: ${AI_OLLAMA_MODELO_CHAT:-tuki-chef}
+      AI_OLLAMA_MODELO_EMBEDDINGS: ${AI_OLLAMA_MODELO_EMBEDDINGS:-nomic-embed-text}
+      AI_RESTAURANTES_URL: http://host.docker.internal:3002
+      AI_RESENAS_URL: http://host.docker.internal:3005
       JWT_SECRETO: ${JWT_SECRETO:-cambio-este-secreto-en-produccion}
       JWT_EMISOR: tuki-identidad
       JWT_AUDIENCIA: tuki
       AI_CORS_ORIGINS: *cors-origenes
-      AI_GROQ_BASE_URL: ${AI_GROQ_BASE_URL:-https://api.groq.com/openai/v1}
-      AI_GROQ_MODELS: ${AI_GROQ_MODELS:-openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b}
-      AI_GROQ_TIMEOUT_SECONDS: ${AI_GROQ_TIMEOUT_SECONDS:-25}
-      AI_GROQ_TOTAL_TIMEOUT_SECONDS: ${AI_GROQ_TOTAL_TIMEOUT_SECONDS:-40}
     ports:
       - "8000:8000"
     labels:

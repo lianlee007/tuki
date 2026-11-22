@@ -1,10 +1,11 @@
 /**
  * Descripción: servicios externos de TukiTuki.
  *
- * La IA pasa por Groq y las imágenes por Supabase Storage. La subida vive en
- * `almacenamiento.ts`; aquí se reexporta para no tocar los formularios.
+ * La IA pasa por el gateway local (Ollama) y las imágenes por el almacenamiento
+ * del proyecto. La subida vive en `almacenamiento.ts`; aquí se reexporta para
+ * no tocar los formularios.
  */
-import { generarContenidoGroq } from './servicioGroq';
+import { generarTextoIA } from './servicioIA';
 
 export { subirImagen } from './almacenamiento';
 
@@ -15,7 +16,7 @@ export const generarContenidoIA = async (
   sistema: string = 'Eres un experto en marketing gastronómico.'
 ) => {
   try {
-    return await generarContenidoGroq(prompt, sistema);
+    return await generarTextoIA(prompt, sistema);
   } catch (error) {
     console.error('Error generando contenido IA:', error);
     throw error;

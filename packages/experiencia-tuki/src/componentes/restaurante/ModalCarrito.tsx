@@ -9,7 +9,7 @@ import { apiWhatsApp } from '../../api/misApis';
 import { apiPedidos } from '../../modulos/pedidos';
 import { apiCuenta } from '../../modulos/cuenta';
 import { useAuth } from '../../contexto/ContextoAutenticacion';
-import { generarContenidoGroq } from '../../lib/servicioGroq';
+import { generarTextoIA } from '../../lib/servicioIA';
 import { datosEnvioCompletos, formatearDireccionEnvio } from '../../modulos/cuenta';
 import { variablesAf } from '../../lib/color';
 import { LIMITES } from '../../constantes';
@@ -265,7 +265,7 @@ export const ModalCarrito: React.FC<Props> = ({
     if (corrigiendoBarrio) return;
     setCorrigiendoBarrio(true);
     try {
-      const respuesta = await generarContenidoGroq(
+      const respuesta = await generarTextoIA(
         `Corrige la ortografía de este barrio o localidad colombiana: "${valor}". Responde SOLO con el nombre del barrio corregido, sin explicaciones ni texto adicional. Si el nombre ya está correcto, devuélvelo tal cual.`,
         "Eres un experto en geografía y ortografía de barrios y localidades colombianas. Corrige solo errores ortográficos, mantén el nombre original si está correcto.",
       );

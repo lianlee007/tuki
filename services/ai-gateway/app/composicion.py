@@ -1,6 +1,6 @@
 """Ensamblado de la aplicación del gateway.
 
-Aquí se eligen los adaptadores (Groq, limitador en memoria, Supabase para JWT),
+Aquí se eligen los adaptadores (Ollama, limitador en memoria, Supabase para JWT),
 se crea el caso de uso y se conectan middleware, errores y rutas. `main.py` solo
 publica la instancia; así se puede probar `create_app` con otra configuración
 sin tocar el contrato HTTP.
@@ -17,8 +17,10 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.adaptadores.compuesto import ExtractorCompuesto
 from app.adaptadores.memoria import RateLimiter
 from app.adaptadores.ollama import OllamaClient
+from app.adaptadores.plataforma import ExtractorPlataforma
 from app.adaptadores.restaurantes import ExtractorRestaurantes
 from app.config import Settings, get_settings
 from app.entrada.errores import register_exception_handlers
@@ -84,7 +86,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         application.state.http = client
         proveedor = OllamaClient(settings, client)
-        extractor = ExtractorRestaurantes(settings, client)
+        extractor = ExtractorCompuesto(
+            [
+                ExtractorRestaurantes(settings, client),
+                ExtractorPlataforma(),
+            ]
+        )
         conocimiento = ServicioConocimiento(extractor, proveedor, settings)
         application.state.chat = ServicioChat(
             proveedor,
