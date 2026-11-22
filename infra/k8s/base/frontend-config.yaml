@@ -10,13 +10,13 @@ data:
   # local y para el clúster sin recompilar.
   config.js: |
     window.__TUKI_CONFIG__ = {
-      identidad: 'http://api.tukituki.example.com',
-      restaurantes: 'http://api.tukituki.example.com',
-      media: 'http://api.tukituki.example.com',
-      pedidos: 'http://api.tukituki.example.com',
-      resenas: 'http://api.tukituki.example.com',
-      admin: 'http://api.tukituki.example.com',
-      adminPanel: 'http://admin.tukituki.example.com',
-      web: 'http://tukituki.example.com',
-      ai: 'http://api.tukituki.example.com'
+      identidad: 'https://api.tukituki.example.com',
+      restaurantes: 'https://api.tukituki.example.com',
+      media: 'https://api.tukituki.example.com',
+      pedidos: 'https://api.tukituki.example.com',
+      resenas: 'https://api.tukituki.example.com',
+      admin: 'https://api.tukituki.example.com',
+      adminPanel: 'https://admin.tukituki.example.com',
+      web: 'https://tukituki.example.com',
+      ai: 'https://api.tukituki.example.com'
     };
