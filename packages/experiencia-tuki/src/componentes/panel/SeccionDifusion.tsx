@@ -99,6 +99,85 @@ const cargarImagen = (url: string) =>
   });
 
 /**
+ * Los logos suelen traer mucho margen blanco alrededor. Si se dibujan tal cual,
+ * el centro del QR parece diminuto. Aquí se detecta el recuadro del contenido
+ * (ignorando el blanco) y se recorta antes de escalarlo. Si algo falla —sin
+ * CORS, imagen opaca, logo totalmente blanco— se usa la imagen completa.
+ */
+const recortarMarca = (img: HTMLImageElement): HTMLCanvasElement | HTMLImageElement => {
+  const lado = 220;
+  // Se trabaja sobre el cuadrado central de la imagen, para que un logo
+  // apaisado no salga estirado.
+  const ladoFuente = Math.min(img.naturalWidth, img.naturalHeight);
+  if (!ladoFuente) return img;
+  const fuenteX = (img.naturalWidth - ladoFuente) / 2;
+  const fuenteY = (img.naturalHeight - ladoFuente) / 2;
+
+  const muestra = document.createElement('canvas');
+  muestra.width = lado;
+  muestra.height = lado;
+  const ctx = muestra.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return img;
+  ctx.drawImage(img, fuenteX, fuenteY, ladoFuente, ladoFuente, 0, 0, lado, lado);
+
+  let pixeles: Uint8ClampedArray;
+  try {
+    pixeles = ctx.getImageData(0, 0, lado, lado).data;
+  } catch {
+    return img;
+  }
+
+  let minX = lado;
+  let minY = lado;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < lado; y += 1) {
+    for (let x = 0; x < lado; x += 1) {
+      const i = (y * lado + x) * 4;
+      const r = pixeles[i] ?? 255;
+      const g = pixeles[i + 1] ?? 255;
+      const b = pixeles[i + 2] ?? 255;
+      const a = pixeles[i + 3] ?? 0;
+      // Blanco puro o transparente no cuenta como contenido.
+      if (a > 12 && (r < 243 || g < 243 || b < 243)) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX <= minX || maxY <= minY) return img;
+
+  const ancho = maxX - minX + 1;
+  const alto = maxY - minY + 1;
+  const cuadrado = Math.min(lado, Math.max(ancho, alto));
+  const centroX = (minX + maxX + 1) / 2;
+  const centroY = (minY + maxY + 1) / 2;
+  const origenX = Math.max(0, Math.min(lado - cuadrado, centroX - cuadrado / 2));
+  const origenY = Math.max(0, Math.min(lado - cuadrado, centroY - cuadrado / 2));
+  const escala = ladoFuente / lado;
+
+  const recorte = document.createElement('canvas');
+  recorte.width = 256;
+  recorte.height = 256;
+  const recorteCtx = recorte.getContext('2d');
+  if (!recorteCtx) return img;
+  recorteCtx.drawImage(
+    img,
+    fuenteX + origenX * escala,
+    fuenteY + origenY * escala,
+    cuadrado * escala,
+    cuadrado * escala,
+    0,
+    0,
+    256,
+    256,
+  );
+  return recorte;
+};
+
+/**
  * El mismo logo se muestra antes en un `<img>` normal (sin CORS), y el
  * navegador guarda esa copia en caché. Al pedirlo después con `crossOrigin`
  * reutiliza la copia sin cabeceras CORS y falla. Una URL distinta para el
@@ -230,12 +309,15 @@ const dibujarTarjeta = async (
 
     const margen = 22;
     ctx.drawImage(qr, x + margen, y + margen, tam - margen * 2, tam - margen * 2);
-    return { cx: x + tam / 2, cy: y + tam / 2 };
+    return { cx: x + tam / 2, cy: y + tam / 2, tam };
   };
 
-  const dibujarLogo = async (cx: number, cy: number) => {
+  const dibujarLogo = async (cx: number, cy: number, ladoQr: number) => {
     if (!ajustes.conLogo) return;
-    const radio = 42;
+    /* Un 12 % del ancho del código: con corrección de errores H el centro se
+       puede tapar bastante y la cámara sigue leyendo, así que la marca gana
+       presencia sin poner en riesgo el escaneo. */
+    const radio = Math.round(ladoQr * 0.12);
     // El logo solo se puede recortar en el lienzo si su servidor manda CORS (o
     // si es del mismo origen, como en el clúster). Cuando no llega, el centro
     // no se queda vacío: va la inicial del restaurante, dibujada aquí mismo.
@@ -243,15 +325,16 @@ const dibujarTarjeta = async (
 
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.arc(cx, cy, radio + 8, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radio + 7, 0, Math.PI * 2);
     ctx.fill();
 
     if (marca) {
+      const recorte = recortarMarca(marca);
       ctx.save();
       ctx.beginPath();
       ctx.arc(cx, cy, radio, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(marca, cx - radio, cy - radio, radio * 2, radio * 2);
+      ctx.drawImage(recorte, cx - radio, cy - radio, radio * 2, radio * 2);
       ctx.restore();
       return;
     }
@@ -263,7 +346,7 @@ const dibujarTarjeta = async (
     ctx.stroke();
 
     ctx.fillStyle = tinta;
-    ctx.font = `700 46px ${TITULO_FONT}`;
+    ctx.font = `700 ${Math.round(radio * 0.9)}px ${TITULO_FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText((nombre.trim()[0] || 'T').toUpperCase(), cx, cy + 3);
@@ -283,7 +366,7 @@ const dibujarTarjeta = async (
     }
 
     const centro = panelQr(72, 148, 456, 30);
-    await dibujarLogo(centro.cx, centro.cy);
+    await dibujarLogo(centro.cx, centro.cy, centro.tam);
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -309,7 +392,7 @@ const dibujarTarjeta = async (
     ctx.fillText('MENÚ DIGITAL', 300, 68);
 
     const centro = panelQr(96, 94, 408, 18);
-    await dibujarLogo(centro.cx, centro.cy);
+    await dibujarLogo(centro.cx, centro.cy, centro.tam);
 
     if (ajustes.conNombre) {
       ctx.fillStyle = TINTA_TEXTO;
@@ -339,7 +422,7 @@ const dibujarTarjeta = async (
     ctx.fillText('MENÚ DIGITAL', 300, 71);
 
     const centro = panelQr(110, 112, 380, 20);
-    await dibujarLogo(centro.cx, centro.cy);
+    await dibujarLogo(centro.cx, centro.cy, centro.tam);
 
     if (ajustes.conNombre) {
       ctx.fillStyle = TINTA_TEXTO;
