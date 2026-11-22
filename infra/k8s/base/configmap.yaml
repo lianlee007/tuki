@@ -23,6 +23,8 @@ data:
   AI_OLLAMA_URL: http://host.docker.internal:11434
   AI_OLLAMA_MODELO_CHAT: tuki-chef
   AI_OLLAMA_MODELO_EMBEDDINGS: nomic-embed-text
+  AI_RESTAURANTES_URL: http://restaurantes-service:3002
+  AI_RESENAS_URL: http://resenas-service:3005
   AI_CORS_ORIGINS: >-
     https://tukituki.example.com,https://panel.tukituki.example.com,https://admin.tukituki.example.com
   # OpenTelemetry: los servicios Node y el AI Gateway envían trazas al
