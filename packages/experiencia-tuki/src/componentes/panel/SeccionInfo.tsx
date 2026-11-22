@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { LIMITES } from '../../constantes';
 import { DEPARTAMENTOS, municipiosDe } from '../../lib/colombia';
-import { generarContenidoGroq } from '../../lib/servicioGroq';
+import { generarTextoIA } from '../../lib/servicioIA';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 import { SelectorCocina, type SelectorCocinaRef } from './SelectorCocina';
 import { AnilloProgreso, Chip, FilaDato, TarjetaSeccion } from './PanelUI';
@@ -536,13 +536,13 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         setGenerandoIA(true);
         try {
             const [eslogan, descripcion] = await Promise.all([
-                generarContenidoGroq(
+                generarTextoIA(
                     `Crea un eslogan corto y memorable (máximo 6 palabras) para el restaurante "${nombre}". ` +
                     `${detalle} El eslogan debe evocar esa cocina concreta y no valer para cualquier negocio. ` +
                     'Devuelve solo el eslogan.',
                     SISTEMA_IA
                 ),
-                generarContenidoGroq(
+                generarTextoIA(
                     `Escribe una descripción breve y apetitosa (máximo 280 caracteres) para el restaurante "${nombre}". ` +
                     `${detalle} Menciona el estilo de cocina y dos o tres platos o ingredientes típicos. ` +
                     'Tono cálido, en segunda persona, sin exageraciones. Devuelve solo la descripción.',

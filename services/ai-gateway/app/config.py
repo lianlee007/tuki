@@ -3,7 +3,7 @@
 Todas las variables usan el prefijo ``AI_`` salvo las credenciales de Supabase,
 que se leen con su nombre estándar para integrarse con los secretos de
 Docker/Kubernetes. El proveedor de IA es Ollama, que corre en la misma máquina:
-no hay claves de terceros ni llamadas a Groq.
+no hay claves de terceros ni llamadas a servicios externos.
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """Caso de uso de generación de texto.
 
-Depende solo de puertos (``ProveedorIA``), nunca de Groq ni de FastAPI. Ese es
+Depende solo de puertos (``ProveedorIA``), nunca de un proveedor externo ni de FastAPI. Ese es
 el punto de la arquitectura hexagonal: cambiar de proveedor no toca esta capa.
 """
 

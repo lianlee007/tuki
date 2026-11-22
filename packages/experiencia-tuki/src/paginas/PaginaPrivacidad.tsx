@@ -196,12 +196,12 @@ const CLAUSULAS: Clausula[] = [
         </p>
         <ul>
           <li>
-            <strong>Supabase</strong>, que aloja la base de datos, las imágenes de los menús
-            (Storage) y gestiona el inicio de sesión.
+            <strong>El servidor del proyecto</strong>, que aloja la base de datos y las
+            imágenes de los menús.
           </li>
           <li>
-            <strong>Groq</strong>, que procesa los textos cuando usas la ayuda de inteligencia
-            artificial. Solo le enviamos lo necesario para generar ese texto.
+            <strong>El modelo de IA local (Ollama)</strong>, que se ejecuta en el mismo
+            equipo del proyecto. Los textos no se envían a un proveedor externo.
           </li>
           <li>
             <strong>api.qrserver.com</strong>, que genera la imagen del código QR de tu menú.

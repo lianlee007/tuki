@@ -86,6 +86,21 @@ _TEMAS_NO_GASTRONOMICOS = {
     "partido", "impuestos", "abogado", "demanda", "guerra", "religion",
 }
 
+# Preguntas que no son de comida pero sí del producto. El RAG de plataforma
+# responde con el markdown de `app/conocimiento/plataforma.md`.
+PALABRAS_PLATAFORMA = {
+    "tukituki", "plataforma", "panel", "cuenta", "cuentas", "contrasena",
+    "contrasenas", "registro", "registrarme", "perfil", "sesion",
+    "menu digital", "carta digital", "publicar", "publicacion", "dueno",
+    "duenos", "comensal", "comensales", "pedido", "pedidos", "whatsapp",
+    "resena", "resenas", "calificacion", "calificaciones", "privacidad",
+    "politica", "politicas", "terminos", "soporte", "ayuda", "funciona",
+    "funcionan", "como funciona", "qr", "plan", "planes", "comision",
+    "comisiones", "pago", "pagos", "eliminar cuenta", "borrar cuenta",
+    "cambiar contrasena", "recuperar contrasena", "inteligencia artificial",
+    "modelo", "ollama", "datos", "datos personales", "publico", "editar",
+}
+
 _SALIDA_CODIGO = re.compile(r"```[a-z]*\s*|```", re.IGNORECASE)
 _SALIDA_ETIQUETA = re.compile(
     r"^\s*(eslogan|descripci[oó]n|nombre|categor[ií]a|ingredientes|respuesta|resultado)"
@@ -171,6 +186,15 @@ def es_consulta_gastronomica(texto: str) -> bool:
         return any(palabra in normalizado.split() for palabra in PALABRAS_GASTRONOMICAS)
     palabras = set(normalizado.split())
     return bool(palabras & PALABRAS_GASTRONOMICAS)
+
+
+def es_consulta_plataforma(texto: str) -> bool:
+    """Preguntas sobre cómo funciona TukiTuki: cuenta, panel, pedidos, etc."""
+    normalizado = normalizar(texto)
+    return any(
+        re.search(rf"\b{re.escape(palabra)}\b", normalizado)
+        for palabra in PALABRAS_PLATAFORMA
+    )
 
 
 def limpiar_salida(texto: str) -> str:

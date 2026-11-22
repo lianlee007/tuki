@@ -59,7 +59,7 @@ const servicio = (clave: ClaveServicio, variable: string, defecto: string): stri
   return delBuild && delBuild !== '' ? delBuild : defecto;
 };
 
-/** URL base del AI Gateway, compartida con `servicioGroq`. */
+/** URL base del AI Gateway, compartida con `servicioIA`. */
 export const urlGatewaysIa = (): string =>
   servicio('ai', 'VITE_AI_GATEWAY_URL', 'http://localhost:8000');
 

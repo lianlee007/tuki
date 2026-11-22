@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-TipoDocumento = Literal["plato", "restaurante"]
+TipoDocumento = Literal["plato", "restaurante", "plataforma"]
 
 
 @dataclass(frozen=True, slots=True)

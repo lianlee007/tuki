@@ -28,19 +28,25 @@ from app.dominio.recuperacion import (
     extraer_filtros,
     seleccionar_contexto,
 )
-from app.dominio.texto import es_consulta_gastronomica, estimar_tokens, normalizar
+from app.dominio.texto import (
+    es_consulta_gastronomica,
+    es_consulta_plataforma,
+    estimar_tokens,
+    normalizar,
+)
 from app.servicios.conocimiento import ServicioConocimiento
 
 logger = logging.getLogger(__name__)
 
-SISTEMA_RECOMENDADOR = (
-    "Eres Tuki, el recomendador gastronómico de TukiTuki. Hablas español de "
+SISTEMA_RECOMENDADOR = (    "Eres Tuki, el recomendador gastronómico de TukiTuki. Hablas español de "
     "Colombia, con un tono cercano, breve y útil.\n\n"
     "REGLAS OBLIGATORIAS:\n"
-    "1. Solo puedes recomendar platos que aparezcan en el CONTEXTO, con el "
-    "nombre exacto que figura allí. No inventes platos, variantes, restaurantes, "
-    "precios, horarios ni ingredientes. No copies las fichas del contexto: "
-    "redacta una respuesta breve y conversacional.\n"
+    "1. Puedes recomendar platos que aparezcan en el CONTEXTO, con el "
+    "nombre exacto que figura allí, y responder preguntas sobre el "
+    "funcionamiento de TukiTuki (cuenta, panel, pedidos, reseñas, privacidad, "
+    "IA local y soporte). No inventes platos, variantes, restaurantes, "
+    "precios, horarios, ingredientes ni políticas. No copies las fichas del "
+    "contexto: redacta una respuesta breve y conversacional.\n"
     "2. Si el CONTEXTO no alcanza para responder, dilo con naturalidad y pide un "
     "dato más (ciudad, presupuesto o preferencia). Nunca inventes.\n"
     "3. No afirmes que un plato es seguro para una alergia. Los alérgenos "
@@ -60,12 +66,103 @@ SISTEMA_RECOMENDADOR = (
     "9. No afirmes que un plato es vegetariano, vegano o picante salvo que esa "
     "etiqueta aparezca en su ficha del CONTEXTO.\n"
     "10. Termina con una pregunta corta que ayude a seguir conversando.\n"
-    "11. Si el usuario pide algo que no es de comida, aclara amablemente que solo "
-    "puedes ayudar con platos y restaurantes de TukiTuki.\n\n"
+    "11. Si el usuario pregunta por TukiTuki (cuenta, panel, pedidos, reseñas, "
+    "privacidad, planes, IA o soporte), responde con la información del CONTEXTO "
+    "y no recomiendes platos si no los pidió.\n"
+    "12. Si el usuario pide algo que no es de comida ni de TukiTuki, aclara "
+    "amablemente que solo puedes ayudar con platos, restaurantes y el "
+    "funcionamiento de la plataforma.\n\n"
     "EJEMPLO DE TONO (no copies estos datos, usa los del contexto):\n"
     "Te recomiendo el Ajiaco [P1] de Sabor Payanés por 22.000 COP; lleva pollo, "
     "papa y mazorca. Si quieres algo más contundente, la Bandeja paisa [P2] "
     "también está disponible. ¿Prefieres algo para almorzar o para compartir?"
+)
+
+SISTEMA_PLATAFORMA = (
+    "Eres Tuki, el asistente de TukiTuki. Hablas español de Colombia, con un "
+    "tono cercano y breve.\n\n"
+    "REGLAS OBLIGATORIAS:\n"
+    "1. Responde solo con la información del CONTEXTO.\n"
+    "2. No inventes políticas, precios, plazos ni funciones que no estén allí.\n"
+    "3. No recomiendes platos ni restaurantes salvo que el usuario los pida.\n"
+    "4. Si el CONTEXTO no tiene el dato, dilo y sugiere escribir a soporte.\n"
+    "5. No des consejos legales ni médicos.\n"
+    "6. Responde en menos de 100 palabras, sin markdown y sin listas largas.\n"
+    "7. Termina con una pregunta corta si ayuda a seguir la conversación."
+)
+
+# Preguntas frecuentes → secciones exactas del markdown de plataforma. Así la
+# respuesta de políticas es extractiva y no depende de que el modelo de 1.5B
+# recuerde o reescriba bien una regla.
+_INTENCIONES_PLATAFORMA = (
+    (
+        (
+            "comision",
+            "comisiones",
+            "cobra",
+            "cobro",
+            "pago",
+            "pagos",
+            "plan",
+            "planes",
+            "precio",
+            "precios",
+        ),
+        ("planes y costos", "pedidos"),
+    ),
+    (
+        (
+            "panel",
+            "publicar",
+            "publicacion",
+            "editar",
+            "plato",
+            "platos",
+            "menu",
+            "carta",
+        ),
+        ("cuenta de restaurante", "crear y editar platos"),
+    ),
+    (
+        (
+            "datos",
+            "privacidad",
+            "contrasena",
+            "eliminar",
+            "borrar",
+            "foto",
+            "fotos",
+        ),
+        ("privacidad y datos",),
+    ),
+    (
+        ("resena", "resenas", "calificacion", "calificaciones", "estrellas"),
+        ("resenas",),
+    ),
+    (
+        ("pedido", "pedidos", "whatsapp", "domicilio", "carrito"),
+        ("pedidos",),
+    ),
+    (
+        ("ia", "modelo", "ollama", "inteligencia artificial", "recomendador"),
+        ("ia local",),
+    ),
+    (
+        ("soporte", "ayuda", "contacto", "problema"),
+        ("soporte",),
+    ),
+    (
+        ("cuenta", "registro", "perfil", "sesion"),
+        ("cuenta de comensal", "cuenta de restaurante"),
+    ),
+    (
+        ("qr", "menu digital", "carta digital", "compartir"),
+        ("menu digital y qr",),
+    ),
+    (
+        ("tukituki", "plataforma", "que es"),
+        ("tukituki",),
+    ),
 )
 
 SALUDO = (
@@ -73,8 +170,9 @@ SALUDO = (
     "vegetariano, picante, económico, un postre o un plato para compartir."
 )
 FUERA_DE_ALCANCE = (
-    "Puedo ayudarte a elegir platos y restaurantes de TukiTuki, pero ese tema "
-    "no lo manejo. ¿Buscas algo en especial para comer?"
+    "Puedo ayudarte con platos, restaurantes y el funcionamiento de TukiTuki, "
+    "pero ese tema no lo manejo. ¿Buscas algo en especial para comer o quieres "
+    "saber cómo funciona la plataforma?"
 )
 SIN_DATOS = (
     "No encontré platos que coincidan con eso en el catálogo de TukiTuki. "
@@ -237,10 +335,20 @@ class ServicioRecomendador:
                 inicio,
             )
         consulta = _consulta_con_historial(mensaje, historial)
-        if not es_consulta_gastronomica(consulta):
+        if not es_consulta_gastronomica(consulta) and not es_consulta_plataforma(
+            consulta
+        ):
             return self._respuesta_directa(FUERA_DE_ALCANCE, inicio)
 
         indice = await self._conocimiento.obtener()
+        if es_consulta_plataforma(consulta):
+            return await self._responder_plataforma(
+                indice,
+                mensaje,
+                historial,
+                request_id,
+                inicio,
+            )
         termino = indice.termino_sin_datos(consulta)
         if termino:
             return self._respuesta_directa(
@@ -284,6 +392,14 @@ class ServicioRecomendador:
             umbral_semantico=self._settings.rag_umbral_semantico,
         )
         recuperacion_ms = int((time.perf_counter() - inicio) * 1000)
+
+        # La plataforma se responde en su propia rama; en la rama de comida no
+        # debe colarse un documento de políticas.
+        recuperados = [
+            recuperado
+            for recuperado in recuperados
+            if recuperado.documento.tipo != "plataforma"
+        ]
 
         # El contexto se limita a los platos que cumplen el ingrediente o el
         # sabor. Sin esto, la diversidad por restaurante cuela postres en una
@@ -371,6 +487,87 @@ class ServicioRecomendador:
             latency_ms=total_ms,
             recuperacion_ms=recuperacion_ms,
             contexto_tokens=estimar_tokens(contexto),
+        )
+
+    async def _responder_plataforma(
+        self,
+        indice: IndiceRAG,
+        mensaje: str,
+        historial: list[dict[str, str]],
+        request_id: str,
+        inicio: float,
+    ) -> ResultadoRecomendacion:
+        """Responde dudas de TukiTuki solo con el corpus de plataforma."""
+        documentos = [
+            documento
+            for documento in indice.documentos
+            if documento.tipo == "plataforma"
+        ]
+        if not documentos:
+            return self._respuesta_directa(
+                "No tengo cargada la información de la plataforma. "
+                "Escribe al equipo de soporte para que te ayude.",
+                inicio,
+            )
+
+        normalizado = normalizar(mensaje)
+        nombres: list[str] = []
+        for claves, secciones in _INTENCIONES_PLATAFORMA:
+            if any(
+                re.search(rf"\b{re.escape(clave)}\b", normalizado)
+                for clave in claves
+            ):
+                nombres = list(secciones)
+                break
+
+        por_nombre = {
+            normalizar(str(documento.metadata.get("nombre") or "")): documento
+            for documento in documentos
+        }
+        seleccionados = [
+            por_nombre[nombre] for nombre in nombres if nombre in por_nombre
+        ]
+        if not seleccionados:
+            subindice = IndiceRAG(documentos)
+            recuperados = subindice.buscar(
+                mensaje,
+                top_k=1,
+                candidatos=max(3, len(documentos)),
+            )
+            seleccionados = [
+                recuperado.documento for recuperado in recuperados
+            ] or [documentos[0]]
+
+        recuperacion_ms = int((time.perf_counter() - inicio) * 1000)
+        partes: list[str] = []
+        vistos: set[str] = set()
+        for documento in seleccionados[:2]:
+            texto = documento.texto.strip()
+            if texto and texto not in vistos:
+                partes.append(texto)
+                vistos.add(texto)
+        if not partes:
+            return self._respuesta_directa(
+                "No tengo ese dato de la plataforma. "
+                "Escribe al equipo de soporte para que te ayude.",
+                inicio,
+                recuperacion_ms,
+            )
+
+        contenido = "\n\n".join(partes)
+        contenido += "\n\n¿Quieres saber algo más de TukiTuki?"
+        latencia = int((time.perf_counter() - inicio) * 1000)
+        return ResultadoRecomendacion(
+            content=contenido,
+            model="plataforma",
+            fuentes=(),
+            prompt_tokens=0,
+            completion_tokens=0,
+            total_tokens=0,
+            attempts=0,
+            latency_ms=latencia,
+            recuperacion_ms=recuperacion_ms,
+            contexto_tokens=estimar_tokens(contenido),
         )
 
     def _respuesta_factual(
@@ -714,6 +911,10 @@ def _fuentes_de(recuperados: list[Recuperado]) -> list[Fuente]:
     fuentes: list[Fuente] = []
     vistos: set[tuple[str, str]] = set()
     for recuperado in recuperados:
+        # El conocimiento de plataforma sirve de contexto, pero no es una ficha
+        # que la interfaz pueda mostrar como fuente.
+        if recuperado.documento.tipo == "plataforma":
+            continue
         metadata = recuperado.documento.metadata
         clave = (recuperado.documento.tipo, str(metadata.get("id") or recuperado.documento.id))
         if clave in vistos:

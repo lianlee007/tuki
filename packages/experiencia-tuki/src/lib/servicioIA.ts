@@ -1,9 +1,9 @@
 /**
- * Descripción: Servicio de IA que habla con el AI Gateway de TukiTuki.
+ * Descripción: Servicio de IA del panel. Habla con el AI Gateway de TukiTuki,
+ * que usa Ollama local.
  *
- * La clave de Groq ya no viaja en el bundle: el gateway la guarda en el
- * servidor, autentica con Supabase cuando hay sesión, aplica rate limit y
- * decide los modelos con fallback.
+ * No hay claves de terceros en el bundle: el gateway valida la sesión cuando
+ * existe, aplica el límite de solicitudes y decide el modelo.
  */
 import { ENV } from '../constantes';
 import { leerTokens } from '@tuki/auth-react';
@@ -88,7 +88,7 @@ const mensajeDeError = (status: number, data: ErrorGateway | null): string => {
   return mensaje || `Error de IA (${status}).`;
 };
 
-export const generarContenidoGroq = async (
+export const generarTextoIA = async (
   mensajeUsuario: string,
   mensajeSistema: string = SISTEMA_POR_DEFECTO
 ): Promise<string> => {
