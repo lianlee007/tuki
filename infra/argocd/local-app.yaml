@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tukituki-ssh
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  description: TukiTuki en el clúster local de ArgoCD
+  sourceRepos:
+    - git@github.com:lianlee007/tuki.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: tukituki
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tukituki-ssh
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: tukituki
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - nombre: local
+            overlay: argocd-local
+            servidor: https://kubernetes.default.svc
+  template:
+    metadata:
+      name: 'tukituki-{{.nombre}}'
+      labels:
+        app.kubernetes.io/part-of: tukituki
+        entorno: '{{.overlay}}'
+    spec:
+      project: tukituki-ssh
+      source:
+        repoURL: git@github.com:lianlee007/tuki.git
+        targetRevision: main
+        path: 'infra/k8s/overlays/{{.overlay}}'
+      destination:
+        server: '{{.servidor}}'
+        namespace: tukituki
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+      revisionHistoryLimit: 10

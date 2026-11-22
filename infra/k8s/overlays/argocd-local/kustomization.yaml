@@ -1,0 +1,155 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Overlay para probar el proyecto con ArgoCD en un clúster local (kind/k3d).
+#
+# Es independiente del overlay `local` para no arrastrar los ServiceMonitor y
+# PrometheusRule: este clúster de laboratorio no instala el Prometheus Operator.
+# Adapta además:
+#   - las URLs públicas al dominio nip.io que resuelve a 127.0.0.1
+#   - el Ingress a HTTP en el puerto 8091 del host (sin TLS)
+#   - la política de imágenes a IfNotPresent, para usar las imágenes cargadas
+#     con `kind load docker-image` en lugar de intentar descargarlas de GHCR
+namespace: tukituki
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/lianlee007/tukituki-identidad
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-restaurantes
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-media
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-pedidos
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-resenas
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-admin-service
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-ai-gateway
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-web-comensal
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-web-panel
+    newTag: local
+  - name: ghcr.io/lianlee007/tukituki-web-admin
+    newTag: local
+
+replicas:
+  - name: restaurantes-service
+    count: 1
+  - name: pedidos-service
+    count: 1
+  - name: web-comensal
+    count: 1
+
+patches:
+  # Las imágenes :local se cargan en el nodo; no hay que descargarlas.
+  - target:
+      kind: Deployment
+      name: "identidad-service|restaurantes-service|media-service|pedidos-service|resenas-service|admin-service|ai-gateway|web-comensal|panel-restaurante|admin-plataforma"
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+
+  # En el clúster local no hay metrics-server, así que los HPA quedan siempre
+  # en Degraded. Se eliminan: el laboratorio corre con una réplica fija.
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: restaurantes-service
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: restaurantes-service
+      $patch: delete
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: pedidos-service
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: pedidos-service
+      $patch: delete
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: web-comensal
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: web-comensal
+      $patch: delete
+
+  # Los navegadores entran por tukituki.127.0.0.1.nip.io:8091.
+  - target:
+      kind: ConfigMap
+      name: tukituki-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: tukituki-config
+      data:
+        CORS_ORIGENES: >-
+          http://tukituki.127.0.0.1.nip.io:8091,http://panel.127.0.0.1.nip.io:8091,http://admin.127.0.0.1.nip.io:8091
+        AI_CORS_ORIGINS: >-
+          http://tukituki.127.0.0.1.nip.io:8091,http://panel.127.0.0.1.nip.io:8091,http://admin.127.0.0.1.nip.io:8091
+        S3_PUBLIC_URL: http://api.127.0.0.1.nip.io:8091/tuki-media
+
+  - target:
+      kind: ConfigMap
+      name: tukituki-frontend-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: tukituki-frontend-config
+      data:
+        config.js: |
+          window.__TUKI_CONFIG__ = {
+            identidad: 'http://api.127.0.0.1.nip.io:8091',
+            restaurantes: 'http://api.127.0.0.1.nip.io:8091',
+            media: 'http://api.127.0.0.1.nip.io:8091',
+            pedidos: 'http://api.127.0.0.1.nip.io:8091',
+            resenas: 'http://api.127.0.0.1.nip.io:8091',
+            admin: 'http://api.127.0.0.1.nip.io:8091',
+            adminPanel: 'http://admin.127.0.0.1.nip.io:8091',
+            panel: 'http://panel.127.0.0.1.nip.io:8091',
+            web: 'http://tukituki.127.0.0.1.nip.io:8091',
+            comensal: 'http://tukituki.127.0.0.1.nip.io:8091',
+            ai: 'http://api.127.0.0.1.nip.io:8091'
+          };
+
+  # Ingress HTTP para el clúster de laboratorio.
+  - target:
+      kind: Ingress
+      name: tukituki
+    patch: |-
+      - op: remove
+        path: /spec/tls
+      - op: replace
+        path: /spec/rules/0/host
+        value: tukituki.127.0.0.1.nip.io
+      - op: replace
+        path: /spec/rules/1/host
+        value: panel.127.0.0.1.nip.io
+      - op: replace
+        path: /spec/rules/2/host
+        value: admin.127.0.0.1.nip.io
+      - op: replace
+        path: /spec/rules/3/host
+        value: api.127.0.0.1.nip.io
+      # Las imágenes de RustFS se sirven por el mismo host del API.
+      - op: add
+        path: /spec/rules/3/http/paths/-
+        value:
+          path: /tuki-media
+          pathType: Prefix
+          backend:
+            service:
+              name: rustfs
+              port:
+                name: api

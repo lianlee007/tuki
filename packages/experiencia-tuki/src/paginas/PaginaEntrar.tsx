@@ -15,7 +15,12 @@ import { SelectorTipoCuenta } from '../componentes/autenticacion/SelectorTipoCue
  * desde el primer momento: al confirmar el correo no aparece un "Mi
  * Restaurante" vacío en el panel.
  */
-export default function PaginaEntrar() {
+interface PaginaEntrarProps {
+  /** Destino de la flecha «Volver». En el panel apunta al sitio público. */
+  volverA?: string;
+}
+
+export default function PaginaEntrar({ volverA = '/' }: PaginaEntrarProps) {
   const [params, setParams] = useSearchParams();
   // El aviso del carrito usa `?modo=registro`; `?mode=register` se mantiene por
   // compatibilidad con enlaces antiguos.
@@ -42,7 +47,7 @@ export default function PaginaEntrar() {
         descripcion="Entra a tu cuenta de comensal para guardar tu carrito y pedir a los restaurantes de Popayán."
       />
       <LayoutAuth
-        volverA="/"
+        volverA={volverA}
         etiqueta="Cuenta de comensal"
         titulo={isLogin ? 'Entra a pedir' : 'Crea tu cuenta de comensal'}
         subtitulo={

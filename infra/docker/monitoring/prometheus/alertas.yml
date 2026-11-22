@@ -1,8 +1,8 @@
-# Registro de SLI y alertas del stack de Dokploy.
+# Registro de SLI y alertas del stack local de TukiTuki.
 #
 # Es el equivalente a infra/observability/prometheusrule-servicios.yaml, pero
-# sin kube-state-metrics: los reinicios se detectan con cAdvisor y los targets
-# con la etiqueta `job` en lugar de `namespace`/`pod`.
+# sin kube-state-metrics: los targets se identifican con la etiqueta `job` en
+# lugar de `namespace`/`pod`.
 
 groups:
   - name: tukituki.registro
@@ -97,7 +97,7 @@ groups:
           team: tukituki
         annotations:
           summary: "Grafana no responde"
-          description: "Traefik devuelve 502 mientras Grafana está caído o reiniciándose."
+          description: "Abre http://localhost:3000: Grafana está caído o reiniciándose."
 
       - alert: ObservabilidadGrafanaMemoriaAlta
         expr: process_resident_memory_bytes{job="grafana"} > 640 * 1024 * 1024
