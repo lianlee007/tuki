@@ -123,7 +123,7 @@ export const EstiloCompacta: React.FC<PlantillaMenuProps> = ({
 
                         <span
                           className="shrink-0 rounded-full px-2 py-0.5 text-[15px] font-bold tabular-nums"
-                          style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                          style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                         >
                           ${p.precio.toLocaleString()}
                         </span>

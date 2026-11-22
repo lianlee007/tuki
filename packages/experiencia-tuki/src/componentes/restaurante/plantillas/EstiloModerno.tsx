@@ -72,7 +72,7 @@ export const EstiloModerno: React.FC<PlantillaMenuProps> = ({
                       </h3>
                       <span
                         className="shrink-0 rounded-full px-2.5 py-1 font-bold text-[15px] sm:text-base tabular-nums"
-                        style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                        style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                       >
                         ${p.precio.toLocaleString()}
                       </span>

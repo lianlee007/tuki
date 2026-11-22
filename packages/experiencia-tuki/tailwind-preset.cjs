@@ -47,6 +47,12 @@ const preset = {
               'accent-solid': 'rgb(var(--af-accent-solid-rgb) / <alpha-value>)',
               'accent-soft': 'rgb(var(--af-accent-soft-rgb) / <alpha-value>)',
               'accent-hover': 'rgb(var(--af-accent-hover-rgb) / <alpha-value>)',
+              /* El APOYO de la paleta. La marca va en las acciones; el apoyo en
+                 la información (precios, sellos, detalles). */
+              secondary: 'rgb(var(--af-secondary-rgb) / <alpha-value>)',
+              'secondary-text': 'rgb(var(--af-secondary-text-rgb) / <alpha-value>)',
+              'secondary-soft': 'rgb(var(--af-secondary-soft-rgb) / <alpha-value>)',
+              'secondary-solid': 'rgb(var(--af-secondary-solid-rgb) / <alpha-value>)',
               border: 'rgb(var(--af-border-rgb) / <alpha-value>)',
               success: 'rgb(var(--af-success-rgb) / <alpha-value>)',
               danger: 'rgb(var(--af-danger-rgb) / <alpha-value>)',

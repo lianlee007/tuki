@@ -172,7 +172,7 @@ export const Portada: React.FC<PortadaProps> = ({
         className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold af-pulsar"
         style={{ backgroundColor: paleta.surface, border: `1px solid ${paleta.border}`, color: paleta.text }}
       >
-        <PenLine size={12} aria-hidden="true" /> Escribir reseña
+        <PenLine size={12} aria-hidden="true" style={{ color: paleta.secondaryText }} /> Escribir reseña
       </button>
 
       <button
@@ -181,7 +181,7 @@ export const Portada: React.FC<PortadaProps> = ({
         className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold af-pulsar"
         style={{ backgroundColor: paleta.surface, border: `1px solid ${paleta.border}`, color: paleta.text }}
       >
-        <Share2 size={12} aria-hidden="true" /> {compartido ? 'Copiado' : 'Compartir'}
+        <Share2 size={12} aria-hidden="true" style={{ color: paleta.secondaryText }} /> {compartido ? 'Copiado' : 'Compartir'}
       </button>
     </div>
   );
@@ -199,11 +199,11 @@ export const Portada: React.FC<PortadaProps> = ({
     >
       {restaurante.direccion && (
         <span className="inline-flex items-center gap-1.5">
-          <MapPin size={13} aria-hidden="true" /> {restaurante.direccion}
+          <MapPin size={13} aria-hidden="true" style={{ color: paleta.secondaryText }} /> {restaurante.direccion}
         </span>
       )}
       <span className="inline-flex items-center gap-1.5">
-        <Clock size={13} aria-hidden="true" /> {estado.mensaje || (estado.abierto ? 'Abierto ahora' : 'Cerrado')}
+        <Clock size={13} aria-hidden="true" style={{ color: paleta.secondaryText }} /> {estado.mensaje || (estado.abierto ? 'Abierto ahora' : 'Cerrado')}
       </span>
       {ciudad && <span>{ciudad}</span>}
     </div>
@@ -227,7 +227,7 @@ export const Portada: React.FC<PortadaProps> = ({
             <div className="min-w-0">
               <div className="mb-6 flex items-center gap-3">
                 <Logo />
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: paleta.accentText }}>
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: paleta.secondaryText }}>
                   {restaurante.municipio || restaurante.ciudad || 'Restaurante'}
                 </span>
               </div>
@@ -263,7 +263,7 @@ export const Portada: React.FC<PortadaProps> = ({
       <header className="pt-14 sm:pt-20" style={{ backgroundColor: paleta.bg }}>
         <div className={ANCHO}>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.34em]" style={{ color: paleta.muted }}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.34em]" style={{ color: paleta.secondaryText }}>
               {ciudad || 'Restaurante'}
             </span>
             <Estado />
@@ -336,7 +336,7 @@ export const Portada: React.FC<PortadaProps> = ({
                 </span>
                 <Estrellas valor={promedio} tamano={14} />
               </div>
-              <button type="button" onClick={onResena} className="mt-2 text-[11px] font-semibold underline underline-offset-4" style={{ color: paleta.accentText }}>
+              <button type="button" onClick={onResena} className="mt-2 text-[11px] font-semibold underline underline-offset-4" style={{ color: paleta.secondaryText }}>
                 Escribir una reseña
               </button>
             </div>
@@ -382,7 +382,7 @@ export const Portada: React.FC<PortadaProps> = ({
             </div>
             <Meta />
             {saludo && (
-              <p className="mt-5 inline-flex items-start gap-2 rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed" style={{ backgroundColor: paleta.accentSoft, color: paleta.accentText }}>
+              <p className="mt-5 inline-flex items-start gap-2 rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed" style={{ backgroundColor: paleta.secondarySoft, color: paleta.secondaryText }}>
                 <Sparkles size={13} className="mt-0.5 shrink-0" aria-hidden="true" /> {saludo}
               </p>
             )}
@@ -445,7 +445,7 @@ export const Portada: React.FC<PortadaProps> = ({
             <div className="min-w-0">
               <div className="mb-3 flex items-center gap-2">
                 <Logo tamano="h-9 w-9" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: paleta.muted }}>
+                <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: paleta.secondaryText }}>
                   {ciudad || 'Restaurante'}
                 </span>
               </div>
@@ -467,11 +467,11 @@ export const Portada: React.FC<PortadaProps> = ({
 
             <div
               className="flex w-[62%] shrink-0 snap-start flex-col justify-between rounded-[26px] p-5 sm:w-[27%]"
-              style={{ backgroundColor: paleta.accentSoft }}
+              style={{ backgroundColor: paleta.secondarySoft }}
             >
-              <Clock size={18} style={{ color: paleta.accentText }} />
+              <Clock size={18} style={{ color: paleta.secondaryText }} />
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: paleta.accentText }}>Hoy</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: paleta.secondaryText }}>Hoy</p>
                 <p className="mt-1 text-sm font-semibold leading-snug" style={{ color: paleta.text }}>
                   {estado.mensaje || (estado.abierto ? 'Abierto ahora' : 'Cerrado')}
                 </p>
