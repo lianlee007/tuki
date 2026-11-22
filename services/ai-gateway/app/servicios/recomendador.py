@@ -14,7 +14,12 @@ import time
 from typing import Any, Protocol
 
 from app.config import Settings
-from app.dominio.conocimiento import Fuente, Recuperado, ResultadoRecomendacion
+from app.dominio.conocimiento import (
+    Documento,
+    Fuente,
+    Recuperado,
+    ResultadoRecomendacion,
+)
 from app.dominio.errores import ErrorIA
 from app.dominio.modelos import ResultadoIA
 from app.dominio.recuperacion import (
@@ -140,6 +145,48 @@ def _tiene_ingrediente(texto: str, ingrediente: str) -> bool:
     )
 
 
+# Categorías que el catálogo usa para lo dulce. "salado" las excluye y "dulce"
+# se queda solo con ellas.
+_CATEGORIAS_DULCES = {
+    "postres",
+    "reposteria",
+    "cafe",
+    "antojos",
+    "antojitos",
+    "bebidas",
+}
+
+
+def _sabor_solicitado(consulta: str) -> str | None:
+    """Detecta si la persona pidió algo salado o algo dulce."""
+    normalizada = normalizar(consulta)
+    if re.search(r"\bsalad[oa]s?\b", normalizada):
+        return "salado"
+    if re.search(r"\bdulces?\b|\bpostres?\b", normalizada):
+        return "dulce"
+    return None
+
+
+def _cumple_sabor(documento: Documento, sabor: str) -> bool:
+    """Filtra platos por categoría dulce/salada; los restaurantes pasan."""
+    if documento.tipo != "plato":
+        return True
+    categoria = normalizar(str(documento.metadata.get("categoria") or ""))
+    es_dulce = categoria in _CATEGORIAS_DULCES
+    return es_dulce if sabor == "dulce" else not es_dulce
+
+
+def _etiqueta_filtro(ingrediente: str | None, sabor: str | None) -> str:
+    partes: list[str] = []
+    if ingrediente:
+        partes.append(f"con {ingrediente}")
+    if sabor == "salado":
+        partes.append("salados")
+    elif sabor == "dulce":
+        partes.append("dulces")
+    return " y ".join(partes) if partes else "que coincidan"
+
+
 class ProveedorChat(Protocol):
     async def generate(
         self,
@@ -216,39 +263,57 @@ class ServicioRecomendador:
             excluir_alergeno=filtros.excluir_alergeno,
         )
 
+        # Si la pregunta nombra un ingrediente o un sabor, se piden más
+        # candidatos para que el filtro no deje la lista vacía.
+        ingrediente = _ingrediente_solicitado(consulta)
+        sabor = _sabor_solicitado(consulta)
+        top_k = self._settings.rag_top_k
+        candidatos = self._settings.rag_candidatos
+        if ingrediente or sabor:
+            top_k = max(top_k, 16)
+            candidatos = max(candidatos, 60)
+
         vector = await self._vector_de_consulta(consulta)
         recuperados = indice.buscar(
             consulta,
             vector_consulta=vector,
             filtros=filtros,
-            top_k=self._settings.rag_top_k,
-            candidatos=self._settings.rag_candidatos,
+            top_k=top_k,
+            candidatos=candidatos,
             mmr_lambda=self._settings.rag_mmr_lambda,
             umbral_semantico=self._settings.rag_umbral_semantico,
         )
         recuperacion_ms = int((time.perf_counter() - inicio) * 1000)
 
-        # Si la pregunta nombra un ingrediente, el contexto se limita a los
-        # platos que lo llevan. Sin esto, la diversidad por restaurante cuela
-        # platos sin ese ingrediente y el modelo termina recomendando otro.
-        ingrediente = _ingrediente_solicitado(consulta)
+        # El contexto se limita a los platos que cumplen el ingrediente o el
+        # sabor. Sin esto, la diversidad por restaurante cuela postres en una
+        # pregunta salada y el modelo termina recomendando dulce.
         if ingrediente:
             recuperados = [
                 recuperado
                 for recuperado in recuperados
                 if _tiene_ingrediente(recuperado.documento.texto, ingrediente)
             ]
+        if sabor:
+            recuperados = [
+                recuperado
+                for recuperado in recuperados
+                if _cumple_sabor(recuperado.documento, sabor)
+            ]
+
+        if ingrediente or sabor:
+            etiqueta = _etiqueta_filtro(ingrediente, sabor)
             if not recuperados:
                 return self._respuesta_directa(
-                    f"No encontré platos con {ingrediente} en el catálogo. "
+                    f"No encontré platos {etiqueta} en el catálogo. "
                     "¿Quieres probar con otro ingrediente o plato?",
                     inicio,
                     recuperacion_ms,
                 )
-            # Con un ingrediente explícito, la lista factual es más confiable
-            # que un modelo de 1.5B: garantiza que todos los platos lo lleven.
-            return self._respuesta_ingrediente(
-                recuperados, ingrediente, inicio, recuperacion_ms
+            # Con un filtro explícito, la lista factual es más confiable que un
+            # modelo de 1.5B: garantiza que todos los platos cumplan.
+            return self._respuesta_lista_filtrada(
+                recuperados, etiqueta, inicio, recuperacion_ms
             )
 
         if not recuperados:
@@ -435,21 +500,21 @@ class ServicioRecomendador:
             contexto_tokens=0,
         )
 
-    def _respuesta_ingrediente(
+    def _respuesta_lista_filtrada(
         self,
         recuperados: list[Recuperado],
-        ingrediente: str,
+        etiqueta: str,
         inicio: float,
         recuperacion_ms: int,
     ) -> ResultadoRecomendacion:
-        """Lista factual de los platos que llevan el ingrediente pedido."""
+        """Lista factual de los platos que cumplen el filtro pedido."""
         platos = [
             recuperado
             for recuperado in recuperados
             if recuperado.documento.tipo == "plato"
         ][:4]
         fuentes = _fuentes_de(platos or recuperados)
-        partes = [f"Encontré estos platos con {ingrediente}:"]
+        partes = [f"Encontré estos platos {etiqueta}:"]
         for posicion, fuente in enumerate(fuentes, start=1):
             detalle = f"{fuente.nombre} de {fuente.restaurante}"
             if fuente.precio is not None:
