@@ -79,6 +79,66 @@ SIN_DATOS = (
 _SALUDOS = {"hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey"}
 _SALIDAS = {"gracias", "muchas gracias", "chao", "adios", "hasta luego"}
 
+# Ingredientes que se pueden pedir de forma explícita. El filtro es deliberadamente
+# conservador: si la pregunta no nombra ninguno, la búsqueda sigue siendo semántica.
+_INGREDIENTES = (
+    "pollo",
+    "gallina",
+    "carne",
+    "res",
+    "cerdo",
+    "pescado",
+    "mojarra",
+    "mariscos",
+    "queso",
+    "maiz",
+    "papa",
+    "yuca",
+    "platano",
+    "huevo",
+    "frijol",
+    "arroz",
+    "pasta",
+    "chocolate",
+    "cafe",
+    "fresa",
+    "mora",
+    "mani",
+    "lechuga",
+    "tomate",
+)
+_SINONIMOS = {
+    "pollo": ("pollo", "gallina"),
+    "carne": ("carne", "res", "cerdo", "pollo", "gallina"),
+    "pescado": ("pescado", "mojarra"),
+    "maiz": ("maiz", "mazorca", "choclo"),
+    "frijol": ("frijol", "frijoles"),
+    "platano": ("platano", "patacon"),
+}
+
+
+def _coincide(token: str, texto: str) -> bool:
+    """Coincidencia por palabra, con plural simple (papa/papas, res/reses)."""
+    return re.search(rf"\b{re.escape(token)}(?:s|es)?\b", texto) is not None
+
+
+def _ingrediente_solicitado(consulta: str) -> str | None:
+    """Primer ingrediente explícito de la pregunta, si lo hay."""
+    normalizada = normalizar(consulta)
+    for ingrediente in _INGREDIENTES:
+        if _coincide(ingrediente, normalizada):
+            return ingrediente
+    return None
+
+
+def _tiene_ingrediente(texto: str, ingrediente: str) -> bool:
+    """¿El plato menciona el ingrediente (o un sinónimo) en su ficha?"""
+    normalizado = normalizar(texto)
+    return any(
+        _coincide(token, normalizado)
+        for token in _SINONIMOS.get(ingrediente, (ingrediente,))
+    )
+
 
 class ProveedorChat(Protocol):
     async def generate(
@@ -167,6 +227,30 @@ class ServicioRecomendador:
             umbral_semantico=self._settings.rag_umbral_semantico,
         )
         recuperacion_ms = int((time.perf_counter() - inicio) * 1000)
+
+        # Si la pregunta nombra un ingrediente, el contexto se limita a los
+        # platos que lo llevan. Sin esto, la diversidad por restaurante cuela
+        # platos sin ese ingrediente y el modelo termina recomendando otro.
+        ingrediente = _ingrediente_solicitado(consulta)
+        if ingrediente:
+            recuperados = [
+                recuperado
+                for recuperado in recuperados
+                if _tiene_ingrediente(recuperado.documento.texto, ingrediente)
+            ]
+            if not recuperados:
+                return self._respuesta_directa(
+                    f"No encontré platos con {ingrediente} en el catálogo. "
+                    "¿Quieres probar con otro ingrediente o plato?",
+                    inicio,
+                    recuperacion_ms,
+                )
+            # Con un ingrediente explícito, la lista factual es más confiable
+            # que un modelo de 1.5B: garantiza que todos los platos lo lleven.
+            return self._respuesta_ingrediente(
+                recuperados, ingrediente, inicio, recuperacion_ms
+            )
+
         if not recuperados:
             return self._respuesta_directa(SIN_DATOS, inicio, recuperacion_ms)
         if _hay_filtros_estrictos(filtros):
@@ -192,6 +276,10 @@ class ServicioRecomendador:
         )
         fuentes = _fuentes_de(usados)
         contenido = _quitar_afirmaciones_alergenos(resultado.content, fuentes)
+        # El modelo de 1.5B a veces pide aclaración en vez de recomendar. Si no
+        # nombró ningún plato del contexto, se devuelve la lista factual.
+        if not _menciona_alguna(contenido, usados):
+            return self._respuesta_lista(recuperados, filtros, inicio)
         nota = _nota_alergenos(fuentes)
         if nota:
             contenido = f"{contenido}\n\n{nota}"
@@ -344,6 +432,45 @@ class ServicioRecomendador:
             attempts=0,
             latency_ms=latencia,
             recuperacion_ms=latencia,
+            contexto_tokens=0,
+        )
+
+    def _respuesta_ingrediente(
+        self,
+        recuperados: list[Recuperado],
+        ingrediente: str,
+        inicio: float,
+        recuperacion_ms: int,
+    ) -> ResultadoRecomendacion:
+        """Lista factual de los platos que llevan el ingrediente pedido."""
+        platos = [
+            recuperado
+            for recuperado in recuperados
+            if recuperado.documento.tipo == "plato"
+        ][:4]
+        fuentes = _fuentes_de(platos or recuperados)
+        partes = [f"Encontré estos platos con {ingrediente}:"]
+        for posicion, fuente in enumerate(fuentes, start=1):
+            detalle = f"{fuente.nombre} de {fuente.restaurante}"
+            if fuente.precio is not None:
+                detalle += f" por {_formato_cop(fuente.precio)}"
+            partes.append(f"{detalle} [P{posicion}].")
+        partes.append("¿Quieres que te cuente más de alguno?")
+        contenido = " ".join(partes)
+        nota = _nota_alergenos(fuentes)
+        if nota:
+            contenido += f"\n\n{nota}"
+        latencia = int((time.perf_counter() - inicio) * 1000)
+        return ResultadoRecomendacion(
+            content=contenido,
+            model=self._settings.modelo_chat,
+            fuentes=tuple(fuentes),
+            prompt_tokens=0,
+            completion_tokens=0,
+            total_tokens=0,
+            attempts=0,
+            latency_ms=latencia,
+            recuperacion_ms=recuperacion_ms,
             contexto_tokens=0,
         )
 
@@ -548,6 +675,16 @@ def _fuentes_de(recuperados: list[Recuperado]) -> list[Fuente]:
             )
         )
     return fuentes
+
+
+def _menciona_alguna(texto: str, recuperados: list[Recuperado]) -> bool:
+    """¿La respuesta nombra al menos un plato del contexto?"""
+    normalizado = normalizar(texto)
+    for recuperado in recuperados:
+        nombre = normalizar(str(recuperado.documento.metadata.get("nombre") or ""))
+        if nombre and nombre in normalizado:
+            return True
+    return False
 
 
 def _quitar_afirmaciones_alergenos(texto: str, fuentes: list[Fuente]) -> str:
