@@ -142,7 +142,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
       nombre: platillo.nombre || '',
       descripcion: platillo.descripcion || '',
       precio: platillo.precio || 0,
-      categoria: platillo.categoria || '',
+      categoria: platillo.categoria || categoriasDisponibles[0] || '',
       imagen_url: platillo.imagen_url || '',
       ingredientes: normalizarListaTexto(platillo.ingredientes),
       visible: platillo.visible !== false,
@@ -443,7 +443,9 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
           htmlFor={`${id}-categoria`}
           requerido
           error={errors.categoria?.message}
-          ayuda="Elige una de las categorías que ya tiene tu carta."
+          ayuda={categoriasDisponibles.length > 0
+            ? 'Elige una de las categorías que ya tiene tu carta.'
+            : 'Tu carta todavía no tiene categorías. Crea una antes de guardar el plato.'}
           accion={haySenalesParaCategoria && categoriasDisponibles.length > 0 ? (
             <BotonIA onClick={iaCategoria} cargando={loadingAction === 'categoria'} disabled={ocupado} icono={<Wand2 size={13} />}>
               Deducir
@@ -456,7 +458,6 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
             {...register('categoria')}
             className={`input-af h-11 text-sm ${errors.categoria ? 'border-af-danger focus:border-af-danger' : ''}`}
           >
-            <option value="">Sin categoría</option>
             {categoriasDisponibles.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
