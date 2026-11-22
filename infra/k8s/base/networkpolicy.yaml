@@ -23,6 +23,30 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx
 ---
+# El gateway de IA lee el catálogo y las reseñas de los servicios internos.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: permitir-ia-servicios
+  namespace: tukituki
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: ["restaurantes-service", "resenas-service"]
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ai-gateway
+      ports:
+        - protocol: TCP
+          port: 3002
+        - protocol: TCP
+          port: 3005
+---
 # Prometheus necesita raspar /metrics de los pods del namespace.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -112,6 +136,20 @@ spec:
       ports:
         - protocol: TCP
           port: 3002
+    - to:
+        - podSelector:
+            matchLabels:
+              app: resenas-service
+      ports:
+        - protocol: TCP
+          port: 3005
+    # Ollama corre en el equipo anfitrión: la IA es local, no de Groq.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 11434
     # Trazas y métricas hacia el OpenTelemetry Collector.
     - to:
         - namespaceSelector:
