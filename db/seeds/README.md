@@ -17,6 +17,11 @@ psql postgresql://tuki_identidad:tuki_identidad_dev@localhost:5432/tuki_identida
 psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
   -f db/seeds/restaurantes-demo.sql
 
+# Descripciones, ingredientes y alérgenos de los 61 platos demo. Es lo que
+# alimenta el índice de la IA local para responder por ingredientes.
+psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
+  -f db/seeds/platillos-descripciones.sql
+
 # Reseñas demo: idempotente (UUID fijos). Incluye respuestas del dueño y fotos
 # reales de los platos ya alojadas en el almacén local.
 psql postgresql://tuki_resenas:tuki_resenas_dev@localhost:5432/tuki_resenas \
