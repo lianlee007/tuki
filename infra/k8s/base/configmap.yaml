@@ -19,12 +19,15 @@ data:
   AI_ENVIRONMENT: production
   AI_AUTH_MODE: local
   AI_ALLOW_ANON: "true"
-  AI_GROQ_MODELS: openai/gpt-oss-120b,openai/gpt-oss-20b,allam-2-7b
+  # La IA es local: el gateway llama a Ollama en el equipo anfitrión.
+  AI_OLLAMA_URL: http://host.docker.internal:11434
+  AI_OLLAMA_MODELO_CHAT: tuki-chef
+  AI_OLLAMA_MODELO_EMBEDDINGS: nomic-embed-text
   AI_CORS_ORIGINS: >-
     https://tukituki.example.com,https://panel.tukituki.example.com,https://admin.tukituki.example.com
   # OpenTelemetry: los servicios Node y el AI Gateway envían trazas al
   # colector; si el endpoint no existe, la instrumentación queda apagada.
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4318
   OTEL_SERVICE_NAMESPACE: tukituki
-  AI_OTEL_ENABLED: "true"
+  AI_OTEL_ENABLED: "false"
   AI_OTEL_ENDPOINT: http://otel-collector.monitoring.svc.cluster.local:4318/v1/traces

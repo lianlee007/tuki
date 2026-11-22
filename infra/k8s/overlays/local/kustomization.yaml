@@ -40,7 +40,7 @@ replicas:
 patches:
   - target:
       kind: Deployment
-      name: ".*-service|ai-gateway"
+      name: ".*-service"
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/imagePullPolicy
