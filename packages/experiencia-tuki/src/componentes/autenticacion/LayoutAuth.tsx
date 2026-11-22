@@ -33,6 +33,10 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   etiqueta,
   puntos,
 }) => {
+  // Un destino absoluto (el sitio público del panel) necesita un enlace
+  // normal: `Link` lo trataría como una ruta interna.
+  const esUrlExterna = /^https?:\/\//i.test(volverA);
+
   return (
     <div className="min-h-dvh bg-[#FBF8F4] text-af-ink dark:bg-[#131110]">
       <div className="grid min-h-dvh w-full lg:grid-cols-[1.05fr_1fr]">
@@ -95,14 +99,25 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
         {/* Columna del formulario. */}
         <main className="relative flex min-h-dvh flex-col px-5 pb-8 pt-4 sm:px-9 lg:border-l lg:border-black/[0.06] lg:px-14 lg:py-10 dark:lg:border-white/10">
           <div className="flex items-center justify-between">
-            <Link
-              to={volverA}
-              aria-label="Volver"
-              title="Volver"
-              className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-white/70 text-af-ink-secondary transition-colors hover:text-af-ink dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white ${FOCO}`}
-            >
-              <ArrowLeft size={18} aria-hidden="true" />
-            </Link>
+            {esUrlExterna ? (
+              <a
+                href={volverA}
+                aria-label="Volver"
+                title="Volver"
+                className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-white/70 text-af-ink-secondary transition-colors hover:text-af-ink dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white ${FOCO}`}
+              >
+                <ArrowLeft size={18} aria-hidden="true" />
+              </a>
+            ) : (
+              <Link
+                to={volverA}
+                aria-label="Volver"
+                title="Volver"
+                className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-white/70 text-af-ink-secondary transition-colors hover:text-af-ink dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white ${FOCO}`}
+              >
+                <ArrowLeft size={18} aria-hidden="true" />
+              </Link>
+            )}
 
             <Link
               to="/"

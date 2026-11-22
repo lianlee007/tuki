@@ -27,9 +27,11 @@
     "iac:fmt": "tofu -chdir=infra/opentofu fmt -recursive",
     "iac:validate": "tofu -chdir=infra/opentofu init -backend=false -input=false && tofu -chdir=infra/opentofu validate",
     "iac:plan": "tofu -chdir=infra/opentofu plan -var-file=environments/local.tfvars",
-    "infra:up": "docker compose -f infra/docker/docker-compose.yml up -d",
-    "infra:down": "docker compose -f infra/docker/docker-compose.yml down",
-    "infra:logs": "docker compose -f infra/docker/docker-compose.yml logs -f"
+    "infra:up": "docker compose -f infra/docker/docker-compose.yml up -d && docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml up -d",
+    "infra:down": "docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml down && docker compose -f infra/docker/docker-compose.yml down",
+    "infra:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
+    "infra:monitoring:up": "docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml up -d",
+    "infra:monitoring:down": "docker compose -f infra/docker/monitoring/docker-compose.monitoring.yml down"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
