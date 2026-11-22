@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { UsuarioHeredado as User } from '../../../contexto/ContextoAutenticacion';
 import { Restaurante, Tema, Categoria, Platillo } from '../../../tipos';
 import { apiRestaurante } from '../infraestructura/apiRestaurante';
@@ -12,12 +12,31 @@ export const useDatosPanel = (user: User | null) => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [platillos, setPlatillos] = useState<Platillo[]>([]);
   const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error', texto: string } | null>(null);
+  const temporizadorMensaje = useRef<number | null>(null);
+
+  const cerrarMensaje = () => {
+    if (temporizadorMensaje.current !== null) {
+      window.clearTimeout(temporizadorMensaje.current);
+      temporizadorMensaje.current = null;
+    }
+    setMensaje(null);
+  };
 
   const mostrarMensaje = (tipo: 'exito' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
+    // Un aviso nuevo reemplaza al anterior: sin esto, el temporizador viejo
+    // cerraba el mensaje que acababa de llegar.
+    if (temporizadorMensaje.current !== null) window.clearTimeout(temporizadorMensaje.current);
     // Los errores necesitan más tiempo: hay que leerlos y corregir el campo.
-    setTimeout(() => setMensaje(null), tipo === 'error' ? 6000 : 3000);
+    temporizadorMensaje.current = window.setTimeout(() => {
+      setMensaje(null);
+      temporizadorMensaje.current = null;
+    }, tipo === 'error' ? 6000 : 3000);
   };
+
+  useEffect(() => () => {
+    if (temporizadorMensaje.current !== null) window.clearTimeout(temporizadorMensaje.current);
+  }, []);
 
   const cargarDatos = async () => {
     if (!user) return;
@@ -79,6 +98,7 @@ export const useDatosPanel = (user: User | null) => {
     setPlatillos,
     mensaje,
     mostrarMensaje,
+    cerrarMensaje,
     cargarDatos
   };
 };

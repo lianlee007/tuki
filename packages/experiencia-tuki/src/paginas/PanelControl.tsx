@@ -2,13 +2,13 @@
  * Descripción: Panel principal donde el usuario gestiona su restaurante, menú y diseño.
  * Reforma Apple: tipografía sistema, planos, sin neumorfismo, blur en barras flotantes.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../contexto/ContextoAutenticacion';
 import { useTema } from '../contexto/ContextoTema';
 import { subirImagen, generarContenidoIA } from '../lib/servicios';
 import { acentoPanel, acentoRecordado, recordarAcento } from '../lib/color';
 import { Restaurante, Tema, Platillo } from '../tipos';
-import { Menu, ArrowLeft, Trash2, AlertTriangle, Check, LogOut } from 'lucide-react';
+import { Menu, ArrowLeft, Trash2, AlertTriangle, Check, LogOut, Eye, X } from 'lucide-react';
 // @ts-ignore
 import { useNavigate } from 'react-router-dom';
 import { PlantillaRestaurante } from '../componentes/restaurante/PlantillaRestaurante';
@@ -28,7 +28,6 @@ import {
   useDatosPanel,
   type EstadoPlatillo,
 } from '../modulos/menu';
-import { Contenedor, RobotIA } from '../componentes/ui';
 
 export const formatError = (e: any): string => {
   if (!e) return "Error desconocido";
@@ -40,11 +39,48 @@ export const formatError = (e: any): string => {
   return String(e);
 };
 
+/** Título y descripción de cada apartado: una sola fuente para la cabecera. */
+const SECCIONES: Record<
+  'info' | 'tema' | 'menu' | 'difusion' | 'resenas' | 'pedidos',
+  { eyebrow: string; titulo: string; descripcion: string }
+> = {
+  info: {
+    eyebrow: 'Tu negocio',
+    titulo: 'Información del restaurante',
+    descripcion: 'Identidad, contacto y horarios. Es lo que ve el comensal cuando entra a tu menú.',
+  },
+  menu: {
+    eyebrow: 'Carta',
+    titulo: 'Menú',
+    descripcion: 'Platillos, categorías y disponibilidad. Lo que está apagado no se muestra.',
+  },
+  pedidos: {
+    eyebrow: 'Operación',
+    titulo: 'Pedidos',
+    descripcion: 'Lo que ha llegado hoy y lo que todavía falta por atender.',
+  },
+  resenas: {
+    eyebrow: 'Comunidad',
+    titulo: 'Reseñas',
+    descripcion: 'Lo que dicen quienes ya comieron, con su respuesta en un toque.',
+  },
+  tema: {
+    eyebrow: 'Identidad visual',
+    titulo: 'Apariencia',
+    descripcion: 'Colores, tipografía y plantilla. Tu menú, con tu carácter.',
+  },
+  difusion: {
+    eyebrow: 'Alcance',
+    titulo: 'Difusión',
+    descripcion: 'Tu enlace público, el QR para las mesas y lo que compartes por WhatsApp.',
+  },
+};
+
 export default function PanelControl() {
   const { user, cerrarSesion } = useAuth();
   const navigate = useNavigate();
   const { tema: modoTema } = useTema();
-  const { cargando, restaurante, setRestaurante, tema, setTema, platillos, setPlatillos, mensaje, mostrarMensaje, cargarDatos } = useDatosPanel(user);
+  const { cargando, restaurante, setRestaurante, tema, setTema, platillos, setPlatillos, mensaje, mostrarMensaje, cerrarMensaje, cargarDatos } = useDatosPanel(user);
 
   /**
    * El panel se pinta con el color de marca que el dueño eligió en Diseño: la
@@ -93,6 +129,17 @@ export default function PanelControl() {
   const [editandoPlatillo, setEditandoPlatillo] = useState<Partial<Platillo> | null>(null);
   const [idEliminar, setIdEliminar] = useState<string | null>(null);
   const [estadoPublicacion, setEstadoPublicacion] = useState<EstadoPublicacion | null>(null);
+  const dialogoEliminar = useRef<HTMLDialogElement>(null);
+
+  /* El diálogo nativo se encarga del foco, de Escape y de la capa superior.
+     Antes era un div fijo: el tabulador se escapaba al fondo y Escape no
+     cerraba nada. */
+  useEffect(() => {
+    const dialogo = dialogoEliminar.current;
+    if (!dialogo) return;
+    if (idEliminar && !dialogo.open) dialogo.showModal();
+    else if (!idEliminar && dialogo.open) dialogo.close();
+  }, [idEliminar]);
 
   /**
    * El cajón móvil se cierra con Escape y devuelve el foco al botón que lo
@@ -174,14 +221,20 @@ export default function PanelControl() {
 
   const aplicarTema = async (nuevoTema: Partial<Tema>) => {
     if (!tema) return;
+    /* La ruta del servicio es /restaurantes/:id/tema y espera el id del
+       RESTAURANTE. Antes se enviaba `tema.id` (el id de la fila del tema), así
+       que el backend no encontraba el local y el cambio se perdía al recargar. */
+    const restauranteId = restaurante?.id ?? tema.restaurante_id;
+    const anterior = tema;
     setTema({ ...tema, ...nuevoTema });
     setGuardando(true);
     try {
-      const { error } = await apiRestaurante.actualizarTema(tema.id, nuevoTema);
+      const { error } = await apiRestaurante.actualizarTema(restauranteId, nuevoTema);
       if (error) throw error;
       mostrarMensaje('exito', 'Estilo aplicado correctamente');
     } catch (error: any) {
       console.error("Error aplicando tema:", error);
+      setTema(anterior);
       mostrarMensaje('error', formatError(error));
     } finally { setGuardando(false); }
   };
@@ -243,7 +296,34 @@ export default function PanelControl() {
     try { const res = await generarContenidoIA(prompt); setter(res.replace(/^["']|["']$/g, '').replace(/\.$/, '')); } catch (e: any) { mostrarMensaje('error', `IA Error: ${formatError(e)}`); }
   }
 
-  if (cargando && !restaurante) return <div className="min-h-screen flex items-center justify-center bg-af-ground"><div className="w-12 h-12 rounded-full border-3 border-af-border/30 border-t-af-accent animate-spin" /></div>;
+  if (cargando && !restaurante) {
+    return (
+      <div className="af-pantalla flex bg-af-ground" role="status" aria-live="polite">
+        <span className="sr-only">Cargando el panel del restaurante…</span>
+        <div className="hidden w-72 shrink-0 border-r border-af/20 bg-af-surface p-6 md:block">
+          <div className="h-9 w-32 animate-pulse rounded-lg bg-af-ink/10" />
+          <div className="mt-8 space-y-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-11 animate-pulse rounded-xl bg-af-ink/[0.06]" />
+            ))}
+          </div>
+        </div>
+        <div className="min-w-0 flex-1 p-5 md:p-8">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="h-6 w-56 animate-pulse rounded bg-af-ink/10" />
+            <div className="h-4 w-80 max-w-full animate-pulse rounded bg-af-ink/[0.06]" />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="space-y-6">
+                <div className="h-56 animate-pulse rounded-[24px] bg-af-surface" />
+                <div className="h-40 animate-pulse rounded-[24px] bg-af-surface" />
+              </div>
+              <div className="hidden h-72 animate-pulse rounded-[24px] bg-af-surface lg:block" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /**
    * En la lista de platos el contenedor se queda sin relleno superior: la
@@ -258,7 +338,7 @@ export default function PanelControl() {
   const tieneBarraInferior = tabActiva === 'info' || Boolean(editandoPlatillo);
 
   return (
-    <div style={estiloMarca} className="af-pantalla flex bg-af-ground text-af-ink font-system transition-colors duration-300">
+    <div style={estiloMarca} className="panel-tema af-pantalla flex bg-af-ground text-af-ink font-system transition-colors duration-300">
       {/* Overlay Móvil */}
       {menuMovilAbierto && <div className="fixed inset-0 z-40 bg-black/40 md:hidden backdrop-blur-sm" onClick={() => setMenuMovilAbierto(false)} />}
 
@@ -283,45 +363,100 @@ export default function PanelControl() {
           <div
             role="status"
             aria-live="polite"
-            className="fade-in-af absolute right-4 top-4 z-50 flex max-w-sm items-start gap-3 rounded-2xl border border-af/20 bg-af-surface/95 px-4 py-3 text-sm font-medium text-af-ink shadow-xl backdrop-blur-xl md:right-6 md:top-6"
+            className="fade-in-af fixed right-4 top-[4.75rem] z-50 flex w-[min(24rem,calc(100vw-2rem))] items-start gap-3 rounded-2xl border border-af/20 bg-af-surface/95 px-4 py-3 text-sm font-medium text-af-ink shadow-xl backdrop-blur-xl md:right-6 md:top-[5.5rem]"
           >
             {mensaje.tipo === 'exito'
-              ? <Check size={18} strokeWidth={2.6} className="mt-0.5 shrink-0 text-af-success" aria-hidden />
-              : <AlertTriangle size={18} strokeWidth={2.4} className="mt-0.5 shrink-0 text-af-danger-text" aria-hidden />}
-            <span className="min-w-0">{mensaje.texto}</span>
+              ? <Check size={18} strokeWidth={2.6} className="mt-0.5 shrink-0 text-af-success" aria-hidden="true" />
+              : <AlertTriangle size={18} strokeWidth={2.4} className="mt-0.5 shrink-0 text-af-danger-text" aria-hidden="true" />}
+            <span className="min-w-0 flex-1 leading-snug">{mensaje.texto}</span>
+            <button
+              type="button"
+              onClick={cerrarMensaje}
+              aria-label="Cerrar aviso"
+              className="-mr-1 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-af-ink-secondary outline-none transition-colors hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/10"
+            >
+              <X size={15} aria-hidden="true" />
+            </button>
           </div>
         )}
 
-        <header className="nav-af sticky top-0 h-16 md:h-20 shrink-0 z-10">
-          {/* `h-full` en el contenedor es lo que centra la fila: sin él el
-              contenedor medía lo que medía su contenido, así que el
-              `items-center` no tenía contra qué centrar y el título, el chip de
-              la IA y el botón de salir quedaban pegados al borde de arriba. */}
-          <Contenedor maxAncho="grande" className="h-full">
-            <div className="flex justify-between items-center h-full">
-              <div className="flex min-w-0 items-center gap-2 md:gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
-                  aria-label={menuMovilAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
-                  aria-expanded={menuMovilAbierto}
-                  aria-controls="panel-menu-movil"
-                  className="md:hidden shrink-0 p-2 text-af-ink-secondary hover:text-af-accent transition-colors rounded-lg"
-                ><Menu size={24} /></button>
-                <div className="min-w-0"><h1 className="text-lg md:text-xl font-bold text-af-ink font-system line-clamp-1">{editandoPlatillo ? <><button type="button" onClick={() => setEditandoPlatillo(null)} className="hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full"><ArrowLeft size={20} /></button>{editandoPlatillo.id ? 'Editar' : 'Nuevo'}</> : (tabActiva === 'info' ? 'Configuración' : tabActiva === 'tema' ? 'Diseño' : tabActiva === 'menu' ? 'Menú' : tabActiva === 'resenas' ? 'Reseñas' : tabActiva === 'pedidos' ? 'Pedidos' : 'Difusión')}</h1></div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2 md:gap-3">
-                <BarraPendientes estado={estadoPublicacion} visible={tabActiva === 'info' && !editandoPlatillo} />
-                <div className="hidden items-center gap-2 rounded-full bg-af-accent/10 px-3 py-1.5 text-xs font-semibold text-af-accent-text md:flex" title="La IA puede redactar textos y completar platillos">
-                  <RobotIA size={14} /> Asistente IA
-                </div>
-                <button onClick={handleLogout} className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-af-danger hover:text-red-500 hover:bg-red-500/10 rounded-xl border border-af-danger/20 transition-all" title="Cerrar sesión">
-                  <LogOut size={16} /> Salir
-                </button>
-                <button onClick={abrirVistaPrevia} className="md:hidden px-3 py-1.5 text-xs font-bold bg-af-surface border border-af/30 rounded-xl shadow-sm text-af-ink-secondary">Vista Previa</button>
-              </div>
+        <header className="nav-af sticky top-0 z-30 shrink-0">
+          <div className="mx-auto flex min-h-[4rem] w-full max-w-6xl items-center gap-2.5 px-4 py-2 md:min-h-[4.75rem] md:gap-4 md:px-8">
+            <button
+              type="button"
+              onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
+              aria-label={menuMovilAbierto ? 'Cerrar el menú' : 'Abrir el menú'}
+              aria-expanded={menuMovilAbierto}
+              aria-controls="panel-menu-movil"
+              className="af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-af-ink-secondary outline-none transition-colors hover:bg-af-ink/[0.06] hover:text-af-ink md:hidden dark:hover:bg-white/[0.08]"
+            >
+              <Menu size={22} aria-hidden="true" />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              {editandoPlatillo ? (
+                <>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-af-accent-text">
+                    Menú
+                  </p>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditandoPlatillo(null)}
+                      aria-label="Volver al menú"
+                      className="af-pulsar -ml-1 flex h-8 w-8 items-center justify-center rounded-full text-af-ink-secondary outline-none transition-colors hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/10"
+                    >
+                      <ArrowLeft size={18} aria-hidden="true" />
+                    </button>
+                    <h1 className="truncate text-[17px] font-bold leading-tight text-af-ink md:text-[20px]">
+                      {editandoPlatillo.id ? 'Editar platillo' : 'Nuevo platillo'}
+                    </h1>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-af-accent-text">
+                    {SECCIONES[tabActiva].eyebrow}
+                  </p>
+                  <h1 className="mt-0.5 line-clamp-2 text-[17px] font-bold leading-tight text-af-ink md:text-[20px]">
+                    {SECCIONES[tabActiva].titulo}
+                  </h1>
+                  <p className="hidden truncate text-[12px] leading-snug text-af-ink-secondary md:block">
+                    {SECCIONES[tabActiva].descripcion}
+                  </p>
+                </>
+              )}
             </div>
-          </Contenedor>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="hidden md:block">
+                <BarraPendientes estado={estadoPublicacion} visible={tabActiva === 'info' && !editandoPlatillo} />
+              </div>
+              <button
+                type="button"
+                onClick={abrirVistaPrevia}
+                className="af-pulsar hidden items-center gap-2 rounded-xl border border-af/25 bg-af-surface px-3.5 py-2 text-xs font-bold text-af-ink shadow-sm outline-none transition-colors hover:border-af-accent/40 hover:text-af-accent-text md:flex"
+              >
+                <Eye size={15} aria-hidden="true" /> Vista previa
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="af-pulsar hidden items-center gap-2 rounded-xl border border-af-danger/20 px-3 py-2 text-xs font-bold text-af-danger-text outline-none transition-colors hover:bg-af-danger/10 md:flex"
+                title="Cerrar sesión"
+              >
+                <LogOut size={16} aria-hidden="true" /> Salir
+              </button>
+              <button
+                type="button"
+                onClick={abrirVistaPrevia}
+                aria-label="Vista previa de mi sitio"
+                className="af-pulsar flex h-11 w-11 items-center justify-center rounded-xl border border-af/25 bg-af-surface text-af-ink shadow-sm outline-none transition-colors hover:text-af-accent-text md:hidden"
+              >
+                <Eye size={19} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </header>
 
         <div data-panel-scroll className={`flex-1 overscroll-contain px-4 pb-0 md:px-8 md:pb-0 scroll-smooth ${menuMovilAbierto ? 'overflow-hidden' : 'overflow-y-auto'} ${esMenu ? 'pt-0' : 'pt-4 md:pt-8'}`}>
@@ -358,36 +493,47 @@ export default function PanelControl() {
           </div>
         )}
 
-        {/* Modal de Confirmación de Eliminación */}
-        {idEliminar && (
-          <div className="fixed inset-0 z-[200] bg-black/45 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in-af">
-            <div className="bg-af-surface rounded-[32px] p-8 max-w-sm w-full border border-af/20 shadow-xl animate-fade-in-af duration-300">
-              <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Trash2 size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-center mb-2 text-af-ink">¿Eliminar platillo?</h3>
-              <p className="text-center text-af-ink-secondary mb-8 text-sm leading-relaxed">
-                Esta acción eliminará el platillo de tu menú permanentemente. No se puede deshacer.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setIdEliminar(null)}
-                  disabled={guardando}
-                  className="flex-1 py-3 rounded-xl border border-af/30 font-bold hover:bg-af-ink/[0.06] dark:hover:bg-white/[0.08] transition-colors text-af-ink-secondary hover:text-af-ink"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={confirmarEliminacion}
-                  disabled={guardando}
-                  className="flex-1 py-3 rounded-xl bg-af-danger text-white font-bold hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  {guardando ? 'Borrando...' : 'Eliminar'}
-                </button>
-              </div>
+        {/* Confirmación de eliminación: `<dialog>` nativo (foco atrapado, Escape
+            y capa superior los pone el navegador). */}
+        <dialog
+          ref={dialogoEliminar}
+          {...({ closedby: 'any' } as any)}
+          onClose={() => setIdEliminar(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) setIdEliminar(null); }}
+          aria-labelledby="eliminar-titulo"
+          className="dialogo-panel z-[200] w-[min(24rem,calc(100vw-2rem))] rounded-[28px] border border-af/20 bg-af-surface p-0 text-af-ink shadow-2xl"
+        >
+          <div className="p-7">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-af-danger/10 text-af-danger-text">
+              <Trash2 size={30} aria-hidden="true" />
+            </div>
+            <h3 id="eliminar-titulo" className="mb-2 text-center text-xl font-bold text-af-ink">
+              ¿Eliminar platillo?
+            </h3>
+            <p className="mb-7 text-center text-sm leading-relaxed text-af-ink-secondary">
+              Esta acción eliminará el platillo de tu menú permanentemente. No se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setIdEliminar(null)}
+                disabled={guardando}
+                className="flex-1 rounded-xl border border-af/25 py-3 font-bold text-af-ink-secondary transition-colors hover:bg-af-ink/[0.06] hover:text-af-ink dark:hover:bg-white/[0.08]"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarEliminacion}
+                disabled={guardando}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-af-danger py-3 font-bold text-white transition-colors hover:bg-red-600 disabled:opacity-60"
+              >
+                {guardando ? 'Borrando...' : 'Eliminar'}
+              </button>
             </div>
           </div>
-        )}
+        </dialog>
       </main>
     </div>
   );

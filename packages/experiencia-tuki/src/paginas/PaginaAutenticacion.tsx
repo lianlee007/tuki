@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 // @ts-ignore
 import { Link, useSearchParams } from 'react-router-dom';
 import { LayoutAuth } from '../componentes/autenticacion/LayoutAuth';
@@ -27,6 +27,12 @@ export default function PaginaAutenticacion() {
     siguientes.delete('mode');
     setParams(siguientes, { replace: true });
   };
+
+  /* Al cambiar entre acceso y alta cambia la altura del formulario; sin esto,
+     quien pulsa el enlace desde abajo aterriza a mitad de la pantalla nueva. */
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [isLogin]);
 
   const puntos = isLogin
     ? undefined
@@ -64,11 +70,11 @@ export default function PaginaAutenticacion() {
         />
       )}
 
-      <p className="mt-5 hidden border-t border-black/[0.06] pt-4 text-center text-[12.5px] text-af-ink-secondary sm:block dark:border-white/10">
+      <p className="mt-6 hidden border-t border-[#E7DAD3] pt-5 text-center text-[12px] text-af-ink-secondary sm:block dark:border-white/10">
         {isLogin ? '¿Solo vienes a comer? ' : '¿Vienes a comer, no a vender? '}
         <Link
           to={isLogin ? '/entrar' : '/entrar?modo=registro'}
-          className="font-bold text-af-accent-text transition-opacity hover:opacity-70"
+          className="font-bold text-[#8A311A] underline decoration-[#DD6B4D]/40 decoration-2 underline-offset-4 transition-colors hover:decoration-[#DD6B4D] dark:text-[#F7B29C]"
         >
           {isLogin ? 'Entra como comensal' : 'Crea tu cuenta de comensal'}
         </Link>

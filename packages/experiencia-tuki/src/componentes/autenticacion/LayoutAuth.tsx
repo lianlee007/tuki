@@ -20,10 +20,10 @@ interface LayoutAuthProps {
 /**
  * La puerta de acceso.
  *
- * En móvil el formulario manda: una cabecera fina con la salida y el tema, una
- * presentación de tres líneas y el formulario a un toque de distancia. La
- * composición de dos columnas con la marca grande se reserva para escritorio,
- * donde sí hay sitio para presentar el producto antes de pedir la contraseña.
+ * En escritorio es una pieza editorial: un panel profundo con la marca y el
+ * mensaje, y el formulario respirando sobre crema, sin tarjeta dentro de otra
+ * tarjeta. En móvil manda el formulario: cabecera mínima, título y campos a un
+ * toque, con el mismo aire en los márgenes.
  */
 export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   children,
@@ -34,82 +34,113 @@ export const LayoutAuth: React.FC<LayoutAuthProps> = ({
   puntos,
 }) => {
   return (
-    <div className="min-h-dvh bg-af-ground">
-      <header className="sticky top-0 z-40 border-b border-black/[0.06] bg-af-ground/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-white/10 dark:bg-[#161618]/90">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4 md:h-16 md:px-8">
-          <Link
-            to={volverA}
-            aria-label="Volver"
-            title="Volver"
-            className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-af-surface text-af-ink-secondary transition-colors hover:text-af-ink dark:bg-[#2C2C2E] dark:text-[#A1A1A6] dark:hover:text-white ${FOCO}`}
-          >
-            <ArrowLeft size={19} aria-hidden="true" />
-          </Link>
+    <div className="min-h-dvh bg-[#FBF8F4] text-af-ink dark:bg-[#131110]">
+      <div className="grid min-h-dvh w-full lg:grid-cols-[1.05fr_1fr]">
+        {/* Panel editorial: solo escritorio. */}
+        <aside className="relative hidden flex-col overflow-hidden bg-[#2B2421] lg:flex dark:bg-[#1B1816]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-28 top-1/4 h-[460px] w-[460px] rounded-full bg-[#B34A2E]/30 blur-[130px]"
+          />
+          <Logo
+            size={340}
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-24 -right-16 h-[340px] w-[340px] text-[#FDFBF7] opacity-[0.05]"
+          />
 
-          <Link
-            to="/"
-            aria-label="TukiTuki, ir al inicio"
-            className={`af-pulsar -m-1 flex items-center gap-2 rounded-xl p-1 ${FOCO}`}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-af-accent-solid text-white">
-              <Logo size={26} className="h-6 w-6" />
-            </span>
-            <PalabraTuki nombre="TukiTuki" tamano={18} className="text-af-ink" />
-          </Link>
-
-          <div className="ml-auto">
-            <ThemeToggle conFondo />
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-5xl px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 md:px-8 md:py-12">
-        <div className="grid gap-5 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] md:items-center md:gap-12">
-          <section className="min-w-0">
-            <div className="mb-5 hidden flex-col items-start gap-3 md:flex">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-af-accent-solid text-white">
-                <Logo size={44} className="h-11 w-11" />
+          <div className="relative mx-auto flex h-full w-full max-w-[640px] flex-col px-12 py-11">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DD6B4D] text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.55)]">
+                <Logo size={27} className="h-7 w-7" aria-hidden="true" />
               </span>
-              <PalabraTuki nombre="TukiTuki" tamano={26} className="text-af-ink" />
+              <PalabraTuki nombre="TukiTuki" tamano={21} className="text-[#FDFBF7]" />
             </div>
 
-            {etiqueta && (
-              <p className="mb-2.5 inline-flex items-center rounded-full bg-af-accent/10 px-2.5 py-1 text-[11.5px] font-bold text-af-accent-text">
-                {etiqueta}
+            <div className="my-auto max-w-[30rem] py-12">
+              {etiqueta && (
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#F0A48C]">
+                  {etiqueta}
+                </p>
+              )}
+              <h1 className="mt-5 text-balance font-serif text-[46px] leading-[1.03] tracking-[-0.025em] text-[#FDFBF7]">
+                {titulo}
+              </h1>
+              <p className="mt-6 max-w-[36ch] text-[15px] leading-[1.65] text-[#FDFBF7]/60">
+                {subtitulo}
               </p>
-            )}
 
-            <h1 className="text-balance font-title text-[26px] font-bold leading-[1.12] tracking-[-0.02em] text-af-ink md:text-4xl">
-              {titulo}
-            </h1>
+              {puntos && puntos.length > 0 && (
+                <ul className="mt-10 border-t border-white/10">
+                  {puntos.map((punto, indice) => (
+                    <li
+                      key={punto}
+                      className="flex items-baseline gap-4 border-b border-white/10 py-3.5 text-[13.5px] font-medium text-[#FDFBF7]/75"
+                    >
+                      <span className="font-serif text-[13px] italic text-[#DD6B4D]">
+                        {String(indice + 1).padStart(2, '0')}
+                      </span>
+                      {punto}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-            <p className="mt-2 max-w-[46ch] text-[13.5px] leading-relaxed text-af-ink-secondary md:mt-4 md:text-base">
-              {subtitulo}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FDFBF7]/35">
+              Menú digital · QR · Pedidos por WhatsApp
             </p>
+          </div>
+        </aside>
 
-            {puntos && puntos.length > 0 && (
-              <ul className="mt-6 hidden space-y-2.5 md:block">
-                {puntos.map((punto) => (
-                  <li
-                    key={punto}
-                    className="flex items-start gap-2.5 text-sm font-medium text-af-ink-secondary"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-af-accent-solid"
-                    />
-                    {punto}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+        {/* Columna del formulario. */}
+        <main className="relative flex min-h-dvh flex-col px-5 pb-8 pt-4 sm:px-9 lg:border-l lg:border-black/[0.06] lg:px-14 lg:py-10 dark:lg:border-white/10">
+          <div className="flex items-center justify-between">
+            <Link
+              to={volverA}
+              aria-label="Volver"
+              title="Volver"
+              className={`af-pulsar flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/[0.06] bg-white/70 text-af-ink-secondary transition-colors hover:text-af-ink dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white ${FOCO}`}
+            >
+              <ArrowLeft size={18} aria-hidden="true" />
+            </Link>
 
-          <section className="min-w-0 rounded-[24px] bg-af-surface p-4 ring-1 ring-black/[0.05] md:rounded-[28px] md:p-8 dark:bg-[#1C1C1E] dark:ring-white/10">
-            {children}
-          </section>
-        </div>
-      </main>
+            <Link
+              to="/"
+              aria-label="TukiTuki, ir al inicio"
+              className={`af-pulsar flex items-center gap-2 rounded-xl p-1 lg:hidden ${FOCO}`}
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#DD6B4D] text-white">
+                <Logo size={22} className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <PalabraTuki nombre="TukiTuki" tamano={17} className="text-af-ink" />
+            </Link>
+
+            <ThemeToggle conFondo />
+          </div>
+
+          <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-8 lg:py-10">
+            <div className="mb-7 lg:hidden">
+              {etiqueta && (
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-[#8A311A] dark:text-[#F7B29C]">
+                  {etiqueta}
+                </p>
+              )}
+              <h1 className="mt-2.5 text-balance font-serif text-[30px] leading-[1.06] tracking-[-0.02em] text-af-ink">
+                {titulo}
+              </h1>
+              <p className="mt-3 text-[13.5px] leading-relaxed text-af-ink-secondary">
+                {subtitulo}
+              </p>
+            </div>
+
+            <div className="auth-acceso">{children}</div>
+          </div>
+
+          <p className="mx-auto w-full max-w-[420px] text-center text-[10.5px] font-medium tracking-[0.04em] text-af-ink-secondary/60">
+            © TukiTuki · Hecho para restaurantes locales
+          </p>
+        </main>
+      </div>
     </div>
   );
 };

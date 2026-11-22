@@ -17,7 +17,7 @@ export const useTema = () => useContext(TemaContext);
 /**
  * Clase que abre la ventana de cruce de color. Mientras está puesta en <html>,
  * todo el árbol interpola sus colores en vez de saltar (ver `.af-tema-cambiando`
- * en `apple-tokens.css`). Sin ella, cambiar de modo se ve tosco.
+ * en `sistema-visual.css`). Sin ella, cambiar de modo se ve tosco.
  */
 const CLASE_CAMBIO = 'af-tema-cambiando';
 /** Margen sobre la duración real para no retirar la clase a mitad de camino. */

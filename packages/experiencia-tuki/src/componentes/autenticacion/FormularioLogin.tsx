@@ -79,6 +79,8 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
     <form onSubmit={handleSubmit} className="w-full" autoComplete="on">
       <div className="space-y-3.5">
         <Input
+          id="acceso-email"
+          name="email"
           type="email"
           label="Correo electrónico"
           placeholder="tu@correo.com"
@@ -88,9 +90,11 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
           required
           icon={<Mail size={18} />}
           maxLength={100}
-          autoComplete="email"
+          autoComplete="username"
           inputMode="email"
           enterKeyHint="next"
+          spellCheck={false}
+          autoCapitalize="none"
           aria-invalid={mostrarErrorEmail}
           helper={mostrarErrorEmail ? 'Revisa el formato del correo.' : undefined}
           error={mostrarErrorEmail}
@@ -103,6 +107,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
 
           <Input
             id="clave-acceso"
+            name="password"
             type={verClave ? 'text' : 'password'}
             placeholder="Tu contraseña"
             value={password}
@@ -118,7 +123,7 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
                 onClick={() => setVerClave((valor) => !valor)}
                 aria-label={verClave ? 'Ocultar la contraseña' : 'Mostrar la contraseña'}
                 aria-pressed={verClave}
-                className={`af-pulsar flex h-10 w-10 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink ${FOCO}`}
+                className={`af-pulsar flex h-12 w-12 items-center justify-center rounded-full text-af-ink-secondary transition-colors hover:text-af-ink ${FOCO}`}
               >
                 {verClave ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
               </button>
@@ -138,21 +143,20 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
       )}
 
       <Boton
-        className="mt-5 w-full !rounded-2xl !py-3.5 !text-[15px] font-bold"
+        className="mt-6 w-full !rounded-[14px] !bg-[#B34A2E] !py-4 !text-[14.5px] !font-semibold tracking-[0.01em] !shadow-[0_18px_34px_-18px_rgba(179,74,46,0.75)] transition-colors hover:!bg-[#9C3E27] dark:!bg-[#C4562F] dark:hover:!bg-[#B34A2E]"
         type="submit"
         cargando={loading}
-        disabled={!formValid}
       >
         {textoBoton}
       </Boton>
 
-      <label className="mt-4 flex cursor-pointer select-none items-center gap-2.5 rounded-xl px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
+      <label className="mt-4 flex min-h-[3rem] cursor-pointer select-none items-center gap-2.5 rounded-xl px-1 py-1 text-[12.5px] leading-snug text-af-ink-secondary">
         <span className="relative flex items-center">
           <input
             type="checkbox"
             checked={recuerdame}
             onChange={(e) => setRecuerdame(e.target.checked)}
-            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-black/20 bg-af-ground transition-colors checked:border-af-accent checked:bg-af-accent dark:border-white/20 dark:bg-[#2C2C2E]"
+            className="peer h-5 w-5 cursor-pointer appearance-none rounded-[6px] border border-[#D9CBC3] bg-white transition-colors checked:border-[#B34A2E] checked:bg-[#B34A2E] dark:border-[#5A4A43] dark:bg-[#1F1C1A]"
           />
           <Check
             size={13}
@@ -164,14 +168,14 @@ export const FormularioLogin: React.FC<FormularioLoginProps> = ({
         Mantener mi correo en este dispositivo
       </label>
 
-      <p className="mt-5 border-t border-black/[0.06] pt-4 text-center text-[12.5px] text-af-ink-secondary dark:border-white/10">
+      <p className="mt-6 border-t border-[#E7DAD3] pt-5 text-center text-[12px] text-af-ink-secondary dark:border-white/10">
         {rol === 'restaurante'
           ? '¿Todavía no tienes cuenta de restaurante?'
           : '¿Aún no tienes cuenta de comensal?'}
         <button
           type="button"
           onClick={cambiarModo}
-          className={`ml-1 rounded-md font-bold text-af-accent-text transition-opacity hover:opacity-70 ${FOCO}`}
+          className={`ml-1 rounded-md font-bold text-[#8A311A] underline decoration-[#DD6B4D]/40 decoration-2 underline-offset-4 transition-colors hover:decoration-[#DD6B4D] dark:text-[#F7B29C] ${FOCO}`}
         >
           {rol === 'restaurante' ? 'Crear cuenta de restaurante' : 'Crear cuenta de comensal'}
         </button>

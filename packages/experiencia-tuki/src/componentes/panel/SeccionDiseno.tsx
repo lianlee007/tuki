@@ -5,6 +5,7 @@ import {
     GalleryHorizontal, LayoutGrid, Columns2, Rows3, Sun, Moon, ShieldCheck, Star,
 } from 'lucide-react';
 import { derivarPaleta, textoSobre, conLuminosidad, type PaletaDerivada } from '../../lib/color';
+import { MARCOS } from '../restaurante/estructuras';
 import {
     PALETAS, FAMILIAS, aBase,
     type Paleta, type FamiliaPaleta, type JuegoColores,
@@ -61,7 +62,7 @@ const EstrellaCasa: React.FC<{ color: string }> = ({ color }) => (
     <Star size={7} strokeWidth={3} fill="currentColor" className="shrink-0" style={{ color }} />
 );
 
-const MiniWireframe: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => {
+const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => {
     const { bg, surface, border, accentSoft, primary, secondary, text, muted, accentText, secondaryText } = paleta;
     /** Tinta que se lee encima de cada color de marca, para el texto sobre las fotos. */
     const tintaFoto = textoSobre(primary);
@@ -292,19 +293,163 @@ const MiniWireframe: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }>
 };
 
 /* ------------------------------------------------------------------ *
+ *  Portada de la miniatura
+ *
+ *  Cada estructura enseña su portada real (partida, tipográfica, bento,
+ *  inmersiva, escaparate, collage, díptico o compacta) sobre el menú. Así la
+ *  tarjeta del panel promete exactamente la página que se va a publicar.
+ * ------------------------------------------------------------------ */
+
+const MiniPortada: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => {
+    const { bg, surface, border, accentSoft, primary, text, muted, accentText, title, onPrimary } = paleta;
+    const portada = MARCOS[tipo].portada;
+    const foto = `linear-gradient(135deg, ${primary} 0%, ${accentText} 100%)`;
+
+    const Titulo: React.FC<{ ancho?: string; alto?: string }> = ({ ancho = 'w-3/4', alto = 'h-2' }) => (
+        <div className={`${ancho} ${alto} rounded-full`} style={{ backgroundColor: title }} />
+    );
+    const Linea: React.FC<{ ancho?: string }> = ({ ancho = 'w-1/2' }) => (
+        <div className={`${ancho} h-1 rounded-full`} style={{ backgroundColor: muted }} />
+    );
+    const Boton: React.FC<{ claro?: boolean }> = ({ claro = false }) => (
+        <div className="h-3 w-10 rounded-full" style={{ backgroundColor: claro ? surface : accentText }} />
+    );
+
+    switch (portada) {
+        case 'editorial':
+            return (
+                <div className="flex h-full w-full items-center gap-2 p-2" style={{ backgroundColor: bg }}>
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <div className="h-1 w-8 rounded-full" style={{ backgroundColor: accentText }} />
+                        <Titulo ancho="w-full" alto="h-3" />
+                        <Titulo ancho="w-2/3" alto="h-3" />
+                        <Linea ancho="w-4/5" />
+                        <div className="mt-1 flex gap-1"><Boton /><Boton claro /></div>
+                    </div>
+                    <div className="h-full w-[42%] rounded-[2px]" style={{ backgroundImage: foto }} />
+                </div>
+            );
+        case 'tipografico':
+            return (
+                <div className="flex h-full w-full flex-col justify-between p-2" style={{ backgroundColor: bg }}>
+                    <div className="h-1 w-10 rounded-full" style={{ backgroundColor: muted }} />
+                    <div className="space-y-1">
+                        <div className="h-4 w-11/12 rounded-full" style={{ backgroundColor: title }} />
+                        <div className="h-4 w-2/3 rounded-full" style={{ backgroundColor: title }} />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <Linea ancho="w-1/3" />
+                        <div className="ml-auto h-2 w-2 rounded-full" style={{ backgroundColor: accentText }} />
+                    </div>
+                </div>
+            );
+        case 'bento':
+            return (
+                <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-1 p-1.5" style={{ backgroundColor: bg }}>
+                    <div className="col-span-2 row-span-2 flex flex-col justify-between rounded-[5px] p-1.5" style={{ backgroundColor: primary }}>
+                        <div className="h-1 w-6 rounded-full" style={{ backgroundColor: onPrimary, opacity: 0.6 }} />
+                        <div className="space-y-1">
+                            <div className="h-1.5 w-10 rounded-full" style={{ backgroundColor: onPrimary }} />
+                            <div className="h-1 w-7 rounded-full" style={{ backgroundColor: onPrimary, opacity: 0.6 }} />
+                        </div>
+                    </div>
+                    <div className="rounded-[5px]" style={{ backgroundImage: foto }} />
+                    <div className="rounded-[5px]" style={{ backgroundColor: accentSoft }} />
+                </div>
+            );
+        case 'inmersivo':
+            return (
+                <div className="relative flex h-full w-full flex-col justify-end p-2" style={{ backgroundImage: foto }}>
+                    <div className="relative space-y-1">
+                        <div className="h-2.5 w-2/3 rounded-full bg-white" />
+                        <div className="h-1 w-1/2 rounded-full bg-white/70" />
+                        <div className="h-2.5 w-9 rounded-full bg-white" />
+                    </div>
+                </div>
+            );
+        case 'vitrina':
+            return (
+                <div className="flex h-full w-full items-stretch gap-1.5 p-2" style={{ backgroundColor: bg }}>
+                    <div className="relative w-[46%] rounded-[5px]" style={{ backgroundImage: foto }}>
+                        <div className="absolute inset-x-1 bottom-1 h-1.5 w-3/4 rounded-full bg-white" />
+                    </div>
+                    <div className="w-[27%] rounded-[5px]" style={{ backgroundColor: accentSoft }} />
+                    <div className="w-[27%] rounded-[5px]" style={{ backgroundColor: surface, border: `1px solid ${border}` }} />
+                </div>
+            );
+        case 'mosaico':
+            return (
+                <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-1 p-1.5" style={{ backgroundColor: bg }}>
+                    <div className="col-span-2 row-span-2 rounded-[5px]" style={{ backgroundImage: foto }} />
+                    <div className="rounded-[5px]" style={{ backgroundColor: primary }} />
+                    <div className="rounded-[5px]" style={{ backgroundColor: accentSoft }} />
+                </div>
+            );
+        case 'diptico':
+            return (
+                <div className="flex h-full w-full" style={{ backgroundColor: surface }}>
+                    <div className="w-1/2" style={{ backgroundImage: foto }} />
+                    <div className="flex w-1/2 flex-col justify-center gap-1 p-2">
+                        <Titulo ancho="w-4/5" />
+                        <Titulo ancho="w-3/5" />
+                        <Linea ancho="w-2/3" />
+                        <Boton />
+                    </div>
+                </div>
+            );
+        case 'compacta':
+            return (
+                <div className="flex h-full w-full flex-col gap-1 p-2" style={{ backgroundColor: bg }}>
+                    <div className="flex items-center gap-1.5">
+                        <div className="h-3.5 w-3.5 rounded-[3px]" style={{ backgroundColor: primary }} />
+                        <div className="h-1.5 w-1/3 rounded-full" style={{ backgroundColor: title }} />
+                        <div className="ml-auto h-2.5 w-8 rounded-full" style={{ backgroundColor: accentText }} />
+                    </div>
+                    <div className="h-1 w-1/2 rounded-full" style={{ backgroundColor: muted }} />
+                    <div className="mt-1 h-full rounded-[4px]" style={{ backgroundImage: foto, opacity: 0.85 }} />
+                </div>
+            );
+        default:
+            return (
+                <div className="relative flex h-full w-full flex-col justify-end p-2" style={{ backgroundImage: foto }}>
+                  <div className="relative space-y-1">
+                        <div className="h-2.5 w-2/3 rounded-full bg-white" />
+                        <div className="h-1 w-1/2 rounded-full bg-white/70" />
+                        <div className="flex gap-1">
+                            <div className="h-2.5 w-9 rounded-full bg-white" />
+                            <div className="h-2.5 w-6 rounded-full border border-white/40" />
+                        </div>
+                    </div>
+                </div>
+            );
+    }
+};
+
+const MiniWireframe: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => (
+    <div className="flex h-full w-full flex-col overflow-hidden" style={{ backgroundColor: paleta.bg }}>
+        <div className="h-[46%] shrink-0" style={{ borderBottom: `1px solid ${paleta.border}` }}>
+            <MiniPortada tipo={tipo} paleta={paleta} />
+        </div>
+        <div className="min-h-0 flex-1">
+            <MiniMenu tipo={tipo} paleta={paleta} />
+        </div>
+    </div>
+);
+
+/* ------------------------------------------------------------------ *
  *  Arquetipos (estructura del sitio)
  * ------------------------------------------------------------------ */
 
 const ARQUETIPOS: { id: EstiloPlantilla; nombre: string; icono: React.ReactNode; desc: string }[] = [
-    { id: 'moderno', nombre: 'Tarjetas', icono: <Grid3x3 size={20} />, desc: 'Una tarjeta por plato, con foto y descripción. La más versátil.' },
-    { id: 'carta', nombre: 'Carta', icono: <List size={20} />, desc: 'Dos columnas con foto pequeña y precio destacado. Se lee como una carta impresa.' },
-    { id: 'minimalista', nombre: 'Minimal', icono: <Minus size={20} />, desc: 'Pocos platos, tipografía grande y mucho aire. Para cocina de autor.' },
-    { id: 'grid', nombre: 'Editorial', icono: <Layout size={20} />, desc: 'Una apertura ancha por sección y el resto en retícula de retratos.' },
-    { id: 'inmersivo', nombre: 'Inmersivo', icono: <ImageIcon size={20} />, desc: 'Fotos grandes a sangre con el texto encima. Manda la imagen.' },
-    { id: 'vitrina', nombre: 'Vitrina', icono: <GalleryHorizontal size={20} />, desc: 'Estantería que se recorre en horizontal, categoría por categoría.' },
-    { id: 'mosaico', nombre: 'Mosaico', icono: <LayoutGrid size={20} />, desc: 'Muro de fotos sin canalillos, con piezas de doble tamaño.' },
-    { id: 'diptico', nombre: 'Díptico', icono: <Columns2 size={20} />, desc: 'Franjas partidas: foto a un lado, texto al otro, alternando el lado.' },
-    { id: 'compacta', nombre: 'Compacta', icono: <Rows3 size={20} />, desc: 'Filas densas con índice lateral. La más rápida para cartas largas.' },
+    { id: 'moderno', nombre: 'Tarjetas', icono: <Grid3x3 size={20} />, desc: 'Portada con foto, barra fija y tarjetas. La más versátil.' },
+    { id: 'carta', nombre: 'Carta', icono: <List size={20} />, desc: 'Portada editorial partida, serif y carta impresa a dos columnas.' },
+    { id: 'minimalista', nombre: 'Minimal', icono: <Minus size={20} />, desc: 'Titular enorme, aire y una carta sin cajas. Para cocina de autor.' },
+    { id: 'grid', nombre: 'Editorial', icono: <Layout size={20} />, desc: 'Portada bento, navegación flotante y retícula de retratos.' },
+    { id: 'inmersivo', nombre: 'Inmersivo', icono: <ImageIcon size={20} />, desc: 'Portada a sangre con el texto sobre la foto. Manda la imagen.' },
+    { id: 'vitrina', nombre: 'Vitrina', icono: <GalleryHorizontal size={20} />, desc: 'Escaparate horizontal en carrusel y navegación flotante.' },
+    { id: 'mosaico', nombre: 'Mosaico', icono: <LayoutGrid size={20} />, desc: 'Collage de portada, fondo punteado y menú en mosaico.' },
+    { id: 'diptico', nombre: 'Díptico', icono: <Columns2 size={20} />, desc: 'Portada partida 50/50, franjas alternas y pie editorial.' },
+    { id: 'compacta', nombre: 'Compacta', icono: <Rows3 size={20} />, desc: 'Cabecera compacta, índice lateral y filas densas para cartas largas.' },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -327,6 +472,7 @@ const TarjetaPaleta: React.FC<{
         ['Marca', derivada.primary],
         ['Apoyo', derivada.secondary],
         ['Tinte', derivada.accentSoft],
+        ['Tinta', derivada.text],
     ];
 
     return (
@@ -340,7 +486,19 @@ const TarjetaPaleta: React.FC<{
                 activa ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
             }`}
         >
-            <div className="relative h-32 w-full">
+            {/* Los colores van primero y a lo grande: es lo que se está eligiendo. */}
+            <div className="flex h-9" aria-hidden="true">
+                {muestras.map(([nombre, color]) => (
+                    <span
+                        key={nombre}
+                        title={`${nombre} ${color}`}
+                        className="flex-1 transition-transform duration-200 group-hover:scale-y-110"
+                        style={{ backgroundColor: color }}
+                    />
+                ))}
+            </div>
+
+            <div className="relative h-44 w-full">
                 <MiniWireframe tipo={estructura} paleta={derivada} />
                 <span
                     className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-wider"
@@ -352,17 +510,14 @@ const TarjetaPaleta: React.FC<{
                 </span>
             </div>
 
-            <div className="flex h-1.5">
-                {muestras.map(([nombre, color]) => (
-                    <span key={nombre} title={`${nombre} ${color}`} className="flex-1" style={{ backgroundColor: color }} />
-                ))}
-            </div>
-
             <div className="flex items-center justify-between gap-3 bg-af-surface p-3.5">
                 <div className="min-w-0">
                     <p className={`truncate text-sm font-bold ${activa ? 'text-af-accent' : 'text-af-ink'}`}>{paleta.nombre}</p>
                     <p className="mt-0.5 truncate text-[11px] text-af-ink-secondary">{paleta.etiqueta}</p>
                 </div>
+                <span className="shrink-0 rounded-full bg-af-ink/[0.06] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-af-ink-secondary">
+                    {paleta.familia}
+                </span>
                 {activa && (
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-af-accent text-white">
                         <Check size={14} strokeWidth={3} />
@@ -453,13 +608,13 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
     });
 
     return (
-        <div className="space-y-14">
+        <div className="space-y-8">
 
             {/* ---------- Estructura ---------- */}
             <section>
-                <header className="mb-8">
-                    <h2 className="text-2xl font-bold tracking-tight text-af-ink font-title sm:text-3xl">Estructura del sitio</h2>
-                    <p className="mt-1.5 text-af-ink-secondary">Elige cómo se organiza tu menú. Todas las estructuras usan tus colores.</p>
+                <header className="mb-5">
+                    <h2 className="text-[15px] font-bold tracking-tight text-af-ink">Estructura del sitio</h2>
+                    <p className="mt-1 text-xs leading-relaxed text-af-ink-secondary">Cambia la página entera: portada, navegación, información y menú. Todas usan tus colores.</p>
                 </header>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -476,7 +631,7 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                                     activo ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
                                 }`}
                             >
-                                <div className="h-32 w-full">
+                                <div className="h-44 w-full">
                                     <MiniWireframe tipo={arq.id} paleta={derivadaActiva} />
                                 </div>
                                 <div className="border-t border-af/20 bg-af-surface p-4">
@@ -499,12 +654,11 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
 
             {/* ---------- Paleta ---------- */}
             <section>
-                <header className="mb-8">
-                    <h2 className="text-2xl font-bold tracking-tight text-af-ink font-title sm:text-3xl">Paleta de colores</h2>
-                    <p className="mt-1.5 max-w-2xl text-af-ink-secondary">
-                        Cada paleta incluye su versión clara y su versión oscura, y está preparada para leerse bien en las nueve
-                        estructuras. Quien visita tu página elige el modo que prefiera; tú eliges el carácter. Tu panel también
-                        adopta este color de marca, así que reconoces tu restaurante en toda la herramienta.
+                <header className="mb-5">
+                    <h2 className="text-[15px] font-bold tracking-tight text-af-ink">Paleta de colores</h2>
+                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-af-ink-secondary">
+                        Cada paleta trae su versión clara y oscura y se prueba con la estructura que tengas activa. Los colores de la
+                        tarjeta son los que verás en tu página; el visitante elige el modo. Tu panel también adopta el color de marca.
                     </p>
                 </header>
 

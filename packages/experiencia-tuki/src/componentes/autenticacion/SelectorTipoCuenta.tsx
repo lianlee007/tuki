@@ -49,25 +49,33 @@ export const SelectorTipoCuenta: React.FC<SelectorTipoCuentaProps> = ({ actual, 
   const sufijo = modo === 'registro' ? '?modo=registro' : '?modo=login';
 
   return (
-    <div role="group" aria-label="Tipo de cuenta" className="mb-6 grid grid-cols-2 gap-2.5">
+    <div
+      role="group"
+      aria-label="Tipo de cuenta"
+      className="mb-6 grid grid-cols-2 gap-1 rounded-[18px] bg-black/[0.035] p-1 ring-1 ring-black/[0.045] dark:bg-white/[0.05] dark:ring-white/10"
+    >
       {OPCIONES.map(({ tipo, ruta, etiqueta, detalle, Icono }) => {
         const activo = tipo === actual;
         const contenido = (
           <>
-            <span className="flex items-center gap-1.5 text-[13px] font-bold leading-tight">
-              <Icono size={16} aria-hidden="true" className="shrink-0" />
+            <span className="flex items-center gap-1.5 text-[12.5px] font-bold leading-tight">
+              <Icono
+                size={15}
+                aria-hidden="true"
+                className={`shrink-0 ${activo ? 'text-[#B34A2E] dark:text-[#F08A6A]' : ''}`}
+              />
               {etiqueta}
             </span>
-            <span className="mt-0.5 block text-[11px] font-medium leading-snug opacity-80">
+            <span className="mt-1 block text-[10.5px] font-medium leading-snug opacity-70">
               {detalle}
             </span>
           </>
         );
 
-        const clases = `af-pulsar flex min-h-[62px] flex-col justify-center rounded-2xl border px-3 py-2.5 text-left transition-colors ${FOCO} ${
+        const clases = `af-pulsar flex min-h-[58px] flex-col justify-center rounded-[14px] px-3 py-2.5 text-left transition-all ${FOCO} ${
           activo
-            ? 'border-af-accent bg-af-accent/10 text-af-accent-text'
-            : 'border-black/10 bg-af-ground text-af-ink-secondary hover:border-af-accent/40 hover:text-af-ink dark:border-white/10 dark:bg-[#2C2C2E] dark:hover:text-white'
+            ? 'bg-white text-af-ink shadow-[0_6px_16px_-8px_rgba(43,36,33,0.35)] ring-1 ring-black/[0.04] dark:bg-[#2A2523] dark:text-white dark:ring-white/10'
+            : 'text-af-ink-secondary hover:text-af-ink dark:hover:text-white'
         }`;
 
         return activo ? (
@@ -76,11 +84,7 @@ export const SelectorTipoCuenta: React.FC<SelectorTipoCuentaProps> = ({ actual, 
             <span className="sr-only">(seleccionado)</span>
           </div>
         ) : (
-          <Link
-            key={tipo}
-            to={`${ruta}${sufijo}`}
-            className={clases}
-          >
+          <Link key={tipo} to={`${ruta}${sufijo}`} className={clases}>
             {contenido}
           </Link>
         );

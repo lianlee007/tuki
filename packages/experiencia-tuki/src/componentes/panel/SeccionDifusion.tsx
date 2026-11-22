@@ -332,7 +332,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, m
     <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
 
       {/* ---------- El enlace ---------- */}
-      <section className="rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-1">
+      <section className="rounded-[24px] border border-af/10 bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-1">
         <h2 className="text-base font-bold text-af-ink">Tu enlace público</h2>
         <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
           Es la dirección de tu menú. No cambia aunque cambies los platos: siempre muestra lo que tengas publicado hoy.
@@ -370,7 +370,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, m
       </section>
 
       {/* ---------- El QR ---------- */}
-      <section className="flex flex-col rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-2 xl:row-start-1 xl:row-end-3">
+      <section className="flex flex-col rounded-[24px] border border-af/10 bg-af-surface p-5 sm:p-6 xl:col-start-2 xl:row-start-1 xl:row-end-3">
         <h2 className="text-base font-bold text-af-ink">Código QR</h2>
         <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
           Imprímelo y ponlo en la mesa, en la barra o en el escaparate. Se abre con la cámara del celular.
@@ -411,7 +411,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, m
       </section>
 
       {/* ---------- Las redes ---------- */}
-      <section className="flex flex-col rounded-[28px] bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-2">
+      <section className="flex flex-col rounded-[24px] border border-af/10 bg-af-surface p-5 sm:p-6 xl:col-start-1 xl:row-start-2">
         <h2 className="text-base font-bold text-af-ink">Compartir</h2>
         <p className="mt-1 text-sm leading-relaxed text-af-ink-secondary">
           Un enlace, no una foto: quien lo abra ve tu carta completa y tus precios de hoy.

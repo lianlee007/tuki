@@ -63,12 +63,7 @@ export const EstiloVitrina: React.FC<PlantillaMenuProps> = ({
                     <FotoPlatillo platillo={p} estilos={estilos} clase="w-full h-full" icono={30} />
                     {p.destacado && p.disponible && <ChipDestacado estilos={estilos} className="absolute top-3 left-3" />}
                     {!p.disponible && (
-                      <div
-                        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
-                      >
-                        <ChipAgotado texto="Agotado hoy" />
-                      </div>
+                      <ChipAgotado texto="Agotado hoy" className="absolute top-3 right-3" />
                     )}
                   </div>
 

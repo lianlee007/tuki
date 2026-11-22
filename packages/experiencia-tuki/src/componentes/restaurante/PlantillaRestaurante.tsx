@@ -5,9 +5,8 @@
  * - Un solo ancho de contenido (7xl) para barra, portada, información, menú y
  *   pie: todo queda alineado al mismo margen. Antes cada bloque usaba un ancho
  *   distinto y las columnas no coincidían.
- * - La portada siempre lleva un velo oscuro, así que el texto blanco se lee
- *   aunque el color de marca sea claro. Los botones flotantes también son
- *   "cristal sobre oscuro" por el mismo motivo.
+ * - La portada no lleva velo sobre la foto: el texto vive en una tarjeta de
+ *   superficie opaca, así que se lee con cualquier paleta y la foto queda limpia.
  * - El color de marca se usa para FONDO de botón; para texto, tintes y líneas
  *   se usan las variantes legibles de la capa semántica (accentText, etc.).
  * - La barra fija publica su altura real en --af-nav-h y las secciones usan
@@ -28,13 +27,9 @@ import {
   Clock,
   MapPin,
   Mail,
-  Sparkles,
   Lock,
-  ArrowDown,
   ArrowRight,
   Search,
-  Share2,
-  PenLine,
   Check,
   X,
   Star,
@@ -48,7 +43,7 @@ import { ModalDetallePlatillo } from './ModalDetallePlatillo';
 import { ResenasPublicas } from './ResenasPublicas';
 import { useResenas } from '../../modulos/resenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
-import { conLuminosidad, derivarPaleta, variablesAf, mezclar } from '../../lib/color';
+import { conLuminosidad, derivarPaleta, variablesAf } from '../../lib/color';
 import { urlPublica } from '../../lib/urlPublica';
 import { normalizarTexto } from '../../lib/utils';
 
@@ -65,6 +60,9 @@ import { EstiloMosaico } from './plantillas/EstiloMosaico';
 import { EstiloDiptico } from './plantillas/EstiloDiptico';
 import { EstiloCompacta } from './plantillas/EstiloCompacta';
 import type { EstilosComunes, PlantillaMenuProps } from './plantillas/tipos';
+import { Portada } from './Portada';
+import { BandaResenas } from './BandaResenas';
+import { MARCOS, fondoPatron } from './estructuras';
 
 // Se reexporta para no romper los imports existentes; la definición vive en el
 // contrato de plantillas, que es el punto que ambos lados comparten.
@@ -452,14 +450,8 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
   const totalUnidades = carrito.reduce((acc, item) => acc + item.cantidad, 0);
   // Un tema guardado con una estructura que ya no existe cae en Tarjetas.
   const Estructura = PLANTILLAS[tema.estilo_plantilla] ?? EstiloModerno;
-
-  // Velo garantizado. Sin él, con un color de marca claro (amarillo, dorado,
-  // turquesa) el texto blanco de la portada se pierde. Con él, el peor caso
-  // (la parada más clara del degradado justo debajo del texto) supera 4.5:1.
-  const velo = 'linear-gradient(180deg, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.44) 45%, rgba(0,0,0,0.82) 100%)';
-  // Portada con foto: el velo debe aguantar que la foto sea blanca justo donde
-  // va el texto, por eso va más cargado que el de la portada con color plano.
-  const veloFoto = 'linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.58) 50%, rgba(0,0,0,0.88) 100%)';
+  const marco = MARCOS[tema.estilo_plantilla] ?? MARCOS.moderno;
+  const patron = fondoPatron(marco.patron, paleta.border);
 
   return (
     <div
@@ -468,11 +460,13 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
         '--af-nav-h': `${altoNav}px`,
         backgroundColor: c.fondo,
         color: c.texto,
+        backgroundImage: patron,
+        backgroundSize: marco.patron === 'lineas' ? '100% 34px' : '22px 22px',
         minHeight: '100vh',
         overflowX: 'clip',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       } as React.CSSProperties}
-      className="relative"
+      className={`relative estructura-${tema.estilo_plantilla}`}
     >
       <style>{`
         .font-title { font-family: '${tema.fuente_titulos}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -495,7 +489,16 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
       `}</style>
 
       {/* BARRA SUPERIOR */}
-      <nav ref={navRef} className="nav-af sticky top-0 z-50">
+      <nav
+        ref={navRef}
+        className={
+          marco.nav === 'flotante'
+            ? 'sticky top-2 z-50 mx-2 overflow-hidden rounded-2xl border border-af/20 bg-af-surface/90 shadow-lg backdrop-blur-xl sm:mx-4'
+            : marco.nav === 'minima'
+              ? 'sticky top-0 z-50 border-b border-af/20 bg-af-ground/95 backdrop-blur-xl'
+              : 'nav-af sticky top-0 z-50'
+        }
+      >
         <div className={ANCHO_CONTENIDO}>
           <div className="flex justify-between items-center h-16 sm:h-[72px]">
             <button
@@ -565,6 +568,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           {/* Buscador persistente de la carta. Vive justo encima de las
               categorías para que el menú y el detalle del plato no obliguen a
               volver a Descubrir para encontrar otra cosa. */}
+          {marco.buscador && (
           <div className="pb-2.5">
             <form role="search" onSubmit={buscarEnTukiTuki} className="relative w-full sm:w-[min(26rem,100%)]">
               <Search
@@ -612,6 +616,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* La barra de la ficha no es solo el índice de la carta: debajo de
@@ -663,143 +668,33 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
       </nav>
 
       {/* PORTADA */}
-      <header className="mt-3 sm:mt-5">
-        <div className={ANCHO_CONTENIDO}>
-          <div className="relative rounded-[20px] sm:rounded-[28px] overflow-hidden">
-            <div className="absolute inset-0">
-              {tieneBanner ? (
-                <>
-                  <ImagenInteligente src={restaurante.imagen_banner_url} alt="" className="w-full h-full" />
-                  {/* Una foto puede ser blanca en cualquier punto, así que aquí el
-                      velo es más denso: garantiza el blanco legible sobre cualquier
-                      imagen, no solo sobre las oscuras. */}
-                  <div className="absolute inset-0" style={{ background: veloFoto }} />
-                </>
-              ) : (
-                <>
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: `linear-gradient(145deg, ${mezclar(c.primario, '#000000', 0.16)} 0%, ${mezclar(c.primario, '#000000', 0.68)} 100%)`,
-                    }}
-                  />
-                  <div className="absolute inset-0" style={{ background: velo }} />
-                </>
-              )}
-            </div>
-
-            <div className="relative z-10 flex flex-col justify-end min-h-[340px] sm:min-h-[420px] lg:min-h-[480px] px-6 sm:px-10 lg:px-14 pt-14 pb-24 sm:pb-32">
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-3 mb-5 flex-wrap">
-                  {restaurante.imagen_logo_url && (
-                    <span className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-white/25 shrink-0 block">
-                      <ImagenInteligente src={restaurante.imagen_logo_url} alt="" className="w-full h-full" />
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold text-white bg-black/30 backdrop-blur-md border border-white/20 max-w-full">
-                    {estadoLocal.abierto ? <Clock size={13} className="shrink-0" /> : <Lock size={13} className="shrink-0" />}
-                    <span className="truncate">{estadoLocal.mensaje || (estadoLocal.abierto ? 'Abierto ahora' : 'Cerrado')}</span>
-                  </span>
-                </div>
-
-                <h1
-                  className="text-[2.1rem] sm:text-5xl lg:text-[3.4rem] font-bold text-white font-title tracking-[-0.025em] leading-[1.05] mb-3"
-                  style={{ textWrap: 'balance' }}
-                >
-                  {restaurante.nombre}
-                </h1>
-
-                {restaurante.eslogan && (
-                  <p className="text-white text-base sm:text-lg font-medium max-w-2xl leading-relaxed" style={{ textWrap: 'pretty' }}>
-                    {restaurante.eslogan}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap items-center gap-3 mt-7">
-                  {categorias.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={scrollAlMenu}
-                      className="px-5 sm:px-6 py-3 rounded-full font-bold text-sm sm:text-base inline-flex items-center gap-2 af-pulsar"
-                      style={{ backgroundColor: c.primario, color: estilos.onPrimary }}
-                    >
-                      Ver el menú <ArrowDown size={16} />
-                    </button>
-                  )}
-                  {enlaceWhatsApp && (
-                    <a
-                      href={enlaceWhatsApp}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-5 sm:px-6 py-3 rounded-full font-bold text-sm sm:text-base inline-flex items-center gap-2 bg-white text-[#111111] hover:bg-white/90 af-pulsar"
-                    >
-                      <LogoWhatsApp className="w-4 h-4" /> Pedir por WhatsApp
-                    </a>
-                  )}
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-center gap-2.5">
-                  {cargandoResenas ? (
-                    <span className="h-8 w-32 animate-pulse rounded-full bg-white/20" />
-                  ) : errorResenas ? (
-                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md">
-                      Reseñas no disponibles
-                    </span>
-                  ) : resumenResenas.cantidad > 0 ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-white backdrop-blur-md">
-                      <Estrellas
-                        valor={resumenResenas.promedio}
-                        tamano={14}
-                        className="text-white"
-                      />
-                      <span className="text-sm font-semibold tabular-nums">
-                        {resumenResenas.promedio.toFixed(1)}
-                      </span>
-                      <span className="text-xs text-white/75">
-                        ({resumenResenas.cantidad})
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md">
-                      Sé el primero en reseñar
-                    </span>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => abrirResena()}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 af-pulsar"
-                  >
-                    <PenLine size={14} />
-                    Escribir reseña
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={compartir}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20 af-pulsar"
-                  >
-                    <Share2 size={14} />
-                    {compartido ? 'Enlace copiado' : 'Compartir'}
-                  </button>
-                </div>
-
-                {saludoDinamico && (
-                  <p className="mt-6 inline-flex items-start gap-2 text-white/95 text-xs sm:text-sm bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl px-3.5 py-2.5 max-w-xl">
-                    <Sparkles size={13} className="text-amber-300 shrink-0 mt-0.5" /> {saludoDinamico}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Portada
+        portada={marco.portada}
+        restaurante={restaurante}
+        paleta={paleta}
+        estado={estadoLocal}
+        promedio={resumenResenas.promedio}
+        cantidadResenas={resumenResenas.cantidad}
+        cargandoResenas={cargandoResenas}
+        errorResenas={Boolean(errorResenas)}
+        enlaceWhatsApp={enlaceWhatsApp}
+        compartido={Boolean(compartido)}
+        saludo={saludoDinamico}
+        onMenu={scrollAlMenu}
+        onResena={() => abrirResena()}
+        onCompartir={compartir}
+      />
 
       {/* INFORMACIÓN */}
-      <section className="relative z-20 -mt-12 sm:-mt-16">
+      {marco.info !== 'oculta' && (
+      <section className={marco.info === 'linea' ? 'relative z-20 border-y border-af/20' : 'relative z-20 -mt-12 sm:-mt-16'}>
         <div className={ANCHO_CONTENIDO}>
           <div
-            className="rounded-[20px] sm:rounded-[24px] border border-af/25 overflow-hidden grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-af/20"
+            className={
+              marco.info === 'linea'
+                ? 'grid grid-cols-1 divide-y divide-af/15 sm:grid-cols-3 sm:divide-x sm:divide-y-0'
+                : 'rounded-[20px] sm:rounded-[24px] border border-af/25 overflow-hidden grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-af/20'
+            }
             style={{ backgroundColor: paleta.surface }}
           >
             <InfoItem
@@ -846,6 +741,19 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           </div>
         </div>
       </section>
+      )}
+
+      {/* RESEÑAS DESTACADAS: visibles antes de la carta */}
+      <BandaResenas
+        resenas={resenas}
+        resumen={resumenResenas}
+        cargando={cargandoResenas}
+        error={errorResenas}
+        estilos={estilos}
+        paleta={paleta}
+        onVerTodas={irAResenas}
+        onEscribir={() => abrirResena()}
+      />
 
       {/* MENÚ */}
       <main id="menu-inicio" className="af-ancla relative z-10 min-h-[40vh] pt-12 sm:pt-16">
@@ -915,6 +823,61 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
       />
 
       {/* PIE */}
+      {marco.pie === 'minimo' ? (
+        <footer className="relative z-10 mt-16 border-t border-af/20 py-10 sm:mt-24">
+          <div className={`${ANCHO_CONTENIDO} flex flex-col items-center gap-4 text-center`}>
+            <div className="flex items-center gap-2.5">
+              {restaurante.imagen_logo_url ? (
+                <span className="block h-9 w-9 overflow-hidden rounded-xl border border-af/25">
+                  <ImagenInteligente src={restaurante.imagen_logo_url} alt="" className="h-full w-full" />
+                </span>
+              ) : (
+                <span
+                  className="flex h-9 w-9 items-center justify-center rounded-xl font-title text-sm font-bold"
+                  style={{ backgroundColor: paleta.primary, color: paleta.onPrimary }}
+                >
+                  {restaurante.nombre.charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="font-title text-lg font-bold text-af-ink">{restaurante.nombre}</span>
+            </div>
+            <p className="max-w-md text-xs leading-relaxed text-af-ink-secondary">
+              {restaurante.descripcion || 'Cocina local, hecha con calma.'}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-af-ink-secondary">
+              {restaurante.direccion && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={12} aria-hidden="true" /> {restaurante.direccion}
+                </span>
+              )}
+              {restaurante.telefono && (
+                <span className="inline-flex items-center gap-1">
+                  <Phone size={12} aria-hidden="true" /> {restaurante.telefono}
+                </span>
+              )}
+              {(restaurante.horario_apertura || restaurante.horario_cierre) && (
+                <span className="inline-flex items-center gap-1">
+                  <Clock size={12} aria-hidden="true" />
+                  {formatTime(restaurante.horario_apertura)} – {formatTime(restaurante.horario_cierre)} · {resumenDias(restaurante.dias_abierto)}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {restaurante.instagram && (
+                <a href={restaurante.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-af/25 text-af-ink-secondary hover:text-af-accent-text">
+                  <Instagram size={15} />
+                </a>
+              )}
+              {enlaceWhatsApp && (
+                <a href={enlaceWhatsApp} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="flex h-9 w-9 items-center justify-center rounded-full border border-af/25 text-af-ink-secondary hover:text-af-accent-text">
+                  <LogoWhatsApp className="h-4 w-4" />
+                </a>
+              )}
+            </div>
+            <p className="text-[11px] text-af-ink-secondary">© {new Date().getFullYear()} {restaurante.nombre}. Creado con TukiTuki.</p>
+          </div>
+        </footer>
+      ) : (
       <footer className="border-t border-af/20 mt-16 sm:mt-24 relative z-10">
         <div className={ANCHO_CONTENIDO}>
           <div className="py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-16">
@@ -990,6 +953,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
           </div>
         </div>
       </footer>
+      )}
 
       {/* MODALES (portal) */}
       {platilloSeleccionado && (
