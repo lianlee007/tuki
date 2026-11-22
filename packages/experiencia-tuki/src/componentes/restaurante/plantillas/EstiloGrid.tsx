@@ -74,7 +74,7 @@ export const EstiloGrid: React.FC<PlantillaMenuProps> = ({
                     <div className="pointer-events-auto relative z-20 ml-auto flex items-center gap-3">
                       <span
                         className="relative z-20 shrink-0 rounded-full px-3 py-1 text-base sm:text-lg font-bold tabular-nums"
-                        style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                        style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                       >
                         ${portada.precio.toLocaleString()}
                       </span>
@@ -117,7 +117,7 @@ export const EstiloGrid: React.FC<PlantillaMenuProps> = ({
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span
                             className="shrink-0 rounded-full px-2.5 py-0.5 text-[15px] sm:text-base font-bold tabular-nums"
-                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                            style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                           >
                             ${p.precio.toLocaleString()}
                           </span>

@@ -66,7 +66,7 @@ export const EstiloCarta: React.FC<PlantillaMenuProps> = ({
                           <span className="flex-1 border-b border-dotted translate-y-[-3px] min-w-4" style={{ borderColor: estilos.border }} />
                           <span
                             className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 font-bold text-[17px] sm:text-lg tabular-nums"
-                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio, textDecoration: agotado ? 'line-through' : 'none' }}
+                            style={{ backgroundColor: estilos.precioFondo, color: estilos.precio, textDecoration: agotado ? 'line-through' : 'none' }}
                           >
                             ${p.precio.toLocaleString()}
                           </span>

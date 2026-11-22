@@ -102,7 +102,7 @@ export const EstiloMosaico: React.FC<PlantillaMenuProps> = ({
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span
                             className={`shrink-0 rounded-full font-bold tabular-nums ${grande ? 'px-2.5 py-1 text-base sm:text-lg' : 'px-2 py-0.5 text-[13px] sm:text-sm'}`}
-                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                            style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                           >
                             ${p.precio.toLocaleString()}
                           </span>

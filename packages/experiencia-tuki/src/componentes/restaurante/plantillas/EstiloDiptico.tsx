@@ -72,7 +72,7 @@ export const EstiloDiptico: React.FC<PlantillaMenuProps> = ({
                         </h3>
                         <span
                           className="shrink-0 rounded-full px-3 py-1.5 text-xl sm:text-2xl font-bold tabular-nums"
-                          style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                          style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                         >
                           ${p.precio.toLocaleString()}
                         </span>

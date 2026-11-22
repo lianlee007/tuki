@@ -652,9 +652,9 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
                 type="button"
                 onClick={irAResenas}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap af-pulsar"
-                style={{ backgroundColor: paleta.surface, color: paleta.muted }}
+                style={{ backgroundColor: paleta.secondarySoft, color: paleta.secondaryText }}
               >
-                <Star size={14} />
+                <Star size={14} fill="currentColor" />
                 Reseñas
                 {resumenResenas.cantidad > 0 && (
                   <span className="tabular-nums opacity-70">

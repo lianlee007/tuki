@@ -159,6 +159,8 @@ export interface PaletaDerivada extends PaletaBase {
   muted: string;
   border: string;
   precio: string;
+  /** Fondo de la píldora del precio (tinte del apoyo, no de la marca). */
+  precioFondo: string;
   bgEsOscuro: boolean;
 
   /* --- Capa semántica -------------------------------------------------------
@@ -179,6 +181,7 @@ export interface PaletaDerivada extends PaletaBase {
   accentSolid: string;
   secondaryText: string;   // secundario legible como texto
   secondarySoft: string;
+  secondarySolid: string;  // relleno con etiqueta blanca encima
   danger: string;          // rojo adaptado a claro y oscuro (alertas, agotado)
   dangerSoft: string;
   success: string;         // verde adaptado a claro y oscuro (abierto, listo)
@@ -217,19 +220,19 @@ export function derivarPaleta(p: PaletaBase): PaletaDerivada {
   const successSoft = mezclar(surface, '#16A34A', 0.13);
 
   const accentText = tonoLegible(primary, accentSoft, 4.5, hacia);
-  const secondaryText = tonoLegible(secondary, secondarySoft, 4.5, hacia);
-  const danger = tonoLegible('#DC2626', dangerSoft, 4.5, hacia);
+  const secondaryText = tonoLegible(secondary, secondarySoft, 4.5, hacia);  const danger = tonoLegible('#DC2626', dangerSoft, 4.5, hacia);
   const success = tonoLegible('#16A34A', successSoft, 4.5, hacia);
   // El relleno se corrige hacia negro (no hacia `hacia`): siempre lleva blanco
   // encima, así que su límite es el mismo en claro y en oscuro.
   const accentSolid = tonoLegible(primary, '#FFFFFF', 4.5, '#000000');
+  const secondarySolid = tonoLegible(secondary, '#FFFFFF', 4.5, '#000000');
 
   return {
     bg, text, title, primary, secondary,
     onPrimary: textoSobre(primary),
     onSecondary: textoSobre(secondary),
     onSuccess: textoSobre(success),
-    surface, cardBg, muted, border, precio: accentText, bgEsOscuro,
+    surface, cardBg, muted, border, precio: secondaryText, precioFondo: secondarySoft, bgEsOscuro,
 
     accentText,
     accentSoft,
@@ -237,6 +240,7 @@ export function derivarPaleta(p: PaletaBase): PaletaDerivada {
     accentSolid,
     secondaryText,
     secondarySoft,
+    secondarySolid,
     danger,
     dangerSoft,
     success,
@@ -269,6 +273,12 @@ export function variablesAf(p: PaletaBase): Record<string, string> {
     // texto blanco, si no, desaparece).
     '--af-accent-solid-rgb': rgbTriplet(d.accentSolid),
     '--af-accent-solid-hover-rgb': rgbTriplet(mezclar(d.accentSolid, '#000000', 0.12)),
+    // El APOYO de la paleta, con sus tres variantes legibles. La marca manda en
+    // las acciones; el apoyo en la información: precios, sellos y detalles.
+    '--af-secondary-rgb': rgbTriplet(d.secondary),
+    '--af-secondary-text-rgb': rgbTriplet(d.secondaryText),
+    '--af-secondary-soft-rgb': rgbTriplet(d.secondarySoft),
+    '--af-secondary-solid-rgb': rgbTriplet(d.secondarySolid),
     '--af-border-rgb': rgbTriplet(d.border),
     // Semánticos: dentro del restaurante se adaptan a su paleta y a su modo, de
     // modo que una alerta o un "agotado" sea legible en ambos.

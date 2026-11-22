@@ -206,7 +206,7 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
       <div className={ANCHO}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-af-accent-text">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-af-secondary-text">
               Reseñas
             </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-af-ink font-title sm:text-4xl">
@@ -253,7 +253,7 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
         {hayResumen && !cargando && (
           <div className="mt-7 grid gap-5 rounded-[22px] bg-af-surface p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
             <div className="flex items-center gap-4 sm:border-r sm:border-af/20 sm:pr-7">
-              <span className="text-4xl font-bold tabular-nums leading-none text-af-ink">
+              <span className="text-4xl font-bold tabular-nums leading-none text-af-secondary-text">
                 {resumen.promedio.toFixed(1)}
               </span>
               <div>
@@ -283,7 +283,7 @@ export const ResenasPublicas: React.FC<ResenasPublicasProps> = ({
                         className="block h-full rounded-full transition-[width] duration-500"
                         style={{
                           width: `${porcentaje}%`,
-                          backgroundColor: estilos.primary,
+                          backgroundColor: estilos.secondary,
                         }}
                       />
                     </span>

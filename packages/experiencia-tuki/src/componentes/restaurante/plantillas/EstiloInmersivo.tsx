@@ -54,7 +54,7 @@ export const EstiloInmersivo: React.FC<PlantillaMenuProps> = ({
                       className="pointer-events-none ml-auto shrink-0 px-3 py-1.5 rounded-full text-sm font-bold tabular-nums"
                       style={
                         p.disponible
-                          ? { backgroundColor: estilos.accentSoft, color: estilos.precio }
+                          ? { backgroundColor: estilos.precioFondo, color: estilos.precio }
                           : { backgroundColor: 'rgb(var(--af-surface-rgb) / 0.96)', color: 'rgb(var(--af-ink-rgb))', border: '1px solid rgb(var(--af-border-rgb))' }
                       }
                     >

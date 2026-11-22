@@ -75,7 +75,7 @@ export const EstiloMinimalista: React.FC<PlantillaMenuProps> = ({
                           </h3>
                           <span
                             className="shrink-0 rounded-full px-3 py-1 text-lg sm:text-xl font-semibold tabular-nums"
-                            style={{ backgroundColor: estilos.accentSoft, color: estilos.precio }}
+                            style={{ backgroundColor: estilos.precioFondo, color: estilos.precio }}
                           >
                             ${p.precio.toLocaleString()}
                           </span>

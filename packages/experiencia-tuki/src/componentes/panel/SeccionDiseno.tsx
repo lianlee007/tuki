@@ -63,7 +63,7 @@ const EstrellaCasa: React.FC<{ color: string }> = ({ color }) => (
 );
 
 const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({ tipo, paleta }) => {
-    const { bg, surface, border, accentSoft, primary, secondary, text, muted, accentText, secondaryText } = paleta;
+    const { bg, surface, border, accentSoft, primary, secondary, text, muted, accentText, secondaryText, secondarySoft } = paleta;
     /** Tinta que se lee encima de cada color de marca, para el texto sobre las fotos. */
     const tintaFoto = textoSobre(primary);
     const tintaApoyo = textoSobre(secondary);
@@ -84,7 +84,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                                         {columna === 0 && fila === 0 && <EstrellaCasa color={secondaryText} />}
                                         <div className="h-1.5 w-1/2 shrink-0 rounded-full" style={{ backgroundColor: text }} />
                                         <div className="min-w-[8px] flex-1 border-b border-dotted" style={{ borderColor: border }} />
-                                        <PildoraPrecio tinte={accentSoft} tinta={accentText} />
+                                        <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} />
                                     </div>
                                 </div>
                             ))}
@@ -114,7 +114,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                                         {i === 0 && <EstrellaCasa color={secondaryText} />}
                                         <div className="h-2 w-[46%] shrink-0 rounded-full" style={{ backgroundColor: text }} />
                                     </div>
-                                    <PildoraPrecio tinte={accentSoft} tinta={accentText} ancho="w-3.5" />
+                                    <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} ancho="w-3.5" />
                                 </div>
                                 <div className="h-1 w-[64%] rounded-full" style={{ backgroundColor: muted }} />
                             </div>
@@ -136,7 +136,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                         <div className="h-2 w-[40%] rounded-full" style={{ backgroundColor: tintaFoto }} />
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 w-[24%] rounded-full" style={{ backgroundColor: tintaFoto, opacity: 0.65 }} />
-                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="ml-auto" />
+                            <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="ml-auto" />
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                     {[0, 1, 2, 3].map((i) => (
                         <div key={i} className="relative rounded-[6px]" style={{ backgroundColor: primary }}>
                             {i === 2 && <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1 top-1" />}
-                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="absolute bottom-1 left-1" />
+                            <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="absolute bottom-1 left-1" />
                         </div>
                     ))}
                 </div>
@@ -165,7 +165,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                         <div className="flex flex-1 flex-col justify-center gap-2 px-2.5">
                             <div className="h-1.5 w-[80%] rounded-full" style={{ backgroundColor: text }} />
                             <div className="flex items-center justify-between gap-1.5">
-                                <PildoraPrecio tinte={accentSoft} tinta={accentText} />
+                                <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} />
                                 <div className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: primary }} />
                             </div>
                         </div>
@@ -182,7 +182,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
             <div className="grid h-full w-full grid-cols-4 grid-rows-3 gap-[3px] p-1.5" style={{ backgroundColor: bg }}>
                 <div className="relative col-span-2 row-span-2 overflow-hidden rounded-[4px]" style={{ backgroundColor: primary }}>
                     <PildoraCasa fondo={secondary} tinta={tintaApoyo} className="absolute left-1.5 top-1.5" />
-                    <PildoraPrecio tinte={accentSoft} tinta={accentText} className="absolute bottom-1.5 left-1.5" />
+                    <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="absolute bottom-1.5 left-1.5" />
                 </div>
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                     <div key={i} className="rounded-[4px]" style={{ backgroundColor: primary }} />
@@ -207,7 +207,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                         <div className="flex flex-1 flex-col justify-center gap-2 px-3.5">
                             <div className="h-2 w-[78%] rounded-full" style={{ backgroundColor: text }} />
                             <div className="h-1.5 w-[52%] rounded-full" style={{ backgroundColor: muted }} />
-                            <PildoraPrecio tinte={accentSoft} tinta={accentText} className="self-start" ancho="w-3.5" />
+                            <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="self-start" ancho="w-3.5" />
                         </div>
                     </div>
                 ))}
@@ -240,7 +240,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                                 style={{ backgroundColor: i % 2 === 1 ? muted : text }}
                             />
                             {i === 1 && <EstrellaCasa color={secondaryText} />}
-                            <PildoraPrecio tinte={accentSoft} tinta={accentText} />
+                            <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} />
                         </div>
                     ))}
                 </div>
@@ -262,7 +262,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                                 <div className="h-2 w-[72%] rounded-full" style={{ backgroundColor: tintaFoto }} />
                                 <div className="flex items-center gap-1.5">
                                     <div className="h-1.5 w-[45%] rounded-full" style={{ backgroundColor: tintaFoto, opacity: 0.7 }} />
-                                    <PildoraPrecio tinte={accentSoft} tinta={accentText} className="ml-auto" />
+                                    <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="ml-auto" />
                                 </div>
                             </div>
                         </div>
@@ -284,7 +284,7 @@ const MiniMenu: React.FC<{ tipo: EstiloPlantilla; paleta: PaletaDerivada }> = ({
                     <div className="flex flex-1 flex-col justify-center gap-1.5 p-2">
                         <div className="h-1.5 w-[85%] rounded-full" style={{ backgroundColor: text }} />
                         <div className="h-1 w-[60%] rounded-full" style={{ backgroundColor: muted }} />
-                        <PildoraPrecio tinte={accentSoft} tinta={accentText} className="self-start" />
+                        <PildoraPrecio tinte={secondarySoft} tinta={secondaryText} className="self-start" />
                     </div>
                 </div>
             ))}
@@ -471,8 +471,8 @@ const TarjetaPaleta: React.FC<{
         ['Fondo', derivada.bg],
         ['Marca', derivada.primary],
         ['Apoyo', derivada.secondary],
-        ['Tinte', derivada.accentSoft],
-        ['Tinta', derivada.text],
+        ['Texto', derivada.text],
+        ['Títulos', derivada.title],
     ];
 
     return (
@@ -657,9 +657,28 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                 <header className="mb-5">
                     <h2 className="text-[15px] font-bold tracking-tight text-af-ink">Paleta de colores</h2>
                     <p className="mt-1 max-w-2xl text-xs leading-relaxed text-af-ink-secondary">
-                        Cada paleta trae su versión clara y oscura y se prueba con la estructura que tengas activa. Los colores de la
-                        tarjeta son los que verás en tu página; el visitante elige el modo. Tu panel también adopta el color de marca.
+                        Cada paleta trae cinco colores, en claro y en oscuro: el fondo y las tintas sostienen la lectura,
+                        la marca va en los botones y el apoyo en precios, sellos y detalles. La tarjeta se prueba con la
+                        estructura activa y el visitante elige el modo. Tu panel también adopta el color de marca.
                     </p>
+
+                    {/* Los cinco papeles de la paleta, con los colores que se están
+                        viendo ahora. Sin esto, cinco muestras seguidas no dicen qué
+                        hace cada una en la página. */}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        {([
+                            ['Fondo', derivadaActiva.bg],
+                            ['Marca', derivadaActiva.primary],
+                            ['Apoyo', derivadaActiva.secondary],
+                            ['Texto', derivadaActiva.text],
+                            ['Títulos', derivadaActiva.title],
+                        ] as [string, string][]).map(([rol, color]) => (
+                            <span key={rol} className="inline-flex items-center gap-1.5 text-[11px] text-af-ink-secondary">
+                                <span className="h-2.5 w-2.5 rounded-full border border-black/10" style={{ backgroundColor: color }} />
+                                {rol}
+                            </span>
+                        ))}
+                    </div>
                 </header>
 
                 {/* Controles: familia y modo de la vista previa */}
