@@ -749,7 +749,7 @@ export const SeccionDifusion: React.FC<SeccionDifusionProps> = ({ restaurante, m
             Un enlace, no una foto: quien lo abra ve tu carta completa y tus precios de hoy.
           </p>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <TarjetaRed
               nombre="WhatsApp"
               titulo="Compartir el menú por WhatsApp"
