@@ -80,7 +80,7 @@ export default function PanelControl() {
   const { user, cerrarSesion } = useAuth();
   const navigate = useNavigate();
   const { tema: modoTema } = useTema();
-  const { cargando, restaurante, setRestaurante, tema, setTema, platillos, setPlatillos, mensaje, mostrarMensaje, cerrarMensaje, cargarDatos } = useDatosPanel(user);
+  const { cargando, restaurante, setRestaurante, tema, setTema, categorias, platillos, setPlatillos, mensaje, mostrarMensaje, cerrarMensaje, cargarDatos } = useDatosPanel(user);
 
   /**
    * El panel se pinta con el color de marca que el dueño eligió en Diseño: la
@@ -291,9 +291,9 @@ export default function PanelControl() {
     }
   };
 
-  const sugerirIA = async (prompt: string, setter: (val: string) => void) => {
+  const sugerirIA = async (prompt: string, setter: (val: string) => void, sistema?: string) => {
     // La IA no bloquea el panel entero: quien la llama muestra su propia espera.
-    try { const res = await generarContenidoIA(prompt); setter(res.replace(/^["']|["']$/g, '').replace(/\.$/, '')); } catch (e: any) { mostrarMensaje('error', `IA Error: ${formatError(e)}`); }
+    try { const res = await generarContenidoIA(prompt, sistema); setter(res.replace(/^["']|["']$/g, '').replace(/\.$/, '')); } catch (e: any) { mostrarMensaje('error', `IA Error: ${formatError(e)}`); }
   }
 
   if (cargando && !restaurante) {
@@ -467,7 +467,7 @@ export default function PanelControl() {
               quita del todo para que la barra quede pegada al borde; en el
               resto se conserva para que la última tarjeta no toque el final. */}
           <div className={`max-w-6xl mx-auto space-y-8 ${tieneBarraInferior ? 'pb-0' : 'pb-24 md:pb-20'}`}>
-            {tabActiva === 'menu' && editandoPlatillo && restaurante ? <EditorPlatillo platillo={editandoPlatillo} setPlatillo={setEditandoPlatillo} guardar={guardarPlatillo} cancelar={() => setEditandoPlatillo(null)} sugerirIA={sugerirIA} handleImagenUpload={handleImagenUpload} guardando={guardando} restauranteNombre={restaurante.nombre} /> : null}
+            {tabActiva === 'menu' && editandoPlatillo && restaurante ? <EditorPlatillo platillo={editandoPlatillo} setPlatillo={setEditandoPlatillo} guardar={guardarPlatillo} cancelar={() => setEditandoPlatillo(null)} sugerirIA={sugerirIA} handleImagenUpload={handleImagenUpload} guardando={guardando} restauranteNombre={restaurante.nombre} categorias={categorias.map((c) => c.nombre)} /> : null}
             {/* SeccionInfo se mantiene montada para no perder los cambios sin guardar al cambiar de pestaña.
                 Se oculta con el ATRIBUTO `hidden`, no con la clase: las utilidades `space-y-*` de
                 Tailwind saltan `[hidden]`, mientras que la clase cuenta como hermano y le dejaba

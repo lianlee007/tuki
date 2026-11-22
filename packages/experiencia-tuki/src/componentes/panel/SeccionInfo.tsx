@@ -40,7 +40,7 @@ interface SeccionInfoProps {
     restaurante: Restaurante;
     guardarRestaurante: (datos?: Partial<Restaurante>) => Promise<void>;
     subirImagen: (file: File, destino?: 'platillos' | 'restaurantes' | 'resenas') => Promise<string>;
-    sugerirIA: (prompt: string, setter: (val: string) => void) => Promise<void>;
+    sugerirIA: (prompt: string, setter: (val: string) => void, sistema?: string) => Promise<void>;
     guardando: boolean;
     mostrarMensaje: (tipo: 'exito' | 'error', texto: string) => void;
     onEstadoPublicacion?: (estado: EstadoPublicacion) => void;
@@ -61,6 +61,38 @@ const SISTEMA_IA =
     'Cuando se te indique un tipo de cocina, el texto debe sonar propio de esa cocina ' +
     '(ingredientes, platos y tradición), no una frase genérica que valdría para cualquier restaurante. ' +
     'Nunca usas comillas ni markdown: respondes solo con el texto pedido.';
+
+/** Normaliza un nombre para comparar: sin tildes, signos ni mayúsculas. */
+const normalizarNombre = (valor: string): string =>
+    valor
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+/**
+ * Similitud simple por subsecuencia común. Sirve para rechazar una respuesta
+ * de la IA que cambió el nombre por otro completamente distinto.
+ */
+const similitudNombre = (a: string, b: string): number => {
+    const x = normalizarNombre(a);
+    const y = normalizarNombre(b);
+    if (!x || !y) return 0;
+    const prev = new Array<number>(y.length + 1).fill(0);
+    for (let i = 1; i <= x.length; i++) {
+        let diagonal = 0;
+        for (let j = 1; j <= y.length; j++) {
+            const temp = prev[j] ?? 0;
+            prev[j] = x[i - 1] === y[j - 1]
+                ? diagonal + 1
+                : Math.max(prev[j] ?? 0, prev[j - 1] ?? 0);
+            diagonal = temp;
+        }
+    }
+    return (prev[y.length] ?? 0) / Math.max(x.length, y.length);
+};
 
 /**
  * Campos que deben estar completos para publicar el sitio. El `grupo` es el
@@ -501,6 +533,27 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
         try { await logic(); } finally { setLoadingAction(null); }
     };
 
+    /**
+     * La IA a veces devuelve una explicación en vez del nombre. Solo se aplica
+     * si parece un nombre y conserva la marca original.
+     */
+    const aplicarNombreCorregido = (val: string) => {
+        const original = (watch('nombre') || '').trim();
+        const limpio = val.replace(/^["'«»]+|["'«»]+$/g, '').replace(/\s+/g, ' ').trim();
+        const invalido =
+            limpio.length < 2 ||
+            limpio.length > LIMITES.REST_NOMBRE ||
+            /[.:;!?]/.test(limpio) ||
+            limpio.split(/\s+/).length > 8 ||
+            /\b(nombre|restaurante|marca|correcto|corrige|ortografia|no lo cambies)\b/i.test(limpio) ||
+            similitudNombre(original, limpio) < 0.6;
+        if (invalido) {
+            mostrarMensaje('error', 'La IA no devolvió un nombre válido. Corrígelo a mano.');
+            return;
+        }
+        setValue('nombre', limpio, { shouldDirty: true, shouldValidate: true });
+    };
+
     /** Tipo de cocina en texto, tal como se lo pasamos a la IA. */
     const tipoCocina = cocinasElegidas.join(' y ');
 
@@ -560,8 +613,12 @@ export const SeccionInfo: React.FC<SeccionInfoProps> = ({
     };
 
     const iaOrtografiaNombre = () => runIA('ortografia_nombre', () => sugerirIA(
-        `Corrige la ortografía del nombre del restaurante: "${watch('nombre')}". Nombres como "Fogonzo" o "Rappi" son marcas válidas: no los cambies. Devuelve solo el nombre.`,
-        (val) => setValue('nombre', val.trim(), { shouldDirty: true, shouldValidate: true })
+        'Corrige el nombre del restaurante. Ejemplos: "Donde Liann" -> "Donde Lian"; ' +
+        '"Fogonzo" -> "Fogonzo"; "Rappi" -> "Rappi"; ' +
+        '"Restaurante el buen sabor" -> "Restaurante El Buen Sabor". ' +
+        `Ahora: "${watch('nombre')}" ->`,
+        aplicarNombreCorregido,
+        'Eres un corrector ortográfico. Devuelve solo el texto corregido, sin comillas ni explicaciones.',
     ));
 
     const sugerirEslogan = () => runIA('eslogan', () => sugerirIA(

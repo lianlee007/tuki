@@ -6,7 +6,7 @@
  * de IA siempre a la vista y la barra de guardado pegada abajo para no tener
  * que buscarla al final de un formulario largo.
  */
-import React, { useState, useEffect, useId, useRef, Dispatch, SetStateAction } from 'react';
+import React, { useState, useEffect, useId, useMemo, useRef, Dispatch, SetStateAction } from 'react';
 import { useForm } from 'react-hook-form';
 import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,76 +32,15 @@ interface EditorPlatilloProps {
   setPlatillo: Dispatch<SetStateAction<Partial<Platillo> | null>>;
   guardar: (p: Partial<Platillo>) => void;
   cancelar: () => void;
-  sugerirIA: (prompt: string, setter: (val: string) => void) => Promise<void>;
+  sugerirIA: (prompt: string, setter: (val: string) => void, sistema?: string) => Promise<void>;
   handleImagenUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   guardando: boolean;
   restauranteNombre: string;
+  /** Categorías reales del restaurante; la categoría del plato se elige de aquí. */
+  categorias: string[];
 }
 
-/**
- * Categorías sugeridas al crear o editar un plato.
- *
- * Van agrupadas por tema para poder revisarlas de un vistazo, pero el
- * `<datalist>` las recibe ordenadas alfabéticamente, que es como se buscan al
- * escribir. La lista es sólo una sugerencia: el campo acepta cualquier texto,
- * así que un restaurante con una carta muy suya nunca queda fuera.
- */
-const CATEGORIAS_SUGERIDAS: Record<string, string[]> = {
-  /* Cómo se come y a qué hora */
-  momentos: [
-    'Desayunos', 'Almuerzos', 'Cenas', 'Meriendas', 'Entradas', 'Platos fuertes',
-    'Para compartir', 'Pasabocas', 'Menú del día', 'Menú infantil', 'Ejecutivo',
-    'A la carta', 'Buffet', 'Combos', 'Promociones',
-  ],
-  /* Cocinas del mundo */
-  cocinas: [
-    'Alemana', 'Americana', 'Árabe', 'Argentina', 'Asiática', 'Brasileña',
-    'Caribeña', 'Chilena', 'China', 'Colombiana', 'Coreana', 'Cubana',
-    'Dominicana', 'Ecuatoriana', 'Española', 'Francesa', 'Fusión', 'Griega',
-    'Hindú', 'India', 'Israelí', 'Italiana', 'Japonesa', 'Libanesa',
-    'Mediterránea', 'Mexicana', 'Panameña', 'Peruana', 'Puertorriqueña',
-    'Tailandesa', 'Tex-Mex', 'Turca', 'Uruguaya', 'Venezolana', 'Vietnamita',
-  ],
-  /* Tipos de plato */
-  platos: [
-    'Acompañantes', 'Adiciones', 'Alitas', 'Antojitos', 'Arepas', 'Arroces',
-    'Asados', 'Burritos', 'Caldos', 'Calzone', 'Carnes', 'Ceviche',
-    'Charcutería', 'Churrasco', 'Costillas', 'Cremas', 'Empanadas', 'Ensaladas',
-    'Fajitas', 'Fritos', 'Guarniciones', 'Hamburguesas', 'Lasagna', 'Mariscos',
-    'Milanesas', 'Nachos', 'Paella', 'Parrilla', 'Pastas', 'Perros calientes',
-    'Pescados', 'Pizza', 'Pokes', 'Pollo', 'Quesadillas', 'Ramen', 'Raviolis',
-    'Risotto', 'Salsas', 'Sándwiches', 'Sopas', 'Sushi', 'Tabla de quesos',
-    'Tacos', 'Tamales', 'Típicos', 'Wok', 'Wraps',
-  ],
-  /* Dulce y panadería */
-  dulce: [
-    'Chocolates', 'Crepes', 'Donuts', 'Dulces típicos', 'Galletas', 'Helados',
-    'Panadería', 'Pastelería', 'Postres', 'Repostería', 'Tortas', 'Waffles',
-  ],
-  /* Bebidas */
-  bebidas: [
-    'Agua', 'Batidos', 'Bebidas', 'Bebidas calientes', 'Bebidas frías', 'Café',
-    'Café de especialidad', 'Cerveza artesanal', 'Cervezas', 'Cócteles',
-    'Gaseosas', 'Infusiones', 'Jugos naturales', 'Licores', 'Limonadas',
-    'Micheladas', 'Smoothies', 'Té', 'Vinos',
-  ],
-  /* Estilos y dietas */
-  dietas: [
-    'Alto en proteína', 'Artesanal', 'Bajo en calorías', 'Casero', 'Fitness',
-    'Gourmet', 'Keto', 'Light', 'Orgánico', 'Saludable', 'Sin azúcar',
-    'Sin gluten', 'Sin lactosa', 'Vegano', 'Vegetariano',
-  ],
-  /* Qué ofrece el local más allá del plato */
-  formatos: [
-    'Brunch', 'Catering', 'Comida rápida', 'Del chef', 'De temporada',
-    'Especialidades de la casa', 'Fritanga', 'Marisquería', 'Navideño',
-    'Pizzería', 'Sushi bar',
-  ],
-};
 
-const CATEGORIAS_ESTANDAR = Object.values(CATEGORIAS_SUGERIDAS)
-  .flat()
-  .sort((a, b) => a.localeCompare(b, 'es'));
 
 /* ------------------------------------------------------------------ *
  *  Piezas de formulario
@@ -180,10 +119,20 @@ const Interruptor: React.FC<{
  * ------------------------------------------------------------------ */
 
 export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
-  platillo, guardar, cancelar, sugerirIA, handleImagenUpload, guardando, restauranteNombre,
+  platillo, guardar, cancelar, sugerirIA, handleImagenUpload, guardando, restauranteNombre, categorias,
 }) => {
   const id = useId();
   const inputFotoRef = useRef<HTMLInputElement>(null);
+
+  const categoriasDisponibles = useMemo(() => {
+    const base = [...new Set(categorias.map((c) => c.trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'es'));
+    const actual = (platillo.categoria || '').trim();
+    if (actual && !base.some((c) => c.toLowerCase() === actual.toLowerCase())) {
+      base.unshift(actual);
+    }
+    return base;
+  }, [categorias, platillo.categoria]);
 
   const { register, handleSubmit, setValue, watch, trigger, formState: { errors } } = useForm<PlatilloFormValues>({
     resolver: zodResolver(PlatilloSchema),
@@ -333,20 +282,21 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
     (val) => escribirIngredientes(val.split(',').map((i) => limpiarIngrediente(i, 40)).filter(Boolean).join(', ')),
   ));
 
-  /** Encaja la respuesta de la IA en la lista de categorías o la respeta si es nueva. */
+  /** Encaja la respuesta de la IA en una categoría que ya existe. */
   const aplicarCategoria = (val: string) => {
     const limpio = val.replace(/^["']|["']$/g, '').replace(/\.$/, '').trim();
     if (!limpio) return;
     const minuscula = limpio.toLowerCase();
-    const exacta = CATEGORIAS_ESTANDAR.find((cat) => cat.toLowerCase() === minuscula);
-    const parecida = exacta ?? CATEGORIAS_ESTANDAR.find(
+    const exacta = categoriasDisponibles.find((cat) => cat.toLowerCase() === minuscula);
+    const parecida = exacta ?? categoriasDisponibles.find(
       (cat) => cat.toLowerCase().includes(minuscula) || minuscula.includes(cat.toLowerCase()),
     );
-    setValue('categoria', (parecida ?? limpio).slice(0, LIMITES.PLATILLO_CAT), { shouldValidate: true });
+    if (!parecida) return;
+    setValue('categoria', parecida, { shouldValidate: true });
   };
 
   const iaCategoria = () => runIA('categoria', () => sugerirIA(
-    `Clasifica el plato "${nombre}" del restaurante "${restauranteNombre}" en UNA de estas categorías: ${CATEGORIAS_ESTANDAR.join(', ')}. Responde solo con la categoría.`,
+    `Clasifica el plato "${nombre}" del restaurante "${restauranteNombre}" en UNA de estas categorías: ${categoriasDisponibles.join(', ')}. Responde solo con la categoría.`,
     aplicarCategoria,
   ));
 
@@ -368,7 +318,7 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
       (val) => escribirIngredientes(val.split(',').map((i) => limpiarIngrediente(i, 40)).filter(Boolean).join(', ')),
     );
     await sugerirIA(
-      `Clasifica el plato "${nombre}" del restaurante "${restauranteNombre}" en UNA de estas categorías: ${CATEGORIAS_ESTANDAR.join(', ')}. Responde solo con la categoría.`,
+      `Clasifica el plato "${nombre}" del restaurante "${restauranteNombre}" en UNA de estas categorías: ${categoriasDisponibles.join(', ')}. Responde solo con la categoría.`,
       aplicarCategoria,
     );
   });
@@ -493,26 +443,24 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
           htmlFor={`${id}-categoria`}
           requerido
           error={errors.categoria?.message}
-          ayuda="Dónde aparece en la carta. También puedes escribir una nueva."
-          accion={haySenalesParaCategoria ? (
+          ayuda="Elige una de las categorías que ya tiene tu carta."
+          accion={haySenalesParaCategoria && categoriasDisponibles.length > 0 ? (
             <BotonIA onClick={iaCategoria} cargando={loadingAction === 'categoria'} disabled={ocupado} icono={<Wand2 size={13} />}>
               Deducir
             </BotonIA>
           ) : undefined}
         >
-          <input
+          <select
             id={`${id}-categoria`}
             data-campo="categoria"
-            list={`${id}-categorias`}
-            maxLength={LIMITES.PLATILLO_CAT}
-            autoComplete="off"
-            placeholder="Selecciona o escribe…"
             {...register('categoria')}
             className={`input-af h-11 text-sm ${errors.categoria ? 'border-af-danger focus:border-af-danger' : ''}`}
-          />
-          <datalist id={`${id}-categorias`}>
-            {CATEGORIAS_ESTANDAR.map((cat) => <option key={cat} value={cat} />)}
-          </datalist>
+          >
+            <option value="">Sin categoría</option>
+            {categoriasDisponibles.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </Campo>
       </section>
 

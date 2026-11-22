@@ -20,24 +20,27 @@ const categoriasDe = async (restauranteId: string): Promise<Categoria[]> => {
   return (data?.categorias ?? []).map(aCategoria);
 };
 
-const asegurarCategoria = async (
+const buscarCategoria = async (
   restauranteId: string,
   nombre: string | undefined,
-): Promise<string | null> => {
+): Promise<{ id: string | null; error: string | null }> => {
   const limpio = (nombre ?? '').trim();
-  if (!limpio) return null;
+  if (!limpio) return { id: null, error: null };
 
-  const { data } = await intentar(() => apis.restaurantes.panel(restauranteId));
+  const { data, error } = await intentar(() => apis.restaurantes.panel(restauranteId));
+  if (error) {
+    return { id: null, error: 'No pudimos leer las categorías del restaurante.' };
+  }
   const existente = (data?.categorias ?? []).find(
     (categoria) => categoria.nombre.toLowerCase() === limpio.toLowerCase(),
   );
-  if (existente) return existente.id;
-
-  const creada = await intentar(() =>
-    apis.restaurantes.crearCategoria(restauranteId, { nombre: limpio }),
-  );
-  const categoria = creada.data as { id?: string } | null;
-  return categoria?.id ?? null;
+  if (!existente) {
+    return {
+      id: null,
+      error: 'La categoría seleccionada ya no existe. Recarga el panel e inténtalo otra vez.',
+    };
+  }
+  return { id: existente.id, error: null };
 };
 
 export const apiPlatillos = {
@@ -63,7 +66,11 @@ export const apiPlatillos = {
       return { data: null, error: { message: 'No encontramos tu restaurante.' } };
     }
 
-    const categoriaId = await asegurarCategoria(restauranteId, platillo.categoria);
+    const categoria = await buscarCategoria(restauranteId, platillo.categoria);
+    if (categoria.error) {
+      return { data: null, error: { message: categoria.error } };
+    }
+    const categoriaId = categoria.id;
 
     const datos = {
       nombre: platillo.nombre?.trim() || 'Nuevo',
