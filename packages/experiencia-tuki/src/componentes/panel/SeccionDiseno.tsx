@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tema, EstiloPlantilla } from '../../tipos';
 import {
     Layout, List, Minus, Grid3x3, Image as ImageIcon, Check,
-    GalleryHorizontal, LayoutGrid, Columns2, Rows3, Sun, Moon, ShieldCheck, Star,
+    GalleryHorizontal, LayoutGrid, Columns2, Rows3, Sun, Moon, Star,
 } from 'lucide-react';
 import { derivarPaleta, textoSobre, conLuminosidad, type PaletaDerivada } from '../../lib/color';
+import { cargarCatalogoFuentes, PARES_FUENTES, parDeTema } from '../../lib/fuentes';
 import { MARCOS } from '../restaurante/estructuras';
 import {
     PALETAS, FAMILIAS, aBase,
@@ -462,11 +463,12 @@ const TarjetaPaleta: React.FC<{
     paleta: Paleta;
     activa: boolean;
     modo: ModoVista;
-    estructura: EstiloPlantilla;
     deshabilitado: boolean;
     onElegir: () => void;
-}> = ({ paleta, activa, modo, estructura, deshabilitado, onElegir }) => {
+}> = ({ paleta, activa, modo, deshabilitado, onElegir }) => {
     const derivada = derivarPaleta(aBase(modo === 'claro' ? paleta.claro : paleta.oscuro));
+    /* Los cinco colores que se guardan, en el orden en que se leen: papel,
+       marca, apoyo y las dos tintas. La tarjeta es solo esto: color. */
     const muestras: [string, string][] = [
         ['Fondo', derivada.bg],
         ['Marca', derivada.primary],
@@ -486,38 +488,21 @@ const TarjetaPaleta: React.FC<{
                 activa ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
             }`}
         >
-            {/* Los colores van primero y a lo grande: es lo que se está eligiendo. */}
-            <div className="flex h-9" aria-hidden="true">
-                {muestras.map(([nombre, color]) => (
+            <div className="flex h-28 w-full" aria-hidden="true">
+                {muestras.map(([rol, color]) => (
                     <span
-                        key={nombre}
-                        title={`${nombre} ${color}`}
-                        className="flex-1 transition-transform duration-200 group-hover:scale-y-110"
+                        key={rol}
+                        title={`${rol} ${color}`}
+                        className="flex-1 transition-[filter] duration-300 group-hover:brightness-[1.03]"
                         style={{ backgroundColor: color }}
                     />
                 ))}
             </div>
 
-            <div className="relative h-44 w-full">
-                <MiniWireframe tipo={estructura} paleta={derivada} />
-                <span
-                    className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-wider"
-                    style={{ backgroundColor: derivada.accentSoft, color: derivada.accentText }}
-                    title="Contraste WCAG AA comprobado en claro y en oscuro"
-                >
-                    <ShieldCheck size={10} strokeWidth={2.5} />
-                    AA
-                </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-3 bg-af-surface p-3.5">
-                <div className="min-w-0">
-                    <p className={`truncate text-sm font-bold ${activa ? 'text-af-accent' : 'text-af-ink'}`}>{paleta.nombre}</p>
-                    <p className="mt-0.5 truncate text-[11px] text-af-ink-secondary">{paleta.etiqueta}</p>
-                </div>
-                <span className="shrink-0 rounded-full bg-af-ink/[0.06] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-af-ink-secondary">
-                    {paleta.familia}
-                </span>
+            <div className="flex items-center justify-between gap-3 bg-af-surface px-4 py-3">
+                <p className={`truncate text-sm font-bold ${activa ? 'text-af-accent' : 'text-af-ink'}`}>
+                    {paleta.nombre}
+                </p>
                 {activa && (
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-af-accent text-white">
                         <Check size={14} strokeWidth={3} />
@@ -588,6 +573,12 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
     };
     const derivadaActiva = derivarPaleta(aBase(modo === 'oscuro' ? oscuroActivo : claroActivo));
 
+    /* Las tarjetas de tipografía se dibujan con su propia letra: hay que tener
+       el catálogo cargado al entrar en Apariencia. */
+    useEffect(() => { cargarCatalogoFuentes(); }, []);
+
+    const parActivo = parDeTema(tema.fuente_titulos, tema.fuente_cuerpo);
+
     const visibles = familia === 'Todas' ? PALETAS : PALETAS.filter((p) => p.familia === familia);
     const descripcionFamilia =
         familia === 'Todas'
@@ -646,6 +637,73 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                                         <Check size={14} strokeWidth={3} />
                                     </span>
                                 )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* ---------- Tipografía ---------- */}
+            <section>
+                <header className="mb-5">
+                    <h2 className="text-[15px] font-bold tracking-tight text-af-ink">Tipografía</h2>
+                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-af-ink-secondary">
+                        Una pareja para los títulos y otra para el texto. Cada tarjeta se escribe con su propia letra;
+                        al elegirla queda guardada con tu restaurante y se aplica en toda tu página.
+                    </p>
+                </header>
+
+                {!parActivo && (
+                    <div className="mb-4 rounded-[16px] border border-af/25 bg-af-surface px-4 py-3">
+                        <p className="text-xs text-af-ink-secondary">
+                            Tu carta usa una tipografía heredada. Elige una pareja del catálogo para unificarla.
+                        </p>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {PARES_FUENTES.map((par) => {
+                        const activa = parActivo?.id === par.id;
+                        const familiaTitulo = `'${par.titulos}', Georgia, serif`;
+                        const familiaCuerpo = `'${par.cuerpo}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+                        return (
+                            <button
+                                key={par.id}
+                                type="button"
+                                onClick={() => aplicarTema({ fuente_titulos: par.titulos, fuente_cuerpo: par.cuerpo })}
+                                disabled={guardando}
+                                aria-pressed={activa}
+                                className={`af-pulsar relative rounded-[20px] border p-4 text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                                    activa ? 'border-af-accent ring-2 ring-af-accent/25' : 'border-af/30 hover:border-af-accent/60'
+                                }`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <span
+                                        className="text-[2.6rem] leading-[0.85] text-af-ink"
+                                        style={{ fontFamily: familiaTitulo }}
+                                        aria-hidden="true"
+                                    >
+                                        Aa
+                                    </span>
+                                    {activa && (
+                                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-af-accent text-white">
+                                            <Check size={14} strokeWidth={3} />
+                                        </span>
+                                    )}
+                                </div>
+
+                                <p className="mt-3 truncate text-base font-semibold text-af-ink" style={{ fontFamily: familiaTitulo }}>
+                                    {par.nombre}
+                                </p>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-af-ink-secondary">
+                                    {par.etiqueta}
+                                </p>
+                                <p className="mt-2 text-[13px] leading-relaxed text-af-ink-secondary" style={{ fontFamily: familiaCuerpo }}>
+                                    El sabor de lo nuestro, servido con calma.
+                                </p>
+                                <p className="mt-3 truncate border-t border-af/15 pt-2 text-[10px] text-af-ink-secondary">
+                                    {par.titulos} · {par.cuerpo}
+                                </p>
                             </button>
                         );
                     })}
@@ -740,13 +798,14 @@ export const SeccionDiseno: React.FC<SeccionDisenoProps> = ({ tema, aplicarTema,
                             paleta={p}
                             activa={esSeleccionado(p)}
                             modo={modo}
-                            estructura={arquetipoActivo}
                             deshabilitado={guardando}
                             onElegir={() => aplicarPaleta(p)}
                         />
                     ))}
                 </div>
             </section>
+
+
         </div>
     );
 };

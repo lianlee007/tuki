@@ -44,6 +44,7 @@ import { ResenasPublicas } from './ResenasPublicas';
 import { useResenas } from '../../modulos/resenas';
 import { apiSaludo, apiHorarios } from '../../api/misApis';
 import { conLuminosidad, derivarPaleta, variablesAf } from '../../lib/color';
+import { cargarFuentes } from '../../lib/fuentes';
 import { urlPublica } from '../../lib/urlPublica';
 import { normalizarTexto } from '../../lib/utils';
 
@@ -289,7 +290,15 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
     cardBorder: `1px solid ${paleta.border}`,
     cardHoverShadow: paleta.bgEsOscuro ? '0 24px 48px -16px rgba(0,0,0,0.55)' : '0 24px 48px -16px rgba(0,0,0,0.12)',
     isDark,
+    fuenteTitulos: tema.fuente_titulos,
+    fuenteCuerpo: tema.fuente_cuerpo,
   };
+
+  /* La ficha se dibuja con las familias del tema. Se piden solo esas dos: el
+     catálogo completo se queda en el panel, donde se previsualiza. */
+  useEffect(() => {
+    cargarFuentes([tema.fuente_titulos, tema.fuente_cuerpo]);
+  }, [tema.fuente_titulos, tema.fuente_cuerpo]);
 
   // Variables scopeadas: toda la interfaz (clases af-*) hereda la paleta del restaurante.
   const variables = variablesAf(base);
@@ -464,7 +473,7 @@ export const PlantillaRestaurante: React.FC<PlantillaProps> = ({
         backgroundSize: marco.patron === 'lineas' ? '100% 34px' : '22px 22px',
         minHeight: '100vh',
         overflowX: 'clip',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontFamily: `'${tema.fuente_cuerpo}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
       } as React.CSSProperties}
       className={`relative estructura-${tema.estilo_plantilla}`}
     >

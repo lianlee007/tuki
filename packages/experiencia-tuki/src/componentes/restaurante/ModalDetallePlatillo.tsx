@@ -62,7 +62,10 @@ export const ModalDetallePlatillo: React.FC<Props> = ({
       aria-modal="true"
       aria-label={platillo.nombre}
       className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 md:p-8"
-      style={variablesAf({ bg: estilos.bg, text: estilos.text, title: estilos.title, primary: estilos.primary, secondary: estilos.secondary }) as React.CSSProperties}
+      style={{
+        ...(variablesAf({ bg: estilos.bg, text: estilos.text, title: estilos.title, primary: estilos.primary, secondary: estilos.secondary }) as React.CSSProperties),
+        fontFamily: `'${estilos.fuenteCuerpo}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`,
+      }}
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm af-entrada-velo" onClick={onClose} />
 

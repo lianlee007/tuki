@@ -697,7 +697,10 @@ export const ModalCarrito: React.FC<Props> = ({
       aria-modal="true"
       aria-label="Tu pedido"
       className="fixed inset-0 z-[200] flex justify-end isolate"
-      style={variablesAf({ bg: estilos.bg, text: estilos.text, title: estilos.title, primary: estilos.primary, secondary: estilos.secondary }) as React.CSSProperties}
+      style={{
+        ...(variablesAf({ bg: estilos.bg, text: estilos.text, title: estilos.title, primary: estilos.primary, secondary: estilos.secondary }) as React.CSSProperties),
+        fontFamily: `'${estilos.fuenteCuerpo}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`,
+      }}
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm af-entrada-velo" onClick={onClose} />
 
