@@ -276,6 +276,13 @@ export const aTema = (dto: TemaDto): Tema => ({
   fuente_titulos: dto.fuenteTitulos,
   fuente_cuerpo: dto.fuenteCuerpo,
   estilo_plantilla: dto.estiloPlantilla as Tema['estilo_plantilla'],
+  /* La paleta oscura es parte de la elección del dueño: si no se devolviera,
+     el panel volvería a inventarla derivándola del claro. */
+  color_primario_oscuro: dto.colorPrimarioOscuro ?? undefined,
+  color_secundario_oscuro: dto.colorSecundarioOscuro ?? undefined,
+  color_fondo_oscuro: dto.colorFondoOscuro ?? undefined,
+  color_texto_oscuro: dto.colorTextoOscuro ?? undefined,
+  color_texto_titulos_oscuro: dto.colorTextoTitulosOscuro ?? undefined,
 });
 
 export const aTemaDto = (datos: Partial<Tema>): Record<string, unknown> => {
@@ -288,6 +295,11 @@ export const aTemaDto = (datos: Partial<Tema>): Record<string, unknown> => {
   if (datos.fuente_titulos !== undefined) salida.fuenteTitulos = datos.fuente_titulos;
   if (datos.fuente_cuerpo !== undefined) salida.fuenteCuerpo = datos.fuente_cuerpo;
   if (datos.estilo_plantilla !== undefined) salida.estiloPlantilla = datos.estilo_plantilla;
+  if (datos.color_primario_oscuro !== undefined) salida.colorPrimarioOscuro = datos.color_primario_oscuro;
+  if (datos.color_secundario_oscuro !== undefined) salida.colorSecundarioOscuro = datos.color_secundario_oscuro;
+  if (datos.color_fondo_oscuro !== undefined) salida.colorFondoOscuro = datos.color_fondo_oscuro;
+  if (datos.color_texto_oscuro !== undefined) salida.colorTextoOscuro = datos.color_texto_oscuro;
+  if (datos.color_texto_titulos_oscuro !== undefined) salida.colorTextoTitulosOscuro = datos.color_texto_titulos_oscuro;
   return salida;
 };
 

@@ -18,6 +18,9 @@ export type EstilosComunes = PaletaDerivada & {
   /** Sombra de hover de tarjeta (el reposo no lleva sombra). */
   cardHoverShadow: string;
   isDark: boolean;
+  /** Familias elegidas por el dueño, para los modales que se montan por portal. */
+  fuenteTitulos: string;
+  fuenteCuerpo: string;
 };
 
 export interface PlantillaMenuProps {
