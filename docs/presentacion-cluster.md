@@ -60,6 +60,10 @@ curl.exe -k -H "Host: api.tukituki.example.com" `
   https://localhost/api/v1/ai/recomendar
 ```
 
+La primera consulta después de unos minutos tarda más porque reconstruye el
+índice del catálogo y carga el modelo en Ollama. Las siguientes responden en
+2–4 segundos. Antes de presentar, deja la IA caliente con la misma llamada.
+
 ## Notas importantes
 
 - Las imágenes del rediseño y del gateway de IA se cargaron en el containerd
