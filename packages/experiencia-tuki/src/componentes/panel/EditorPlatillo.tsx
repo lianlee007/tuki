@@ -27,6 +27,35 @@ import { prefiereMenosMovimiento, normalizarListaTexto } from '../../lib/utils';
 import { EstadoPlatillo, ESTADOS, estadoDe, camposDeEstado, definicionEstado } from '../../modulos/menu';
 import { AsistenteIA, BotonIA } from './AsistenteIA';
 
+/** Normaliza un nombre para comparar: sin tildes, signos ni mayúsculas. */
+const normalizarNombre = (valor: string): string =>
+  valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/** Similitud por subsecuencia común para rechazar nombres inventados. */
+const similitudNombre = (a: string, b: string): number => {
+  const x = normalizarNombre(a);
+  const y = normalizarNombre(b);
+  if (!x || !y) return 0;
+  const prev = new Array<number>(y.length + 1).fill(0);
+  for (let i = 1; i <= x.length; i++) {
+    let diagonal = 0;
+    for (let j = 1; j <= y.length; j++) {
+      const temp = prev[j] ?? 0;
+      prev[j] = x[i - 1] === y[j - 1]
+        ? diagonal + 1
+        : Math.max(prev[j] ?? 0, prev[j - 1] ?? 0);
+      diagonal = temp;
+    }
+  }
+  return (prev[y.length] ?? 0) / Math.max(x.length, y.length);
+};
+
 interface EditorPlatilloProps {
   platillo: Partial<Platillo>;
   setPlatillo: Dispatch<SetStateAction<Partial<Platillo> | null>>;
@@ -267,9 +296,27 @@ export const EditorPlatillo: React.FC<EditorPlatilloProps> = ({
     }
   };
 
+  /** Aplica la corrección solo si sigue pareciendo el mismo nombre. */
+  const aplicarNombrePlato = (val: string) => {
+    const original = (watch('nombre') || '').trim();
+    const limpio = limpiarNombre(val, LIMITES.PLATILLO_NOMBRE).trim();
+    const invalido =
+      limpio.length < 2 ||
+      /[.:;!?]/.test(limpio) ||
+      limpio.split(/\s+/).length > 8 ||
+      /\b(nombre|plato|correcto|corrige|ortografia)\b/i.test(limpio) ||
+      similitudNombre(original, limpio) < 0.4;
+    if (invalido) return;
+    setValue('nombre', limpio, { shouldValidate: true });
+  };
+
   const iaOrtografia = () => runIA('ortografia', () => sugerirIA(
-    `Corrige la ortografía de este nombre de plato de "${restauranteNombre}": "${watch('nombre')}". Devuelve solo el nombre corregido, sin comillas.`,
-    (val) => setValue('nombre', limpiarNombre(val, LIMITES.PLATILLO_NOMBRE), { shouldValidate: true }),
+    'Corrige el nombre del plato. Ejemplos: "anburgesa" -> "hamburguesa"; ' +
+    '"costiya" -> "costilla"; "ajiaco bogotano" -> "Ajiaco bogotano". ' +
+    `Ahora: "${watch('nombre')}" ->`,
+    aplicarNombrePlato,
+    'Eres un corrector ortográfico de nombres de platos colombianos. ' +
+    'Devuelve solo el nombre corregido, sin comillas ni explicaciones.',
   ));
 
   const iaDesc = () => runIA('descripcion', () => sugerirIA(
