@@ -158,6 +158,8 @@ $contenedores = @(
   'tukituki-mon-grafana'
 )
 
+Write-Host "    Esperando a que arranquen los contenedores (1-2 min)…" -ForegroundColor DarkGray
+
 $todos = Esperar "contenedores" 300 {
   $lineas = docker ps --format "{{.Names}}|{{.Status}}"
   $listos = $true
@@ -205,23 +207,35 @@ if (-not $ollama) {
   $ollama = Join-Path $env:LOCALAPPDATA 'Programs\Ollama\ollama.exe'
 }
 
-if (-not (Test-Path $ollama)) {
-  Mal "Ollama no está instalado."
-} else {
-  # `ollama list` también enciende la app de escritorio si estaba cerrada.
-  & $ollama list *> $null
+# Se consulta por HTTP, no con `ollama list`: el CLI puede quedarse esperando
+# a la app de escritorio y dejar el arranque colgado.
+$tagsRaw = ''
+$tagsOk = Esperar "Ollama" 20 {
+  $script:tagsRaw = (curl.exe -s -m 3 --noproxy "*" http://localhost:11434/api/tags)
+  $script:tagsRaw -match '"models"'
+}
 
-  $tags = Esperar "Ollama" 90 {
-    (curl.exe -s -m 3 --noproxy "*" http://localhost:11434/api/tags) -match '"models"'
+if (-not $tagsOk -and (Test-Path $ollama)) {
+  Write-Host "    Iniciando Ollama…" -ForegroundColor DarkGray
+  Start-Process -FilePath $ollama -ArgumentList 'serve' -WindowStyle Hidden | Out-Null
+  $tagsOk = Esperar "Ollama" 60 {
+    $script:tagsRaw = (curl.exe -s -m 3 --noproxy "*" http://localhost:11434/api/tags)
+    $script:tagsRaw -match '"models"'
   }
-  if ($tags) { Ok "Ollama responde en 11434." }
-  else { Mal "Ollama no responde. Ábrelo desde el menú Inicio." }
+}
 
-  $lista = (& $ollama list 2>&1 | Out-String)
-  if ($lista -match 'tuki-chef') { Ok "Modelo tuki-chef presente." }
+if (-not $tagsOk) {
+  Mal "Ollama no responde en 11434. Ábrelo desde el menú Inicio y vuelve a ejecutar el .bat."
+} else {
+  Ok "Ollama responde en 11434."
+
+  $modelos = @()
+  try { $modelos = ($tagsRaw | ConvertFrom-Json).models.name } catch { }
+
+  if ($modelos -match 'tuki-chef') { Ok "Modelo tuki-chef presente." }
   else { Aviso "Falta tuki-chef. Créalo con: ollama create tuki-chef -f services/ai-gateway/Modelfile" }
 
-  if ($lista -match 'nomic-embed-text') { Ok "Modelo de embeddings presente." }
+  if ($modelos -match 'nomic-embed-text') { Ok "Modelo de embeddings presente." }
   else { Aviso "Falta nomic-embed-text. Instálalo con: ollama pull nomic-embed-text" }
 }
 
@@ -230,6 +244,8 @@ $cuerpo = @{
   system = 'Eres un asistente breve.'
   max_tokens = 12
 } | ConvertTo-Json
+
+Write-Host "    Calentando el chatbot (la primera vez puede tardar 20-30 s)…" -ForegroundColor DarkGray
 
 $caliente = $false
 try {
