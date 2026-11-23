@@ -125,6 +125,32 @@ if ($legacy) {
   Ok "Quité un gateway suelto que ocupaba el puerto 8000."
 }
 
+# Si la interfaz cambió después de construir la imagen, se reconstruye sola.
+$fuentesFront = @(
+  'apps/web-comensal/src',
+  'apps/panel-restaurante/src',
+  'apps/admin-plataforma/src',
+  'packages/experiencia-tuki/src',
+  'packages/experiencia-tuki/estilos',
+  'packages/api-cliente/src',
+  'packages/dominio/src',
+  'packages/ui-kit/src'
+)
+$ultimoCambio = (Get-ChildItem -Path $fuentesFront -Recurse -File -ErrorAction SilentlyContinue |
+  Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+$creadaWeb = docker inspect -f '{{.Created}}' tukituki-web-comensal 2>$null
+
+if ($ultimoCambio -and $creadaWeb) {
+  try {
+    $fechaImagen = [datetime]::Parse($creadaWeb).ToLocalTime()
+    if ($ultimoCambio -gt $fechaImagen.AddMinutes(1)) {
+      Write-Host "    La interfaz cambió; reconstruyendo frontends (2-4 min)…" -ForegroundColor DarkGray
+      docker compose -f infra/docker/docker-compose.yml build web-comensal panel-restaurante admin-plataforma 2>&1 | Out-Host
+      if ($LASTEXITCODE -ne 0) { Aviso "No se pudieron reconstruir los frontends; sigo con las imágenes actuales." }
+    }
+  } catch { }
+}
+
 docker compose -f infra/docker/docker-compose.yml up -d 2>&1 | Out-Host
 if ($LASTEXITCODE -eq 0) { Ok "Servicios, frontends y gateways arriba." }
 else { Mal "Falló docker compose del stack principal." }
