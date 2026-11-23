@@ -1,0 +1,87 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-secuencia-chatbot" name="Secuencia de una consulta al chatbot">
+    <mxGraphModel dx="749" dy="581" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ll_comensal" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="Comensal" vertex="1">
+          <mxGeometry height="465" width="110" x="60" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_web" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="web-comensal" vertex="1">
+          <mxGeometry height="465" width="120" x="205" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_gateway" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="ai-gateway" vertex="1">
+          <mxGeometry height="465" width="115" x="375" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_indice" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="índice y&lt;br&gt;recuperación" vertex="1">
+          <mxGeometry height="465" width="135" x="540" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_ollama" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="Ollama local" vertex="1">
+          <mxGeometry height="465" width="120" x="725" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_restaurantes" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=13;size=38;" value="restaurantes-service" vertex="1">
+          <mxGeometry height="465" width="165" x="880" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="msg_1" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="escribe la pregunta">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint x="114.5" y="190" as="sourcePoint" />
+            <mxPoint x="264.5" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_2" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="POST /api/v1/ai/recomendar">
+          <mxGeometry relative="1" x="0.0209" y="8" as="geometry">
+            <mxPoint x="-1" y="1" as="offset" />
+            <mxPoint x="264.5" y="230" as="sourcePoint" />
+            <mxPoint x="432" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_3" edge="1" parent="1" source="ll_gateway" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" target="ll_indice" value="recuperación híbrida">
+          <mxGeometry relative="1" x="-0.05" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="260" />
+            </Array>
+            <mxPoint x="432" y="242" as="sourcePoint" />
+            <mxPoint x="607" y="242" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_4" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="6 fragmentos y fuentes">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="607" y="300" as="sourcePoint" />
+            <mxPoint x="432" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_5" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="prompt con contexto">
+          <mxGeometry relative="1" x="-0.5007" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="431.25" y="350" as="sourcePoint" />
+            <mxPoint x="783.7500000000002" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_6" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="respuesta">
+          <mxGeometry relative="1" x="-0.48" as="geometry">
+            <mxPoint x="783.7500000000002" y="380" as="sourcePoint" />
+            <mxPoint x="431.25" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_7" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="respuesta con fuentes">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="432" y="410" as="sourcePoint" />
+            <mxPoint x="264.5" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_8" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=1;endSize=8;rounded=0;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="platos, precio y alérgenos">
+          <mxGeometry relative="1" x="-0.12" as="geometry">
+            <mxPoint x="264.5" y="450" as="sourcePoint" />
+            <mxPoint x="114.5" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_9" edge="1" parent="1" style="html=1;verticalAlign=bottom;align=center;endArrow=block;endFill=0;endSize=8;rounded=0;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;" value="catálogo (TTL 300 s)">
+          <mxGeometry relative="1" x="-0.68" as="geometry">
+            <mxPoint x="962.0000000000002" y="510" as="sourcePoint" />
+            <mxPoint x="432" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

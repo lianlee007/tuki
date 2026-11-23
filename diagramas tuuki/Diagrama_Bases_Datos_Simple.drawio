@@ -1,0 +1,53 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-bases-datos-tuki" name="Bases de Datos por Microservicio - Tuki">
+    <mxGraphModel dx="834" dy="462" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="950" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="db_identidad" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_identidad&lt;br&gt;usuarios&lt;br&gt;refresh_tokens&lt;br&gt;auditoria_identidad" vertex="1">
+          <mxGeometry height="115" width="230" x="605" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="db_restaurantes" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_restaurantes&lt;br&gt;restaurantes · temas&lt;br&gt;tipos_cocina ·&lt;br&gt;categorias&lt;br&gt;platillos" vertex="1">
+          <mxGeometry height="122" width="230" x="330" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="db_media" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_media&lt;br&gt;media_assets" vertex="1">
+          <mxGeometry height="115" width="225" x="57.5" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="db_pedidos" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_pedidos&lt;br&gt;pedidos&lt;br&gt;pedido_items" vertex="1">
+          <mxGeometry height="108" width="230" x="55" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="db_resenas" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_resenas&lt;br&gt;resenas&lt;br&gt;resenas_utiles" vertex="1">
+          <mxGeometry height="114" width="230" x="330" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="db_admin" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;spacingLeft=6;spacingRight=6;" value="tuki_admin&lt;br&gt;auditoria_admin" vertex="1">
+          <mxGeometry height="105" width="225" x="605" y="251.5" as="geometry" />
+        </mxCell>
+        <mxCell id="note_aislamiento" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=10;spacingRight=10;spacingTop=6;spacingBottom=6;" value="Cada base tiene su propio usuario de PostgreSQL. No hay claves foráneas entre&lt;br&gt;servicios: las referencias viajan por HTTP y, cuando el historial lo exige, se&lt;br&gt;guarda una copia del nombre y el precio en el pedido." vertex="1">
+          <mxGeometry height="60" width="750" x="70" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_consulta_menu" edge="1" parent="1" source="db_restaurantes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=0;endSize=8;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;edgeStyle=orthogonalEdgeStyle;" target="db_pedidos" value="consulta menú">
+          <mxGeometry relative="1" x="-0.0073" y="-12" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="200" />
+              <mxPoint x="170" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_valida_local" edge="1" parent="1" source="db_restaurantes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=0;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="db_resenas" value="valida el local">
+          <mxGeometry relative="1" x="-0.2048" y="40" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="510" y="220" />
+              <mxPoint x="510" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_consulta_cuentas" edge="1" parent="1" source="db_identidad" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=0;endSize=8;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;edgeStyle=orthogonalEdgeStyle;" target="db_admin" value="consulta cuentas">
+          <mxGeometry relative="1" x="-0.1489" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
