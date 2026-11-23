@@ -22,6 +22,8 @@ export interface FilaRestaurante {
   twitter: string | null;
   dias_abierto: Record<string, boolean>;
   activo: boolean;
+  /** Los destacados encabezan el listado público de restaurantes. */
+  destacado: boolean;
   creado_en: Date;
 }
 

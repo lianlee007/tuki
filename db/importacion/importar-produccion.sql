@@ -914,4 +914,7 @@ insert into restaurantes_cocinas (restaurante_id, tipo_cocina_id, principal) sel
 insert into restaurantes_cocinas (restaurante_id, tipo_cocina_id, principal) select 'a2000000-0000-4000-8000-000000000030', id, false from tipos_cocina where slug = 'local' on conflict do nothing;
 insert into restaurantes_cocinas (restaurante_id, tipo_cocina_id, principal) select 'a2000000-0000-4000-8000-000000000030', id, false from tipos_cocina where slug = 'rapida' on conflict do nothing;
 
+-- Donde Lian es el local principal de la demo y encabeza el listado público.
+update restaurantes set destacado = (slug = 'donde-lian');
+
 commit;

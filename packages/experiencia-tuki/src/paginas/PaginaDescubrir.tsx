@@ -14,7 +14,6 @@ import { BarraDescubrir } from '../componentes/descubrir/BarraDescubrir';
 import { BarraMovil } from '../componentes/descubrir/BarraMovil';
 import { CarrilCocinas } from '../componentes/descubrir/CarrilCocinas';
 import { SeccionRestaurantes } from '../componentes/descubrir/SeccionRestaurantes';
-import { PanelRestaurantes } from '../componentes/descubrir/PanelRestaurantes';
 import { PanelFiltros } from '../componentes/descubrir/PanelFiltros';
 import { FiltrosRapidos } from '../componentes/descubrir/FiltrosRapidos';
 import { PanelCarrito } from '../componentes/descubrir/PanelCarrito';
@@ -136,9 +135,6 @@ const PaginaDescubrir = () => {
   const [restaurantes, setRestaurantes] = useState<RestauranteDescubierto[]>([]);
   const [totalRestaurantes, setTotalRestaurantes] = useState(0);
   const [cargandoRestaurantes, setCargandoRestaurantes] = useState(true);
-  const [restaurantesAbiertos, setRestaurantesAbiertos] = useState(
-    () => params.get('locales') === '1'
-  );
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
@@ -355,6 +351,12 @@ const PaginaDescubrir = () => {
     window.scrollTo({ top: 0, behavior: comportamientoDesplazamiento() });
   };
 
+  const irARestaurantes = () => {
+    document
+      .getElementById('restaurantes')
+      ?.scrollIntoView({ behavior: comportamientoDesplazamiento(), block: 'start' });
+  };
+
   const irAlCatalogo = () => {
     document
       .getElementById('catalogo-platos')
@@ -498,7 +500,6 @@ const PaginaDescubrir = () => {
               total={totalRestaurantes}
               cargando={cargandoRestaurantes}
               cocinaCoincidente={cocinaElegida?.nombre ?? null}
-              onVerTodos={() => setRestaurantesAbiertos(true)}
             />
 
             <section id="catalogo-platos" aria-labelledby="titulo-platos" className="scroll-mt-28">
@@ -726,19 +727,9 @@ const PaginaDescubrir = () => {
         rutaCuenta={rutaCuenta}
         cantidadFavoritos={favoritos.length}
         favoritosActivos={soloFavoritos}
-        restaurantesActivo={restaurantesAbiertos}
         onInicio={irAInicio}
-        onRestaurantes={() => setRestaurantesAbiertos(true)}
+        onRestaurantes={irARestaurantes}
         onFavoritos={verFavoritos}
-      />
-
-      <PanelRestaurantes
-        abierto={restaurantesAbiertos}
-        restaurantes={restaurantes}
-        total={totalRestaurantes}
-        cargando={cargandoRestaurantes}
-        cocinaCoincidente={cocinaElegida?.nombre ?? null}
-        onCerrar={() => setRestaurantesAbiertos(false)}
       />
 
       <PanelFiltros
