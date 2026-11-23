@@ -1,8 +1,7 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { Store } from 'lucide-react';
 import type { RestauranteDescubierto } from '../../tipos/modelos';
 import { TarjetaRestaurante } from './TarjetaRestaurante';
-import { FOCO } from './estilos';
 
 interface SeccionRestaurantesProps {
   restaurantes: RestauranteDescubierto[];
@@ -10,16 +9,14 @@ interface SeccionRestaurantesProps {
   cargando: boolean;
   /** Cocina activa en el filtro, para explicar los resultados secundarios. */
   cocinaCoincidente?: string | null;
-  /** Abre la lista completa sin bajar el feed. */
-  onVerTodos: () => void;
 }
 
 /**
  * Los restaurantes, antes del feed.
  *
- * En móvil se ven dos perfiles —el resto espera en la hoja de «Ver todos»— para
- * que la portada no gaste cuatro pantallas en locales antes de enseñar comida.
- * Desde tablet caben tres. La foto, el logo y los platos bastan para decidir si
+ * La lista completa vive aquí: nada de hojas ni ventanas para elegir local.
+ * En móvil caben dos por fila y el resto sigue bajando con la página; desde
+ * tablet caben tres. La foto, el logo y los platos bastan para decidir si
  * entrar; la ficha completa vive en el menú.
  */
 export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
@@ -27,7 +24,6 @@ export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
   total,
   cargando,
   cocinaCoincidente,
-  onVerTodos,
 }) => {
   if (!cargando && restaurantes.length === 0) return null;
 
@@ -35,9 +31,7 @@ export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
     <div
       key={`esqueleto-${indice}`}
       aria-hidden="true"
-      className={`overflow-hidden rounded-[22px] bg-hearth-card ring-1 ring-hearth-line/60 dark:bg-hearth-night-card dark:ring-white/5 ${
-        indice >= 2 ? 'hidden sm:block' : ''
-      }`}
+      className="overflow-hidden rounded-[22px] bg-hearth-card ring-1 ring-hearth-line/60 dark:bg-hearth-night-card dark:ring-white/5"
     >
       <div className="aspect-[16/9] bg-hearth-oat dark:bg-hearth-night-oat" />
       <div className="space-y-2 p-3">
@@ -48,7 +42,7 @@ export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
   );
 
   return (
-    <section aria-labelledby="titulo-restaurantes">
+    <section id="restaurantes" aria-labelledby="titulo-restaurantes" className="scroll-mt-28">
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           <h2
@@ -59,22 +53,18 @@ export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
           </h2>
           <p className="mt-0.5 truncate text-[12.5px] text-hearth-pebble dark:text-hearth-night-pebble">
             {cargando
-              ? 'Buscando restaurantes cerca de ti…'
+              ? 'Buscando restaurantes cerca de ti.'
               : total === 1
-                ? 'Un restaurante para entrar'
-                : `${total.toLocaleString('es-CO')} restaurantes para entrar`}
+                ? 'Un restaurante · toca para ver su menú'
+                : `${total.toLocaleString('es-CO')} restaurantes · toca uno para ver su menú`}
           </p>
         </div>
 
-        {!cargando && total > 2 && (
-          <button
-            type="button"
-            onClick={onVerTodos}
-            className={`af-pulsar inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full px-3 py-2 text-[12px] font-bold text-hearth-terracotta-ink transition-colors hover:bg-hearth-terracotta-soft dark:text-hearth-night-terracotta-ink dark:hover:bg-hearth-night-terracotta-soft ${FOCO}`}
-          >
-            Ver todos
-            <ArrowRight size={14} aria-hidden="true" />
-          </button>
+        {!cargando && total > 0 && (
+          <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-hearth-oat px-3 py-1.5 text-[11px] font-bold text-hearth-pebble sm:inline-flex dark:bg-hearth-night-oat dark:text-hearth-night-pebble">
+            <Store size={13} aria-hidden="true" />
+            Elige tu local
+          </span>
         )}
       </div>
 
@@ -84,15 +74,7 @@ export const SeccionRestaurantes: React.FC<SeccionRestaurantesProps> = ({
           : restaurantes.map((restaurante, indice) => (
               <div
                 key={restaurante.id}
-                className={
-                  restaurantes.length === 1
-                    ? 'col-span-2 sm:col-span-1'
-                    : indice >= 3
-                      ? 'hidden'
-                      : indice === 2
-                        ? 'hidden sm:block'
-                        : ''
-                }
+                className={restaurantes.length === 1 ? 'col-span-2 sm:col-span-1' : ''}
               >
                 <TarjetaRestaurante
                   restaurante={restaurante}

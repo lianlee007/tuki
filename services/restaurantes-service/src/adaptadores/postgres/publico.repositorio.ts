@@ -126,7 +126,7 @@ const listarRestaurantes = async (
     )
     select *, count(*) over() as total
     from base
-    order by nombre
+    order by destacado desc, nombre
     limit ${filtros.limite} offset ${filtros.desde}
   `;
 

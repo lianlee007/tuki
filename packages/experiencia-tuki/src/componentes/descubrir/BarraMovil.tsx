@@ -8,7 +8,6 @@ interface BarraMovilProps {
   rutaCuenta: string;
   cantidadFavoritos: number;
   favoritosActivos: boolean;
-  restaurantesActivo: boolean;
   onInicio: () => void;
   onRestaurantes: () => void;
   onFavoritos: () => void;
@@ -26,12 +25,11 @@ export const BarraMovil: React.FC<BarraMovilProps> = ({
   rutaCuenta,
   cantidadFavoritos,
   favoritosActivos,
-  restaurantesActivo,
   onInicio,
   onRestaurantes,
   onFavoritos,
 }) => {
-  const inicioActivo = !favoritosActivos && !restaurantesActivo;
+  const inicioActivo = !favoritosActivos;
 
   const item = `af-pulsar flex min-w-0 flex-col items-center justify-end gap-0.5 rounded-xl px-1 pb-1 pt-0.5 text-[10px] font-bold leading-none transition-colors ${FOCO}`;
   const icono = 'flex h-7 w-10 items-center justify-center rounded-full transition-colors';
@@ -63,10 +61,9 @@ export const BarraMovil: React.FC<BarraMovilProps> = ({
         <button
           type="button"
           onClick={onRestaurantes}
-          aria-pressed={restaurantesActivo}
-          className={`${item} ${restaurantesActivo ? activo : apagado}`}
+          className={`${item} ${apagado}`}
         >
-          <span className={`${icono} ${restaurantesActivo ? iconoActivo : ''}`}>
+          <span className={icono}>
             <Store size={20} aria-hidden="true" />
           </span>
           Locales
