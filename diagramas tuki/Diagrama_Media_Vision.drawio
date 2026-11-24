@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-media-vision-tuki" name="Flujo Media y Vision Service">
+    <mxGraphModel dx="1001" dy="554" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="550" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="node_panel" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="panel-restaurante&lt;br&gt;sube una foto" vertex="1">
+          <mxGeometry height="68" width="175" x="40" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="node_media" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="media-service&lt;br&gt;valida tipo,&lt;br&gt;tamaño y destino" vertex="1">
+          <mxGeometry height="86" width="190" x="290" y="146" as="geometry" />
+        </mxCell>
+        <mxCell id="node_vision" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="vision-service&lt;br&gt;YOLO11n-cls ·&lt;br&gt;umbral 0,3" vertex="1">
+          <mxGeometry height="86" width="190" x="535" y="146" as="geometry" />
+        </mxCell>
+        <mxCell id="node_rustfs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="RustFS&lt;br&gt;objeto original" vertex="1">
+          <mxGeometry height="68" width="190" x="250" y="286" as="geometry" />
+        </mxCell>
+        <mxCell id="node_decision" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="decisión&lt;br&gt;es_comida y&lt;br&gt;confianza" vertex="1">
+          <mxGeometry height="80" width="190" x="535" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="node_postgres" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingTop=6;" value="PostgreSQL&lt;br&gt;tuki_media" vertex="1">
+          <mxGeometry height="76" width="190" x="290" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="node_failopen" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;dashed=1;dashPattern=4 4;" value="Si vision-service no responde en 8&lt;br&gt;s, la subida continúa y la imagen&lt;br&gt;queda sin verificar (fail-open)." vertex="1">
+          <mxGeometry height="76" width="365" x="535" y="434" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_multipart" edge="1" parent="1" source="node_panel" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_media" value="multipart">
+          <mxGeometry relative="1" x="-0.25" y="-14" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_solo_platos" edge="1" parent="1" source="node_media" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_vision" value="solo platos">
+          <mxGeometry relative="1" x="-0.0909" y="-14" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="170" />
+              <mxPoint x="510" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_postgres" edge="1" parent="1" source="node_media" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_postgres" value="metadatos">
+          <mxGeometry relative="1" x="-0.0002" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_clase_score" edge="1" parent="1" source="node_vision" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_decision" value="clase y score">
+          <mxGeometry relative="1" x="-0.25" y="-48" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_sin_respuesta" edge="1" parent="1" source="node_media" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_failopen" value="timeout 8 s">
+          <mxGeometry relative="1" x="-0.2512" y="-5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="480" y="150" />
+              <mxPoint x="500" y="150" />
+              <mxPoint x="500" y="130" />
+              <mxPoint x="750" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_si_es_comida" edge="1" parent="1" source="node_decision" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;" target="node_rustfs" value="si es comida">
+          <mxGeometry relative="1" x="-0.1765" y="12" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_rechazo_422" edge="1" parent="1" source="node_decision" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_panel" value="rechazo 422">
+          <mxGeometry relative="1" x="0.0297" y="-14" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="290" />
+              <mxPoint x="500" y="270" />
+              <mxPoint x="147.5" y="270" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

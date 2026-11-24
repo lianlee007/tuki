@@ -1,0 +1,147 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-ai-gateway-tuki" name="Arquitectura RAG y AI Gateway - Tuki">
+    <mxGraphModel dx="834" dy="505" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1060" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="grp_ai_gateway" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;dashed=1;dashPattern=4 4;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="498" width="505" x="285" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_ai_gateway" parent="1" style="text;html=1;strokeColor=none;fillColor=#ffffff;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=15;spacingLeft=4;spacingRight=4;" value="ai-gateway" vertex="1">
+          <mxGeometry height="24" width="100" x="292" y="29" as="geometry" />
+        </mxCell>
+        <mxCell id="grp_ollama" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;dashed=1;dashPattern=4 4;fontSize=15;" value="" vertex="1">
+          <mxGeometry height="265" width="175" x="835" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_ollama" parent="1" style="text;html=1;strokeColor=none;fillColor=#ffffff;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;fontStyle=1;fontFamily=Helvetica;fontSize=15;spacingLeft=4;spacingRight=4;" value="Ollama (local)" vertex="1">
+          <mxGeometry height="24" width="120" x="842" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="node_restaurantes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="restaurantes-service&lt;br&gt;catálogo del menú" vertex="1">
+          <mxGeometry height="62" width="185" x="50" y="75" as="geometry" />
+        </mxCell>
+        <mxCell id="node_resenas" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="resenas-service&lt;br&gt;valoraciones" vertex="1">
+          <mxGeometry height="62" width="185" x="50" y="223" as="geometry" />
+        </mxCell>
+        <mxCell id="node_web_comensal" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="web-comensal&lt;br&gt;botón «Pregúntale&lt;br&gt;a Tuki»" vertex="1">
+          <mxGeometry height="68" width="185" x="50" y="312" as="geometry" />
+        </mxCell>
+        <mxCell id="node_auth" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="autenticación y cuota&lt;br&gt;JWT y límite de tasa" vertex="1">
+          <mxGeometry height="62" width="190" x="315" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="node_chat" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="servicio de chat&lt;br&gt;orquesta el turno" vertex="1">
+          <mxGeometry height="62" width="190" x="315" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="node_recuperacion" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="recuperación híbrida&lt;br&gt;BM25 + embeddings · RRF&lt;br&gt;MMR y filtros" vertex="1">
+          <mxGeometry height="74" width="190" x="315" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="node_indice" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="índice&lt;br&gt;un documento por plato&lt;br&gt;y por restaurante" vertex="1">
+          <mxGeometry height="68" width="190" x="315" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="node_metricas" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="métricas&lt;br&gt;tokens · latencia ·&lt;br&gt;rechazos" vertex="1">
+          <mxGeometry height="62" width="210" x="540" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="node_contexto" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="contexto&lt;br&gt;6 fragmentos ·&lt;br&gt;1.100 tokens" vertex="1">
+          <mxGeometry height="74" width="210" x="540" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="node_evaluacion" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="evaluación&lt;br&gt;52 casos · 51&lt;br&gt;aciertos" vertex="1">
+          <mxGeometry height="68" width="210" x="540" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="node_tukichef" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="tuki-chef&lt;br&gt;respuesta" vertex="1">
+          <mxGeometry height="72" width="140" x="852" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="node_nomic" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="nomic-embed-text&lt;br&gt;768 dimensiones" vertex="1">
+          <mxGeometry height="72" width="140" x="852" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_web_auth" edge="1" parent="1" source="node_web_comensal" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.45;entryDx=0;entryDy=0;" target="node_auth" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="268" y="326" />
+              <mxPoint x="268" y="98" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_rest_indice" edge="1" parent="1" source="node_restaurantes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.58;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_indice" value="">
+          <mxGeometry relative="1" x="-0.0478" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="111" />
+              <mxPoint x="260" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_resenas_indice" edge="1" parent="1" source="node_resenas" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_indice" value="">
+          <mxGeometry relative="1" x="-0.4255" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="254" />
+              <mxPoint x="290" y="449" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_auth_chat" edge="1" parent="1" source="node_auth" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_chat" value="valida">
+          <mxGeometry relative="1" x="-0.1" y="-24" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_chat_metricas" edge="1" parent="1" source="node_chat" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.35;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_metricas" value="tokens">
+          <mxGeometry relative="1" x="-0.1" y="-26" as="geometry">
+            <Array as="points">
+              <mxPoint x="522" y="192" />
+              <mxPoint x="522" y="101" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_chat_recup" edge="1" parent="1" source="node_chat" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_recuperacion" value="consulta el índice">
+          <mxGeometry relative="1" x="-0.3208" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_recup_indice_down" edge="1" parent="1" source="node_recuperacion" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_indice" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_indice_recup_up" edge="1" parent="1" source="node_indice" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=0;endSize=8;exitX=0.68;exitY=0;exitDx=0;exitDy=0;entryX=0.32;entryY=1;entryDx=0;entryDy=0;" target="node_recuperacion" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="444" y="388" />
+              <mxPoint x="376" y="388" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_recup_contexto" edge="1" parent="1" source="node_recuperacion" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_contexto" value="top-6">
+          <mxGeometry relative="1" x="-0.1" y="-14" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_contexto_tukichef" edge="1" parent="1" source="node_contexto" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_tukichef" value="prompt / texto">
+          <mxGeometry relative="1" x="-0.52" y="-14" as="geometry">
+            <Array as="points">
+              <mxPoint x="812" y="322" />
+              <mxPoint x="812" y="201" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_nomic_indice" edge="1" parent="1" source="node_nomic" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="node_indice" value="vectores">
+          <mxGeometry relative="1" x="0.12" y="-12" as="geometry">
+            <Array as="points">
+              <mxPoint x="812" y="321" />
+              <mxPoint x="812" y="515" />
+              <mxPoint x="410" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_chat_eval" edge="1" parent="1" source="node_chat" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=4 4;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=0;endSize=8;exitX=1;exitY=0.68;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_evaluacion" value="offline">
+          <mxGeometry relative="1" x="0.4461" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="522" y="212" />
+              <mxPoint x="522" y="385" />
+              <mxPoint x="645" y="385" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_contexto_web" edge="1" parent="1" source="node_chat" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_web_comensal" value="">
+          <mxGeometry relative="1" x="-0.1046" y="-14" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="201" />
+              <mxPoint x="300" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
