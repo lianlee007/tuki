@@ -1,0 +1,111 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-observabilidad-tuki" name="Observabilidad - Tuki">
+    <mxGraphModel dx="1240" dy="554" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="820" pageHeight="520" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="node_servicios" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=11;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Servicios Node&lt;br&gt;@tuki/observabilidad-node" vertex="1">
+          <mxGeometry height="62" width="205" x="50" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="node_gateway" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="ai-gateway&lt;br&gt;métricas propias" vertex="1">
+          <mxGeometry height="62" width="205" x="290" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="node_k8s" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=14;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Kubernetes&lt;br&gt;kube-state-metrics" vertex="1">
+          <mxGeometry height="62" width="205" x="535" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="node_prometheus" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Prometheus&lt;br&gt;raspa /metrics cada 30&lt;br&gt;s" vertex="1">
+          <mxGeometry height="62" width="220" x="170" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="node_otel" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="OTel Collector&lt;br&gt;OTLP 4317 y 4318" vertex="1">
+          <mxGeometry height="62" width="225" x="495" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="node_alertmanager" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Alertmanager&lt;br&gt;reglas tuki.slo" vertex="1">
+          <mxGeometry height="62" width="185" x="50" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="node_grafana" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Grafana&lt;br&gt;5 tableros · 50&lt;br&gt;paneles" vertex="1">
+          <mxGeometry height="62" width="185" x="275" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="node_tempo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=14;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Tempo&lt;br&gt;trazas · 6 h" vertex="1">
+          <mxGeometry height="62" width="185" x="535" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="node_objetivos" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="Objetivos&lt;br&gt;Disponibilidad ≥ 99,5 %  ·  Latencia p95 &amp;lt;&lt;br&gt;500 ms  ·  ventana de 1 hora" vertex="1">
+          <mxGeometry height="62" width="445" x="275" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_serv_prom" edge="1" parent="1" source="node_servicios" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.6;exitY=1;exitDx=0;exitDy=0;entryX=0.2;entryY=0;entryDx=0;entryDy=0;" target="node_prometheus" value="/metrics">
+          <mxGeometry relative="1" x="-0.25" y="-18" as="geometry">
+            <Array as="points">
+              <mxPoint x="173" y="138" />
+              <mxPoint x="214" y="138" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_serv_otel" edge="1" parent="1" source="node_servicios" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_otel" value="">
+          <mxGeometry relative="1" x="-0.2054" as="geometry">
+            <Array as="points">
+              <mxPoint x="120" y="20" />
+              <mxPoint x="760" y="20" />
+              <mxPoint x="760" y="196" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_gw_prom" edge="1" parent="1" source="node_gateway" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.81;entryY=0;entryDx=0;entryDy=0;" target="node_prometheus" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="331" y="130" />
+              <mxPoint x="348" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_gw_otel" edge="1" parent="1" source="node_gateway" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_otel" value="trazas">
+          <mxGeometry relative="1" x="-0.0881" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="410" y="120" />
+              <mxPoint x="540" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_k8s_prom" edge="1" parent="1" source="node_k8s" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.08;exitY=1;exitDx=0;exitDy=0;entryX=0.91;entryY=0;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_prometheus" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="551.4" y="140" />
+              <mxPoint x="370.2" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_prom_alert" edge="1" parent="1" source="node_prometheus" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_alertmanager" value="">
+          <mxGeometry relative="1" x="0.1068" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="258.5" />
+              <mxPoint x="190" y="258.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_prom_grafana" edge="1" parent="1" source="node_prometheus" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_grafana" value="OTLP">
+          <mxGeometry relative="1" x="-0.0498" y="-1" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_otel_tempo" edge="1" parent="1" source="node_otel" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_tempo" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="608" y="258" />
+              <mxPoint x="627" y="258" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_tempo_grafana" edge="1" parent="1" source="node_tempo" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="node_grafana" value="trazas">
+          <mxGeometry relative="1" x="-0.25" y="-14" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_grafana_obj" edge="1" parent="1" source="node_grafana" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_objetivos" value="">
+          <mxGeometry relative="1" x="-0.3929" as="geometry">
+            <Array as="points">
+              <mxPoint x="367.5" y="380" />
+              <mxPoint x="367.5" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="diagrama-cicd-gitops-tuki" name="Flujo CI-CD y GitOps - Tuki">
+    <mxGraphModel dx="1240" dy="554" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1050" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="node_dev" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="Desarrollador&lt;br&gt;commit en rama&lt;br&gt;separada" vertex="1">
+          <mxGeometry height="70" width="170" x="265" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="node_pr" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="Pull request&lt;br&gt;5 checks&lt;br&gt;obligatorios" vertex="1">
+          <mxGeometry height="70" width="170" x="265" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="node_main" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="main&lt;br&gt;repositorio" vertex="1">
+          <mxGeometry height="70" width="170" x="480" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="node_security" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=13;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="Workflow de seguridad&lt;br&gt;build · escaneo · firma ·&lt;br&gt;SBOM" vertex="1">
+          <mxGeometry height="70" width="285" x="695" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="node_digests" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="PR de digests&lt;br&gt;gitops/digests" vertex="1">
+          <mxGeometry height="70" width="285" x="695" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="node_opentofu" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="OpenTofu&lt;br&gt;namespace · cuota ·&lt;br&gt;límites&lt;br&gt;protección de rama" vertex="1">
+          <mxGeometry height="80" width="195" x="265" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="node_argocd" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="Argo CD&lt;br&gt;ApplicationSet&lt;br&gt;tukituki&lt;br&gt;prune + selfHeal" vertex="1">
+          <mxGeometry height="80" width="205" x="500" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="node_cluster" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=14;align=center;verticalAlign=middle;spacingLeft=8;spacingRight=8;spacingTop=6;spacingBottom=6;" value="Clúster&lt;br&gt;aplicación&lt;br&gt;sincronizada" vertex="1">
+          <mxGeometry height="80" width="215" x="765" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_dev_pr" edge="1" parent="1" source="node_dev" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_pr" value="">
+          <mxGeometry relative="1" x="0.0182" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_pr_main" edge="1" parent="1" source="node_pr" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_main" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_main_sec" edge="1" parent="1" source="node_main" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_security" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_sec_digests" edge="1" parent="1" source="node_security" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_digests" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_main_opentofu" edge="1" parent="1" source="node_main" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_opentofu" value="prerrequisitos">
+          <mxGeometry relative="1" x="0.28" y="-12" as="geometry">
+            <Array as="points">
+              <mxPoint x="565" y="295" />
+              <mxPoint x="362" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_digests_argocd" edge="1" parent="1" source="node_digests" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="node_argocd" value="al fusionar">
+          <mxGeometry relative="1" x="0.12" y="-12" as="geometry">
+            <Array as="points">
+              <mxPoint x="837" y="295" />
+              <mxPoint x="602" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_argocd_cluster" edge="1" parent="1" source="node_argocd" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_cluster" value="sincroniza">
+          <mxGeometry relative="1" x="-0.1" y="-14" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_opentofu_cluster" edge="1" parent="1" source="node_opentofu" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_cluster" value="crea la base">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
