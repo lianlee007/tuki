@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 2.0 |
-| Fecha | 2026-11-22 |
+| Versión | 2.1 |
+| Fecha | 2026-11-25 |
 | Alcance | Tres frontends, seis servicios Node, AI Gateway, visión, PostgreSQL, RustFS y borde HTTP |
-| Niveles | N-1 contexto, N-2 contenedores, N-3 componentes |
+| Niveles | N-1 contexto, N-2 contenedores agrupados, N-2.2 detalle de frontend y backend, N-3 componentes |
 | Archivo editable | [`diagramas-c4.drawio`](diagramas-c4.drawio) |
 | Fuentes | [`../README.md`](../README.md), [`../docs/arquitectura.md`](../docs/arquitectura.md), [`../docs/convenciones.md`](../docs/convenciones.md), [`../infra/docker/docker-compose.yml`](../infra/docker/docker-compose.yml), [`../infra/k8s`](../infra/k8s) |
 
@@ -17,7 +17,8 @@ tres primeros; el nivel de código (N-4) vive en el repositorio.
 | Nivel | Pregunta que responde | Página del `.drawio` | Sección |
 | --- | --- | --- | --- |
 | N-1 | ¿Quién usa TukiTuki y de qué sistemas externos depende? | `N-1 Contexto` | §2 |
-| N-2 | ¿Qué piezas desplegables existen y cómo hablan? | `N-2 Contenedores` | §3 |
+| N-2 | ¿Cómo se agrupan los bloques desplegables y qué consumen? | `N-2 Contenedores` | §3 |
+| N-2.2 | ¿Qué contenedores hay dentro de frontend y backend? | `N-2.2 Frontend y Backend` | §3.1 |
 | N-3.1 | ¿Qué hay dentro de los tres frontends? | `N-3.1 Frontends` | §4 |
 | N-3.2 | ¿Qué hay dentro de los seis servicios Node? | `N-3.2 Servicios Node` | §5 |
 | N-3.3 | ¿Qué hay dentro del AI Gateway y de visión? | `N-3.3 AI Gateway y Visión` | §6 |
@@ -97,63 +98,93 @@ Lo que el diagrama deja ver:
 
 ## 3. N-2 · Contenedores
 
-TukiTuki se despliega como un monorepo de microservicios. Cada servicio es dueño
-de su base lógica y de su contrato HTTP; ningún servicio consulta las tablas de
-otro.
+El N-2 se lee en dos pasos. Primero, una vista agrupada: todo el frontend es un
+bloque y todo el backend es otro. Así se entiende el sistema sin perderse en
+once contenedores. Después, el N-2.2 abre esos dos bloques y enumera lo que hay
+dentro.
 
 ```mermaid
 flowchart LR
-  COM(["Comensal"])
-  DUE(["Dueño"])
-  SUP(["Superadmin"])
+  COM(["Comensal<br/><i>Persona</i>"])
+  DUE(["Dueño<br/><i>Persona</i>"])
+  SUP(["Superadmin<br/><i>Persona</i>"])
 
   ING["Ingress Nginx<br/><i>Contenedor</i><br/>Host y prefijo"]
 
   subgraph K8S["TukiTuki · Kubernetes"]
-    direction TB
-    WEB["web-comensal<br/><i>React + Nginx</i>"]
-    PANEL["panel-restaurante<br/><i>React + Nginx</i>"]
-    ADMINFE["admin-plataforma<br/><i>React + Nginx</i>"]
-
-    ID["identidad-service<br/><i>Node :3001</i>"]
-    RES["restaurantes-service<br/><i>Node :3002</i>"]
-    MED["media-service<br/><i>Node :3003</i>"]
-    PED["pedidos-service<br/><i>Node :3004</i>"]
-    REN["resenas-service<br/><i>Node :3005</i>"]
-    ADM["admin-service<br/><i>Node :3006</i>"]
-    AI["ai-gateway<br/><i>Python :8000</i>"]
-    VIS["vision-service<br/><i>Python :8000</i>"]
-
+    FE["Frontend<br/><i>React 19 · Vite · Nginx</i><br/>web-comensal · panel-restaurante · admin-plataforma"]
+    BE["Backend<br/><i>Node 22 · Fastify 5 · Python 3.12</i><br/>6 servicios Node · AI Gateway · visión"]
     PG[("PostgreSQL 16<br/>6 bases")]
     RUST[("RustFS<br/>S3")]
-    REDIS[("Redis 7<br/>previsto")]
   end
 
   subgraph EXT["Externos"]
     OLL["Ollama"]
     WA["WhatsApp"]
-    GH["GitHub + GHCR"]
-    ARGO["Argo CD"]
     OBS["Prometheus · Grafana · Tempo"]
   end
 
   COM --> ING
   DUE --> ING
   SUP --> ING
+  ING --> FE
+  ING --> BE
+  BE --> PG
+  BE --> RUST
+  BE --> OLL
+  BE --> OBS
+  FE -.-> WA
+```
+
+Lectura:
+
+- **Dos bloques desplegables.** El `Frontend` reúne las tres SPAs y los paquetes
+  `@tuki/*`; el `Backend` reúne los seis servicios Node, el AI Gateway y visión.
+- **El borde es uno solo.** El Ingress publica las SPAs y enruta `/v1/*` y
+  `/api/v1/ai`; ningún frontend conoce la IP de un servicio.
+- **Los almacenes no están dentro de los servicios.** PostgreSQL y RustFS son
+  contenedores propios; Redis está previsto y se muestra en el N-2.2.
+- **El detalle no se pierde.** La página N-2.2 enumera los once contenedores y
+  las dependencias entre ellos; este N-2 solo agrupa.
+
+### 3.1 N-2.2 · Detalle de frontend y backend
+
+El N-2.2 es la vista que abre las dos cajas del N-2. El bloque `Frontend`
+contiene tres aplicaciones; el bloque `Backend` contiene seis servicios Node y
+un sub-bloque de IA con dos servicios Python.
+
+```mermaid
+flowchart LR
+  ING["Ingress Nginx<br/><i>Nginx Ingress</i>"]
+
+  subgraph FE["Frontend · TukiTuki"]
+    direction TB
+    WEB["web-comensal<br/><i>React + Vite</i>"]
+    PANEL["panel-restaurante<br/><i>React + Vite</i>"]
+    ADMINFE["admin-plataforma<br/><i>React + Vite</i>"]
+  end
+
+  subgraph BE["Backend · TukiTuki"]
+    direction TB
+    ID["identidad-service :3001"]
+    RES["restaurantes-service :3002"]
+    MED["media-service :3003"]
+    PED["pedidos-service :3004"]
+    REN["resenas-service :3005"]
+    ADM["admin-service :3006"]
+    AI["ai-gateway :8000"]
+    VIS["vision-service :8000"]
+  end
+
+  PG[("PostgreSQL 16<br/>6 bases")]
+  RUST[("RustFS<br/>S3")]
+  REDIS[("Redis 7<br/>previsto")]
+  OLL["Ollama"]
+
   ING --> WEB
   ING --> PANEL
   ING --> ADMINFE
-  ING --> ID
-  ING --> RES
-  ING --> MED
-  ING --> PED
-  ING --> REN
-  ING --> ADM
-  ING --> AI
-
-  WEB --> RES
-  PANEL --> RES
-  ADMINFE --> ADM
+  ING --> BE
   PED --> RES
   REN --> RES
   ADM --> ID
@@ -164,38 +195,33 @@ flowchart LR
   MED --> VIS
   MED --> RUST
   AI --> OLL
-  WEB -.-> WA
-
-  ID --> PG
-  RES --> PG
-  MED --> PG
-  PED --> PG
-  REN --> PG
-  ADM --> PG
-  MED -.-> REDIS
-  ID --> OBS
-  AI --> OBS
-  ARGO -.-> K8S
-  GH --> ARGO
+  BE --> PG
+  BE -.-> REDIS
 ```
+
+| Bloque | Contenedores | Responsabilidad conjunta |
+| --- | --- | --- |
+| Frontend | `web-comensal`, `panel-restaurante`, `admin-plataforma` | Tres SPAs Vite que comparten `@tuki/api-cliente`, `@tuki/auth-react` y `@tuki/dominio` |
+| Backend Node | `identidad-service` … `admin-service` | Seis servicios Fastify con una base lógica por servicio y contratos REST |
+| Backend IA | `ai-gateway`, `vision-service` | Chat y RAG local, y clasificación de fotos; no leen PostgreSQL |
+| Datos | `PostgreSQL 16`, `RustFS`, `Redis 7` | Una base por servicio, objetos S3 y caché/rate limit previsto |
 
 Lectura:
 
-- **La SPA no habla con la base.** Habla con `/v1/*` a través del Ingress (o del
-  API Gateway Nginx en Compose). El JWT viaja en `Authorization`.
-- **Una base por servicio.** En local comparten instancia PostgreSQL, pero cada
-  servicio tiene usuario y base propios. En producción se pueden separar sin
-  tocar el código.
-- **Medios va por fuera de la base.** `media-service` guarda el objeto en RustFS
-  y solo persiste clave, URL y metadatos.
-- **Visión es un servicio aparte.** `media-service` lo consulta antes de aceptar
-  una foto; si visión no está listo, la subida falla abierto.
-- **El AI Gateway no lee PostgreSQL.** Pide el catálogo a
-  `restaurantes-service` y las reseñas a `resenas-service`.
-- **Redis está desplegado pero no conectado.** El rate limit de Fastify sigue en
-  memoria; el gateway de IA también usa un token bucket local.
+- **Frontend = tres contenedores, no uno.** Cada SPA se despliega con su propio
+  Nginx y su propio host; comparten paquetes, no proceso.
+- **Backend = ocho contenedores.** Los seis Node son independientes; el AI
+  Gateway y visión son Python y viven en un sub-bloque del mismo backend.
+- **Dependencias síncronas.** `pedidos` y `resenas` consultan `restaurantes`;
+  `admin-service` consulta identidad, restaurantes y pedidos; `ai-gateway`
+  consulta restaurantes y reseñas; `media` consulta visión.
+- **Datos fuera del proceso.** Todos los Node escriben en PostgreSQL; `media`
+  además escribe objetos en RustFS. Redis aparece punteado porque está
+  desplegado pero el rate limit sigue en memoria.
+- **Una sola entrada.** El Ingress publica las tres SPAs y enruta las APIs; las
+  flechas entre contenedores son REST directo solo dentro del backend.
 
-### 3.1 Los mismos contenedores en cada entorno
+### 3.2 Los mismos contenedores en cada entorno
 
 | Elemento | Docker Compose | Kubernetes |
 | --- | --- | --- |
@@ -347,6 +373,7 @@ reseñas de `resenas-service`; el gateway no lee PostgreSQL.
 | Microservicios con base por servicio | Seis contenedores Node y seis bases lógicas |
 | Arquitectura hexagonal | En N-3.2 cada columna repite entrada → aplicación → dominio, con puertos y adaptadores |
 | Datos dentro del clúster | PostgreSQL, Redis y RustFS son contenedores; Ollama, WhatsApp y GHCR son externos |
+| N-2 agrupado y N-2.2 detallado | El N-2 muestra dos bloques; el N-2.2 enumera los once contenedores y sus dependencias |
 | IA local | El AI Gateway apunta a Ollama, no a Groq |
 | Sin bus de eventos | Las flechas entre servicios son REST síncrono |
 | Un solo origen HTTP | Ingress o API Gateway Nginx; sin CORS en producción |
