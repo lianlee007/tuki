@@ -1,8 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, MessageCircle, Send, Sparkles, Utensils, X } from 'lucide-react';
+import {
+  AudioLines,
+  Loader2,
+  MessageCircle,
+  Mic,
+  MicOff,
+  Send,
+  Sparkles,
+  Square,
+  Utensils,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
 import { mensajeDeError, type FuenteIa, type MensajeIa } from '@tuki/api-cliente';
 import { apis } from '../../lib/api-tuki';
+import { useDictadoVoz, useLecturaVoz } from './voz';
 
 const SUGERENCIAS = [
   '¿Qué me recomiendas?',
@@ -107,6 +121,50 @@ export const ChatRecomendador = () => {
   const finRef = useRef<HTMLDivElement | null>(null);
   const entradaRef = useRef<HTMLInputElement | null>(null);
 
+  const [autoLeer, setAutoLeer] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem('tuki-chat-leer') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [manosLibres, setManosLibres] = useState(false);
+  const [avisoVoz, setAvisoVoz] = useState<string | null>(null);
+  const enviarRef = useRef<(valor: string) => Promise<void>>(async () => {});
+  const autoLeerRef = useRef(autoLeer);
+  const manosLibresRef = useRef(manosLibres);
+  const pausaVozRef = useRef(false);
+  autoLeerRef.current = autoLeer;
+  manosLibresRef.current = manosLibres;
+
+  const lectura = useLecturaVoz();
+  const dictado = useDictadoVoz({
+    lang: 'es-CO',
+    onTextoFinal: (transcripcion) => {
+      setTexto(transcripcion);
+      if (manosLibresRef.current) {
+        void enviarRef.current(transcripcion);
+      }
+    },
+    onError: (mensaje) => setAvisoVoz(mensaje),
+  });
+
+  const avisarVoz = (mensaje: string) => {
+    setAvisoVoz(mensaje);
+    window.setTimeout(() => {
+      setAvisoVoz((actual) => (actual === mensaje ? null : actual));
+    }, 6000);
+  };
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('tuki-chat-leer', autoLeer ? '1' : '0');
+    } catch {
+      // El navegador puede bloquear el almacenamiento; la voz sigue funcionando.
+    }
+  }, [autoLeer]);
+
   useEffect(() => {
     if (abierto) {
       window.setTimeout(() => entradaRef.current?.focus(), 120);
@@ -122,6 +180,10 @@ export const ChatRecomendador = () => {
   const enviar = async (valor: string) => {
     const limpio = valor.trim();
     if (!limpio || enviando) return;
+
+    lectura.detener();
+    dictado.detener();
+    setAvisoVoz(null);
 
     const nuevoUsuario: MensajeUi = { rol: 'user', contenido: limpio };
     const historial: MensajeIa[] = mensajes
@@ -148,6 +210,24 @@ export const ChatRecomendador = () => {
           modelo: recomendacion.modelo,
         },
       ]);
+
+      // La lectura se dispara después de pintar la respuesta. En modo manos
+      // libres, al terminar de leer se vuelve a abrir el micrófono.
+      const debeLeer = autoLeerRef.current || manosLibresRef.current;
+      if (debeLeer) {
+        const hablando = lectura.hablar(recomendacion.respuesta, {
+          onFin: () => {
+            if (manosLibresRef.current && !pausaVozRef.current) {
+              window.setTimeout(() => dictado.iniciar(), 350);
+            }
+          },
+        });
+        if (!hablando && manosLibresRef.current && !pausaVozRef.current) {
+          window.setTimeout(() => dictado.iniciar(), 800);
+        }
+      } else if (manosLibresRef.current && !pausaVozRef.current) {
+        window.setTimeout(() => dictado.iniciar(), 800);
+      }
     } catch (error: unknown) {
       setMensajes((previos) => [
         ...previos,
@@ -162,11 +242,68 @@ export const ChatRecomendador = () => {
     }
   };
 
+  enviarRef.current = enviar;
+
+  const cerrarChat = () => {
+    pausaVozRef.current = true;
+    setManosLibres(false);
+    setAvisoVoz(null);
+    dictado.detener();
+    lectura.detener();
+    setAbierto(false);
+  };
+
+  const alternarChat = () => {
+    if (abierto) cerrarChat();
+    else setAbierto(true);
+  };
+
+  const alternarDictado = () => {
+    if (dictado.escuchando) {
+      pausaVozRef.current = true;
+      dictado.detener();
+      return;
+    }
+    pausaVozRef.current = false;
+    lectura.detener();
+    setAvisoVoz(null);
+    dictado.iniciar();
+  };
+
+  const alternarAutoLeer = () => {
+    if (!lectura.soportado) {
+      avisarVoz('Tu navegador no permite leer respuestas en voz alta.');
+      return;
+    }
+    const siguiente = !autoLeer;
+    setAutoLeer(siguiente);
+    if (!siguiente) lectura.detener();
+  };
+
+  const alternarManosLibres = () => {
+    if (!dictado.soportado) {
+      avisarVoz('Tu navegador no permite dictado por voz. Escribe la pregunta.');
+      return;
+    }
+    const siguiente = !manosLibres;
+    setManosLibres(siguiente);
+    if (siguiente) {
+      pausaVozRef.current = false;
+      setAutoLeer(true);
+      avisarVoz('Manos libres activado. Pulsa el micrófono y habla.');
+    } else {
+      pausaVozRef.current = true;
+      dictado.detener();
+      lectura.detener();
+      setAvisoVoz(null);
+    }
+  };
+
   return (
     <>
       <button
         type="button"
-        onClick={() => setAbierto((valor) => !valor)}
+        onClick={alternarChat}
         aria-label={abierto ? 'Cerrar el chat de Tuki' : 'Abrir el chat de Tuki'}
         aria-expanded={abierto}
         className="fixed bottom-24 right-4 z-50 flex items-center gap-2 rounded-full bg-hearth-terracotta px-4 py-3 text-sm font-semibold text-white shadow-warm-xl transition hover:bg-hearth-terracotta-deep sm:bottom-6 sm:right-6"
@@ -193,14 +330,64 @@ export const ChatRecomendador = () => {
                 Platos reales del catálogo
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setAbierto(false)}
-              className="ml-auto rounded-full p-2 text-hearth-pebble transition hover:bg-hearth-oat dark:text-hearth-night-pebble dark:hover:bg-hearth-night-oat"
-              aria-label="Cerrar el chat"
-            >
-              <X size={18} aria-hidden />
-            </button>
+            <div className="ml-auto flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={alternarAutoLeer}
+                aria-pressed={autoLeer}
+                aria-label={
+                  autoLeer
+                    ? 'Desactivar la lectura de respuestas'
+                    : 'Leer las respuestas en voz alta'
+                }
+                title={
+                  autoLeer
+                    ? 'No leer las respuestas en voz alta'
+                    : 'Leer las respuestas en voz alta'
+                }
+                className={`rounded-full p-2 transition ${
+                  autoLeer
+                    ? 'bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink'
+                    : 'text-hearth-pebble hover:bg-hearth-oat dark:text-hearth-night-pebble dark:hover:bg-hearth-night-oat'
+                }`}
+              >
+                {autoLeer ? (
+                  <Volume2 size={17} aria-hidden />
+                ) : (
+                  <VolumeX size={17} aria-hidden />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={alternarManosLibres}
+                aria-pressed={manosLibres}
+                aria-label={
+                  manosLibres
+                    ? 'Desactivar el modo manos libres'
+                    : 'Activar el modo manos libres'
+                }
+                title={
+                  manosLibres
+                    ? 'Desactivar manos libres'
+                    : 'Manos libres: hablar, enviar y escuchar la respuesta'
+                }
+                className={`rounded-full p-2 transition ${
+                  manosLibres
+                    ? 'bg-hearth-terracotta-soft text-hearth-terracotta-ink dark:bg-hearth-night-terracotta-soft dark:text-hearth-night-terracotta-ink'
+                    : 'text-hearth-pebble hover:bg-hearth-oat dark:text-hearth-night-pebble dark:hover:bg-hearth-night-oat'
+                }`}
+              >
+                <AudioLines size={17} aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={cerrarChat}
+                className="rounded-full p-2 text-hearth-pebble transition hover:bg-hearth-oat dark:text-hearth-night-pebble dark:hover:bg-hearth-night-oat"
+                aria-label="Cerrar el chat"
+              >
+                <X size={18} aria-hidden />
+              </button>
+            </div>
           </header>
 
           <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
@@ -232,6 +419,30 @@ export const ChatRecomendador = () => {
                         <TarjetaFuente key={`${fuente.tipo}-${fuente.id}`} fuente={fuente} />
                       ))}
                     </div>
+                  ) : null}
+
+                  {mensaje.rol === 'user' && lectura.soportado ? (
+                    <button
+                      type="button"
+                      onClick={() => lectura.hablar(mensaje.contenido)}
+                      className="ml-auto flex items-center gap-1 px-1 text-[10px] font-semibold text-hearth-pebble transition hover:text-hearth-terracotta-ink dark:text-hearth-night-pebble dark:hover:text-hearth-night-terracotta-ink"
+                      aria-label="Escuchar lo que escribiste"
+                    >
+                      <Volume2 size={11} aria-hidden />
+                      Repetir
+                    </button>
+                  ) : null}
+
+                  {mensaje.rol === 'assistant' && !mensaje.error && lectura.soportado ? (
+                    <button
+                      type="button"
+                      onClick={() => lectura.hablar(mensaje.contenido)}
+                      className="inline-flex items-center gap-1 px-1 text-[10px] font-semibold text-hearth-pebble transition hover:text-hearth-terracotta-ink dark:text-hearth-night-pebble dark:hover:text-hearth-night-terracotta-ink"
+                      aria-label="Escuchar esta respuesta en voz alta"
+                    >
+                      <Volume2 size={11} aria-hidden />
+                      Escuchar
+                    </button>
                   ) : null}
 
                   {mensaje.latenciaMs ? (
@@ -267,6 +478,57 @@ export const ChatRecomendador = () => {
             </div>
           ) : null}
 
+          {dictado.escuchando || lectura.hablando || dictado.error || avisoVoz ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hearth-line bg-hearth-oat/70 px-4 py-2 text-[11px] text-hearth-espresso dark:border-hearth-night-line dark:bg-hearth-night-oat/60 dark:text-hearth-night-ink"
+            >
+              {dictado.escuchando ? (
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-red-500"
+                    aria-hidden
+                  />
+                  <span className="font-semibold">Escuchando…</span>
+                  {dictado.parcial ? (
+                    <span className="truncate text-hearth-pebble dark:text-hearth-night-pebble">
+                      “{dictado.parcial}”
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
+
+              {lectura.hablando ? (
+                <span className="flex items-center gap-1.5">
+                  <Volume2 size={12} aria-hidden />
+                  <span className="font-semibold">Leyendo la respuesta…</span>
+                </span>
+              ) : null}
+
+              {!dictado.escuchando && !lectura.hablando && (dictado.error || avisoVoz) ? (
+                <span className="min-w-0 flex-1 text-hearth-terracotta-ink dark:text-hearth-night-terracotta-ink">
+                  {dictado.error ?? avisoVoz}
+                </span>
+              ) : null}
+
+              {dictado.escuchando || lectura.hablando ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    pausaVozRef.current = true;
+                    dictado.detener();
+                    lectura.detener();
+                  }}
+                  className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-bold text-hearth-espresso transition hover:bg-white dark:bg-hearth-night-card dark:text-hearth-night-ink"
+                >
+                  <Square size={9} aria-hidden />
+                  Detener
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
           <form
             onSubmit={(evento) => {
               evento.preventDefault();
@@ -274,6 +536,32 @@ export const ChatRecomendador = () => {
             }}
             className="flex items-center gap-2 border-t border-hearth-line bg-white/80 px-3 py-3 dark:border-hearth-night-line dark:bg-hearth-night-soft/90"
           >
+            <button
+              type="button"
+              onClick={alternarDictado}
+              disabled={enviando}
+              aria-label={dictado.escuchando ? 'Detener el dictado' : 'Hablar con Tuki'}
+              aria-pressed={dictado.escuchando}
+              title={
+                dictado.soportado
+                  ? dictado.escuchando
+                    ? 'Detener el dictado'
+                    : 'Hablar con Tuki'
+                  : 'Tu navegador no permite dictado por voz'
+              }
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                dictado.escuchando
+                  ? 'bg-red-600 text-white shadow-warm'
+                  : 'bg-hearth-oat text-hearth-espresso hover:bg-hearth-oat-deep dark:bg-hearth-night-oat dark:text-hearth-night-ink'
+              } ${!dictado.soportado ? 'opacity-50' : ''}`}
+            >
+              {dictado.escuchando ? (
+                <MicOff size={18} aria-hidden />
+              ) : (
+                <Mic size={18} aria-hidden />
+              )}
+            </button>
+
             <input
               ref={entradaRef}
               value={texto}
