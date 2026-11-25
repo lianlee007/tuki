@@ -1,0 +1,182 @@
+@page {
+  size: A4;
+  margin: 16mm 15mm 18mm;
+}
+
+:root {
+  --tinta: #2d2a26;
+  --suave: #6f665c;
+  --linea: #ded3c4;
+  --crema: #fbf6ea;
+  --terracota: #b85c38;
+  --verde: #2f7a58;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #ffffff;
+}
+
+body {
+  margin: 0;
+  color: var(--tinta);
+  background: #ffffff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 10.4pt;
+  line-height: 1.52;
+}
+
+h1 {
+  margin: 0 0 4mm;
+  color: var(--terracota);
+  font-size: 24pt;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin: 0 0 4mm;
+  padding-top: 2mm;
+  color: var(--tinta);
+  font-size: 17pt;
+  line-height: 1.15;
+  border-top: 2px solid var(--terracota);
+  page-break-before: always;
+}
+
+h2:first-of-type {
+  page-break-before: auto;
+}
+
+h3 {
+  margin: 6mm 0 2.5mm;
+  color: var(--verde);
+  font-size: 12.5pt;
+  line-height: 1.2;
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0 0 3mm;
+}
+
+ul,
+ol {
+  margin: 0 0 3mm 5mm;
+  padding: 0;
+}
+
+li {
+  margin: 0 0 1.4mm;
+}
+
+strong {
+  color: var(--tinta);
+}
+
+a {
+  color: var(--terracota);
+  text-decoration: none;
+}
+
+blockquote {
+  margin: 4mm 0;
+  padding: 3mm 4mm;
+  background: #f7efe2;
+  border-left: 4px solid var(--terracota);
+  color: var(--suave);
+  font-size: 9.6pt;
+}
+
+code {
+  padding: 0.4mm 1.2mm;
+  background: #f4ede1;
+  border-radius: 3px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 8.8pt;
+}
+
+pre {
+  margin: 3mm 0 4mm;
+  padding: 3.5mm;
+  background: #f4ede1;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+}
+
+pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 8.6pt;
+}
+
+table {
+  width: 100%;
+  margin: 3mm 0 4mm;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  page-break-inside: avoid;
+}
+
+thead {
+  background: #f2e5d5;
+}
+
+th,
+td {
+  padding: 1.8mm 2mm;
+  border: 1px solid var(--linea);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+tbody tr:nth-child(even) {
+  background: #fcf8f1;
+}
+
+figure {
+  margin: 5mm 0 6mm;
+  padding: 3mm;
+  background: var(--crema);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+figure img {
+  display: block;
+  max-width: 100%;
+  max-height: 118mm;
+  height: auto;
+  margin: 0 auto;
+}
+
+figcaption {
+  margin-top: 2mm;
+  color: var(--suave);
+  font-size: 8.5pt;
+  font-style: italic;
+}
+
+hr {
+  margin: 6mm 0;
+  border: 0;
+  border-top: 1px solid var(--linea);
+}
+
+/* La primera página funciona como portada compacta. */
+h1 + p {
+  max-width: 150mm;
+  color: var(--suave);
+  font-size: 11pt;
+}

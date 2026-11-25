@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="720" viewBox="0 0 1400 720" role="img" aria-labelledby="titulo-estados">
+  <title id="titulo-estados">Estados de la voz en el chat</title>
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8A7E72"/>
+    </marker>
+    <marker id="flecha-verde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F7A58"/>
+    </marker>
+    <marker id="flecha-terracota" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B85C38"/>
+    </marker>
+    <marker id="flecha-dorada" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C9A227"/>
+    </marker>
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2D2A26" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="720" fill="#FBF6EA"/>
+  <text x="50" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#2D2A26">Estados de la voz</text>
+  <text x="50" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#8A7E72">El chat alterna entre escuchar, enviar y leer; nunca escucha mientras habla</text>
+
+  <!-- Inactivo -->
+  <g filter="url(#sombra)">
+    <rect x="80" y="320" width="220" height="104" rx="20" fill="#FFFFFF" stroke="#D9CDBE"/>
+    <circle cx="124" cy="372" r="15" fill="#B9AFA4"/>
+    <text x="154" y="368" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2A26">Inactivo</text>
+    <text x="154" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">texto y botones listos</text>
+  </g>
+
+  <!-- Escuchando -->
+  <g filter="url(#sombra)">
+    <rect x="380" y="140" width="240" height="104" rx="20" fill="#FFFFFF" stroke="#2F7A58" stroke-width="1.5"/>
+    <circle cx="424" cy="192" r="15" fill="#2F7A58"/>
+    <text x="454" y="188" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2A26">Escuchando</text>
+    <text x="454" y="210" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">micrófono + parciales</text>
+  </g>
+
+  <!-- Enviando -->
+  <g filter="url(#sombra)">
+    <rect x="720" y="140" width="240" height="104" rx="20" fill="#FFFFFF" stroke="#6B7C93" stroke-width="1.5"/>
+    <circle cx="764" cy="192" r="15" fill="#6B7C93"/>
+    <text x="794" y="188" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2A26">Enviando</text>
+    <text x="794" y="210" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">espera del RAG</text>
+  </g>
+
+  <!-- Leyendo -->
+  <g filter="url(#sombra)">
+    <rect x="1060" y="320" width="240" height="104" rx="20" fill="#FFFFFF" stroke="#C9A227" stroke-width="1.5"/>
+    <circle cx="1104" cy="372" r="15" fill="#C9A227"/>
+    <text x="1134" y="368" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2A26">Leyendo</text>
+    <text x="1134" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">speechSynthesis</text>
+  </g>
+
+  <!-- Flechas principales -->
+  <path d="M 300 350 C 330 250 340 210 376 196" fill="none" stroke="#2F7A58" stroke-width="2" marker-end="url(#flecha-verde)"/>
+  <text x="296" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#2F7A58">clic en el micrófono</text>
+
+  <path d="M 620 192 L 716 192" fill="none" stroke="#6B7C93" stroke-width="2" marker-end="url(#flecha)"/>
+  <text x="668" y="183" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">texto final</text>
+
+  <path d="M 960 228 C 1010 260 1030 300 1056 340" fill="none" stroke="#B85C38" stroke-width="2" marker-end="url(#flecha-terracota)"/>
+  <text x="1010" y="278" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#B85C38">respuesta</text>
+
+  <path d="M 1060 396 C 700 540 360 540 300 396" fill="none" stroke="#8A7E72" stroke-width="1.8" marker-end="url(#flecha)"/>
+  <text x="680" y="530" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">fin de la lectura · o “Detener”</text>
+
+  <!-- Manos libres -->
+  <path d="M 1180 320 C 1180 96 460 96 460 136" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-dasharray="7 6" marker-end="url(#flecha-dorada)"/>
+  <text x="820" y="88" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#C9A227">manos libres: después de leer, vuelve a escuchar</text>
+
+  <!-- Nota -->
+  <rect x="80" y="600" width="1220" height="70" rx="16" fill="#F6EEDF" stroke="#D9CDBE"/>
+  <text x="104" y="626" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#2D2A26">Regla de exclusión y salida</text>
+  <text x="104" y="648" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">El dictado se detiene antes de enviar y la lectura nunca se solapa con el micrófono. Un error de micrófono o “Detener” regresa a Inactivo.</text>
+</svg>

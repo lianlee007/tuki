@@ -1,0 +1,150 @@
+{
+  "ejecuciones": 27,
+  "latencias": {
+    "media": 1569.5,
+    "mediana": 717,
+    "p95": 4548.8,
+    "min": 0,
+    "max": 7327
+  },
+  "tokens": {
+    "total": 16724,
+    "prompt_total": 15780,
+    "completion_total": 944,
+    "media_por_ejecucion": 619.4,
+    "media_solo_llm": 1520.4,
+    "prompt_medio_solo_llm": 1434.5,
+    "completion_medio_solo_llm": 85.8
+  },
+  "rutas": {
+    "con_llm": 11,
+    "sin_llm": 16
+  },
+  "frio": {
+    "latencia_ms": 17265,
+    "recuperacion_ms": 15040,
+    "tokens": 1459
+  },
+  "recomendacion": {
+    "consulta": "¿Qué me recomiendas para almorzar?",
+    "etiqueta": "Recomienda\nalmorzar",
+    "n": 3,
+    "latencia": 3124.0,
+    "recuperacion": 144.3,
+    "generacion": 2979.7,
+    "prompt_tokens": 1399.0,
+    "completion_tokens": 82.3,
+    "total_tokens": 1481.3,
+    "fuentes": 5.0
+  },
+  "por_consulta": [
+    {
+      "consulta": "¿Qué me recomiendas para almorzar?",
+      "etiqueta": "Recomienda\nalmorzar",
+      "n": 3,
+      "latencia": 3124.0,
+      "recuperacion": 144.3,
+      "generacion": 2979.7,
+      "prompt_tokens": 1399.0,
+      "completion_tokens": 82.3,
+      "total_tokens": 1481.3,
+      "fuentes": 5.0
+    },
+    {
+      "consulta": "¿Qué puedo comer hoy?",
+      "etiqueta": "Qué comer\nhoy",
+      "n": 3,
+      "latencia": 3603.3,
+      "recuperacion": 155.0,
+      "generacion": 3448.3,
+      "prompt_tokens": 1451.0,
+      "completion_tokens": 94.0,
+      "total_tokens": 1545.0,
+      "fuentes": 5.0
+    },
+    {
+      "consulta": "Recomiéndame un plato típico para almorzar",
+      "etiqueta": "Plato típico\npara almorzar",
+      "n": 3,
+      "latencia": 1943.7,
+      "recuperacion": 178.7,
+      "generacion": 1765.0,
+      "prompt_tokens": 1466.0,
+      "completion_tokens": 47.0,
+      "total_tokens": 1513.0,
+      "fuentes": 5.0
+    },
+    {
+      "consulta": "Busco algo delicioso para compartir",
+      "etiqueta": "Algo para\ncompartir",
+      "n": 3,
+      "latencia": 4603.7,
+      "recuperacion": 1284.0,
+      "generacion": 3319.7,
+      "prompt_tokens": 944.0,
+      "completion_tokens": 91.3,
+      "total_tokens": 1035.3,
+      "fuentes": 4.7
+    },
+    {
+      "consulta": "Algo vegetariano y barato",
+      "etiqueta": "Vegetariano\nbarato",
+      "n": 3,
+      "latencia": 127.7,
+      "recuperacion": 127.7,
+      "generacion": 0.0,
+      "prompt_tokens": 0.0,
+      "completion_tokens": 0.0,
+      "total_tokens": 0.0,
+      "fuentes": 4.0
+    },
+    {
+      "consulta": "Quiero un postre",
+      "etiqueta": "Un postre",
+      "n": 3,
+      "latencia": 716.7,
+      "recuperacion": 716.3,
+      "generacion": 0.3,
+      "prompt_tokens": 0.0,
+      "completion_tokens": 0.0,
+      "total_tokens": 0.0,
+      "fuentes": 4.0
+    },
+    {
+      "consulta": "¿Cuánto cuesta el Ajiaco Bogotano?",
+      "etiqueta": "Precio del\najiaco",
+      "n": 3,
+      "latencia": 6.0,
+      "recuperacion": 6.0,
+      "generacion": 0.0,
+      "prompt_tokens": 0.0,
+      "completion_tokens": 0.0,
+      "total_tokens": 0.0,
+      "fuentes": 1.0
+    },
+    {
+      "consulta": "¿Cómo funciona el panel de restaurantes?",
+      "etiqueta": "Panel de\nrestaurantes",
+      "n": 3,
+      "latencia": 0.3,
+      "recuperacion": 0.3,
+      "generacion": 0.0,
+      "prompt_tokens": 0.0,
+      "completion_tokens": 0.0,
+      "total_tokens": 0.0,
+      "fuentes": 0.0
+    },
+    {
+      "consulta": "Hola",
+      "etiqueta": "Saludo",
+      "n": 3,
+      "latencia": 0.0,
+      "recuperacion": 0.0,
+      "generacion": 0.0,
+      "prompt_tokens": 0.0,
+      "completion_tokens": 0.0,
+      "total_tokens": 0.0,
+      "fuentes": 0.0
+    }
+  ]
+}
