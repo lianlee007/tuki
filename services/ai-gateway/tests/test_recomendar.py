@@ -162,7 +162,8 @@ async def test_recomienda_con_modelo_local_y_fuentes():
     assert "Arepa de queso" in prompt
     assert "12000" in prompt
     assert enviado["options"]["num_predict"] == 200
-    assert "Solo puedes recomendar platos" in enviado["messages"][0]["content"]
+    assert "REGLAS OBLIGATORIAS" in enviado["messages"][0]["content"]
+    assert "No inventes platos" in enviado["messages"][0]["content"]
 
 
 @respx.mock
