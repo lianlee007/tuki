@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0">
   <diagram id="diagrama-ai-gateway-tuki" name="Arquitectura RAG y AI Gateway - Tuki">
-    <mxGraphModel dx="834" dy="505" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1060" pageHeight="640" math="0" shadow="0">
+    <mxGraphModel dx="1240" dy="554" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1060" pageHeight="640" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -17,7 +17,7 @@
           <mxGeometry height="24" width="120" x="842" y="122" as="geometry" />
         </mxCell>
         <mxCell id="node_restaurantes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="restaurantes-service&lt;br&gt;catálogo del menú" vertex="1">
-          <mxGeometry height="62" width="185" x="50" y="75" as="geometry" />
+          <mxGeometry height="62" width="185" x="50" y="418" as="geometry" />
         </mxCell>
         <mxCell id="node_resenas" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;align=center;verticalAlign=middle;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;" value="resenas-service&lt;br&gt;valoraciones" vertex="1">
           <mxGeometry height="62" width="185" x="50" y="223" as="geometry" />
@@ -60,11 +60,11 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_rest_indice" edge="1" parent="1" source="node_restaurantes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.58;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_indice" value="">
+        <mxCell id="edge_rest_indice" edge="1" parent="1" source="node_restaurantes" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;edgeStyle=orthogonalEdgeStyle;" target="node_indice" value="">
           <mxGeometry relative="1" x="-0.0478" as="geometry">
             <Array as="points">
-              <mxPoint x="260" y="111" />
-              <mxPoint x="260" y="470" />
+              <mxPoint x="270" y="470" />
+              <mxPoint x="270" y="470" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -106,11 +106,12 @@
         <mxCell id="edge_recup_contexto" edge="1" parent="1" source="node_recuperacion" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_contexto" value="top-6">
           <mxGeometry relative="1" x="-0.1" y="-14" as="geometry" />
         </mxCell>
-        <mxCell id="edge_contexto_tukichef" edge="1" parent="1" source="node_contexto" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="node_tukichef" value="prompt / texto">
-          <mxGeometry relative="1" x="-0.52" y="-14" as="geometry">
+        <mxCell id="edge_contexto_tukichef" edge="1" parent="1" source="node_contexto" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=15;labelBackgroundColor=#ffffff;endArrow=block;endFill=1;endSize=8;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="node_tukichef" value="prompt / texto">
+          <mxGeometry relative="1" x="0.0576" y="31" as="geometry">
+            <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="812" y="322" />
-              <mxPoint x="812" y="201" />
+              <mxPoint x="801" y="290" />
+              <mxPoint x="801" y="201" />
             </Array>
           </mxGeometry>
         </mxCell>
