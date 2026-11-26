@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Instalar Trivy
-        uses: aquasecurity/setup-trivy@v0
+        uses: aquasecurity/setup-trivy@v0.3.1
         with:
           version: ${{ env.TRIVY_VERSION }}
           cache: true
@@ -174,7 +174,7 @@ jobs:
           echo "Imagen publicada: ${REF}"
 
       - name: Instalar Trivy
-        uses: aquasecurity/setup-trivy@v0
+        uses: aquasecurity/setup-trivy@v0.3.1
         with:
           version: ${{ env.TRIVY_VERSION }}
           cache: true
