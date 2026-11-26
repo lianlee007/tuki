@@ -1,0 +1,44 @@
+name: Proponer una mejora
+description: Una funcionalidad, un cambio de arquitectura o una mejora de operación.
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema o necesidad
+      description: ¿Qué duele hoy y a quién afecta?
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: ¿Qué te gustaría que hiciera TukiTuki?
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: ¿Qué otras opciones evaluaste y por qué las descartaste?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Frontend comensal
+        - Panel del restaurante
+        - Administración
+        - Servicios de negocio
+        - IA y RAG
+        - Visión
+        - Kubernetes / GitOps
+        - CI/CD y seguridad
+        - Observabilidad
+        - Documentación
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: ¿Cómo sabremos que quedó bien?

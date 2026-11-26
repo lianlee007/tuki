@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentación
+    url: https://github.com/lianlee007/tuki#readme
+    about: Revisa el README y la guía de ejecución antes de abrir un issue.
+  - name: Seguridad
+    url: https://github.com/lianlee007/tuki/security
+    about: No publiques vulnerabilidades explotables en un issue público.
