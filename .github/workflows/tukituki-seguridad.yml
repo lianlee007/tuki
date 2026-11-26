@@ -313,7 +313,7 @@ jobs:
       # El PR es la promoción a producción: un revisor ve el digest exacto que
       # Argo CD desplegará y puede revertirlo con un commit.
       - name: Crear el pull request de promoción
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           base: main
           branch: gitops/digests
