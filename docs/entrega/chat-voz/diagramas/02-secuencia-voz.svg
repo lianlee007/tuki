@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="950" viewBox="0 0 1400 950" role="img" aria-labelledby="titulo-secuencia">
+  <title id="titulo-secuencia">Secuencia de una interacción por voz con el chat de Tuki</title>
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8A7E72"/>
+    </marker>
+    <marker id="flecha-terracota" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B85C38"/>
+    </marker>
+    <marker id="flecha-azul" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6B7C93"/>
+    </marker>
+    <marker id="flecha-verde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F7A58"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="900" fill="#FBF6EA"/>
+  <text x="50" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#2D2A26">Secuencia de una interacción por voz</text>
+  <text x="50" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#8A7E72">El micrófono, el chat, el RAG y la lectura comparten el mismo turno conversacional</text>
+
+  <!-- Participantes -->
+  <g>
+    <rect x="70" y="110" width="240" height="70" rx="16" fill="#FFFFFF" stroke="#C9A227" stroke-width="1.5"/>
+    <text x="190" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Usuario</text>
+    <text x="190" y="161" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">voz / oído</text>
+  </g>
+  <g>
+    <rect x="330" y="110" width="240" height="70" rx="16" fill="#FFFFFF" stroke="#B85C38" stroke-width="1.5"/>
+    <text x="450" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">ChatRecomendador</text>
+    <text x="450" y="161" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">navegador</text>
+  </g>
+  <g>
+    <rect x="600" y="110" width="240" height="70" rx="16" fill="#FFFFFF" stroke="#6B7C93" stroke-width="1.5"/>
+    <text x="720" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">API Gateway</text>
+    <text x="720" y="161" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">borde HTTP</text>
+  </g>
+  <g>
+    <rect x="850" y="110" width="240" height="70" rx="16" fill="#FFFFFF" stroke="#B85C38" stroke-width="1.5"/>
+    <text x="970" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">AI Gateway</text>
+    <text x="970" y="161" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">RAG + orquestación</text>
+  </g>
+  <g>
+    <rect x="1100" y="110" width="240" height="70" rx="16" fill="#FFFFFF" stroke="#B85C38" stroke-width="1.5"/>
+    <text x="1220" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Ollama</text>
+    <text x="1220" y="161" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">tuki-chef</text>
+  </g>
+
+  <!-- Líneas de vida -->
+  <g stroke="#D9CDBE" stroke-width="1.6" stroke-dasharray="5 6">
+    <line x1="190" y1="180" x2="190" y2="820"/>
+    <line x1="450" y1="180" x2="450" y2="820"/>
+    <line x1="720" y1="180" x2="720" y2="820"/>
+    <line x1="970" y1="180" x2="970" y2="820"/>
+    <line x1="1220" y1="180" x2="1220" y2="820"/>
+  </g>
+
+  <!-- 1 -->
+  <circle cx="68" cy="240" r="15" fill="#C9A227"/>
+  <text x="68" y="245" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">1</text>
+  <path d="M 190 240 L 446 240" fill="none" stroke="#C9A227" stroke-width="2.2" marker-end="url(#flecha)"/>
+  <text x="318" y="231" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">habla: audio del micrófono</text>
+
+  <!-- 2 self -->
+  <circle cx="68" cy="300" r="15" fill="#2F7A58"/>
+  <text x="68" y="305" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">2</text>
+  <path d="M 450 286 L 525 286 L 525 314 L 462 314" fill="none" stroke="#2F7A58" stroke-width="1.8" marker-end="url(#flecha-verde)"/>
+  <text x="535" y="305" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#2F7A58">SpeechRecognition transcribe</text>
+
+  <!-- 3 -->
+  <circle cx="68" cy="374" r="15" fill="#6B7C93"/>
+  <text x="68" y="379" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">3</text>
+  <path d="M 450 374 L 716 374" fill="none" stroke="#6B7C93" stroke-width="2" marker-end="url(#flecha-azul)"/>
+  <text x="583" y="365" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">POST /recomendar { mensaje }</text>
+
+  <!-- 4 -->
+  <circle cx="68" cy="434" r="15" fill="#6B7C93"/>
+  <text x="68" y="439" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">4</text>
+  <path d="M 720 434 L 966 434" fill="none" stroke="#6B7C93" stroke-width="2" marker-end="url(#flecha-azul)"/>
+  <text x="843" y="425" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">proxy con identidad</text>
+
+  <!-- 5 -->
+  <circle cx="68" cy="494" r="15" fill="#B85C38"/>
+  <text x="68" y="499" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">5</text>
+  <path d="M 970 494 L 1216 494" fill="none" stroke="#B85C38" stroke-width="2" marker-end="url(#flecha-terracota)"/>
+  <text x="1093" y="485" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">prompt + contexto RAG</text>
+
+  <!-- 6 -->
+  <path d="M 1220 550 L 974 550" fill="none" stroke="#2F7A58" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#flecha-verde)"/>
+  <text x="1097" y="541" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#2F7A58">respuesta + tokens</text>
+
+  <!-- 7 -->
+  <path d="M 970 610 L 724 610" fill="none" stroke="#8A7E72" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#flecha)"/>
+  <text x="847" y="601" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">respuesta + fuentes</text>
+
+  <!-- 8 -->
+  <path d="M 720 670 L 454 670" fill="none" stroke="#8A7E72" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#flecha)"/>
+  <text x="587" y="661" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">respuesta + fuentes</text>
+
+  <!-- 9 -->
+  <circle cx="68" cy="734" r="15" fill="#C9A227"/>
+  <text x="68" y="739" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">6</text>
+  <path d="M 450 734 L 194 734" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#flecha)"/>
+  <text x="322" y="725" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">speechSynthesis lee la respuesta</text>
+
+  <!-- Nota -->
+  <rect x="70" y="830" width="1270" height="56" rx="14" fill="#F6EEDF" stroke="#D9CDBE"/>
+  <text x="94" y="854" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#2D2A26" font-weight="700">Modo manos libres</text>
+  <text x="94" y="874" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">Al terminar la lectura, el chat vuelve a abrir el micrófono; “Detener” corta el ciclo y deja el control en manos del usuario.</text>
+</svg>

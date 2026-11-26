@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="0 0 1400 520" role="img" aria-labelledby="titulo-rag">
+  <title id="titulo-rag">Flujo RAG y puntos de medición</title>
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8A7E72"/>
+    </marker>
+    <marker id="flecha-terracota" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B85C38"/>
+    </marker>
+    <marker id="flecha-verde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F7A58"/>
+    </marker>
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2D2A26" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="520" fill="#FBF6EA"/>
+  <text x="50" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#2D2A26">Flujo RAG y puntos de medición</text>
+  <text x="50" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#8A7E72">Cada etapa expone un tiempo o un conteo distinto en la respuesta del gateway</text>
+
+  <!-- Etapas -->
+  <g filter="url(#sombra)">
+    <rect x="50" y="150" width="210" height="110" rx="16" fill="#FFFFFF" stroke="#D9CDBE"/>
+    <rect x="50" y="150" width="6" height="110" rx="3" fill="#6B7C93"/>
+    <text x="74" y="184" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Consulta</text>
+    <text x="74" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">normaliza el texto</text>
+    <text x="74" y="226" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">extrae filtros de dieta,</text>
+    <text x="74" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">precio y ciudad</text>
+  </g>
+
+  <g filter="url(#sombra)">
+    <rect x="310" y="150" width="230" height="110" rx="16" fill="#FFFFFF" stroke="#2F7A58" stroke-width="1.5"/>
+    <rect x="310" y="150" width="6" height="110" rx="3" fill="#2F7A58"/>
+    <text x="334" y="184" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Recuperación</text>
+    <text x="334" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">BM25 + embeddings</text>
+    <text x="334" y="226" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">nomic-embed-text</text>
+    <text x="334" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">sobre el catálogo</text>
+  </g>
+
+  <g filter="url(#sombra)">
+    <rect x="590" y="150" width="210" height="110" rx="16" fill="#FFFFFF" stroke="#D9CDBE"/>
+    <rect x="590" y="150" width="6" height="110" rx="3" fill="#2F7A58"/>
+    <text x="614" y="184" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Contexto</text>
+    <text x="614" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">MMR + top-k</text>
+    <text x="614" y="226" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">máximo 1.100 tokens</text>
+    <text x="614" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">con fuentes [P1]…</text>
+  </g>
+
+  <g filter="url(#sombra)">
+    <rect x="850" y="150" width="220" height="110" rx="16" fill="#FFFFFF" stroke="#B85C38" stroke-width="1.5"/>
+    <rect x="850" y="150" width="6" height="110" rx="3" fill="#B85C38"/>
+    <text x="874" y="184" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Generación</text>
+    <text x="874" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">tuki-chef · 1.5B</text>
+    <text x="874" y="226" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">temperatura 0.1</text>
+    <text x="874" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">máximo 200 tokens</text>
+  </g>
+
+  <g filter="url(#sombra)">
+    <rect x="1120" y="150" width="220" height="110" rx="16" fill="#FFFFFF" stroke="#D9CDBE"/>
+    <rect x="1120" y="150" width="6" height="110" rx="3" fill="#C9A227"/>
+    <text x="1144" y="184" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#2D2A26">Respuesta</text>
+    <text x="1144" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">texto + fuentes</text>
+    <text x="1144" y="226" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">tarjetas del catálogo</text>
+    <text x="1144" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">para el chat</text>
+  </g>
+
+  <!-- Flechas -->
+  <path d="M 260 205 L 306 205" fill="none" stroke="#8A7E72" stroke-width="2" marker-end="url(#flecha)"/>
+  <path d="M 540 205 L 586 205" fill="none" stroke="#8A7E72" stroke-width="2" marker-end="url(#flecha)"/>
+  <path d="M 800 205 L 846 205" fill="none" stroke="#8A7E72" stroke-width="2" marker-end="url(#flecha)"/>
+  <path d="M 1070 205 L 1116 205" fill="none" stroke="#8A7E72" stroke-width="2" marker-end="url(#flecha)"/>
+
+  <!-- Puntos de medición -->
+  <rect x="310" y="286" width="230" height="34" rx="10" fill="#E8F1EC"/>
+  <text x="425" y="308" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#2F7A58">recuperacion_ms</text>
+
+  <rect x="590" y="286" width="210" height="34" rx="10" fill="#E8F1EC"/>
+  <text x="695" y="308" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#2F7A58">contexto_tokens</text>
+
+  <rect x="850" y="286" width="220" height="34" rx="10" fill="#F7E6DF"/>
+  <text x="960" y="308" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#B85C38">prompt_tokens + completion_tokens</text>
+
+  <rect x="1120" y="286" width="220" height="34" rx="10" fill="#F7EFD8"/>
+  <text x="1230" y="308" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#9A7A18">latency_ms + fuentes</text>
+
+  <!-- Ruta sin LLM -->
+  <rect x="50" y="370" width="1290" height="92" rx="16" fill="#F6EEDF" stroke="#D9CDBE"/>
+  <text x="74" y="398" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#2D2A26">Rutas que no pasan por Ollama</text>
+  <text x="74" y="420" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">Saludo, filtros estrictos (vegetariano, precio, ingrediente), precio/horario de un plato o restaurante y preguntas de plataforma se responden con reglas y catálogo.</text>
+  <text x="74" y="441" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#8A7E72">En esas rutas el gateway reporta 0 tokens de prompt y 0 de completion; el tiempo se concentra en la recuperación o es prácticamente cero.</text>
+</svg>

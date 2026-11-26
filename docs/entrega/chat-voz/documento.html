@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voz en el chat de Tuki y métricas del chatbot</title>
+  <link rel="stylesheet" href="estilo-pdf.css">
+</head>
+<body>
+<h1 id="voz-en-el-chat-de-tuki-y-métricas-del-chatbot">Voz en el chat de
+Tuki y métricas del chatbot</h1>
+<p><strong>Versión PDF:</strong> <a
+href="voz-chat-metricas.pdf">voz-chat-metricas.pdf</a></p>
+<p><strong>Alcance:</strong> este documento cubre únicamente la
+implementación de voz del chat y la medición real de tokens y tiempos
+del chatbot. No describe otras funcionalidades de TukiTuki.</p>
+<p><strong>Fecha de medición:</strong> 25 de noviembre de 2026, 14:54
+(UTC−5).</p>
+<hr />
+<h2 id="1-qué-se-implementó">1. Qué se implementó</h2>
+<p>El chat de <code>web-comensal</code> ahora permite hablarle a Tuki,
+leer sus respuestas y mantener un modo manos libres. La inteligencia
+sigue siendo el mismo chatbot de texto con RAG sobre el catálogo real:
+la voz se resuelve en el navegador y no agrega llamadas al gateway.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Comportamiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Micrófono</td>
+<td>Inicia el dictado con <code>SpeechRecognition</code> en
+<code>es-CO</code>. Muestra la transcripción parcial y entrega el texto
+final al chat.</td>
+</tr>
+<tr>
+<td>Altavoz</td>
+<td>Activa o desactiva la lectura automática de las respuestas. La
+preferencia se guarda en <code>localStorage</code> con la clave
+<code>tuki-chat-leer</code>.</td>
+</tr>
+<tr>
+<td>Ondas</td>
+<td>Activa el modo manos libres: al terminar de dictar se envía solo, la
+respuesta se lee y, al terminar la lectura, el micrófono se vuelve a
+abrir.</td>
+</tr>
+<tr>
+<td>Escuchar</td>
+<td>Lee una respuesta concreta de Tuki con
+<code>speechSynthesis</code>.</td>
+</tr>
+<tr>
+<td>Repetir</td>
+<td>Vuelve a leer el mensaje que escribiste o dictaste.</td>
+</tr>
+<tr>
+<td>Detener</td>
+<td>Corta el dictado o la lectura y desactiva el ciclo de manos
+libres.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-piezas-de-software">1.1 Piezas de software</h3>
+<ul>
+<li><code>packages/experiencia-tuki/src/componentes/chat/voz.ts</code>
+<ul>
+<li><code>useDictadoVoz</code>: micrófono, parciales, texto final,
+errores y limpieza.</li>
+<li><code>useLecturaVoz</code>: voces del sistema, selección de la mejor
+voz española, limpieza del texto y cola de lectura.</li>
+<li><code>limpiarParaLeer</code>: quita citas <code>[P1]</code>,
+enlaces, marcas de Markdown y emojis antes de hablar.</li>
+</ul></li>
+<li><code>packages/experiencia-tuki/src/componentes/chat/ChatRecomendador.tsx</code>
+<ul>
+<li>Botones de micrófono, altavoz y manos libres.</li>
+<li>Barra de estado: “Escuchando…”, “Leyendo la respuesta…”,
+“Detener”.</li>
+<li>Integración con <code>apis.ia.recomendar</code>, sin cambios en el
+contrato del backend.</li>
+</ul></li>
+<li><code>packages/api-cliente/src/ai.api.ts</code>
+<ul>
+<li>Sin cambios: sigue recibiendo <code>{ mensaje, historial }</code> y
+devolviendo la respuesta y las fuentes.</li>
+</ul></li>
+</ul>
+<h3 id="12-manejo-de-errores">1.2 Manejo de errores</h3>
+<ul>
+<li>Permiso de micrófono denegado.</li>
+<li>Micrófono ocupado por otra aplicación.</li>
+<li>Silencio o ausencia de voz.</li>
+<li>Navegador sin <code>SpeechRecognition</code>.</li>
+<li>Fallo de red del motor de dictado del navegador.</li>
+<li>Cualquier error o el botón “Detener” regresan el chat a
+<code>Inactivo</code>.</li>
+</ul>
+<h3 id="13-límites-de-la-implementación">1.3 Límites de la
+implementación</h3>
+<ul>
+<li>El dictado usa el motor de voz del navegador. En Chrome y Edge puede
+apoyarse en un servicio del fabricante; en Firefox
+<code>SpeechRecognition</code> no está disponible.</li>
+<li>La lectura usa las voces instaladas en el sistema operativo, por lo
+que esa parte es local.</li>
+<li>El audio no se almacena en TukiTuki.</li>
+<li>El micrófono requiere <code>localhost</code> o HTTPS.</li>
+<li>La voz no cambia el contrato del chatbot ni el consumo de tokens del
+RAG: el texto transcrito entra por el mismo endpoint.</li>
+</ul>
+<h3 id="14-verificación-funcional">1.4 Verificación funcional</h3>
+<ul>
+<li><code>pnpm typecheck</code>, <code>pnpm test</code> y
+<code>pnpm build</code> pasan sin errores.</li>
+<li>En Chromium se verificó la presencia y el estado de los controles de
+micrófono, altavoz y manos libres.</li>
+<li>Con un <code>SpeechRecognition</code> simulado se comprobó el flujo
+completo: transcripción → envío → respuesta → estado de lectura.</li>
+<li>La captura con micrófono físico no se automatizó porque depende del
+permiso del usuario y del dispositivo; el flujo de voz real se prueba
+abriendo el chat en el navegador.</li>
+</ul>
+<hr />
+<h2 id="2-arquitectura">2. Arquitectura</h2>
+<figure>
+  <img src="diagramas/01-arquitectura-voz.png" alt="Arquitectura de la voz en el chat">
+  <figcaption>Figura 1. Componentes del cliente, servicios Tuki y modelos locales.</figcaption>
+</figure>
+
+<p>La arquitectura separa tres responsabilidades:</p>
+<ol type="1">
+<li><strong>El navegador</strong> captura y reproduce la voz.
+<code>ChatRecomendador</code> coordina la interfaz;
+<code>useDictadoVoz</code> y <code>useLecturaVoz</code> encapsulan los
+navegadores.</li>
+<li><strong>El borde HTTP</strong> transporta el mensaje ya transcrito.
+<code>apis.ia</code> llama a <code>/api/v1/ai/recomendar</code> a través
+del API Gateway.</li>
+<li><strong>El AI Gateway</strong> recupera el catálogo, construye el
+contexto y consulta a Ollama. La respuesta vuelve por el mismo camino y
+el navegador la lee si la lectura está activa.</li>
+</ol>
+<h3 id="21-secuencia-de-una-interacción">2.1 Secuencia de una
+interacción</h3>
+<figure>
+  <img src="diagramas/02-secuencia-voz.png" alt="Secuencia de una interacción por voz">
+  <figcaption>Figura 2. Del micrófono a la respuesta leída, pasando por el RAG local.</figcaption>
+</figure>
+
+<ol type="1">
+<li>El usuario habla y el navegador entrega el audio a
+<code>SpeechRecognition</code>.</li>
+<li>El reconocimiento devuelve la transcripción; el chat espera el texto
+final para no enviar mensajes incompletos.</li>
+<li><code>ChatRecomendador</code> envía el mensaje al API Gateway.</li>
+<li>El AI Gateway recupera el contexto y consulta a
+<code>tuki-chef</code>.</li>
+<li>La respuesta vuelve con sus fuentes.</li>
+<li><code>speechSynthesis</code> lee la respuesta si la lectura está
+activa.</li>
+</ol>
+<h3 id="22-estados-de-la-voz">2.2 Estados de la voz</h3>
+<figure>
+  <img src="diagramas/03-estados-voz.png" alt="Estados de la voz">
+  <figcaption>Figura 3. El dictado y la lectura nunca se solapan.</figcaption>
+</figure>
+
+<p>El chat pasa por <code>Inactivo</code>, <code>Escuchando</code>,
+<code>Enviando</code> y <code>Leyendo</code>. Antes de enviar se detiene
+el micrófono; antes de leer se cierra el reconocimiento. En manos
+libres, el final de la lectura dispara un nuevo turno de escucha.</p>
+<h3 id="23-flujo-rag-y-puntos-de-medición">2.3 Flujo RAG y puntos de
+medición</h3>
+<figure>
+  <img src="diagramas/04-flujo-rag.png" alt="Flujo RAG y puntos de medición">
+  <figcaption>Figura 4. Cada etapa del RAG expone un tiempo o un conteo distinto.</figcaption>
+</figure>
+
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Campo medido</th>
+<th>Qué representa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recuperación</td>
+<td><code>recuperacion_ms</code></td>
+<td>Búsqueda híbrida BM25 + embeddings, filtros y selección de
+candidatos.</td>
+</tr>
+<tr>
+<td>Contexto</td>
+<td><code>contexto_tokens</code></td>
+<td>Tokens estimados del contexto que se envía al modelo.</td>
+</tr>
+<tr>
+<td>Generación</td>
+<td><code>prompt_tokens</code>, <code>completion_tokens</code>,
+<code>total_tokens</code></td>
+<td>Tokens de entrada y salida reportados por Ollama.</td>
+</tr>
+<tr>
+<td>Respuesta</td>
+<td><code>latency_ms</code> y <code>fuentes</code></td>
+<td>Tiempo total del gateway y cantidad de platos/restaurantes
+citados.</td>
+</tr>
+</tbody>
+</table>
+<p>Las rutas de saludo, filtros estrictos, precio/horario de un plato o
+restaurante y preguntas de plataforma responden con reglas y catálogo,
+sin invocar a Ollama. En esas rutas los tokens son cero y el tiempo se
+concentra en la recuperación o es prácticamente nulo.</p>
+<hr />
+<h2 id="3-metodología-de-medición">3. Metodología de medición</h2>
+<h3 id="31-entorno">3.1 Entorno</h3>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Equipo</td>
+<td>Intel Core i5-13420H, 8 núcleos / 12 hilos</td>
+</tr>
+<tr>
+<td>Memoria</td>
+<td>16 GB</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>Intel UHD integrada, sin CUDA</td>
+</tr>
+<tr>
+<td>Sistema</td>
+<td>Windows 11 Pro, build 26300</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>29.9.3</td>
+</tr>
+<tr>
+<td>Modelo de chat</td>
+<td><code>tuki-chef</code> (Qwen2.5 1.5B, Q4_K_M)</td>
+</tr>
+<tr>
+<td>Embeddings</td>
+<td><code>nomic-embed-text</code> (137M)</td>
+</tr>
+<tr>
+<td>Endpoint medido</td>
+<td><code>http://localhost:8084/api/v1/ai/recomendar</code></td>
+</tr>
+<tr>
+<td>Autenticación</td>
+<td>Cuenta demo de comensal (<code>cliente@tukituki.local</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-procedimiento">3.2 Procedimiento</h3>
+<ol type="1">
+<li>Se levantó el stack completo con Docker Compose y se verificó Ollama
+en <code>localhost:11434</code>.</li>
+<li>Se reinició <code>tukituki-ai-gatewaybe</code> para medir el
+arranque en frío.</li>
+<li>Se envió una primera consulta de recomendación y se registró como
+<strong>frío</strong>; incluye la construcción inicial del índice
+RAG.</li>
+<li>Se enviaron <strong>9 consultas × 3 repeticiones = 27 ejecuciones
+calientes</strong>, con 3 segundos entre solicitudes para respetar el
+límite del gateway.</li>
+<li>Cada respuesta se guardó con sus campos de uso, tiempos y
+fuentes.</li>
+<li>El cliente midió además el tiempo de pared (<code>wall_ms</code>)
+para separar el costo del gateway del costo interno.</li>
+</ol>
+<h3 id="33-consultas-medidas">3.3 Consultas medidas</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Consulta</th>
+<th>Ruta esperada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>¿Qué me recomiendas para almorzar?</td>
+<td>Generativa con RAG</td>
+</tr>
+<tr>
+<td>2</td>
+<td>¿Qué puedo comer hoy?</td>
+<td>Generativa con RAG</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Recomiéndame un plato típico para almorzar</td>
+<td>Generativa con RAG</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Busco algo delicioso para compartir</td>
+<td>Generativa con RAG</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Algo vegetariano y barato</td>
+<td>Filtro estricto, sin LLM</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Quiero un postre</td>
+<td>Filtro de sabor, sin LLM</td>
+</tr>
+<tr>
+<td>7</td>
+<td>¿Cuánto cuesta el Ajiaco Bogotano?</td>
+<td>Dato factual, sin LLM</td>
+</tr>
+<tr>
+<td>8</td>
+<td>¿Cómo funciona el panel de restaurantes?</td>
+<td>Plataforma, extractiva</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Hola</td>
+<td>Saludo directo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-fórmulas">3.4 Fórmulas</h3>
+<ul>
+<li><code>generacion_ms = max(0, latency_ms − recuperacion_ms)</code>.</li>
+<li><code>wall_ms</code> es el tiempo del cliente e incluye el viaje
+HTTP; la diferencia con <code>latency_ms</code> es el costo del
+borde.</li>
+<li>Los tokens son los reportados por Ollama; no se estiman a partir del
+texto.</li>
+<li>La latencia es de <strong>respuesta completa</strong>, no de primer
+token: el endpoint no hace streaming.</li>
+</ul>
+<hr />
+<h2 id="4-resultados">4. Resultados</h2>
+<p>Se analizaron <strong>27 ejecuciones calientes</strong> y <strong>1
+ejecución en frío</strong>, sin errores en la corrida final.</p>
+<h3 id="41-resumen-global">4.1 Resumen global</h3>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th style="text-align: right;">Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ejecuciones calientes</td>
+<td style="text-align: right;">27</td>
+</tr>
+<tr>
+<td>Latencia media</td>
+<td style="text-align: right;">1.569,5 ms</td>
+</tr>
+<tr>
+<td>Latencia mediana</td>
+<td style="text-align: right;">717 ms</td>
+</tr>
+<tr>
+<td>Latencia p95</td>
+<td style="text-align: right;">4.548,8 ms</td>
+</tr>
+<tr>
+<td>Latencia mínima</td>
+<td style="text-align: right;">0 ms</td>
+</tr>
+<tr>
+<td>Latencia máxima</td>
+<td style="text-align: right;">7.327 ms</td>
+</tr>
+<tr>
+<td>Tiempo de recuperación medio</td>
+<td style="text-align: right;">290,3 ms (18,5 % del total)</td>
+</tr>
+<tr>
+<td>Tiempo de generación medio</td>
+<td style="text-align: right;">1.279,2 ms</td>
+</tr>
+<tr>
+<td>Tiempo de pared medio del cliente</td>
+<td style="text-align: right;">1.583,5 ms</td>
+</tr>
+<tr>
+<td>Costo del borde HTTP</td>
+<td style="text-align: right;">≈14 ms</td>
+</tr>
+<tr>
+<td>Tokens totales</td>
+<td style="text-align: right;">16.724</td>
+</tr>
+<tr>
+<td>Tokens de prompt</td>
+<td style="text-align: right;">15.780</td>
+</tr>
+<tr>
+<td>Tokens de completion</td>
+<td style="text-align: right;">944</td>
+</tr>
+<tr>
+<td>Tokens medios por ejecución</td>
+<td style="text-align: right;">619,4</td>
+</tr>
+<tr>
+<td>Tokens medios por ejecución con LLM</td>
+<td style="text-align: right;">1.520,4</td>
+</tr>
+<tr>
+<td>Prompt medio con LLM</td>
+<td style="text-align: right;">1.434,5 tokens</td>
+</tr>
+<tr>
+<td>Completion medio con LLM</td>
+<td style="text-align: right;">85,8 tokens</td>
+</tr>
+<tr>
+<td>Ejecuciones con LLM</td>
+<td style="text-align: right;">11 de 27</td>
+</tr>
+<tr>
+<td>Ejecuciones sin LLM</td>
+<td style="text-align: right;">16 de 27</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-arranque-en-frío-frente-a-respuestas-calientes">4.2 Arranque
+en frío frente a respuestas calientes</h3>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th style="text-align: right;">Latencia</th>
+<th style="text-align: right;">Recuperación</th>
+<th style="text-align: right;">Generación</th>
+<th style="text-align: right;">Tokens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primer request tras reiniciar el gateway</td>
+<td style="text-align: right;">17.265 ms</td>
+<td style="text-align: right;">15.040 ms</td>
+<td style="text-align: right;">2.225 ms</td>
+<td style="text-align: right;">1.459</td>
+</tr>
+<tr>
+<td>Media caliente global</td>
+<td style="text-align: right;">1.569,5 ms</td>
+<td style="text-align: right;">290,3 ms</td>
+<td style="text-align: right;">1.279,2 ms</td>
+<td style="text-align: right;">619,4</td>
+</tr>
+<tr>
+<td>Media caliente de recomendación</td>
+<td style="text-align: right;">3.124 ms</td>
+<td style="text-align: right;">144,3 ms</td>
+<td style="text-align: right;">2.979,7 ms</td>
+<td style="text-align: right;">1.481,3</td>
+</tr>
+</tbody>
+</table>
+<p>El arranque en frío cuesta <strong>11 veces</strong> la media
+caliente. La mayor parte es la construcción del índice RAG (15,0 s); la
+generación en sí fue de 2,2 s.</p>
+<figure>
+  <img src="medicion/graficas/04-frio-vs-caliente.png" alt="Comparación frío vs caliente">
+  <figcaption>Figura 5. El índice RAG domina el primer request.</figcaption>
+</figure>
+
+<h3 id="43-latencia-por-consulta">4.3 Latencia por consulta</h3>
+<table>
+<thead>
+<tr>
+<th>Consulta</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">Latencia media</th>
+<th style="text-align: right;">Recuperación</th>
+<th style="text-align: right;">Generación</th>
+<th style="text-align: right;">Prompt</th>
+<th style="text-align: right;">Completion</th>
+<th style="text-align: right;">Total</th>
+<th style="text-align: right;">Fuentes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>¿Qué me recomiendas para almorzar?</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3.124 ms</td>
+<td style="text-align: right;">144 ms</td>
+<td style="text-align: right;">2.980 ms</td>
+<td style="text-align: right;">1.399</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">1.481</td>
+<td style="text-align: right;">5,0</td>
+</tr>
+<tr>
+<td>¿Qué puedo comer hoy?</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3.603 ms</td>
+<td style="text-align: right;">155 ms</td>
+<td style="text-align: right;">3.448 ms</td>
+<td style="text-align: right;">1.451</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">1.545</td>
+<td style="text-align: right;">5,0</td>
+</tr>
+<tr>
+<td>Recomiéndame un plato típico para almorzar</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.944 ms</td>
+<td style="text-align: right;">179 ms</td>
+<td style="text-align: right;">1.765 ms</td>
+<td style="text-align: right;">1.466</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">1.513</td>
+<td style="text-align: right;">5,0</td>
+</tr>
+<tr>
+<td>Busco algo delicioso para compartir</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4.604 ms</td>
+<td style="text-align: right;">1.284 ms</td>
+<td style="text-align: right;">3.320 ms</td>
+<td style="text-align: right;">944</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">1.035</td>
+<td style="text-align: right;">4,7</td>
+</tr>
+<tr>
+<td>Algo vegetariano y barato</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">128 ms</td>
+<td style="text-align: right;">128 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">4,0</td>
+</tr>
+<tr>
+<td>Quiero un postre</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">717 ms</td>
+<td style="text-align: right;">716 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">4,0</td>
+</tr>
+<tr>
+<td>¿Cuánto cuesta el Ajiaco Bogotano?</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6 ms</td>
+<td style="text-align: right;">6 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1,0</td>
+</tr>
+<tr>
+<td>¿Cómo funciona el panel de restaurantes?</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0,3 ms</td>
+<td style="text-align: right;">0,3 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0,0</td>
+</tr>
+<tr>
+<td>Hola</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0 ms</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0,0</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>En “Busco algo delicioso para compartir”, una de las tres ejecuciones
+cayó a la lista factual después de invocar al modelo; el gateway no
+conserva los tokens de esa llamada fallida. Por eso el promedio de
+tokens de esa fila es más bajo que el de las otras recomendaciones.</p>
+</blockquote>
+<figure>
+  <img src="medicion/graficas/01-latencia-por-consulta.png" alt="Latencia por consulta">
+  <figcaption>Figura 6. La generación domina las consultas que usan Ollama; los filtros y datos fácticos son casi instantáneos.</figcaption>
+</figure>
+
+<h3 id="44-consumo-de-tokens">4.4 Consumo de tokens</h3>
+<figure>
+  <img src="medicion/graficas/02-tokens-por-consulta.png" alt="Tokens por consulta">
+  <figcaption>Figura 7. El prompt concentra la mayor parte del consumo; la respuesta es pequeña.</figcaption>
+</figure>
+
+<figure>
+  <img src="medicion/graficas/03-tokens-vs-latencia.png" alt="Tokens frente a latencia">
+  <figcaption>Figura 8. Las rutas deterministas se agrupan en cero tokens; entre las generativas, los tokens son similares y la latencia varía por la CPU.</figcaption>
+</figure>
+
+<figure>
+  <img src="medicion/graficas/05-rutas-llm.png" alt="Reparto de rutas">
+  <figcaption>Figura 9. Solo 11 de 27 ejecuciones llegaron al modelo; el resto se resolvió con reglas y catálogo.</figcaption>
+</figure>
+
+<h3 id="45-lecturas">4.5 Lecturas</h3>
+<ul>
+<li><strong>La mediana caliente es 717 ms</strong>, pero la media sube a
+1.569 ms por las consultas generativas y por la varianza de la CPU. El
+p95 de 4,55 s es el valor útil para presupuestar la espera.</li>
+<li><strong>La generación es el cuello de botella</strong> de las
+recomendaciones: 1.279 ms de media y hasta 7,3 s en el peor caso. La
+recuperación aporta 290 ms de media (18,5 %).</li>
+<li><strong>El prompt pesa más que la respuesta</strong>: 1.434 tokens
+de entrada frente a 86 de salida. Reducir el contexto o el número de
+candidatos tiene más impacto que acortar la respuesta.</li>
+<li><strong>El arranque en frío es un evento aparte</strong>: 17,3 s y
+15,0 s de índice. Un precalentamiento al iniciar el gateway evitaría que
+el primer usuario pague ese costo.</li>
+<li><strong>Las rutas deterministas son la mejor optimización</strong>:
+16 de 27 ejecuciones no usaron LLM y varias respondieron por debajo de
+10 ms.</li>
+<li><strong>La voz no agregó tokens</strong>: el dictado y la lectura
+viven en el navegador; el backend midió exactamente el mismo endpoint de
+texto.</li>
+</ul>
+<hr />
+<h2 id="5-reproducción">5. Reproducción</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Levantar el stack y verificar Ollama</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> infra/docker/docker-compose.yml up <span class="at">-d</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Medir (reiniciar el gateway antes para capturar el arranque en frío)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> restart tukituki-ai-gatewaybe</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> docs/entrega/chat-voz/medicion/medir_chatbot.py</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Generar gráficas y resumen</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> docs/entrega/chat-voz/medicion/graficar_metricas.py</span></code></pre></div>
+<p>Artefactos:</p>
+<ul>
+<li><code>medicion/datos/resultados.json</code>: cada ejecución con
+respuesta, tokens, tiempos y fuentes.</li>
+<li><code>medicion/datos/resultados.csv</code>: la misma tabla para hoja
+de cálculo.</li>
+<li><code>medicion/datos/resumen.json</code>: agregados usados en este
+documento.</li>
+<li><code>medicion/graficas/</code>: las cinco gráficas en PNG a 200
+dpi.</li>
+</ul>
+<hr />
+<h2 id="6-conclusiones">6. Conclusiones</h2>
+<p>La voz quedó resuelta como una capa de interfaz sobre el chatbot
+existente: el micrófono transcribe, el RAG responde y el navegador lee.
+Es una solución multimodal de bajo costo, sin modelos adicionales y sin
+cambiar el backend.</p>
+<p>Las métricas muestran un chatbot usable en caliente, con una mediana
+de 717 ms y respuestas deterministas casi inmediatas, pero con dos
+puntos claros de mejora: <strong>precalentar el índice RAG</strong> para
+eliminar los 17 s del primer request y <strong>reducir el
+prompt</strong> para bajar el costo y la latencia de las recomendaciones
+generativas.</p>
+</body>
+</html>
