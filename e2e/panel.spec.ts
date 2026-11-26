@@ -7,7 +7,7 @@ test('el dueño entra al panel y ve sus secciones', async ({ page }) => {
 
   await page.goto('/panel');
 
-  await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Información del restaurante' })).toBeVisible();
   const navegacion = page.getByRole('navigation');
   for (const seccion of ['Restaurante', 'Menú', 'Pedidos', 'Reseñas', 'Apariencia']) {
     await expect(navegacion.getByRole('button', { name: seccion, exact: true })).toBeVisible();

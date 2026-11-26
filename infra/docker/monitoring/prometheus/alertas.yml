@@ -13,7 +13,11 @@ groups:
 
       - record: tuki:http_errors:ratio5m
         expr: |
-          sum by (app) (rate(tuki_http_requests_total{status=~"5.."}[5m]))
+          (
+            sum by (app) (rate(tuki_http_requests_total{status=~"5.."}[5m]))
+            or
+            sum by (app) (rate(tuki_http_requests_total[5m])) * 0
+          )
           /
           clamp_min(sum by (app) (rate(tuki_http_requests_total[5m])), 0.001)
 
@@ -27,7 +31,11 @@ groups:
       - record: tuki:slo:availability_1h
         expr: |
           1 - (
-            sum(rate(tuki_http_requests_total{status=~"5.."}[1h]))
+            (
+              sum(rate(tuki_http_requests_total{status=~"5.."}[1h]))
+              or
+              vector(0)
+            )
             /
             clamp_min(sum(rate(tuki_http_requests_total[1h])), 0.001)
           )

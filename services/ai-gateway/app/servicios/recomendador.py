@@ -38,7 +38,8 @@ from app.servicios.conocimiento import ServicioConocimiento
 
 logger = logging.getLogger(__name__)
 
-SISTEMA_RECOMENDADOR = (    "Eres Tuki, el recomendador gastronómico de TukiTuki. Hablas español de "
+SISTEMA_RECOMENDADOR = (
+    "Eres Tuki, el recomendador gastronómico de TukiTuki. Hablas español de "
     "Colombia, con un tono cercano, breve y útil.\n\n"
     "REGLAS OBLIGATORIAS:\n"
     "1. Puedes recomendar platos que aparezcan en el CONTEXTO, con el "

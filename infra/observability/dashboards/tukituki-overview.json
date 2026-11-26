@@ -104,7 +104,7 @@
           "refId": "A"
         }
       ],
-      "title": "Llamadas a Groq por modelo y resultado",
+      "title": "Llamadas al modelo por resultado",
       "type": "timeseries"
     },
     {
