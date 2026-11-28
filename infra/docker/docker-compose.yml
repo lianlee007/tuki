@@ -117,7 +117,7 @@ services:
       - "1025:1025"
 
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.8
     container_name: tukituki-traefikproxy
     command:
       - "--api.insecure=true"
