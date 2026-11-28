@@ -29,3 +29,9 @@ AGENTS.md
 opencode.json
 build/
 CloudForge_AI_5_0_Diplomado*.pdf
+
+# Documentos de entrega personales: se comparten aparte, no se publican
+docs/monografia/
+docs/informe-rag/
+docs/entrega/
+docs/informe-final/
