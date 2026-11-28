@@ -491,8 +491,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
@@ -543,8 +543,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
@@ -601,8 +601,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
@@ -653,8 +653,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
@@ -705,8 +705,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
@@ -757,8 +757,8 @@ importers:
         specifier: ^5.4.0
         version: 5.12.8
       fastify-plugin:
-        specifier: ^5.0.1
-        version: 5.1.0
+        specifier: ^6.0.1
+        version: 6.0.1
       jose:
         specifier: ^6.0.11
         version: 6.2.15
