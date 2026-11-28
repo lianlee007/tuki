@@ -82,7 +82,7 @@ services:
   # servidor S3 compatible, Apache 2.0, que ocupa el mismo puerto y la misma
   # API; el código del media-service no cambia.
   rustfs:
-    image: rustfs/rustfs:1.0.4
+    image: rustfs/rustfs:1.0.6
     container_name: tukituki-rustfsstorage
     command: ["/data"]
     environment:
