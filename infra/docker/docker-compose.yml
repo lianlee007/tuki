@@ -235,7 +235,7 @@ services:
     environment:
       VISION_ENVIRONMENT: development
       VISION_MODEL_PATH: /app/modelos/comida-v1.pt
-      VISION_UMBRAL_COMIDA: ${VISION_UMBRAL_COMIDA:-0.3}
+      VISION_UMBRAL_COMIDA: ${VISION_UMBRAL_COMIDA:-0.65}
       VISION_DEVICE: cpu
       YOLO_OFFLINE: "true"
     ports:
@@ -329,6 +329,60 @@ services:
       - "traefik.http.services.admin-service.loadbalancer.server.port=3006"
     restart: unless-stopped
 
+  # Ollama en contenedor: el gateway le habla por la red interna
+  # (http://ollama:11434), sin depender del Ollama del host. No se publica el
+  # 11434 para no chocar con una instalación nativa en la maquina.
+  ollama:
+    image: ollama/ollama:0.12.6
+    container_name: tukituki-ollamabe
+    environment:
+      # El modelo se queda cargado para que la demo no pague la carga inicial
+      # (con poca RAM libre, recargarlo cuesta más de un minuto).
+      OLLAMA_KEEP_ALIVE: 2h
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    restart: unless-stopped
+
+  # Job de una sola vez: deja los modelos dentro del volumen de Ollama.
+  # Es idempotente; si ya estan, no vuelve a descargar.
+  ollama-init:
+    image: ollama/ollama:0.12.6
+    container_name: tukituki-ollama-init
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ../../services/ai-gateway/Modelfile:/tuki/Modelfile:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        # Si no hay internet pero los modelos ya están en el volumen, el job
+        # termina bien en lugar de quedar en rojo.
+        ollama pull qwen2.5:1.5b-instruct || echo "AVISO: sin internet; uso los modelos locales"
+        ollama pull nomic-embed-text || echo "AVISO: sin internet; uso los modelos locales"
+        ollama create tuki-chef -f /tuki/Modelfile
+        ollama list
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  # Ajusta el dueno del volumen del indice: el gateway corre como 10001 y un
+  # volumen nuevo nace como root, asi que no podria escribir la cache.
+  ai-gateway-permisos:
+    image: alpine:3.20
+    container_name: tukituki-ai-gateway-permisos
+    command: ["sh", "-c", "mkdir -p /datos && chown -R 10001:10001 /datos"]
+    volumes:
+      - ai_gateway_data:/datos
+    restart: "no"
+
   ai-gateway:
     build:
       context: ../../services/ai-gateway
@@ -339,15 +393,30 @@ services:
       AI_AUTH_MODE: local
       AI_ALLOW_ANON: "true"
       AI_LOG_LEVEL: INFO
-      AI_OLLAMA_URL: ${AI_OLLAMA_URL:-http://host.docker.internal:11434}
+      AI_OLLAMA_URL: ${AI_OLLAMA_URL:-http://ollama:11434}
       AI_OLLAMA_MODELO_CHAT: ${AI_OLLAMA_MODELO_CHAT:-tuki-chef}
       AI_OLLAMA_MODELO_EMBEDDINGS: ${AI_OLLAMA_MODELO_EMBEDDINGS:-nomic-embed-text}
-      AI_RESTAURANTES_URL: http://host.docker.internal:3002
-      AI_RESENAS_URL: http://host.docker.internal:3005
+      # Mantiene tuki-chef en memoria para que la primera respuesta sea rápida.
+      AI_OLLAMA_KEEP_ALIVE: ${AI_OLLAMA_KEEP_ALIVE:-2h}
+      AI_RESTAURANTES_URL: http://restaurantes-service:3002
+      AI_RESENAS_URL: http://resenas-service:3005
+      # El índice se reconstruye cada 5 min por defecto y eso hace que la
+      # primera pregunta tras una pausa tarde 20-40 s. En local se deja una
+      # hora; para forzar datos nuevos está POST /api/v1/ai/conocimiento/recargar.
+      AI_CONOCIMIENTO_TTL_SECONDS: ${AI_CONOCIMIENTO_TTL_SECONDS:-3600}
       JWT_SECRETO: ${JWT_SECRETO:-cambio-este-secreto-en-produccion}
       JWT_EMISOR: tuki-identidad
       JWT_AUDIENCIA: tuki
       AI_CORS_ORIGINS: *cors-origenes
+    volumes:
+      # El indice RAG se guarda en /app/.datos; con el volumen sobrevive al
+      # reinicio y el primer request no paga la reconstruccion completa.
+      - ai_gateway_data:/app/.datos
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ai-gateway-permisos:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
     labels:
@@ -477,3 +546,5 @@ volumes:
   redis_data:
   rustfs_data:
   rustfs_logs:
+  ollama_data:
+  ai_gateway_data:
