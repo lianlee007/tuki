@@ -15,7 +15,7 @@
     "@tuki/api-cliente": "workspace:*",
     "@tuki/dominio": "workspace:*",
     "react": "^19.2.0",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.7"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
