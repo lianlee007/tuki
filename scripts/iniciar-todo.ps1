@@ -50,12 +50,20 @@ function Mal([string]$texto) {
 }
 
 function Esperar([string]$descripcion, [int]$segundos, [scriptblock]$condicion) {
-  $limite = (Get-Date).AddSeconds($segundos)
+  $inicio = Get-Date
+  $limite = $inicio.AddSeconds($segundos)
+  $siguienteAviso = $inicio.AddSeconds(15)
   while ((Get-Date) -lt $limite) {
     try {
       if (& $condicion) { return $true }
     } catch { }
-    Start-Sleep -Seconds 3
+    Start-Sleep -Milliseconds 1500
+    # Un latido cada 15 s: si no, la ventana parece congelada y se cierra.
+    if ((Get-Date) -ge $siguienteAviso) {
+      $transcurrido = [int]((Get-Date) - $inicio).TotalSeconds
+      Write-Host "    ... esperando $descripcion ($transcurrido s)" -ForegroundColor DarkGray
+      $siguienteAviso = (Get-Date).AddSeconds(15)
+    }
   }
   return $false
 }
@@ -74,6 +82,50 @@ function CodigoHttps([string]$url, [int]$timeout = 5) {
   } catch {
     return '000'
   }
+}
+
+<#
+  Argo CD se instala desde quay.io / ghcr.io. En este equipo hay un mirror de
+  registro configurado en containerd que responde 500, así que los pods quedan
+  en ImagePullBackOff aunque las imágenes ya estén en el nodo. Si eso pasa, se
+  cambia la política a IfNotPresent para que arranquen con lo local.
+#>
+function RepararArgoCd {
+  $razones = kubectl -n argocd get pods -o jsonpath='{range .items[*]}{range .status.containerStatuses[*]}{.state.waiting.reason}{" "}{end}{end}' 2>$null
+  if ("$razones" -notmatch 'ImagePullBackOff|ErrImagePull') { return $false }
+
+  Write-Host "    Argo CD no puede descargar sus imágenes; uso las que ya están en el nodo..." -ForegroundColor DarkGray
+  $nombresDeploy = kubectl -n argocd get deploy -o jsonpath='{.items[*].metadata.name}' 2>$null
+  foreach ($d in ("$nombresDeploy" -split '\s+' | Where-Object { $_ })) {
+    $nombresCont = kubectl -n argocd get deploy $d -o jsonpath='{.spec.template.spec.containers[*].name}' 2>$null
+    $contenedores = @()
+    foreach ($n in ("$nombresCont" -split '\s+' | Where-Object { $_ })) {
+      $contenedores += [pscustomobject]@{ name = $n; imagePullPolicy = 'IfNotPresent' }
+    }
+    if ($contenedores.Count -eq 0) { continue }
+    $parche = @{ spec = @{ template = @{ spec = @{ containers = $contenedores } } } } |
+      ConvertTo-Json -Depth 10 -Compress
+    kubectl -n argocd patch deploy $d --type=strategic -p $parche *> $null
+  }
+  kubectl -n argocd rollout status deploy/argocd-server --timeout=120s *> $null
+  return $true
+}
+
+function AbrirTunelArgo([int]$puerto) {
+  # Un port-forward de una ejecución anterior deja el puerto tomado pero muerto.
+  Get-CimInstance Win32_Process -Filter "Name='kubectl.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -and $_.CommandLine -match 'port-forward' -and $_.CommandLine -match "$puerto" } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+
+  $kubectl = (Get-Command kubectl -ErrorAction SilentlyContinue).Source
+  if (-not $kubectl) { return $false }
+
+  $registro = Join-Path $env:TEMP "tukituki-argo-$puerto.log"
+  Start-Process -FilePath $kubectl `
+    -ArgumentList @('-n', 'argocd', 'port-forward', 'svc/argocd-server', "${puerto}:443") `
+    -WindowStyle Hidden -RedirectStandardOutput $registro -RedirectStandardError "$registro.err" | Out-Null
+
+  return (Esperar "túnel de Argo CD" 45 { (CodigoHttps "https://localhost:$puerto") -ne '000' })
 }
 
 Write-Host ""
@@ -224,45 +276,30 @@ if ($promOk) { Ok "Prometheus responde en 9090." }
 else { Aviso "Prometheus aún no responde." }
 
 # ---------------------------------------------------------------------------
-# 4. IA de texto y chatbot (Ollama)
+# 4. IA de texto y chatbot (Ollama del contenedor)
 # ---------------------------------------------------------------------------
 Titulo "4/7 · IA de texto y chatbot"
 
-$ollama = (Get-Command ollama -ErrorAction SilentlyContinue).Source
-if (-not $ollama) {
-  $ollama = Join-Path $env:LOCALAPPDATA 'Programs\Ollama\ollama.exe'
+# El gateway habla con el Ollama del contenedor (http://ollama:11434), que no
+# publica puerto. Comprobar el Ollama del host daba un falso error aunque el
+# chat funcionara, así que se valida el contenedor.
+$ollamaContenedor = 'tukituki-ollamabe'
+$ollamaOk = Esperar "Ollama del contenedor" 90 {
+  $estado = docker ps --filter "name=^${ollamaContenedor}$" --format "{{.Status}}" 2>$null
+  "$estado" -match 'healthy'
 }
 
-# Se consulta por HTTP, no con `ollama list`: el CLI puede quedarse esperando
-# a la app de escritorio y dejar el arranque colgado.
-$tagsRaw = ''
-$tagsOk = Esperar "Ollama" 20 {
-  $script:tagsRaw = (curl.exe -s -m 3 --noproxy "*" http://localhost:11434/api/tags)
-  $script:tagsRaw -match '"models"'
-}
+if ($ollamaOk) {
+  Ok "Ollama del contenedor listo."
 
-if (-not $tagsOk -and (Test-Path $ollama)) {
-  Write-Host "    Iniciando Ollama…" -ForegroundColor DarkGray
-  Start-Process -FilePath $ollama -ArgumentList 'serve' -WindowStyle Hidden | Out-Null
-  $tagsOk = Esperar "Ollama" 60 {
-    $script:tagsRaw = (curl.exe -s -m 3 --noproxy "*" http://localhost:11434/api/tags)
-    $script:tagsRaw -match '"models"'
-  }
-}
+  $lista = (docker exec $ollamaContenedor ollama list 2>$null) -join "`n"
+  if ("$lista" -match 'tuki-chef') { Ok "Modelo tuki-chef presente." }
+  else { Aviso "Falta tuki-chef en el contenedor. Créalo con: ollama create tuki-chef -f services/ai-gateway/Modelfile" }
 
-if (-not $tagsOk) {
-  Mal "Ollama no responde en 11434. Ábrelo desde el menú Inicio y vuelve a ejecutar el .bat."
+  if ("$lista" -match 'nomic-embed-text') { Ok "Modelo de embeddings presente." }
+  else { Aviso "Falta nomic-embed-text en el contenedor. Instálalo con: ollama pull nomic-embed-text" }
 } else {
-  Ok "Ollama responde en 11434."
-
-  $modelos = @()
-  try { $modelos = ($tagsRaw | ConvertFrom-Json).models.name } catch { }
-
-  if ($modelos -match 'tuki-chef') { Ok "Modelo tuki-chef presente." }
-  else { Aviso "Falta tuki-chef. Créalo con: ollama create tuki-chef -f services/ai-gateway/Modelfile" }
-
-  if ($modelos -match 'nomic-embed-text') { Ok "Modelo de embeddings presente." }
-  else { Aviso "Falta nomic-embed-text. Instálalo con: ollama pull nomic-embed-text" }
+  Aviso "El contenedor de Ollama no está sano; el chat puede tardar o fallar."
 }
 
 $cuerpo = @{
@@ -271,29 +308,43 @@ $cuerpo = @{
   max_tokens = 12
 } | ConvertTo-Json
 
-Write-Host "    Calentando el chatbot (la primera vez puede tardar 20-30 s)…" -ForegroundColor DarkGray
+$archivoCuerpo = Join-Path $env:TEMP 'tukituki-warmup.json'
+[System.IO.File]::WriteAllText($archivoCuerpo, $cuerpo, (New-Object System.Text.UTF8Encoding($false)))
 
-$caliente = $false
-try {
-  Invoke-RestMethod -Uri 'http://localhost:8000/api/v1/ai/chat' `
-    -Method Post -Body $cuerpo -ContentType 'application/json' -TimeoutSec 180 | Out-Null
-  $caliente = $true
-} catch { }
-
-if (-not $caliente) {
-  Aviso "El gateway de IA no respondió; lo reconstruyo con el código local…"
-  docker compose -f infra/docker/docker-compose.yml build ai-gateway 2>&1 | Out-Host
-  docker compose -f infra/docker/docker-compose.yml up -d ai-gateway 2>&1 | Out-Host
-  Start-Sleep -Seconds 8
-  try {
-    Invoke-RestMethod -Uri 'http://localhost:8000/api/v1/ai/chat' `
-      -Method Post -Body $cuerpo -ContentType 'application/json' -TimeoutSec 180 | Out-Null
-    $caliente = $true
-  } catch { }
+# Se usa curl y no Invoke-RestMethod: respeta --noproxy y no se cuelga con el
+# proxy del sistema, que en este equipo apunta a un SOCKS local.
+$calentar = {
+  param([string]$archivo, [int]$timeout)
+  $codigo = curl.exe -s -m $timeout --noproxy "*" -o NUL -w "%{http_code}" `
+    -X POST 'http://localhost:8000/api/v1/ai/chat' `
+    -H 'Content-Type: application/json' --data-binary "@$archivo"
+  return ("$codigo".Trim() -eq '200')
 }
 
-if ($caliente) { Ok "Chatbot caliente: el modelo ya está cargado." }
-else { Aviso "El primer mensaje del chat puede tardar unos segundos." }
+Write-Host "    Calentando el chatbot (la primera vez puede tardar 20-90 s)…" -ForegroundColor DarkGray
+
+$reloj = [Diagnostics.Stopwatch]::StartNew()
+$caliente = & $calentar $archivoCuerpo 200
+
+if (-not $caliente) {
+  # Reconstruir solo sirve si el gateway no está sano. Si responde y aun así
+  # falla, es que el modelo local tarda y reconstruirlo no arregla nada.
+  if ((CodigoHttp 'http://localhost:8000/healthz') -ne '200') {
+    Aviso "El gateway de IA no responde; lo reconstruyo con el código local…"
+    docker compose -f infra/docker/docker-compose.yml build ai-gateway 2>&1 | Out-Host
+    docker compose -f infra/docker/docker-compose.yml up -d ai-gateway 2>&1 | Out-Host
+    $espera = Esperar "gateway de IA" 60 { (CodigoHttp 'http://localhost:8000/healthz') -eq '200' }
+    if ($espera) { $caliente = & $calentar $archivoCuerpo 200 }
+  } else {
+    Aviso "El gateway responde, pero el modelo local tardó más de lo esperado."
+  }
+}
+
+if ($caliente) {
+  Ok "Chatbot caliente en $([math]::Round($reloj.Elapsed.TotalSeconds,1)) s: el modelo ya está cargado."
+} else {
+  Aviso "El primer mensaje del chat puede tardar unos segundos."
+}
 
 # ---------------------------------------------------------------------------
 # 5. IA de visión (comida / no comida)
@@ -327,9 +378,20 @@ $k8s = Esperar "Kubernetes" 120 { kubectl get nodes *> $null; $LASTEXITCODE -eq 
 if (-not $k8s) {
   Aviso "Kubernetes no está iniciado. Argo CD no se abrirá."
 } else {
-  $argoListo = Esperar "Argo CD" 120 {
+  $argoListo = Esperar "Argo CD" 45 {
     $r = kubectl -n argocd get deployment argocd-server -o jsonpath="{.status.readyReplicas}" 2>$null
     "$r".Trim() -eq '1'
+  }
+
+  if (-not $argoListo) {
+    $reparado = RepararArgoCd
+    if ($reparado) {
+      Ok "Argo CD arrancó con las imágenes que ya estaban en el clúster."
+    }
+    $argoListo = Esperar "Argo CD" 120 {
+      $r = kubectl -n argocd get deployment argocd-server -o jsonpath="{.status.readyReplicas}" 2>$null
+      "$r".Trim() -eq '1'
+    }
   }
 
   if (-not $argoListo) {
@@ -340,13 +402,7 @@ if (-not $k8s) {
     $vivo = (CodigoHttps $url) -ne '000'
 
     if (-not $vivo) {
-      $kubectl = (Get-Command kubectl -ErrorAction SilentlyContinue).Source
-      if ($kubectl) {
-        Start-Process -FilePath $kubectl `
-          -ArgumentList @('-n', 'argocd', 'port-forward', 'svc/argocd-server', "$puerto`:443") `
-          -WindowStyle Hidden | Out-Null
-        $vivo = Esperar "Argo CD" 45 { (CodigoHttps $url) -ne '000' }
-      }
+      $vivo = AbrirTunelArgo $puerto
     }
 
     if ($vivo) {
@@ -387,7 +443,7 @@ if ($SinNavegador -or $env:TUKI_SIN_NAVEGADOR -eq '1') {
 Write-Host ""
 Write-Host "================= CREDENCIALES =================" -ForegroundColor White
 Write-Host "  App (comensal)  http://localhost:8081"
-Write-Host "  Panel           http://localhost:8082   lian@gmail.com / 123456"
+Write-Host "  Panel           http://localhost:8082   dueno1@tukituki.local / Demo12345"
 Write-Host "  Admin           http://localhost:8083   admin@tukituki.local / Admin12345"
 Write-Host "  API Gateway     http://localhost:8084"
 Write-Host "  Grafana         http://localhost:3000   admin / admin"
@@ -398,7 +454,7 @@ if ($script:argoUrl) {
   Write-Host "  Argo CD         (no disponible)" -ForegroundColor DarkGray
 }
 Write-Host "  Visión          http://localhost:8002/api/v1/vision/clasificar"
-Write-Host "  IA local        Ollama :11434 · tuki-chef + nomic-embed-text"
+Write-Host "  IA local        Ollama (contenedor) · tuki-chef + nomic-embed-text"
 Write-Host "================================================" -ForegroundColor White
 
 if ($fallos.Count -eq 0) {
