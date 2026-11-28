@@ -14,7 +14,7 @@
     "@tuki/auth-react": "workspace:*",
     "@tuki/dominio": "workspace:*",
     "@tuki/experiencia": "workspace:*",
-    "framer-motion": "11",
+    "framer-motion": "14",
     "lucide-react": "^0.554.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
