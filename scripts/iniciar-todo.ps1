@@ -5,9 +5,11 @@ param(
   Arranque completo de TukiTuki con un solo clic.
 
   Hace, en orden:
+   0. Instala las dependencias del monorepo si faltan.
    1. Enciende Docker Desktop si hace falta.
    2. Levanta el stack (servicios, frontends, gateway de IA, visión, Grafana, Prometheus).
-   3. Comprueba Ollama y sus modelos (tuki-chef y nomic-embed-text).
+   3. Carga las cuentas y los datos demo, y crea el superadmin.
+   4. Comprueba Ollama y sus modelos (tuki-chef y nomic-embed-text).
    4. Calienta el chatbot y comprueba la IA de visión (comida / no comida).
    5. Abre el túnel de Argo CD y lee su contraseña.
    6. Abre la app, Grafana, Prometheus y Argo en el navegador.
@@ -133,6 +135,27 @@ Write-Host "  TukiTuki · arranque completo" -ForegroundColor White
 Write-Host "  ----------------------------" -ForegroundColor DarkGray
 
 # ---------------------------------------------------------------------------
+# 0. Dependencias del monorepo
+# ---------------------------------------------------------------------------
+Titulo "0/7 · Dependencias"
+
+if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
+  Mal "No encontré pnpm. Instala Node 22 y ejecuta 'corepack enable'."
+  Titulo "Resumen"
+  Write-Host "No puedo continuar sin pnpm." -ForegroundColor Red
+  exit 1
+}
+
+if (-not (Test-Path 'node_modules')) {
+  Write-Host "    Instalando dependencias (solo la primera vez)…" -ForegroundColor DarkGray
+  pnpm install --frozen-lockfile 2>&1 | Out-Host
+  if ($LASTEXITCODE -eq 0) { Ok "Dependencias instaladas." }
+  else { Mal "Falló pnpm install. Revisa la salida anterior." }
+} else {
+  Ok "Dependencias ya instaladas."
+}
+
+# ---------------------------------------------------------------------------
 # 1. Docker
 # ---------------------------------------------------------------------------
 Titulo "1/7 · Docker"
@@ -251,7 +274,7 @@ $todos = Esperar "contenedores" 300 {
 }
 
 if ($todos) {
-  Ok "Los $($contenedores.Count) contenedores están arriba y sanos."
+  Ok "Los contenedores del stack están arriba y sanos."
 } else {
   Aviso "Algunos contenedores todavía están arrancando:"
   docker ps -a --format "{{.Names}} | {{.Status}}" |
@@ -266,6 +289,14 @@ $webOk = Esperar "frontends" 60 {
 }
 if ($webOk) { Ok "App, panel y admin responden." }
 else { Aviso "Algún frontend aún no responde; el navegador lo reintentará." }
+
+Write-Host "    Cargando cuentas y datos demo (idempotente)…" -ForegroundColor DarkGray
+pnpm demo:sembrar 2>&1 | Out-Host
+if ($LASTEXITCODE -eq 0) {
+  Ok "Cuentas y datos demo listos."
+} else {
+  Aviso "No se pudieron cargar los datos demo. Revisa el error y ejecuta pnpm demo:sembrar."
+}
 
 $grafanaOk = Esperar "Grafana" 60 { (CodigoHttp 'http://localhost:3000/api/health') -eq '200' }
 if ($grafanaOk) { Ok "Grafana responde en 3000." }

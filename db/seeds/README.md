@@ -8,6 +8,20 @@ Contraseña de las cuentas demo: **Demo12345**
 | `dueno1@tukituki.local` | dueño de Café Bolívar |
 | `dueno2@tukituki.local` | dueño de Pizzería Centenario |
 
+## Forma rápida
+
+Con el stack de Docker arriba:
+
+```bash
+pnpm demo:sembrar
+```
+
+El comando espera a PostgreSQL y a las migraciones, aplica todos los seeds en
+orden y crea el superadmin `admin@tukituki.local` / `Admin12345`. Es idempotente.
+En una base con el catálogo histórico omite el seed de restaurantes si los
+locales demo ya existen con otro id, y omite las reseñas si no encuentra su
+catálogo.
+
 ## Aplicar en local
 
 ```bash

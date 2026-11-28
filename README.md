@@ -120,6 +120,7 @@ El `.bat` llama a `scripts/iniciar-todo.ps1`, que:
 
 - enciende Docker Desktop si hace falta;
 - levanta el stack principal y el de observabilidad;
+- carga las cuentas y los datos demo, y crea el superadmin;
 - comprueba Ollama, `tuki-chef` y `nomic-embed-text`;
 - calienta el chatbot y prueba la IA de visión;
 - abre el túnel de Argo CD en `https://localhost:8085`;
@@ -135,12 +136,13 @@ corepack enable
 pnpm install --frozen-lockfile
 cp infra/docker/.env.example infra/docker/.env
 pnpm infra:up
+pnpm demo:sembrar
 docker compose -f infra/docker/docker-compose.yml ps
 ```
 
-Luego ejecuta las migraciones y los seeds de la
-[ejecución manual](#ejecución-manual). Ollama debe correr en
-`http://localhost:11434`.
+`pnpm demo:sembrar` espera a PostgreSQL y carga las cuentas, los restaurantes y
+las reseñas de demostración. Es idempotente, así que puedes repetirlo cuando
+quieras. No hace falta instalar Ollama: el stack lo trae en un contenedor.
 
 ### Windows por terminal, paso a paso
 
@@ -154,6 +156,7 @@ docker --version                         # Docker Desktop encendido
 pnpm install
 Copy-Item infra/docker/.env.example infra/docker/.env
 pnpm infra:up
+pnpm demo:sembrar
 docker compose -f infra/docker/docker-compose.yml ps
 ```
 
@@ -161,23 +164,28 @@ docker compose -f infra/docker/docker-compose.yml ps
 paso; es el equivalente a `docker compose -f infra/docker/docker-compose.yml up -d`
 seguido de `pnpm infra:monitoring:up`. La primera vez construye las imágenes.
 
-En `docker compose ps` deben aparecer diecisiete contenedores del stack
-principal —con `healthy` en `postgres` y `api-gateway`— más los tres de
-observabilidad (`prometheus`, `grafana` y `node-exporter`). Cuando estén arriba,
-las tres apps ya responden en `http://localhost:8081`, `8082` y `8083` sin
-arrancar nada más. Para detenerlo todo sin perder datos: `pnpm infra:down`.
+En `docker compose ps` deben aparecer los 18 contenedores del stack principal en
+ejecución —con `healthy` en `postgres` y `api-gateway`—, más `ollama-init` y
+`ai-gateway-permisos`, que terminan solos, y los tres de observabilidad
+(`prometheus`, `grafana` y `node-exporter`). Cuando estén arriba, las tres apps
+ya responden en `http://localhost:8081`, `8082` y `8083` sin arrancar nada más.
+Para detenerlo todo sin perder datos: `pnpm infra:down`.
 
 ## URLs y credenciales demo
 
 | Servicio | URL | Credenciales |
 |---|---|---|
 | Comensal | `http://localhost:8081` | `cliente@tukituki.local` / `Demo12345` |
-| Panel del restaurante | `http://localhost:8082` | `lian@gmail.com` / `Demo12345` |
+| Panel del restaurante | `http://localhost:8082` | `dueno1@tukituki.local` / `Demo12345` |
 | Administración | `http://localhost:8083` | `admin@tukituki.local` / `Admin12345` |
 | API Gateway | `http://localhost:8084` | — |
 | Grafana | `http://localhost:3000` | `admin` / `admin` |
 | Prometheus | `http://localhost:9090` | — |
 | Argo CD | `https://localhost:8085` | `admin` / la clave del secreto de Argo |
+
+Las cuentas demo salen de los seeds. La primera vez cárgalas con
+`pnpm demo:sembrar` (el arranque de Windows ya lo hace). Ese comando también
+crea el superadmin con `admin@tukituki.local` / `Admin12345`.
 
 La clave de Argo se obtiene con:
 
@@ -191,6 +199,28 @@ Si el túnel no está abierto:
 ```bash
 kubectl port-forward -n argocd svc/argocd-server 8085:443
 ```
+
+### Comprobación rápida
+
+Con el stack arriba, estas tres llamadas confirman que la API y las cuentas
+responden:
+
+```bash
+curl -s http://localhost:8084/salud
+# ok
+
+curl -s -X POST http://localhost:8084/v1/identidad/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dueno1@tukituki.local","password":"Demo12345"}'
+# {"usuario":{...},"accessToken":"...","refreshToken":"...","refreshExpiraEn":...}
+
+curl -s -X POST http://localhost:8084/api/v1/ai/recomendar \
+  -H "Content-Type: application/json" \
+  -d '{"mensaje":"¿Qué me recomiendas para almorzar?","historial":[]}'
+```
+
+Las dos primeras responden de inmediato. La de IA puede tardar hasta un minuto
+la primera vez, mientras construye el índice RAG y carga `tuki-chef` en CPU.
 
 ## Ejecución manual
 
@@ -241,7 +271,9 @@ docker compose -f infra/docker/docker-compose.yml ps
 
 ### 4. Migraciones
 
-Cada servicio es dueño de su base:
+Si usas `pnpm infra:up`, no hace falta ejecutarlas: cada contenedor las aplica
+antes de arrancar. Estos comandos son para cuando corres los servicios fuera de
+Docker. Cada servicio es dueño de su base:
 
 ```bash
 pnpm --filter identidad-service db:migrar
@@ -257,7 +289,21 @@ no arranca.
 
 ### 5. Seeds y superadmin
 
-Los seeds son opcionales. Cargan cuentas demo y dos restaurantes de ejemplo:
+Los seeds cargan las cuentas demo, dos restaurantes de ejemplo, sus platos —con
+descripciones, ingredientes y alérgenos— y las reseñas del catálogo histórico
+cuando está disponible. Se aplican con un solo comando:
+
+```bash
+pnpm demo:sembrar
+```
+
+El comando espera a que PostgreSQL esté listo, aplica los archivos de
+[`db/seeds/`](db/seeds/README.md) y crea el superadmin
+`admin@tukituki.local` / `Admin12345`. Es idempotente: puedes repetirlo sin
+duplicar datos. En una base con datos históricos omite el seed de restaurantes
+si los locales demo ya existen con otro identificador.
+
+Si prefieres aplicarlos a mano y tienes `psql`:
 
 ```bash
 psql "postgresql://tuki_identidad:tuki_identidad_dev@localhost:5432/tuki_identidad" \
@@ -267,16 +313,33 @@ psql "postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_r
   -f db/seeds/restaurantes-demo.sql
 ```
 
-Si no tienes `psql`, usa `docker exec -i tukituki-postgresdb` o revisa
-[`db/seeds/README.md`](db/seeds/README.md).
+Si no tienes `psql`, usa el contenedor. En PowerShell:
 
-El superadmin se crea con:
+```powershell
+Get-Content db/seeds/identidad-demo.sql -Raw |
+  docker exec -i tukituki-postgresdb psql -U tuki_admin -d tuki_identidad
+
+Get-Content db/seeds/restaurantes-demo.sql -Raw |
+  docker exec -i tukituki-postgresdb psql -U tuki_admin -d tuki_restaurantes
+```
+
+En bash:
+
+```bash
+docker exec -i tukituki-postgresdb psql -U tuki_admin -d tuki_identidad \
+  < db/seeds/identidad-demo.sql
+
+docker exec -i tukituki-postgresdb psql -U tuki_admin -d tuki_restaurantes \
+  < db/seeds/restaurantes-demo.sql
+```
+
+El superadmin se puede volver a crear aparte con:
 
 ```bash
 pnpm --filter identidad-service db:superadmin
 ```
 
-Por defecto crea `admin@tukituki.local` con `Admin12345`. En producción define
+Por defecto usa `admin@tukituki.local` con `Admin12345`. En producción define
 `SUPERADMIN_EMAIL` y `SUPERADMIN_PASSWORD` antes de ejecutar el comando.
 
 ### 6. Desarrollo con Vite
@@ -346,7 +409,8 @@ curl -s -X POST http://localhost:8084/api/v1/ai/recomendar \
 ```
 
 La primera consulta después de reiniciar el gateway construye el índice RAG y
-puede tardar varios segundos.
+carga el modelo en CPU; puede tardar hasta un minuto. Las siguientes responden
+en segundos.
 
 ## Pruebas
 
@@ -434,8 +498,8 @@ llamadas al modelo). Los servicios Node exponen `tuki_http_*`.
 | Síntoma | Causa probable | Acción |
 |---|---|---|
 | `docker compose` falla al arrancar | Docker Desktop apagado o puerto ocupado | Enciende Docker y revisa `docker compose ps`. |
-| El frontend carga pero la API falla | `config.js` apunta a otra URL o CORS | Revisa `http://localhost:8084/healthz` y las variables `TUKI_*`. |
-| El chat responde lento o falla | Ollama apagado, modelo faltante o índice vencido | `ollama list`, `curl localhost:11434/api/tags`, reinicia el gateway. |
+| El frontend carga pero la API falla | `config.js` apunta a otra URL o CORS | Revisa `http://localhost:8084/salud` y las variables `TUKI_*`. |
+| El chat responde lento o falla | Ollama apagado, modelo faltante o índice vencido | `docker exec tukituki-ollamabe ollama list`, `curl http://localhost:8000/healthz`, reinicia el gateway. |
 | El pod no arranca | Migración o base no disponible | `kubectl logs` del `initContainer` y revisa la conexión. |
 | Argo muestra `OutOfSync` | Cambio manual o imagen inexistente | Revisa el diff y vuelve a sincronizar. |
 | La imagen no se firma | CVE crítico corregible o permisos de GHCR | Revisa Trivy y los permisos del paquete. |
