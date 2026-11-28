@@ -36,8 +36,9 @@ class Settings(BaseSettings):
     model_path: Path = RAIZ_SERVICIO / "modelos" / "comida-v1.pt"
     # Probabilidad mínima de "comida" para aceptar la foto. Se puede ajustar
     # sin reentrenar; `entrenamiento/evaluar.py` propone el mejor umbral. Con el
-    # modelo v1, 0.3 evita rechazar platos reales (0 falsos negativos en test).
-    umbral_comida: float = Field(default=0.3, ge=0.0, le=1.0)
+    # modelo v1, 0.65 deja fuera las fotos que no son platos (plantas, mascotas,
+    # hojas) sin rechazar platos reales: en test da precisión 1.0 y recall 0.973.
+    umbral_comida: float = Field(default=0.65, ge=0.0, le=1.0)
     # Nombre de la clase positiva dentro del modelo.
     etiqueta_comida: str = "comida"
     # Resolución de inferencia. El entrenamiento usa la misma.

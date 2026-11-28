@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Iterable
 
 # 1 palabra ≈ 1.33 tokens para el español. Es una estimación deliberada:
 # añadir un tokenizador real costaría una dependencia y varios MB de RAM, y
@@ -82,8 +83,23 @@ PALABRAS_GASTRONOMICAS = {
 
 _TEMAS_NO_GASTRONOMICOS = {
     "politica", "presidente", "elecciones", "medicina", "medico", "enfermedad",
-    "receta medica", "programacion", "python", "javascript", "futbol",
-    "partido", "impuestos", "abogado", "demanda", "guerra", "religion",
+    "receta medica", "programacion", "python", "javascript", "futbol", "partido",
+    "impuestos", "abogado", "demanda", "guerra", "religion",
+}
+
+# Temas que no son del catálogo ni de la plataforma. A diferencia de los
+# anteriores, estos no se "salvan" por mencionar una palabra de comida:
+# "precio del dólar" o "recomiéndame una película" no son consultas de platos.
+TEMAS_AJENOS = {
+    "dolar", "dolares", "euro", "euros", "bitcoin", "criptomoneda",
+    "criptomonedas", "bolsa", "acciones", "inflacion", "presidente",
+    "elecciones", "politica", "politico", "partido", "futbol", "baloncesto",
+    "pelicula", "peliculas", "serie", "series", "cancion", "canciones",
+    "musica", "poema", "poesia", "chiste", "chistes", "horoscopo", "clima",
+    "programacion", "javascript", "python", "medicina", "medico", "enfermedad",
+    "abogado", "demanda", "guerra", "religion", "impuestos", "matematica",
+    "ecuacion", "traduccion", "traduce", "tarea", "deberes", "videojuego",
+    "videojuegos", "celular", "computador",
 }
 
 # Preguntas que no son de comida pero sí del producto. El RAG de plataforma
@@ -94,7 +110,7 @@ PALABRAS_PLATAFORMA = {
     "menu digital", "carta digital", "publicar", "publicacion", "dueno",
     "duenos", "comensal", "comensales", "pedido", "pedidos", "whatsapp",
     "resena", "resenas", "calificacion", "calificaciones", "privacidad",
-    "politica", "politicas", "terminos", "soporte", "ayuda", "funciona",
+    "terminos", "soporte", "ayuda", "funciona",
     "funcionan", "como funciona", "qr", "plan", "planes", "comision",
     "comisiones", "pago", "pagos", "eliminar cuenta", "borrar cuenta",
     "cambiar contrasena", "recuperar contrasena", "inteligencia artificial",
@@ -131,15 +147,27 @@ def tokenizar(texto: str, *, quitar_stopwords: bool = True) -> list[str]:
     return tokens
 
 
-def expandir_consulta(tokens: list[str]) -> list[tuple[str, float]]:
-    """Añade sinónimos con menos peso para no diluir la coincidencia exacta."""
+def expandir_consulta(
+    tokens: list[str],
+    *,
+    excluir: Iterable[str] = (),
+) -> list[tuple[str, float]]:
+    """Añade sinónimos con menos peso para no diluir la coincidencia exacta.
+
+    ``excluir`` son los términos que la persona quiere evitar: si un grupo de
+    sinónimos solo coincide por ellos, no se expande. Así "sin carne" no
+    termina empujando pizzas y pollo al ranking.
+    """
+    bloqueados = set(excluir)
     pesos: dict[str, float] = {token: 1.0 for token in tokens}
     conjunto = set(tokens)
     for grupo in _GRUPOS_SINONIMOS:
-        if conjunto & grupo:
-            for sinonimo in grupo:
-                if sinonimo not in pesos and sinonimo not in _STOPWORDS:
-                    pesos[sinonimo] = 0.35
+        coincidencias = conjunto & grupo
+        if not coincidencias or coincidencias <= bloqueados:
+            continue
+        for sinonimo in grupo:
+            if sinonimo not in pesos and sinonimo not in _STOPWORDS:
+                pesos[sinonimo] = 0.35
     return list(pesos.items())
 
 
@@ -194,6 +222,19 @@ def es_consulta_plataforma(texto: str) -> bool:
     return any(
         re.search(rf"\b{re.escape(palabra)}\b", normalizado)
         for palabra in PALABRAS_PLATAFORMA
+    )
+
+
+def es_tema_ajeno(texto: str) -> bool:
+    """Tema claramente fuera del catálogo y de la plataforma.
+
+    Va aparte de :func:`es_consulta_gastronomica` porque palabras como "precio"
+    o "recomiendas" dejan pasar "precio del dólar" y "recomiéndame una película".
+    """
+    normalizado = normalizar(texto)
+    return any(
+        re.search(rf"\b{re.escape(tema)}(?:s|es)?\b", normalizado)
+        for tema in TEMAS_AJENOS
     )
 
 

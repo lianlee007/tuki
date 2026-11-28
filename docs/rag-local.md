@@ -84,9 +84,20 @@ Marginal Relevance (λ=0.72)** para no devolver seis platos del mismo restaurant
 - Rango de precio (“menos de 20.000”, “barato” ⇒ 25.000 COP).
 - Ciudad detectada contra las ciudades del catálogo.
 - Restaurante mencionado por nombre.
-- Alérgeno a excluir (“sin gluten”, “sin lácteos”).
+- Alérgeno o ingrediente a excluir (“sin gluten”, “sin lácteos”, “nada de
+  queso”, “algo que no tenga carne”).
+- Sabor dulce o salado, con negación (“algo que no sea dulce” ⇒ salado).
 - Cocinas o servicios que no existen en el catálogo (“comida china”, “menú
   infantil”): se responde que no hay datos en vez de inventar.
+
+### Fuera de alcance
+
+Las preguntas de temas ajenos (deportes, política, dólar, películas, chistes,
+tareas) se responden con un rechazo breve y con humor, sin llamar al modelo. El
+detector es una lista de temas duros en `app/dominio/texto.py`, aparte de las
+palabras gastronómicas: “dame el precio del dólar” no se salva por decir
+“precio”. Nombrar un plato o un restaurante del catálogo sí habilita la
+respuesta (“¿qué hay en Don Leo?”).
 
 ### Presupuesto de contexto
 
@@ -148,8 +159,18 @@ restaurante está identificado:
 - “¿Tiene gluten/lactosa…?”.
 
 También responde con una lista factual cuando hay un filtro estricto
-(vegetariano, vegano, sin alérgeno, rango de precio). El modelo se reserva para
-recomendaciones abiertas y conversación.
+(vegetariano, vegano, sin alérgeno, sin ingrediente, rango de precio). El modelo
+se reserva para recomendaciones abiertas y conversación.
+
+### Negaciones
+
+El filtro entiende la negación en lenguaje natural, no solo la forma “sin X”.
+“No tengan lácteos ni queso”, “nada de carne”, “algo que no tenga gluten” y “sin
+picante” se convierten en exclusiones antes de recuperar: se descartan los platos
+cuya ficha menciona el ingrediente o declara el alérgeno. “Sin carne” y sus
+variantes marcan además el filtro vegetariano, y la exclusión de carne cubre
+pollo, cerdo, pescado y mariscos. Una negación se corta con “pero” o “aunque”,
+así que “sin lactosa pero con queso” no excluye el queso.
 
 ### Alérgenos
 
@@ -159,6 +180,10 @@ contrario y añade una nota factual:
 
 > Alérgenos declarados en el catálogo: … Si tienes una alergia, confirma con el
 > restaurante antes de pedir.
+
+Cuando se pidió evitar un alérgeno y alguno de los platos recomendados no tiene
+alérgenos declarados, la respuesta añade un aviso: la ausencia de dato no
+equivale a un plato seguro.
 
 ## 6. API
 
@@ -242,6 +267,16 @@ Para ejecutarlo:
 ```powershell
 cd services/ai-gateway
 .\.venv\Scripts\python evaluacion\evaluate_rag.py
+```
+
+Para la demo hay una batería corta y legible en
+`services/ai-gateway/evaluacion/preguntas-demo.jsonl` (30 casos: filtros,
+negaciones, preguntas por restaurante, temas ajenos). Se ejecuta igual, apuntando
+al archivo:
+
+```powershell
+.\.venv\Scripts\python evaluacion\evaluate_rag.py `
+  --dataset evaluacion\preguntas-demo.jsonl --salida $env:TEMP\eval-demo
 ```
 
 El script mide:

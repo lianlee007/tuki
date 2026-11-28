@@ -89,6 +89,24 @@ def _documentos() -> list[Documento]:
                 "alergenos": ["gluten", "lácteos"],
             },
         ),
+        Documento(
+            "plato:4",
+            "plato",
+            "Plato: Churrasco. Restaurante: Asadero Los Arcos. Precio: 40000 COP. "
+            "Ingredientes: carne, papa.",
+            {
+                "id": "4",
+                "nombre": "Churrasco",
+                "restaurante_slug": "asadero-los-arcos",
+                "restaurante": "Asadero Los Arcos",
+                "ciudad": "Popayán",
+                "precio": 40000.0,
+                "vegetariano": False,
+                "vegano": False,
+                "picante": False,
+                "alergenos": [],
+            },
+        ),
     ]
 
 
@@ -127,7 +145,40 @@ def test_extraer_filtros_de_lenguaje_natural():
 
 def test_extraer_filtros_de_alergeno():
     filtros = extraer_filtros("¿Tienen algo sin gluten?")
-    assert filtros.excluir_alergeno == "gluten"
+    assert filtros.excluir_alergenos == ("gluten",)
+
+
+def test_extraer_filtros_entiende_la_negacion_natural():
+    filtros = extraer_filtros(
+        "¿Qué platos me puedes recomendar que no tengan lácteos ni queso?"
+    )
+    assert filtros.excluir_alergenos == ("lactosa",)
+    assert filtros.excluir_ingredientes == ("queso",)
+    assert filtros.vegetariano is None
+
+    filtros = extraer_filtros("algo que no tenga carne")
+    assert filtros.vegetariano is True
+    assert filtros.excluir_ingredientes == ("carne",)
+
+    assert extraer_filtros("quiero queso").excluir_ingredientes == ()
+    assert extraer_filtros("algo sin lactosa pero con queso").excluir_ingredientes == ()
+
+
+def test_indice_excluye_negaciones_de_alergenos_y_queso():
+    indice = IndiceRAG(_documentos())
+    consulta = "platos sin lácteos ni queso"
+    resultados = indice.buscar(consulta, filtros=extraer_filtros(consulta), top_k=3)
+    nombres = [r.documento.metadata["nombre"] for r in resultados]
+    assert nombres == ["Churrasco"]
+
+
+def test_indice_excluye_la_familia_de_la_carne():
+    indice = IndiceRAG(_documentos())
+    consulta = "algo que no tenga carne"
+    resultados = indice.buscar(consulta, filtros=extraer_filtros(consulta), top_k=3)
+    nombres = [r.documento.metadata["nombre"] for r in resultados]
+    assert "Churrasco" not in nombres
+    assert "Arepa de queso" in nombres
 
 
 def test_detecta_cocina_que_no_esta_en_los_platos():

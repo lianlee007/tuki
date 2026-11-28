@@ -13,7 +13,7 @@ import math
 import re
 from collections import Counter
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from app.dominio.conocimiento import Documento, Recuperado
@@ -31,6 +31,101 @@ TERMINOS_SIN_DATOS = (
     "tacos", "infantil", "ninos", "parqueadero",
 )
 
+# Ingredientes que la persona puede pedir o querer evitar. El filtro es
+# deliberadamente conservador: si la pregunta no nombra ninguno, la búsqueda
+# sigue siendo semántica.
+INGREDIENTES = (
+    "pollo",
+    "gallina",
+    "carne",
+    "res",
+    "cerdo",
+    "pescado",
+    "mojarra",
+    "mariscos",
+    "queso",
+    "maiz",
+    "papa",
+    "yuca",
+    "platano",
+    "huevo",
+    "frijol",
+    "arroz",
+    "pasta",
+    "chocolate",
+    "fresa",
+    "mora",
+    "mani",
+    "lechuga",
+    "tomate",
+)
+SINONIMOS_INGREDIENTES = {
+    "pollo": ("pollo", "gallina"),
+    "carne": ("carne", "res", "cerdo", "pollo", "gallina"),
+    "pescado": ("pescado", "mojarra"),
+    "maiz": ("maiz", "mazorca", "choclo"),
+    "frijol": ("frijol", "frijoles"),
+    "platano": ("platano", "patacon"),
+}
+
+# Al pedir "sin carne" la persona espera que también salgan fuera el pollo, el
+# cerdo y el pescado: la familia completa, no solo la palabra literal.
+FAMILIA_CARNE = (
+    "carne",
+    "res",
+    "cerdo",
+    "pollo",
+    "gallina",
+    "pescado",
+    "mojarra",
+    "mariscos",
+)
+
+# Alérgenos del catálogo y las palabras con que la gente los pide.
+ALERGENOS = (
+    ("gluten", ("gluten",)),
+    ("lactosa", ("lactosa", "lacteos", "lacteo", "leche", "queso")),
+    ("huevo", ("huevo", "huevos")),
+    ("mani", ("mani", "cacahuate", "cacahuete")),
+    ("nueces", ("nueces", "nuez", "almendra", "almendras")),
+    ("mariscos", ("mariscos", "marisco", "camaron", "camarones")),
+    ("soya", ("soya", "soja")),
+)
+# Formas en que el catálogo escribe un mismo alérgeno.
+EQUIVALENTES_ALERGENO = {
+    "lactosa": ("lactosa", "lacteos", "lacteo"),
+    "mani": ("mani",),
+}
+
+# Marcas de negación: "sin queso", "que no tenga carne", "ni lácteos".
+_NEGACIONES = frozenset(
+    {
+        "sin",
+        "no",
+        "nada",
+        "ni",
+        "nunca",
+        "jamas",
+        "libre",
+        "evitar",
+        "evita",
+        "evite",
+        "quitar",
+        "quitale",
+        "sacar",
+        "excepto",
+    }
+)
+# Un "pero" o un "aunque" reinicia la frase: "sin lactosa pero con queso".
+_CORTES_NEGACION = frozenset({"pero", "aunque", "sino", "menos"})
+# Cuántas palabras hacia atrás se busca la negación ("que no tenga carne").
+_VENTANA_NEGACION = 4
+# Typo frecuente al escribir rápido: "algo que nos sea dulce" por "no sea dulce".
+# Solo se corrige delante de un verbo, para no tocar "nos gusta lo dulce".
+_TYPOS_NEGACION = re.compile(
+    r"\bnos\s+(?=(?:sea|sean|tenga|tengan|traiga|traigan|lleve|lleven)\b)"
+)
+
 
 @dataclass(frozen=True, slots=True)
 class Filtros:
@@ -41,7 +136,56 @@ class Filtros:
     precio_max: float | None = None
     ciudad: str | None = None
     restaurante_slug: str | None = None
-    excluir_alergeno: str | None = None
+    excluir_alergenos: tuple[str, ...] = ()
+    excluir_ingredientes: tuple[str, ...] = ()
+
+
+def _coincide(token: str, texto: str) -> bool:
+    """Coincidencia por palabra, con plural simple (papa/papas, res/reses)."""
+    return re.search(rf"\b{re.escape(token)}(?:s|es)?\b", texto) is not None
+
+
+def _tokens_ingrediente(
+    ingrediente: str, *, incluir_familia: bool = False
+) -> tuple[str, ...]:
+    if incluir_familia and ingrediente in FAMILIA_CARNE:
+        return FAMILIA_CARNE
+    return SINONIMOS_INGREDIENTES.get(ingrediente, (ingrediente,))
+
+
+def menciona_ingrediente(
+    texto: str,
+    ingrediente: str,
+    *,
+    incluir_familia: bool = False,
+) -> bool:
+    """¿La ficha del plato menciona el ingrediente (o un sinónimo)?"""
+    tokens = _tokens_ingrediente(ingrediente, incluir_familia=incluir_familia)
+    normalizado = normalizar(texto)
+    return any(_coincide(token, normalizado) for token in tokens)
+
+
+def _negado_normalizado(normalizado: str, termino: str) -> bool:
+    """¿Hay una negación justo antes de ``termino`` en el texto ya normalizado?"""
+    normalizado = _TYPOS_NEGACION.sub("no ", normalizado)
+    patron = re.compile(rf"{re.escape(termino)}(?:s|es)?")
+    palabras = normalizado.split()
+    for posicion, palabra in enumerate(palabras):
+        if not patron.fullmatch(palabra):
+            continue
+        ventana = palabras[max(0, posicion - _VENTANA_NEGACION) : posicion]
+        for corte in range(len(ventana) - 1, -1, -1):
+            if ventana[corte] in _CORTES_NEGACION:
+                ventana = ventana[corte + 1 :]
+                break
+        if any(marca in _NEGACIONES for marca in ventana):
+            return True
+    return False
+
+
+def esta_negado(texto: str, termino: str) -> bool:
+    """¿La pregunta pide evitar ``termino``? ("sin queso", "que no tenga carne")."""
+    return _negado_normalizado(normalizar(texto), termino)
 
 
 def _numero_cop(valor: str) -> float | None:
@@ -64,10 +208,17 @@ def extraer_filtros(texto: str) -> Filtros:
     if "vegan" in normalizado or "sin productos animales" in normalizado:
         vegano = True
         vegetariano = True
-    elif "vegetarian" in normalizado or "veggie" in normalizado or "sin carne" in normalizado:
+    elif (
+        "vegetarian" in normalizado
+        or "veggie" in normalizado
+        or "sin carne" in normalizado
+        or _negado_normalizado(normalizado, "carne")
+    ):
         vegetariano = True
 
-    if any(palabra in normalizado for palabra in ("picante", "picoso", "aji", "chile")):
+    if _negado_normalizado(normalizado, "picante"):
+        picante = False
+    elif any(palabra in normalizado for palabra in ("picante", "picoso", "aji", "chile")):
         picante = True
 
     precio_max: float | None = None
@@ -87,20 +238,18 @@ def extraer_filtros(texto: str) -> Filtros:
     if precio_max is None and any(palabra in normalizado for palabra in PALABRAS_BARATO):
         precio_max = 25000.0
 
-    alergeno = None
-    for candidato, equivalente in (
-        ("gluten", "gluten"),
-        ("lactosa", "lactosa"),
-        ("lacteos", "lactosa"),
-        ("mani", "mani"),
-        ("nueces", "nueces"),
-        ("mariscos", "mariscos"),
-        ("huevo", "huevo"),
-        ("soya", "soya"),
-    ):
-        if f"sin {candidato}" in normalizado:
-            alergeno = equivalente
-            break
+    # "sin gluten", "no tenga lácteos", "nada de queso": la negación puede
+    # llegar de muchas formas, no solo con la palabra "sin".
+    excluir_alergenos = tuple(
+        alergeno
+        for alergeno, alias in ALERGENOS
+        if any(_negado_normalizado(normalizado, termino) for termino in alias)
+    )
+    excluir_ingredientes = tuple(
+        ingrediente
+        for ingrediente in INGREDIENTES
+        if _negado_normalizado(normalizado, ingrediente)
+    )
 
     return Filtros(
         vegetariano=vegetariano,
@@ -108,7 +257,8 @@ def extraer_filtros(texto: str) -> Filtros:
         picante=picante,
         precio_min=precio_min,
         precio_max=precio_max,
-        excluir_alergeno=alergeno,
+        excluir_alergenos=excluir_alergenos,
+        excluir_ingredientes=excluir_ingredientes,
     )
 
 
@@ -176,6 +326,46 @@ def _claves_filtro(documento: Documento) -> dict[str, Any]:
     return documento.metadata
 
 
+# Categorías que se sienten como plato de fondo. Cuando la pregunta no da señal
+# positiva ("algo que no tenga carne") el respaldo las pone antes que bebidas,
+# entradas y postres, para no responder con un jugo.
+CATEGORIAS_PRINCIPALES = {
+    "platos principales",
+    "carnes",
+    "tipica",
+    "almuerzos",
+    "pizzas",
+    "pastas",
+    "sopas",
+    "hamburguesas",
+    "pescados",
+    "comidas rapidas",
+    "oriental",
+    "para compartir",
+}
+
+
+def _prioridad_plato(documento: Documento) -> tuple[int, int, str]:
+    """Orden de respaldo: destacados y platos de fondo primero."""
+    metadata = documento.metadata
+    categoria = normalizar(str(metadata.get("categoria") or ""))
+    return (
+        0 if metadata.get("destacado") else 1,
+        0 if categoria in CATEGORIAS_PRINCIPALES else 1,
+        normalizar(str(metadata.get("nombre") or "")),
+    )
+
+
+def _menciona_algun_excluido(documento: Documento, filtros: Filtros) -> bool:
+    """¿La ficha menciona algún ingrediente que la persona pidió evitar?"""
+    if documento.tipo != "plato" or not filtros.excluir_ingredientes:
+        return False
+    return any(
+        menciona_ingrediente(documento.texto, ingrediente, incluir_familia=True)
+        for ingrediente in filtros.excluir_ingredientes
+    )
+
+
 def _cumple_filtros(documento: Documento, filtros: Filtros) -> bool:
     datos = _claves_filtro(documento)
     if filtros.vegetariano is not None and bool(datos.get("vegetariano")) != filtros.vegetariano:
@@ -207,11 +397,15 @@ def _cumple_filtros(documento: Documento, filtros: Filtros) -> bool:
         and normalizar(filtros.ciudad) not in normalizar(str(datos.get("ciudad") or ""))
     ):
         return False
-    if filtros.excluir_alergeno:
-        alergenos = " ".join(str(item) for item in datos.get("alergenos") or [])
-        if filtros.excluir_alergeno in normalizar(alergenos):
-            return False
-    return True
+    if filtros.excluir_alergenos:
+        declarados = normalizar(
+            " ".join(str(item) for item in datos.get("alergenos") or [])
+        )
+        for excluido in filtros.excluir_alergenos:
+            variantes = EQUIVALENTES_ALERGENO.get(excluido, (excluido,))
+            if any(variante in declarados for variante in variantes):
+                return False
+    return not _menciona_algun_excluido(documento, filtros)
 
 
 class IndiceRAG:
@@ -309,6 +503,7 @@ class IndiceRAG:
         *,
         vector_consulta: list[float] | None = None,
         filtros: Filtros | None = None,
+        tipos: tuple[str, ...] | None = None,
         top_k: int = 6,
         candidatos: int = 20,
         mmr_lambda: float = 0.72,
@@ -323,26 +518,29 @@ class IndiceRAG:
         if (ciudad and not filtros.ciudad) or (
             restaurante and not filtros.restaurante_slug
         ):
-            filtros = Filtros(
-                vegetariano=filtros.vegetariano,
-                vegano=filtros.vegano,
-                picante=filtros.picante,
-                precio_min=filtros.precio_min,
-                precio_max=filtros.precio_max,
-                ciudad=ciudad,
-                restaurante_slug=restaurante,
-                excluir_alergeno=filtros.excluir_alergeno,
+            filtros = replace(
+                filtros,
+                ciudad=filtros.ciudad or ciudad,
+                restaurante_slug=filtros.restaurante_slug or restaurante,
             )
 
         elegibles = [
             indice
             for indice, documento in enumerate(self.documentos)
-            if _cumple_filtros(documento, filtros)
+            if (tipos is None or documento.tipo in tipos)
+            and _cumple_filtros(documento, filtros)
         ]
         if not elegibles:
             return []
 
-        expandidos = expandir_consulta(tokenizar(consulta))
+        expandidos = expandir_consulta(
+            tokenizar(consulta),
+            excluir={
+                token
+                for ingrediente in filtros.excluir_ingredientes
+                for token in _tokens_ingrediente(ingrediente, incluir_familia=True)
+            },
+        )
         puntajes_lexicos = (
             self._bm25.puntuar(expandidos)
             if expandidos
@@ -372,16 +570,12 @@ class IndiceRAG:
             )[:candidatos]
 
         # Sin ninguna señal, pero con una pregunta genérica de comida: se
-        # ofrecen los destacados para que el modelo tenga algo real que citar.
+        # ofrecen los platos destacados y de fondo para que el modelo tenga
+        # algo real que citar y no una bebida suelta.
         if not ranking_lexico and not ranking_vector:
-            destacados = [
-                indice
-                for indice in elegibles
-                if self.documentos[indice].tipo == "plato"
-                and self.documentos[indice].metadata.get("destacado")
-            ]
             platos = [i for i in elegibles if self.documentos[i].tipo == "plato"]
-            ranking_lexico = (destacados or platos)[:candidatos]
+            platos.sort(key=lambda indice: _prioridad_plato(self.documentos[indice]))
+            ranking_lexico = platos[:candidatos]
 
         fusion: dict[int, float] = {}
         for ranking in (ranking_lexico, ranking_vector):
@@ -505,13 +699,20 @@ def formatear_pesos(consulta: str) -> list[tuple[str, float]]:
 
 
 __all__ = [
+    "ALERGENOS",
     "BM25",
+    "EQUIVALENTES_ALERGENO",
+    "FAMILIA_CARNE",
     "Filtros",
+    "INGREDIENTES",
     "IndiceRAG",
+    "SINONIMOS_INGREDIENTES",
     "coseno",
+    "esta_negado",
     "extraer_filtros",
     "formatear_pesos",
     "jaccard",
+    "menciona_ingrediente",
     "seleccionar_contexto",
     "similitud_texto",
 ]

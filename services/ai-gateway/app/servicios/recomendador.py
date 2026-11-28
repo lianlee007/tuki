@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+from dataclasses import replace
 from typing import Any, Protocol
 
 from app.config import Settings
@@ -23,14 +24,19 @@ from app.dominio.conocimiento import (
 from app.dominio.errores import ErrorIA
 from app.dominio.modelos import ResultadoIA
 from app.dominio.recuperacion import (
+    FAMILIA_CARNE,
+    INGREDIENTES,
     Filtros,
     IndiceRAG,
+    esta_negado,
     extraer_filtros,
+    menciona_ingrediente,
     seleccionar_contexto,
 )
 from app.dominio.texto import (
     es_consulta_gastronomica,
     es_consulta_plataforma,
+    es_tema_ajeno,
     estimar_tokens,
     normalizar,
 )
@@ -64,13 +70,16 @@ SISTEMA_RECOMENDADOR = (
     "8. Si el usuario pide un ingrediente concreto (pollo, carne, pescado, "
     "queso, maíz, etc.), recomienda solo platos que lo tengan en la lista de "
     "Ingredientes del CONTEXTO. Si ninguno lo tiene, dilo con naturalidad.\n"
-    "9. No afirmes que un plato es vegetariano, vegano o picante salvo que esa "
+    "9. Si el usuario pide EVITAR algo (sin queso, sin lácteos, nada de carne, "
+    "sin gluten), no recomiendes ningún plato que lo contenga. No reformules la "
+    "petición al contrario ni ofrezcas platos con ese ingrediente o alérgeno.\n"
+    "10. No afirmes que un plato es vegetariano, vegano o picante salvo que esa "
     "etiqueta aparezca en su ficha del CONTEXTO.\n"
-    "10. Termina con una pregunta corta que ayude a seguir conversando.\n"
-    "11. Si el usuario pregunta por TukiTuki (cuenta, panel, pedidos, reseñas, "
+    "11. Termina con una pregunta corta que ayude a seguir conversando.\n"
+    "12. Si el usuario pregunta por TukiTuki (cuenta, panel, pedidos, reseñas, "
     "privacidad, planes, IA o soporte), responde con la información del CONTEXTO "
     "y no recomiendes platos si no los pidió.\n"
-    "12. Si el usuario pide algo que no es de comida ni de TukiTuki, aclara "
+    "13. Si el usuario pide algo que no es de comida ni de TukiTuki, aclara "
     "amablemente que solo puedes ayudar con platos, restaurantes y el "
     "funcionamiento de la plataforma.\n\n"
     "EJEMPLO DE TONO (no copies estos datos, usa los del contexto):\n"
@@ -167,81 +176,53 @@ _INTENCIONES_PLATAFORMA = (
 )
 
 SALUDO = (
-    "Hola, soy Tuki, tu recomendador de platos. Dime qué se te antoja: algo "
-    "vegetariano, picante, económico, un postre o un plato para compartir."
+    "Hola, soy Tuki, tu recomendador de platos. Dime qué se te antoja y lo "
+    "busco en el catálogo real: vegetariano, picante, económico, un postre o "
+    "algo para compartir."
 )
 FUERA_DE_ALCANCE = (
-    "Puedo ayudarte con platos, restaurantes y el funcionamiento de TukiTuki, "
-    "pero ese tema no lo manejo. ¿Buscas algo en especial para comer o quieres "
-    "saber cómo funciona la plataforma?"
+    "Uy, con esa sí me pillas: de eso no lo manejo, que soy cocinero y no "
+    "oráculo. Mi especialidad es el catálogo: platos, precios, alérgenos y cómo "
+    "funciona TukiTuki. ¿Se te antoja algo o te cuento cómo funciona la "
+    "plataforma?"
 )
 SIN_DATOS = (
     "No encontré platos que coincidan con eso en el catálogo de TukiTuki. "
     "¿Quieres probar con otra ciudad, otro presupuesto o sin tantos filtros?"
 )
 
+# Ingredientes que se pueden pedir o evitar de forma explícita: el vocabulario
+# vive en el dominio para que la recuperación use el mismo.
 _SALUDOS = {"hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey"}
 _SALIDAS = {"gracias", "muchas gracias", "chao", "adios", "hasta luego"}
 
-# Ingredientes que se pueden pedir de forma explícita. El filtro es deliberadamente
-# conservador: si la pregunta no nombra ninguno, la búsqueda sigue siendo semántica.
-_INGREDIENTES = (
-    "pollo",
-    "gallina",
-    "carne",
-    "res",
-    "cerdo",
-    "pescado",
-    "mojarra",
-    "mariscos",
-    "queso",
-    "maiz",
-    "papa",
-    "yuca",
-    "platano",
-    "huevo",
-    "frijol",
-    "arroz",
-    "pasta",
-    "chocolate",
-    "cafe",
-    "fresa",
-    "mora",
-    "mani",
-    "lechuga",
-    "tomate",
-)
-_SINONIMOS = {
-    "pollo": ("pollo", "gallina"),
-    "carne": ("carne", "res", "cerdo", "pollo", "gallina"),
-    "pescado": ("pescado", "mojarra"),
-    "maiz": ("maiz", "mazorca", "choclo"),
-    "frijol": ("frijol", "frijoles"),
-    "platano": ("platano", "patacon"),
-}
-
-
-def _coincide(token: str, texto: str) -> bool:
-    """Coincidencia por palabra, con plural simple (papa/papas, res/reses)."""
-    return re.search(rf"\b{re.escape(token)}(?:s|es)?\b", texto) is not None
-
 
 def _ingrediente_solicitado(consulta: str) -> str | None:
-    """Primer ingrediente explícito de la pregunta, si lo hay."""
+    """Primer ingrediente que la persona pide, ignorando los que quiere evitar."""
     normalizada = normalizar(consulta)
-    for ingrediente in _INGREDIENTES:
-        if _coincide(ingrediente, normalizada):
+    for ingrediente in INGREDIENTES:
+        if esta_negado(normalizada, ingrediente):
+            continue
+        if menciona_ingrediente(normalizada, ingrediente):
             return ingrediente
     return None
 
 
-def _tiene_ingrediente(texto: str, ingrediente: str) -> bool:
-    """¿El plato menciona el ingrediente (o un sinónimo) en su ficha?"""
-    normalizado = normalizar(texto)
-    return any(
-        _coincide(token, normalizado)
-        for token in _SINONIMOS.get(ingrediente, (ingrediente,))
+def _levantar_exclusion(filtros: Filtros, ingrediente: str) -> Filtros:
+    """Quita una exclusión cuando el turno actual vuelve a pedir el ingrediente."""
+    excluidos = tuple(
+        excluido
+        for excluido in filtros.excluir_ingredientes
+        if excluido != ingrediente
+        and not (excluido in FAMILIA_CARNE and ingrediente in FAMILIA_CARNE)
     )
+    vegetariano = filtros.vegetariano
+    if vegetariano and ingrediente in FAMILIA_CARNE:
+        # "Sin carne" venía del historial; ahora piden pollo.
+        vegetariano = None
+    if excluidos == filtros.excluir_ingredientes and vegetariano == filtros.vegetariano:
+        return filtros
+    return replace(filtros, excluir_ingredientes=excluidos, vegetariano=vegetariano)
 
 
 # Categorías que el catálogo usa para lo dulce. "salado" las excluye y "dulce"
@@ -257,12 +238,31 @@ _CATEGORIAS_DULCES = {
 
 
 def _sabor_solicitado(consulta: str) -> str | None:
-    """Detecta si la persona pidió algo salado o algo dulce."""
+    """Detecta si la persona pidió algo salado o algo dulce, con negaciones.
+
+    "Algo que no sea dulce" es una petición de salado, no de postres. El
+    catálogo solo distingue dulce/salado, así que negar uno afirma el otro.
+    """
     normalizada = normalizar(consulta)
-    if re.search(r"\bsalad[oa]s?\b", normalizada):
+    # "Un postre no muy dulce" sigue siendo un postre: no es una negación.
+    suavizado = re.search(r"\bno (?:muy|tan)\b", normalizada) is not None
+    niega_dulce = not suavizado and (
+        esta_negado(normalizada, "dulce") or esta_negado(normalizada, "postre")
+    )
+    niega_salado = not suavizado and (
+        esta_negado(normalizada, "salado") or esta_negado(normalizada, "salada")
+    )
+    pide_dulce = re.search(r"\bdulces?\b|\bpostres?\b", normalizada) is not None
+    pide_salado = re.search(r"\bsalad[oa]s?\b", normalizada) is not None
+
+    if niega_dulce:
         return "salado"
-    if re.search(r"\bdulces?\b|\bpostres?\b", normalizada):
+    if niega_salado:
         return "dulce"
+    if pide_dulce:
+        return "dulce"
+    if pide_salado:
+        return "salado"
     return None
 
 
@@ -278,7 +278,7 @@ def _cumple_sabor(documento: Documento, sabor: str) -> bool:
 def _etiqueta_filtro(ingrediente: str | None, sabor: str | None) -> str:
     partes: list[str] = []
     if ingrediente:
-        partes.append(f"con {ingrediente}")
+        partes.append(f"con {_etiqueta_ingrediente(ingrediente)}")
     if sabor == "salado":
         partes.append("salados")
     elif sabor == "dulce":
@@ -336,9 +336,8 @@ class ServicioRecomendador:
                 inicio,
             )
         consulta = _consulta_con_historial(mensaje, historial)
-        if not es_consulta_gastronomica(consulta) and not es_consulta_plataforma(
-            consulta
-        ):
+        # Un tema claramente ajeno no se cuela por decir "precio" o "recomiendas".
+        if es_tema_ajeno(normalizado) and not es_consulta_plataforma(normalizado):
             return self._respuesta_directa(FUERA_DE_ALCANCE, inicio)
 
         indice = await self._conocimiento.obtener()
@@ -350,6 +349,13 @@ class ServicioRecomendador:
                 request_id,
                 inicio,
             )
+        # Preguntar por un restaurante o un plato ("¿qué hay en Don Leo?") es una
+        # consulta de comida aunque no lleve palabras como "plato" o "comer".
+        nombra_entidad = bool(
+            indice.restaurante_detectado(consulta) or indice.plato_detectado(consulta)
+        )
+        if not es_consulta_gastronomica(consulta) and not nombra_entidad:
+            return self._respuesta_directa(FUERA_DE_ALCANCE, inicio)
         termino = indice.termino_sin_datos(consulta)
         if termino:
             return self._respuesta_directa(
@@ -361,21 +367,22 @@ class ServicioRecomendador:
         if factual is not None:
             return factual
         filtros = extraer_filtros(consulta)
-        filtros = Filtros(
-            vegetariano=filtros.vegetariano,
-            vegano=filtros.vegano,
-            picante=filtros.picante,
-            precio_min=filtros.precio_min,
-            precio_max=filtros.precio_max,
-            ciudad=ciudad or filtros.ciudad,
-            restaurante_slug=restaurante_slug,
-            excluir_alergeno=filtros.excluir_alergeno,
-        )
+        if ciudad or restaurante_slug:
+            filtros = replace(
+                filtros,
+                ciudad=ciudad or filtros.ciudad,
+                restaurante_slug=restaurante_slug or filtros.restaurante_slug,
+            )
 
         # Si la pregunta nombra un ingrediente o un sabor, se piden más
         # candidatos para que el filtro no deje la lista vacía.
         ingrediente = _ingrediente_solicitado(consulta)
         sabor = _sabor_solicitado(consulta)
+        # El turno actual manda: si ahora pide un ingrediente que la
+        # conversación venía evitando ("y algo con pollo" tras "sin carne"),
+        # se levanta esa exclusión para no devolver una lista vacía.
+        if ingrediente:
+            filtros = _levantar_exclusion(filtros, ingrediente)
         top_k = self._settings.rag_top_k
         candidatos = self._settings.rag_candidatos
         if ingrediente or sabor:
@@ -387,6 +394,10 @@ class ServicioRecomendador:
             consulta,
             vector_consulta=vector,
             filtros=filtros,
+            # La plataforma se responde en su propia rama; aquí solo compiten
+            # platos y restaurantes, para que las fichas de ayuda no ocupen
+            # los cupos del contexto gastronómico.
+            tipos=("plato", "restaurante"),
             top_k=top_k,
             candidatos=candidatos,
             mmr_lambda=self._settings.rag_mmr_lambda,
@@ -401,6 +412,12 @@ class ServicioRecomendador:
             for recuperado in recuperados
             if recuperado.documento.tipo != "plataforma"
         ]
+        # Los platos van primero: son la recomendación, y así los [P1], [P2] que
+        # cita el modelo apuntan a fichas de platos y no al perfil del local.
+        recuperados.sort(key=lambda recuperado: recuperado.documento.tipo != "plato")
+        # Dos restaurantes pueden tener el mismo plato ("Caldo de res"): en la
+        # respuesta final se muestra una sola vez.
+        recuperados = _sin_repetir(recuperados)
 
         # El contexto se limita a los platos que cumplen el ingrediente o el
         # sabor. Sin esto, la diversidad por restaurante cuela postres en una
@@ -409,7 +426,7 @@ class ServicioRecomendador:
             recuperados = [
                 recuperado
                 for recuperado in recuperados
-                if _tiene_ingrediente(recuperado.documento.texto, ingrediente)
+                if menciona_ingrediente(recuperado.documento.texto, ingrediente)
             ]
         if sabor:
             recuperados = [
@@ -437,6 +454,14 @@ class ServicioRecomendador:
             return self._respuesta_directa(SIN_DATOS, inicio, recuperacion_ms)
         if _hay_filtros_estrictos(filtros):
             return self._respuesta_lista(recuperados, filtros, inicio)
+        restaurante = indice.restaurante_detectado(consulta)
+        if restaurante:
+            # "¿Qué hay en Don Leo?" se responde con su carta real: un modelo de
+            # 1.5B puede mezclar el nombre del plato con la etiqueta [Pn] y
+            # dejar la tarjeta diciendo una cosa y el texto otra.
+            ficha = indice.documento_restaurante(restaurante)
+            nombre = str((ficha.metadata if ficha else {}).get("nombre") or "")
+            return self._respuesta_lista(recuperados, filtros, inicio, restaurante=nombre)
 
         contexto, usados = seleccionar_contexto(
             recuperados, self._settings.rag_contexto_max_tokens
@@ -462,6 +487,11 @@ class ServicioRecomendador:
         # nombró ningún plato del contexto, se devuelve la lista factual.
         if not _menciona_alguna(contenido, usados):
             return self._respuesta_lista(recuperados, filtros, inicio)
+        # Si la respuesta cita [P1] y [P3], no se muestran las demás fichas: el
+        # comensal ve solo los platos que Tuki recomendó de verdad.
+        citadas = _citadas(contenido, usados)
+        if citadas:
+            fuentes = _fuentes_de(citadas)
         nota = _nota_alergenos(fuentes)
         if nota:
             contenido = f"{contenido}\n\n{nota}"
@@ -650,6 +680,7 @@ class ServicioRecomendador:
         recuperados: list[Recuperado],
         filtros: Filtros,
         inicio: float,
+        restaurante: str | None = None,
     ) -> ResultadoRecomendacion:
         """Responde filtros estrictos con una lista factual de fuentes."""
         platos = [
@@ -665,14 +696,22 @@ class ServicioRecomendador:
             etiquetas.append("veganas")
         if filtros.picante:
             etiquetas.append("picantes")
-        if filtros.excluir_alergeno:
-            etiquetas.append(f"sin {filtros.excluir_alergeno}")
+        elif filtros.picante is False:
+            etiquetas.append("sin picante")
+        if filtros.excluir_alergenos:
+            excluidos = [_etiqueta_alergeno(a) for a in filtros.excluir_alergenos]
+            etiquetas.append("sin " + " ni ".join(excluidos))
+        if filtros.excluir_ingredientes:
+            excluidos = [_etiqueta_ingrediente(i) for i in filtros.excluir_ingredientes]
+            etiquetas.append("sin " + " ni ".join(excluidos))
         if filtros.precio_max:
             etiquetas.append(f"por menos de {_formato_cop(filtros.precio_max)}")
 
         intro = "Estas opciones"
         if etiquetas:
             intro += " " + " y ".join(etiquetas)
+        if restaurante:
+            intro += f" de {restaurante}"
         partes = [intro + ":"]
         for posicion, fuente in enumerate(fuentes, start=1):
             detalle = f"{fuente.nombre} de {fuente.restaurante}"
@@ -681,9 +720,12 @@ class ServicioRecomendador:
             partes.append(f"{detalle} [P{posicion}].")
         partes.append("¿Quieres que te cuente más de alguna?")
         nota = _nota_alergenos(fuentes)
+        advertencia = _nota_alergenos_sin_declarar(filtros, fuentes)
         contenido = " ".join(partes)
         if nota:
             contenido += f"\n\n{nota}"
+        if advertencia:
+            contenido += f"\n\n{advertencia}"
         latencia = int((time.perf_counter() - inicio) * 1000)
         return ResultadoRecomendacion(
             content=contenido,
@@ -774,7 +816,7 @@ class ServicioRecomendador:
         )
         quiere_alergenos = any(
             marca in normalizado
-            for marca in ("alergen", "gluten", "lactosa", "huevo", "mani", "nuez")
+            for marca in ("alergen", "gluten", "lactosa", "lacteo", "huevo", "mani", "nuez")
         )
         if not (quiere_ingredientes or quiere_precio or quiere_dieta or quiere_alergenos):
             return None
@@ -867,10 +909,11 @@ def _hay_filtros_estrictos(filtros: Filtros) -> bool:
         (
             filtros.vegetariano,
             filtros.vegano,
-            filtros.picante,
+            filtros.picante is not None,
             filtros.precio_min,
             filtros.precio_max,
-            filtros.excluir_alergeno,
+            filtros.excluir_alergenos,
+            filtros.excluir_ingredientes,
         )
     )
 
@@ -954,6 +997,26 @@ def _menciona_alguna(texto: str, recuperados: list[Recuperado]) -> bool:
     return False
 
 
+def _citadas(texto: str, usados: list[Recuperado]) -> list[Recuperado]:
+    """Fuentes que la respuesta cita con [P1], [P2]…, en orden de contexto."""
+    posiciones = {int(numero) - 1 for numero in re.findall(r"\[P(\d+)\]", texto)}
+    return [usado for indice, usado in enumerate(usados) if indice in posiciones]
+
+
+def _sin_repetir(recuperados: list[Recuperado]) -> list[Recuperado]:
+    """Quita platos homónimos de restaurantes distintos ("Caldo de res" ×2)."""
+    vistos: set[str] = set()
+    unicos: list[Recuperado] = []
+    for recuperado in recuperados:
+        metadata = recuperado.documento.metadata
+        nombre = normalizar(str(metadata.get("nombre") or recuperado.documento.id))
+        if nombre in vistos:
+            continue
+        vistos.add(nombre)
+        unicos.append(recuperado)
+    return unicos
+
+
 def _quitar_afirmaciones_alergenos(texto: str, fuentes: list[Fuente]) -> str:
     """Elimina frases tipo "no contiene lactosa" cuando el catálogo dice lo contrario."""
     alergenos = {
@@ -988,6 +1051,47 @@ def _nota_alergenos(fuentes: list[Fuente]) -> str:
         "Alérgenos declarados en el catálogo: "
         + "; ".join(con_alergenos)
         + ". Si tienes una alergia, confirma con el restaurante antes de pedir."
+    )
+
+
+_ETIQUETA_ALERGENO = {
+    "gluten": "gluten",
+    "lactosa": "lácteos",
+    "huevo": "huevo",
+    "mani": "maní",
+    "nueces": "nueces",
+    "mariscos": "mariscos",
+    "soya": "soya",
+}
+_ETIQUETA_INGREDIENTE = {
+    "maiz": "maíz",
+    "platano": "plátano",
+    "mani": "maní",
+    "cafe": "café",
+}
+
+
+def _etiqueta_alergeno(alergeno: str) -> str:
+    return _ETIQUETA_ALERGENO.get(alergeno, alergeno)
+
+
+def _etiqueta_ingrediente(ingrediente: str) -> str:
+    return _ETIQUETA_INGREDIENTE.get(ingrediente, ingrediente)
+
+
+def _nota_alergenos_sin_declarar(filtros: Filtros, fuentes: list[Fuente]) -> str:
+    """Avisa cuando se pidió evitar un alérgeno y no hay dato en la ficha.
+
+    Un plato sin alérgenos declarados no equivale a un plato seguro: el catálogo
+    puede estar incompleto y el comensal debe confirmarlo con el restaurante.
+    """
+    if not filtros.excluir_alergenos:
+        return ""
+    if all(fuente.alergenos for fuente in fuentes):
+        return ""
+    return (
+        "Ojo: alguno de estos platos no tiene alérgenos declarados en el "
+        "catálogo, así que confirma con el restaurante antes de pedir."
     )
 
 

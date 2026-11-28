@@ -56,7 +56,7 @@ curl -X POST http://localhost:8002/api/v1/vision/clasificar \
   "etiqueta": "comida",
   "confianza": 0.987,
   "probabilidad_comida": 0.987,
-  "umbral": 0.3,
+  "umbral": 0.65,
   "modelo": "comida-v1.pt"
 }
 ```

@@ -65,7 +65,7 @@ class ClasificadorYolo:
         self,
         ruta_modelo: Path,
         *,
-        umbral: float = 0.3,
+        umbral: float = 0.65,
         etiqueta_comida: str = "comida",
         imgsz: int = 224,
         device: str = "cpu",

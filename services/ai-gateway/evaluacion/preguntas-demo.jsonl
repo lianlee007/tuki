@@ -1,0 +1,30 @@
+{"id": "d01", "categoria": "saludo", "pregunta": "Hola", "palabras_clave": ["recomendador de platos"], "modo_clave": "todas", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d02", "categoria": "vegetariano", "pregunta": "algo vegetariano", "palabras_clave": ["vegetarian"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d03", "categoria": "vegano", "pregunta": "algo vegano", "palabras_clave": ["vegan"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d04", "categoria": "picante", "pregunta": "algo picante", "palabras_clave": ["picante"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d05", "categoria": "precio", "pregunta": "algo económico", "palabras_clave": ["menos de"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d06", "categoria": "compartir", "pregunta": "algo para compartir", "palabras_clave": ["tabla", "picada", "parrillada", "dos"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d07", "categoria": "postre", "pregunta": "un postre", "palabras_clave": ["dulce", "postre"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d08", "categoria": "negacion", "pregunta": "algo que no sea dulce", "palabras_clave": ["salado"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d09", "categoria": "negacion", "pregunta": "algo que nos sea dulce", "palabras_clave": ["salado"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d10", "categoria": "negacion", "pregunta": "algo que no tenga carne", "palabras_clave": ["sin carne"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d11", "categoria": "alergeno", "pregunta": "platos sin lácteos ni queso", "palabras_clave": ["sin lácteos", "sin lacteos"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d12", "categoria": "alergeno", "pregunta": "algo sin gluten", "palabras_clave": ["gluten"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d13", "categoria": "alergeno", "pregunta": "algo sin maní", "palabras_clave": ["maní", "mani"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d14", "categoria": "ingrediente", "pregunta": "quiero algo con pollo", "palabras_clave": ["pollo"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d15", "categoria": "ingrediente", "pregunta": "algo de res", "palabras_clave": ["res"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d16", "categoria": "categoria", "pregunta": "una sopa", "palabras_clave": ["sopa"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d17", "categoria": "categoria", "pregunta": "pizza", "palabras_clave": ["pizza"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d18", "categoria": "restaurante", "pregunta": "¿qué hay en Don Leo?", "palabras_clave": ["don leo"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 1}
+{"id": "d19", "categoria": "factual", "pregunta": "¿cuál es el horario de Don Leo?", "palabras_clave": ["horario"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d20", "categoria": "factual", "pregunta": "¿dónde queda Café Bolívar?", "palabras_clave": ["calle", "carrera"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d21", "categoria": "factual", "pregunta": "¿cuánto cuesta el churrasco?", "palabras_clave": ["cop"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d22", "categoria": "alergeno", "pregunta": "¿la arepa de queso tiene lácteos?", "palabras_clave": ["arepa de queso"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d23", "categoria": "sin_datos", "pregunta": "¿tienen sushi?", "palabras_clave": ["sushi"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d24", "categoria": "plataforma", "pregunta": "¿cómo publico un plato en el panel?", "palabras_clave": ["plato"], "modo_clave": "alguna", "debe_abstenerse": false, "fuentes_min": 0}
+{"id": "d25", "categoria": "fuera_de_alcance", "pregunta": "¿quién ganó el partido de fútbol?", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
+{"id": "d26", "categoria": "fuera_de_alcance", "pregunta": "cuéntame un chiste", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
+{"id": "d27", "categoria": "fuera_de_alcance", "pregunta": "¿cuánto es 2+2?", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
+{"id": "d28", "categoria": "fuera_de_alcance", "pregunta": "¿cuál es la capital de Francia?", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
+{"id": "d29", "categoria": "fuera_de_alcance", "pregunta": "dame el precio del dólar", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
+{"id": "d30", "categoria": "fuera_de_alcance", "pregunta": "¿me recomiendas una película?", "palabras_clave": ["no lo manejo"], "modo_clave": "todas", "debe_abstenerse": true, "fuentes_min": 0}
