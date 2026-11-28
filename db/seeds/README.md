@@ -22,6 +22,15 @@ psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_re
 psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
   -f db/seeds/platillos-descripciones.sql
 
+# Banderas vegetarianas/veganas y alérgenos declarados de esos platos.
+psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
+  -f db/seeds/restaurantes-dietas.sql
+
+# Platos extra para la demo del chat: opciones picantes, veganas y para
+# compartir. Idempotente.
+psql postgresql://tuki_restaurantes:tuki_restaurantes_dev@localhost:5432/tuki_restaurantes \
+  -f db/seeds/platillos-demo-extra.sql
+
 # Reseñas demo: idempotente (UUID fijos). Incluye respuestas del dueño y fotos
 # reales de los platos ya alojadas en el almacén local.
 psql postgresql://tuki_resenas:tuki_resenas_dev@localhost:5432/tuki_resenas \

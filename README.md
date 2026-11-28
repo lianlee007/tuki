@@ -93,7 +93,7 @@ identidad restaurantes pedidos resenas media admin-service
 | pnpm | 12.14 | Monorepo. |
 | Docker Desktop | Compose v2 | Stack completo, PostgreSQL, RustFS, Grafana. |
 | Python | 3.12 | Solo si ejecutas `ai-gateway` o `vision-service` fuera de Docker. |
-| Ollama | Reciente | Modelo de chat y embeddings. |
+| Ollama | Opcional | Solo si usas el Ollama del host; el stack lo trae en contenedor. |
 | kubectl | 1.30+ | Kubernetes y Kustomize. |
 | Argo CD | 3.5+ | GitOps, si usas el clúster. |
 
@@ -104,8 +104,8 @@ opción **Enable Kubernetes** activa.
 
 ### Windows: un solo clic
 
-1. Instala Node 22, pnpm, Docker Desktop y Ollama.
-2. Descarga los modelos de IA:
+1. Instala Node 22, pnpm y Docker Desktop.
+2. Los modelos de IA se descargan solos con el stack (`ollama-init`). Si prefieres usar el Ollama del host, instálalo y ejecuta:
 
    ```powershell
    ollama pull nomic-embed-text
@@ -134,20 +134,45 @@ Es idempotente: si algo ya está arriba, lo reutiliza.
 corepack enable
 pnpm install --frozen-lockfile
 cp infra/docker/.env.example infra/docker/.env
-docker compose -f infra/docker/docker-compose.yml up -d --build
-pnpm infra:monitoring:up
+pnpm infra:up
+docker compose -f infra/docker/docker-compose.yml ps
 ```
 
 Luego ejecuta las migraciones y los seeds de la
 [ejecución manual](#ejecución-manual). Ollama debe correr en
 `http://localhost:11434`.
 
+### Windows por terminal, paso a paso
+
+Es el mismo recorrido que hace el `.bat`, sin atajos. En PowerShell:
+
+```powershell
+node -v                                  # 22 o superior
+pnpm -v                                  # 12.14
+docker --version                         # Docker Desktop encendido
+
+pnpm install
+Copy-Item infra/docker/.env.example infra/docker/.env
+pnpm infra:up
+docker compose -f infra/docker/docker-compose.yml ps
+```
+
+`pnpm infra:up` levanta el stack principal y el de observabilidad en un solo
+paso; es el equivalente a `docker compose -f infra/docker/docker-compose.yml up -d`
+seguido de `pnpm infra:monitoring:up`. La primera vez construye las imágenes.
+
+En `docker compose ps` deben aparecer diecisiete contenedores del stack
+principal —con `healthy` en `postgres` y `api-gateway`— más los tres de
+observabilidad (`prometheus`, `grafana` y `node-exporter`). Cuando estén arriba,
+las tres apps ya responden en `http://localhost:8081`, `8082` y `8083` sin
+arrancar nada más. Para detenerlo todo sin perder datos: `pnpm infra:down`.
+
 ## URLs y credenciales demo
 
 | Servicio | URL | Credenciales |
 |---|---|---|
 | Comensal | `http://localhost:8081` | `cliente@tukituki.local` / `Demo12345` |
-| Panel del restaurante | `http://localhost:8082` | `lian@gmail.com` / `123456` |
+| Panel del restaurante | `http://localhost:8082` | `lian@gmail.com` / `Demo12345` |
 | Administración | `http://localhost:8083` | `admin@tukituki.local` / `Admin12345` |
 | API Gateway | `http://localhost:8084` | — |
 | Grafana | `http://localhost:3000` | `admin` / `admin` |
@@ -168,6 +193,10 @@ kubectl port-forward -n argocd svc/argocd-server 8085:443
 ```
 
 ## Ejecución manual
+
+Los comandos van en bash. En PowerShell, `cp` es `Copy-Item` y el resto es
+idéntico; la sección [Windows por terminal](#windows-por-terminal-paso-a-paso)
+tiene la versión completa.
 
 ### 1. Dependencias
 
@@ -197,8 +226,17 @@ docker compose -f infra/docker/docker-compose.yml up -d postgres redis rustfs ma
 Para el stack completo (servicios, frontends, IA y observabilidad):
 
 ```bash
-docker compose -f infra/docker/docker-compose.yml up -d --build
-pnpm infra:monitoring:up
+pnpm infra:up
+```
+
+Equivale a `docker compose -f infra/docker/docker-compose.yml up -d` más
+`pnpm infra:monitoring:up`. Si acabas de cambiar código o imágenes, fuerza la
+reconstrucción con `docker compose -f infra/docker/docker-compose.yml up -d --build`.
+
+Comprueba que todo subió:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml ps
 ```
 
 ### 4. Migraciones
@@ -243,7 +281,7 @@ Por defecto crea `admin@tukituki.local` con `Admin12345`. En producción define
 
 ### 6. Desarrollo con Vite
 
-Con las dependencias arriba:
+Para trabajar en todos los paquetes a la vez (servicios y frontends):
 
 ```bash
 pnpm dev:all
@@ -254,6 +292,14 @@ pnpm dev:all
 | Comensal | `http://localhost:5173` |
 | Panel | `http://localhost:5174` |
 | Administración | `http://localhost:5175` |
+
+`pnpm dev:all` arranca también los seis servicios, así que **exige que Docker no
+esté publicando los puertos 3001–3006**: o levantas solo las dependencias
+(`docker compose -f infra/docker/docker-compose.yml up -d postgres redis rustfs
+mailpit traefik`) o bajas el stack antes (`pnpm infra:down`). Si el stack de
+Docker está arriba y solo quieres tocar un frontend, arranca ese nada más —
+`pnpm dev:comensal`, `pnpm dev:panel` o `pnpm dev:admin`— y consume los
+servicios que ya sirven los contenedores.
 
 En desarrollo, los frontends leen `VITE_*`; en Docker leen `/config.js` al
 arrancar. Cambiar una URL en `config.js` no exige reconstruir.
@@ -269,18 +315,27 @@ docker compose -f infra/docker/docker-compose.yml \
 
 ## IA local con Ollama
 
-El gateway no usa Groq ni una API de pago. Usa Ollama en el equipo anfitrión:
+El gateway no usa Groq ni una API de pago. El stack de Docker levanta **Ollama
+como un contenedor** (`ollama`) y un job `ollama-init` que descarga los modelos
+y crea `tuki-chef`:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d ollama ollama-init
+```
+
+El gateway lo alcanza por la red interna con `AI_OLLAMA_URL=http://ollama:11434`
+y los modelos quedan en el volumen `ollama_data`. La primera vez tarda porque
+descarga alrededor de 1,3 GB; después el job es idempotente.
+
+Si prefieres el Ollama instalado en el host, define
+`AI_OLLAMA_URL=http://host.docker.internal:11434` en `infra/docker/.env`,
+levanta el stack y descarga los modelos allí:
 
 ```bash
 ollama pull nomic-embed-text
 ollama create tuki-chef -f services/ai-gateway/Modelfile
 ollama list
 ```
-
-En Docker, el gateway alcanza Ollama con
-`AI_OLLAMA_URL=http://host.docker.internal:11434`. En Linux, si
-`host.docker.internal` no resuelve, usa la IP del host o
-`--add-host=host.docker.internal:host-gateway`.
 
 Prueba el chat:
 
@@ -410,8 +465,6 @@ docs/                 Arquitectura, convenciones, privacidad, monografía y marc
 | [`docs/convenciones.md`](docs/convenciones.md) | Nombres, carpetas y estilo. |
 | [`docs/rag-local.md`](docs/rag-local.md) | RAG, prompt, parámetros y evaluación. |
 | [`docs/privacidad.md`](docs/privacidad.md) | Datos, retención y riesgos. |
-| [`docs/monografia/`](docs/monografia/) | Monografía final en Word y PDF. |
-| [`docs/entrega/chat-voz/`](docs/entrega/chat-voz/) | Medición del chatbot y voz. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Ramas, commits, pruebas y PRs. |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | Licencias de terceros y AGPL de Ultralytics. |
 
